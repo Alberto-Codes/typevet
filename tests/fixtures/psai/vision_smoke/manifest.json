@@ -82,6 +82,27 @@
       }
     },
     {
+      "unique_data_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "stream_order": 5,
+      "task_name": "From the Templates section, open the \u201cAll Templates\u201d gallery, filter by the \u201cPhotography\u201d category, choose any one template, and list every pre-designed page type (e.g., Gallery, About, Contact) that the template\u2019s detail panel claims to include. Only use http://squarespace.com to achieve this task.",
+      "visual_family": "non_fox",
+      "screenshot": {
+        "file_name": "cmcc8u6ym018l1p1yxhf18gc2.png",
+        "index": 0,
+        "source_path": "tmpbavkj4a_.png",
+        "mime_type": "image/png",
+        "sha256": "82583cede3f62a847b426c1c0cd748ea3845a81e4c972a8fd0f2b2ee0051d68b",
+        "byte_count": 451801,
+        "width": 1280,
+        "height": 720
+      },
+      "expected": {
+        "category": "BROWSER_TASK",
+        "requires_login": false,
+        "shows_fox_news_chrome": false
+      }
+    },
+    {
       "unique_data_id": "cmcc8u6yd00wv1p1yy8guorre",
       "stream_order": 6,
       "task_name": "In the Lighting department, filter for Pendant Lights that are \u201cBlack\u201d in finish and \u201cIndustrial\u201d in style; provide the height (in inches) of the shortest fixture that appears on the first results page. Only use http://homedepot.com to achieve this task.",

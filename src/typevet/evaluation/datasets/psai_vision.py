@@ -2,9 +2,13 @@
 
 The metadata loader in [typevet.evaluation.datasets.psai][] strips screenshots.
 This module reads the fixed set vendored under
-``tests/fixtures/psai/vision_smoke/``: one unmodified first screenshot per
-``unique_data_id``, plus a manifest that keeps MIT provenance and holds every
-gold answer under ``expected``.
+``tests/fixtures/psai/vision_smoke/``: six unmodified first screenshots, one
+per ``unique_data_id`` in [ACCEPTED_UNIQUE_DATA_IDS][], plus a manifest that
+keeps MIT provenance and holds every gold answer under ``expected``. The
+Squarespace row ``cmcc8u6ym018l1p1yxhf18gc2`` pins consumer live protocol case
+C08 ([#177][i177]).
+
+[i177]: https://github.com/Alberto-Codes/typevet/issues/177
 
 Two gold provenances live side by side. ``category`` and ``requires_login``
 come from Hub annotations. ``shows_fox_news_chrome`` is manual visual labelling
@@ -80,6 +84,7 @@ ACCEPTED_UNIQUE_DATA_IDS: Final[tuple[str, ...]] = (
     "cmcc8u6yc00va1p1ydsdu52zy",
     "cmcc8u6yc00v91p1yw2eruz95",
     "cmcc8u6yc00vm1p1yhjl1u0bf",
+    "cmcc8u6ym018l1p1yxhf18gc2",
     "cmcc8u6yd00wv1p1yy8guorre",
     "cmcc8u6yd00wr1p1yj7aot3ae",
 )
