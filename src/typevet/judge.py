@@ -1,4 +1,4 @@
-"""Public judgment helpers over the scoring-backed adapter.
+"""Compatibility shim for scoring-backed judgment (#148).
 
 Examples:
     ```python
@@ -6,12 +6,9 @@ Examples:
     ```
 
 See Also:
-    - [typevet.adapters.outbound.judgment_scoring][]: Adapter implementation
+    - [typevet.runtime.judgment][]: Canonical facade
 """
 
-from typevet.adapters.outbound.judgment_scoring import (
-    ScoringJudgmentAdapter,
-    judge_with_scoring,
-)
+from typevet.runtime.judgment import ScoringJudgmentAdapter, judge_with_scoring
 
 __all__ = ["ScoringJudgmentAdapter", "judge_with_scoring"]

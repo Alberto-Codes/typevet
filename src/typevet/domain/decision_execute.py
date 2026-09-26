@@ -15,7 +15,7 @@ Examples:
 
 See Also:
     - [typevet.domain.decisions][]: Decision compile shape
-    - [typevet.ports.scoring][]: CandidateScoringPort protocol
+    - [typevet.ports.scoring][]: ``CandidateScoringPort`` (TYPE_CHECKING only)
     - [typevet.domain.candidate_scoring_validate][]: Fail-closed score coverage
 """
 
@@ -23,13 +23,12 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import TYPE_CHECKING, Any
 
 from typevet.domain.candidate_scoring_request import (
     CandidateScoringRequest,
     CandidateTokenSpec,
 )
-from typevet.domain.candidate_scoring_response import CandidateScoringResult
 from typevet.domain.decisions import MAX_ENUM_CHOICES, Decision
 from typevet.domain.errors import DecisionExecutionError, ScoringValidationError
 from typevet.domain.judgment_response import TokenUsage
@@ -39,23 +38,8 @@ _PROB_SUM_TOLERANCE = 1e-6
 _MIN_CATEGORICAL_CHOICES = 2
 _CATEGORICAL_SYNTAX = frozenset({"Choice", "Bool"})
 
-
-class CandidateScoringPort(Protocol):
-    """Structural protocol for candidate logprob scoring (mirrors ports layer).
-
-    Examples:
-        ```python
-        # Offline fakes and llama.cpp adapters both satisfy this shape.
-        def use(port: CandidateScoringPort) -> None:
-            _ = port.score_candidates
-        ```
-    """
-
-    def score_candidates(
-        self, request: CandidateScoringRequest
-    ) -> CandidateScoringResult:
-        """Score every requested candidate at the contracted stage."""
-        ...
+if TYPE_CHECKING:
+    from typevet.ports.scoring import CandidateScoringPort
 
 
 @dataclass(frozen=True, slots=True)
