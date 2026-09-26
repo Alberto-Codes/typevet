@@ -29,7 +29,8 @@ a live API call.
 
 The supervisor harness is independent of the worker. Cursor, Claude Code,
 Codex, Copilot and pi may each supervise. Preserve any user-selected
-supervisor model.
+supervisor model. Choose **model weight** (light / medium / heavy)
+independently of the harness.
 
 typevet has three verified worker harnesses:
 
@@ -38,7 +39,8 @@ typevet has three verified worker harnesses:
   `.claude/agents/`.
 - The Cursor CLI runs Cursor-pool models in print mode.
 
-Choose the worker independently from the supervisor.
+Choose the worker independently from the supervisor. `worker-fit` on an issue
+authorizes any of these harnesses; it does not select one.
 
 | Harness | Required launch evidence |
 |---|---|
@@ -46,6 +48,9 @@ Choose the worker independently from the supervisor.
 | Claude sub agent | Requested alias (`haiku`, `sonnet` or `opus`). Resolved model ID from the agent's return, or `unknown`. Effort. Allowed tools. Agent definition name |
 | Cursor CLI | Installed version. Requested model ID. Identity that the worker reports, or `unknown`. `session_id` and usage from the JSON receipt. `.cursor/cli.json` deny list |
 | Any other harness | The same role, context, isolation, observation and return requirements |
+
+Also record the intended **weight** class for the job, even when the harness
+only exposes a brand alias.
 
 Read the installed help and configuration before you write a pi launch
 command. Do not copy flags, approval modes or token limits between harnesses.
@@ -97,7 +102,7 @@ second ledger that duplicates it.
 |---|---|
 | Assignment | Issue, slice and accepted comment. Supervisor and worker role. Allowed paths |
 | Baseline | Base revision. Existing modifications. Acceptance-test revision |
-| Configuration | Harness and version. Requested and resolved model. Effort or reasoning setting. Tool permissions |
+| Configuration | Harness and version. Requested and resolved model. Weight class. Effort or reasoning setting. Tool permissions |
 | Observation | Session or agent identifier. Start and end times. Output location. Final exit state |
 | Outcome | Acceptance disposition. Tested revision. Independent evidence. Repairs. Remaining blockers |
 | Cost | Elapsed time. Supervisor repair time. Reported tokens with their source |

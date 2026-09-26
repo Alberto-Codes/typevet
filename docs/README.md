@@ -19,7 +19,9 @@ answers a question, and a reference gives facts.
 
 ## For maintainers and agents
 
-- [CLAUDE.md](../CLAUDE.md) (reference and how-to, for agents): the
-  non-negotiables, the gate table and the commit rules.
-- [Delegate a bounded change](maintainers/delegate-work.md) (how-to, for
-  maintainers): the procedure for supervised work.
+- [CLAUDE.md](../CLAUDE.md) (reference and how-to, for agents): start-here for
+  fresh sessions, issue bus, non-negotiables and commit rules.
+- [Groom worker issues](maintainers/groom-worker-issues.md) (how-to): file,
+  triage, size and split work on GitHub before delegation.
+- [Delegate a bounded change](maintainers/delegate-work.md) (how-to): brief,
+  harness, model weight and acceptance after a contract exists.

@@ -2,6 +2,22 @@
 
 Kind: reference and how-to, for agents. Guidance for coding agents. `AGENTS.md` is a symlink to this file.
 
+## Start here (every fresh session)
+
+1. Read this file once. Obey it over chat habit.
+2. **GitHub issues are the bus.** Durable asks, triage, contracts, handoffs and
+   acceptance live on issues. Chat is for the current turn only. Do not keep a
+   multi-step plan only in chat when an issue should exist.
+3. List open issues before inventing work:
+   `gh issue list -R Alberto-Codes/typevet --state open`.
+4. If the user states a new goal and no issue captures it, **file or update an
+   issue first** (or draft the body and ask to file). Then triage, size and
+   split. Only then delegate.
+5. Use [groom worker issues](docs/maintainers/groom-worker-issues.md) for the
+   select → classify → split → contract path. Use
+   [delegate a bounded change](docs/maintainers/delegate-work.md) only after a
+   contract exists on the issue.
+
 ## What this repo is
 
 **typevet** evaluates and hardens type-safe generation around
@@ -16,11 +32,22 @@ forming. Sister projects that share this worker pattern:
 ## Supervised workers
 
 Roles describe responsibility, not model brands. Record the actual supervisor,
-worker and harness for each dispatch.
+worker, harness and model weight for each dispatch.
 
-The supervisor harness is independent of the worker harness. Cursor, Claude
-Code, Codex, Copilot and pi may each supervise. Preserve any user-selected
-supervisor model. Choose the worker independently.
+Three independent choices:
+
+| Choice | Meaning |
+|---|---|
+| Role | supervisor, specifier, builder, reviewer |
+| Harness | which program runs the model (Cursor, Claude Code, Codex, Copilot, pi, …) |
+| Weight | light, medium or heavy capacity for this job |
+
+Do not collapse these. `worker-fit` means the contract is mechanical enough for
+any verified worker harness. It does **not** mean “use pi” or “use a small
+model”. Pick harness and weight separately after the issue is ready.
+
+The supervisor harness is independent of the worker harness. Preserve any
+user-selected supervisor. Choose the worker independently.
 
 typevet has three verified worker harnesses: pi, through the `delegate-to-pi`
 skill; Claude Code sub agents, through the Agent tool and the definitions in
@@ -34,34 +61,46 @@ commits. A worker follows its brief, skips session bookkeeping, and never
 commits, pushes or changes policy unless the brief assigns it. Each checkout
 has one writer. Workers preserve unrelated changes.
 
-Use [the delegation procedure](docs/maintainers/delegate-work.md) for sizing,
-acceptance, repairs and the brief. Use
-[the worker run contract](docs/reference/worker-runs.md) for launch evidence
-and commit trailers.
+## Issues before agents
+
+A research, port, design or implementation ask that will outlive one turn
+belongs on a GitHub issue before a worker runs.
+
+- **Parent / epic** (`size-L`): the goal and combined done-when. Not one
+  builder dispatch.
+- **Child / task** (`size-S` or `size-M`): one behaviour or one research
+  deliverable with mechanical acceptance.
+- **Labels:** `judgment` vs `worker-fit`; `size-S` / `size-M` / `size-L`;
+  `ready` when dispatchable; priority as needed.
+- **Accepted contract** is a titled issue comment. The brief links that
+  comment URL and pastes its text. Chat summaries are not the contract.
+
+Workers with web access (any harness) are fine for research slices once the
+issue names the question, sources to prefer, and the artifact to return
+(comment body, not a private essay).
 
 ## Bounded execution
 
 The supervisor owns the cost of the whole assignment, including workers and
 repeated context. Explicit user scope and required gates still govern.
 
-- **Define done first.** State the decision, necessary evidence, allowed
-  repairs and stopping condition on the existing issue. Keep it under 150
-  words. Link existing specifications instead of rewriting them.
+- **Define done first.** On the issue. Keep the contract under 150 words.
+  Link existing specifications instead of rewriting them.
 - **Require a reason for each action.** Advance the decision, repair a
   demonstrated blocker, or satisfy a required gate. Skip actions that serve
   none of these.
-- **Bound delegation.** Default to one implementation dispatch, one
-  independent acceptance review and one repair dispatch per behaviour. Before
-  exceeding these limits, report the unresolved assertion and why another
-  dispatch could resolve it.
+- **Bound delegation.** Default to one implementation (or research) dispatch,
+  one independent acceptance review and one repair dispatch per behaviour.
+  Before exceeding these limits, report the unresolved assertion and why
+  another dispatch could resolve it.
 - **Use one validation path.** The gate table and the hooks are that path. Do
   not add a second review pipeline. Reuse passing checks for unchanged
   revisions. Do not duplicate by hand what the commit or push hook runs.
 - **Keep delivery small.** Use the existing issue and one commit. Create no
   extra report or dashboard unless the deliverable requires it.
 - **Stop at the agreed outcome.** Report the result and remaining evidence
-  gaps. Do not turn a worker outage or harness failure into another project.
-  Report unavailable usage counters as unknown.
+  gaps on the issue. Do not turn a worker outage or harness failure into
+  another project. Report unavailable usage counters as unknown.
 
 ## Non-negotiables
 
@@ -73,12 +112,14 @@ repeated context. Explicit user scope and required gates still govern.
   say nothing about a live model or API.
 - **Do not invent product claims.** Until a page moves past `sketch`, treat
   architecture and behaviour descriptions as provisional.
+- **Do not replace the issue bus with chat.** A fresh supervisor must recover
+  the plan from GitHub, not from a prior session transcript.
 
 ## Architecture
 
 The package layout is not fixed yet. Prefer small modules, typed public
 surfaces and one inbound adapter for the CLI when that exists. Record lasting
-decisions in docs, not only in chat.
+decisions in docs or issue contracts, not only in chat.
 
 ## Build and gates
 

@@ -13,10 +13,21 @@ It shares the supervised-worker pattern with
 [automarket](https://github.com/Alberto-Codes/automarket) and
 [docvet](https://github.com/Alberto-Codes/docvet).
 
+## How work moves
+
+**GitHub issues are the bus.** New goals become issues, then triage, size and
+child tasks, then an accepted contract comment, then a worker brief. Chat does
+not hand off across harnesses or fresh sessions.
+
+Read [CLAUDE.md](CLAUDE.md) first in every agent session.
+Then [groom worker issues](docs/maintainers/groom-worker-issues.md) and
+[delegate a bounded change](docs/maintainers/delegate-work.md).
+
 ## Supervised workers
 
-Supervisor and worker harnesses are independent. Cursor (this session), Claude
-Code, Codex, Copilot or pi may supervise; pick the worker separately.
+Role, harness and model weight are three separate choices. Supervisor and
+worker harnesses are independent. `worker-fit` means any verified worker
+harness may take the slice — not “use pi”.
 
 Verified worker harnesses:
 
@@ -26,13 +37,8 @@ Verified worker harnesses:
 | Claude Code sub agents | `.claude/agents/` (`builder`, `acceptance-reviewer`, `specifier`) |
 | Cursor CLI | print mode, guarded by `.cursor/cli.json` |
 
-Read [CLAUDE.md](CLAUDE.md) for roles and bounds,
-[docs/maintainers/delegate-work.md](docs/maintainers/delegate-work.md) for the
-dispatch procedure, and
-[docs/reference/worker-runs.md](docs/reference/worker-runs.md) for launch
-evidence and commit trailers.
-
 ## Where to read next
 
 - [docs/README.md](docs/README.md) indexes every page.
 - [The glossary](docs/reference/glossary.md) defines each term.
+- [Worker runs](docs/reference/worker-runs.md) for launch evidence and trailers.
