@@ -17,7 +17,13 @@ from typevet.gemma_answer_binding import (
     resolve_answer_anchor,
     termination_kind,
 )
-from typevet.gemma_served_template import ServedTemplateClass
+from typevet.gemma_served_template import (
+    GEMMA4_MODEL_TURN_HEADER,
+    GEMMA4_NO_THINKING_PREFILL,
+    GEMMA4_TURN_CLOSE,
+    GEMMA4_TURN_OPEN,
+    ServedTemplateClass,
+)
 
 
 @pytest.mark.unit
@@ -64,6 +70,70 @@ def test_no_thinking_rejects_think_trigger_in_prefix() -> None:
         resolve_answer_anchor(
             native, tokenize_with_special=pinned_tokenize_with_special
         )
+
+
+def _native_no_thinking_final_turn(*, prior_model_body: str = "") -> str:
+    """Native prompt with prior turns; final model turn ends at no-thinking prefill."""
+    prior = ""
+    if prior_model_body:
+        prior = (
+            f"{GEMMA4_TURN_OPEN}user\nFirst question.{GEMMA4_TURN_CLOSE}\n"
+            f"{GEMMA4_MODEL_TURN_HEADER}{prior_model_body}{GEMMA4_TURN_CLOSE}\n"
+            f"{GEMMA4_TURN_OPEN}user\nFollow-up.{GEMMA4_TURN_CLOSE}\n"
+        )
+    return f"{prior}{GEMMA4_MODEL_TURN_HEADER}{GEMMA4_NO_THINKING_PREFILL}"
+
+
+@pytest.mark.unit
+def test_resolve_anchor_native_header_only_still_accepted() -> None:
+    rendered = native_gemma4_rendered("Pick one label.")
+    anchor = resolve_answer_anchor(
+        rendered,
+        tokenize_with_special=pinned_tokenize_with_special,
+    )
+    assert anchor.template_class is ServedTemplateClass.NATIVE_GEMMA4_TURN
+    assert anchor.prefix == rendered
+    assert anchor.byte_length == len(rendered.encode("utf-8"))
+    assert anchor.prefix_token_count == len(pinned_tokenize_with_special(rendered))
+
+
+@pytest.mark.unit
+def test_resolve_anchor_native_no_thinking_prefill_after_final_model_turn() -> None:
+    rendered = _native_no_thinking_final_turn(prior_model_body="joy")
+    anchor = resolve_answer_anchor(
+        rendered,
+        tokenize_with_special=pinned_tokenize_with_special,
+    )
+    assert anchor.template_class is ServedTemplateClass.NATIVE_GEMMA4_TURN
+    assert anchor.prefix == rendered
+    assert anchor.byte_length == len(rendered.encode("utf-8"))
+    assert anchor.prefix_token_count == len(pinned_tokenize_with_special(rendered))
+
+
+@pytest.mark.unit
+def test_resolve_anchor_native_rejects_nonempty_thought_after_final_turn() -> None:
+    rendered = _native_no_thinking_final_turn().replace(
+        GEMMA4_NO_THINKING_PREFILL,
+        "<|channel>thought\nhmm<channel|>",
+    )
+    with pytest.raises(GemmaTemplateError, match="unexpected content after model turn"):
+        resolve_answer_anchor(
+            rendered, tokenize_with_special=pinned_tokenize_with_special
+        )
+
+
+@pytest.mark.unit
+def test_resolve_anchor_native_reproduces_missing_boundary_with_prefill_only() -> None:
+    """Regression: header+prefill must not raise missing-boundary (#144)."""
+    rendered = (
+        f"{GEMMA4_TURN_OPEN}user\nQ.{GEMMA4_TURN_CLOSE}\n"
+        f"{GEMMA4_MODEL_TURN_HEADER}{GEMMA4_NO_THINKING_PREFILL}"
+    )
+    anchor = resolve_answer_anchor(
+        rendered,
+        tokenize_with_special=pinned_tokenize_with_special,
+    )
+    assert anchor.template_class is ServedTemplateClass.NATIVE_GEMMA4_TURN
 
 
 @pytest.mark.unit

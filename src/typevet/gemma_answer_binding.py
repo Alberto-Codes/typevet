@@ -226,13 +226,21 @@ def _validated_prefix(rendered: str, template_class: ServedTemplateClass) -> str
             )
             raise GemmaTemplateError(msg)
         return rendered
-    if not rendered.endswith(GEMMA4_MODEL_TURN_HEADER):
-        msg = (
-            "missing Gemma4 model answer boundary "
-            f"(expected suffix {GEMMA4_MODEL_TURN_HEADER!r})"
-        )
+    header = GEMMA4_MODEL_TURN_HEADER
+    if rendered.endswith(header):
+        return rendered
+    no_thinking_suffix = f"{header}{GEMMA4_NO_THINKING_PREFILL}"
+    if rendered.endswith(no_thinking_suffix):
+        return rendered
+    last_header = rendered.rfind(header)
+    if last_header == -1:
+        msg = f"missing Gemma4 model answer boundary (expected suffix {header!r})"
         raise GemmaTemplateError(msg)
-    return rendered
+    tail = rendered[last_header + len(header) :]
+    if tail.startswith("<|channel>thought"):
+        return rendered
+    msg = f"missing Gemma4 model answer boundary (expected suffix {header!r})"
+    raise GemmaTemplateError(msg)
 
 
 def _assert_answer_boundary(prefix: str, template_class: ServedTemplateClass) -> None:
@@ -255,7 +263,11 @@ def _assert_no_thinking_path(
     if GEMMA4_THINK_TRIGGER in prefix:
         raise GemmaTemplateError("no_thinking path rejects <|think|> in prefix")
     if template_class is ServedTemplateClass.NATIVE_GEMMA4_TURN:
-        tail = prefix.split(GEMMA4_MODEL_TURN_HEADER, maxsplit=1)[-1]
+        header = GEMMA4_MODEL_TURN_HEADER
+        last_header = prefix.rfind(header)
+        if last_header == -1:
+            raise GemmaTemplateError("missing Gemma4 model answer boundary")
+        tail = prefix[last_header + len(header) :]
         if tail and tail != GEMMA4_NO_THINKING_PREFILL:
             raise GemmaTemplateError(
                 "no_thinking native prefix has unexpected content after model turn"
