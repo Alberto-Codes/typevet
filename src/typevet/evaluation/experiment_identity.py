@@ -16,6 +16,9 @@ Examples:
         WorkingTreeState,
         capture_experiment_identity,
         capture_working_tree_at_run_start,
+        finalize_experiment_identity,
+        snapshot_evaluated_inputs,
+        write_receipt_exclusive,
     )
 
     root = Path(".")
@@ -394,6 +397,129 @@ def working_tree_from_porcelain(
     return WorkingTreeState(baseline_commit, True, paths, digest)
 
 
+class ReceiptAlreadyExistsError(OSError):
+    """Raised when a receipt path already exists and must stay immutable.
+
+    Attributes:
+        path (Path): Receipt file that already exists on disk.
+
+    Examples:
+        ```python
+        raise ReceiptAlreadyExistsError(Path("/tmp/receipt-x.json"))
+        ```
+    """
+
+    path: Path
+
+    def __init__(self, path: Path) -> None:
+        """Record the existing receipt path on the exception."""
+        super().__init__(f"receipt already exists: {path}")
+        self.path = path
+
+
+@dataclass(frozen=True, slots=True)
+class EvaluatedInputsSnapshot:
+    """Prompt and evaluated file digests frozen before any scoring call.
+
+    Attributes:
+        prompt_digests (Mapping[str, str]): Digest per ``PromptSpec.name``.
+        code_path_digests (Mapping[str, str]): Digest per named source path.
+        fixture_digests (Mapping[str, str]): Digest per named fixture path,
+            including receipt PNG bytes for multimodal smokes.
+
+    Examples:
+        ```python
+        EvaluatedInputsSnapshot(
+            {},
+            {"cord_expense": "abc" * 21},
+            {"receipt_R01": "def" * 21},
+        )
+        ```
+    """
+
+    prompt_digests: Mapping[str, str]
+    code_path_digests: Mapping[str, str]
+    fixture_digests: Mapping[str, str]
+
+
+def snapshot_evaluated_inputs(
+    *,
+    prompts: Sequence[PromptSpec],
+    code_paths: Mapping[str, Path],
+    fixture_paths: Mapping[str, Path],
+) -> EvaluatedInputsSnapshot:
+    """Read prompt bundles and evaluated paths once, before inference.
+
+    Finalization must use this snapshot instead of re-reading the same paths
+    after scoring, so late edits cannot change recorded digests.
+
+    Args:
+        prompts: Named prompt bundles for the run.
+        code_paths: Production files whose bytes pin identity.
+        fixture_paths: Fixture files whose bytes pin identity.
+
+    Returns:
+        Frozen digests for finalize_experiment_identity.
+    """
+    return EvaluatedInputsSnapshot(
+        prompt_digests={spec.name: prompt_digest(spec) for spec in prompts},
+        code_path_digests={
+            name: file_digest(path) for name, path in sorted(code_paths.items())
+        },
+        fixture_digests={
+            name: file_digest(path) for name, path in sorted(fixture_paths.items())
+        },
+    )
+
+
+def finalize_experiment_identity(
+    *,
+    run_start: RunIdentityStart,
+    evaluated: EvaluatedInputsSnapshot,
+    arm_call_counts: Mapping[str, int],
+) -> ExperimentIdentity:
+    """Build receipt identity from a pre-scoring snapshot and call counts.
+
+    Args:
+        run_start: Run id, working tree and runtime captured before scoring.
+        evaluated: Digests from snapshot_evaluated_inputs; paths are not reread.
+        arm_call_counts: Per-arm scoring calls recorded after the run.
+
+    Returns:
+        Complete identity for receipt serialization.
+    """
+    tree = run_start.working_tree
+    return ExperimentIdentity(
+        run_id=run_start.run_id,
+        baseline_commit=tree.baseline_commit,
+        working_tree=tree,
+        prompt_digests=dict(evaluated.prompt_digests),
+        code_path_digests=dict(evaluated.code_path_digests),
+        fixture_digests=dict(evaluated.fixture_digests),
+        runtime=run_start.runtime,
+        arm_call_counts=dict(arm_call_counts),
+    )
+
+
+def write_receipt_exclusive(path: Path, receipt: Mapping[str, object]) -> None:
+    """Write one receipt JSON file; fail when the path already exists.
+
+    Args:
+        path: Destination file (parent directories are created).
+        receipt: JSON-serializable receipt body.
+
+    Raises:
+        ReceiptAlreadyExistsError: When ``path`` is already present.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(receipt, indent=2) + "\n"
+    try:
+        with path.open("x", encoding="utf-8") as handle:
+            handle.write(payload)
+    except FileExistsError as exc:
+        raise ReceiptAlreadyExistsError(path) from exc
+
+
 def cord_expense_receipt_path(output_dir: Path, attempt_id: str) -> Path:
     """Return the immutable receipt path for one CORD smoke attempt.
 
@@ -466,6 +592,9 @@ def capture_experiment_identity(
 ) -> ExperimentIdentity:
     """Capture run identity from an injected working-tree fingerprint.
 
+    Reads evaluated paths once via ``snapshot_evaluated_inputs``, then
+    ``finalize_experiment_identity`` with the supplied call counts.
+
     Args:
         request: Repo, prompts, paths, runtime, call counts and working tree.
         run_id: Optional fixed id; a new uuid is used when omitted.
@@ -473,19 +602,18 @@ def capture_experiment_identity(
     Returns:
         A complete ``ExperimentIdentity`` for receipt serialization.
     """
-    tree = request.working_tree
-    return ExperimentIdentity(
+    evaluated = snapshot_evaluated_inputs(
+        prompts=request.prompts,
+        code_paths=request.code_paths,
+        fixture_paths=request.fixture_paths,
+    )
+    start = RunIdentityStart(
         run_id=run_id or uuid.uuid4().hex,
-        baseline_commit=tree.baseline_commit,
-        working_tree=tree,
-        prompt_digests={spec.name: prompt_digest(spec) for spec in request.prompts},
-        code_path_digests={
-            name: file_digest(path) for name, path in sorted(request.code_paths.items())
-        },
-        fixture_digests={
-            name: file_digest(path)
-            for name, path in sorted(request.fixture_paths.items())
-        },
+        working_tree=request.working_tree,
         runtime=request.runtime,
-        arm_call_counts=dict(request.arm_call_counts),
+    )
+    return finalize_experiment_identity(
+        run_start=start,
+        evaluated=evaluated,
+        arm_call_counts=request.arm_call_counts,
     )

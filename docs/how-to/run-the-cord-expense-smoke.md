@@ -32,8 +32,12 @@ TYPEVET_LLAMA__MULTIMODAL_MODEL=gemma-4-31b-kv9-q4km-mm \
 
 Each pass writes an immutable receipt under
 `scratchpad/cord-expense/receipt-<run_id>.json` (the prior
-`receipt.json` name is not overwritten). The JSON includes
-`experiment_identity` captured before scoring starts.
+`receipt.json` name is not overwritten). A second write with the same
+`run_id` fails and leaves the first file unchanged. Before any scoring call,
+the harness snapshots prompt wording plus the digests of the evaluated harness
+source, the expense-smoke manifest, and each receipt PNG the smoke attaches;
+finalization records call counts only and does not re-read those paths, so late
+edits cannot change `experiment_identity` digests.
 
 | Result | Cause |
 |---|---|

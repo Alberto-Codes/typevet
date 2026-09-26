@@ -3,7 +3,8 @@
 Skips when the router or the multimodal model id is unavailable. **Fails** when
 the router serves that id text-only or silently drops a receipt image, because
 a text-only pass says nothing about reading a receipt. Native Gemma 3 or
-Gemma 4 turns are accepted (#185). Receipts carry experiment identity (#186).
+Gemma 4 turns are accepted (#185). Receipts carry experiment identity (#186)
+from a pre-scoring input snapshot.
 
 Three modalities per receipt:
 
@@ -28,10 +29,10 @@ See Also:
 from __future__ import annotations
 
 import hashlib
-import json
 import os
 import time
 from collections import Counter
+from collections.abc import Mapping
 from dataclasses import replace
 from pathlib import Path
 
@@ -60,16 +61,18 @@ from typevet.evaluation.datasets.cord_expense import (
     route,
 )
 from typevet.evaluation.experiment_identity import (
-    ExperimentIdentityRequest,
+    EvaluatedInputsSnapshot,
     PromptSpec,
     RunIdentityStart,
     RuntimeBuild,
     WorkingTreeState,
     begin_run_identity,
-    capture_experiment_identity,
     capture_working_tree_at_run_start,
     cord_expense_receipt_path,
+    finalize_experiment_identity,
     read_baseline_commit,
+    snapshot_evaluated_inputs,
+    write_receipt_exclusive,
 )
 from typevet.evaluation.runner.live_gate import live_skip_reason
 
@@ -277,7 +280,7 @@ def test_cord_expense_triage_reads_the_receipt(
     """Run three modalities on 18 claims and record combined semantic metrics.
 
     Accepts native Gemma 3 or Gemma 4 served templates (#185) and attaches
-    experiment identity on the receipt (#186).
+    experiment identity on the receipt (#186) from a pre-scoring snapshot.
     """
     assert len(cases) == 18
     settings = replace(_LLAMA, timeout=max(_LLAMA.timeout, 900.0))
@@ -300,6 +303,7 @@ def test_cord_expense_triage_reads_the_receipt(
             runtime=_runtime_build(client, live_multimodal_model, served),
             working_tree=_working_tree_at_run_start(_REPO_ROOT),
         )
+        evaluated_snapshot = _snapshot_evaluated_inputs_before_scoring()
         with LlamaCppCandidateScoringAdapter(
             base_url=base,
             timeout=settings.timeout,
@@ -334,7 +338,7 @@ def test_cord_expense_triage_reads_the_receipt(
             "issue": 165,
             **_experiment_identity_receipt(
                 run_start=run_start,
-                prompts=(_prompt_spec_from_expense_question(),),
+                evaluated=evaluated_snapshot,
                 arm_call_counts={
                     "text_only": len(text_only),
                     "image_only": len(image_only),
@@ -407,11 +411,54 @@ def _assert_attachment(model_id, text_only, image_only, combined, cases) -> None
         raise AssertionError(str(exc)) from exc
 
 
-def _write_receipt(run_start: RunIdentityStart, receipt: dict[str, object]) -> None:
-    """Write one immutable receipt JSON under the gitignored scratchpad."""
-    _OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+def _write_receipt(run_start: RunIdentityStart, receipt: Mapping[str, object]) -> None:
+    """Write one exclusive receipt JSON under the gitignored scratchpad.
+
+    Raises:
+        ReceiptAlreadyExistsError: When the receipt path for ``run_id`` exists.
+    """
     path = cord_expense_receipt_path(_OUTPUT_DIR, run_start.run_id)
-    path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+    write_receipt_exclusive(path, receipt)
+
+
+def _cord_expense_evaluated_fixture_paths(
+    fixture_dir: Path = FIXTURE_DIR,
+) -> dict[str, Path]:
+    """Named manifest and receipt PNG paths pinned before scoring (#186).
+
+    Args:
+        fixture_dir: Directory that holds ``manifest.json`` and receipt PNGs.
+
+    Returns:
+        Manifest plus one entry per distinct ``receipt_id`` used by the smoke.
+    """
+    manifest = fixture_dir / "manifest.json"
+    paths: dict[str, Path] = {"expense_smoke_manifest": manifest}
+    cases = load_expense_cases(manifest.read_text(encoding="utf-8"))
+    seen: set[str] = set()
+    for case in cases:
+        if case.receipt_id in seen:
+            continue
+        seen.add(case.receipt_id)
+        paths[f"receipt_{case.receipt_id}"] = fixture_dir / case.image_file_name
+    return paths
+
+
+def _snapshot_evaluated_inputs_before_scoring() -> EvaluatedInputsSnapshot:
+    """Freeze prompt, harness and fixture digests before any scoring call.
+
+    Returns:
+        Evaluated-input digests used at receipt finalization.
+    """
+    return snapshot_evaluated_inputs(
+        prompts=(_prompt_spec_from_expense_question(),),
+        code_paths={
+            "cord_expense": _REPO_ROOT
+            / "src/typevet/evaluation/datasets/cord_expense.py",
+            "cord_expense_smoke_live": Path(__file__).resolve(),
+        },
+        fixture_paths=_cord_expense_evaluated_fixture_paths(),
+    )
 
 
 def _prompt_spec_from_expense_question() -> PromptSpec:
@@ -441,33 +488,22 @@ def _runtime_build(
 def _experiment_identity_receipt(
     *,
     run_start: RunIdentityStart,
-    prompts: tuple[PromptSpec, ...],
+    evaluated: EvaluatedInputsSnapshot,
     arm_call_counts: dict[str, int],
 ) -> dict[str, object]:
     """Attach #186 experiment identity for the direct judgment path (no triage).
 
     Args:
         run_start: Identity captured before any scoring calls.
-        prompts: Prompt specs included in the identity digest.
+        evaluated: Evaluated-input digests frozen before scoring.
         arm_call_counts: Per-arm request counts for the receipt.
 
     Returns:
         Mapping with a single ``experiment_identity`` receipt field.
     """
-    identity = capture_experiment_identity(
-        ExperimentIdentityRequest(
-            repo_root=_REPO_ROOT,
-            prompts=prompts,
-            code_paths={
-                "cord_expense": _REPO_ROOT
-                / "src/typevet/evaluation/datasets/cord_expense.py",
-                "cord_expense_smoke_live": Path(__file__).resolve(),
-            },
-            fixture_paths={"expense_smoke_manifest": FIXTURE_DIR / "manifest.json"},
-            runtime=run_start.runtime,
-            arm_call_counts=arm_call_counts,
-            working_tree=run_start.working_tree,
-        ),
-        run_id=run_start.run_id,
+    identity = finalize_experiment_identity(
+        run_start=run_start,
+        evaluated=evaluated,
+        arm_call_counts=arm_call_counts,
     )
     return {"experiment_identity": identity.to_receipt_mapping()}
