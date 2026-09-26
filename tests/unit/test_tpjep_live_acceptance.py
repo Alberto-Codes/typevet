@@ -8,7 +8,7 @@ from dataclasses import replace
 import pytest
 
 from tests.fixtures.tpjep.live_acceptance import assert_tpjep_live_smoke_acceptance
-from typevet.eval_tpjep_records import (
+from typevet.evaluation.tpjep.records import (
     TPJEP_PROTOCOL_V0,
     TpjepAttemptRecord,
     TpjepRunSummary,

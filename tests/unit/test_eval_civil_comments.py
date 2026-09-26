@@ -10,7 +10,7 @@ import pytest
 import yaml
 
 from typevet.domain import compile_json_schema
-from typevet.eval_civil_comments import (
+from typevet.evaluation.datasets.civil_comments import (
     DEFAULT_TIER_SEED,
     IS_TOXIC_NOUL_SCHEMA,
     IS_TOXIC_NOUL_SCHEMA_VERSION,
@@ -187,7 +187,7 @@ def test_load_test_split_downloads_when_csv_text_missing(
         return FIXTURE_TEXT
 
     monkeypatch.setattr(
-        "typevet.eval_civil_comments.download_test_csv",
+        "typevet.evaluation.datasets.civil_comments.download_test_csv",
         fake_download,
     )
     rows = load_test_split(limit=2)

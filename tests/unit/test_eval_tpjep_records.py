@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from typevet.eval_tpjep_records import (
+from typevet.evaluation.tpjep.records import (
     TPJEP_PROTOCOL_V0,
     TpjepAttemptRecord,
     iter_records_jsonl,

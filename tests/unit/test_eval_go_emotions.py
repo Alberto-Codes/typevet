@@ -9,7 +9,7 @@ import httpx
 import pytest
 
 from typevet.domain import compile_json_schema
-from typevet.eval_go_emotions import (
+from typevet.evaluation.datasets.go_emotions import (
     BANNED_STATE_KEYS,
     CHOICE_LABELS,
     CONFIG,
@@ -29,7 +29,7 @@ from typevet.eval_go_emotions import (
     strict_gold_label,
     try_map_row,
 )
-from typevet.eval_go_emotions_download import download_train_jsonl
+from typevet.evaluation.datasets.go_emotions_download import download_train_jsonl
 
 FIXTURE_JSONL = (
     Path(__file__).resolve().parents[1]
@@ -209,7 +209,7 @@ def test_load_train_split_downloads_when_jsonl_missing(
         return FIXTURE_TEXT
 
     monkeypatch.setattr(
-        "typevet.eval_go_emotions.download_train_jsonl",
+        "typevet.evaluation.datasets.go_emotions.download_train_jsonl",
         fake_download,
     )
     rows = load_train_split(limit=1)

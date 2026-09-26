@@ -16,9 +16,9 @@ from typevet.domain.judgment_answers import (
 )
 from typevet.domain.judgment_questions import Choice, Noul, Question, Score
 from typevet.domain.judgment_response import JudgmentResponse, TokenUsage
-from typevet.eval_tpjep_loader import TpjepScheduledTask
-from typevet.eval_tpjep_outcome import outcome_from_answer, prob_valid
-from typevet.eval_tpjep_runner import TpjepRunConfig, run_tpjep_tasks
+from typevet.evaluation.tpjep.loader import TpjepScheduledTask
+from typevet.evaluation.tpjep.outcome import outcome_from_answer, prob_valid
+from typevet.evaluation.tpjep.runner import TpjepRunConfig, run_tpjep_tasks
 from typevet.ports.judgment import JudgmentPort
 
 _LABELS_AB = ("A", "B")

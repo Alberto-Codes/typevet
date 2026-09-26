@@ -10,7 +10,7 @@ import pytest
 import yaml
 
 from typevet.domain import compile_json_schema
-from typevet.eval_psai import (
+from typevet.evaluation.datasets.psai import (
     CATEGORY_LABELS,
     OTHER_SUB_CATEGORY,
     PRIMARY_NOUL_NAME,
@@ -25,15 +25,15 @@ from typevet.eval_psai import (
     psai_state,
     validate_task_state,
 )
-from typevet.eval_psai_download import list_train_parquet_urls
-from typevet.eval_psai_schema import (
+from typevet.evaluation.datasets.psai_download import list_train_parquet_urls
+from typevet.evaluation.datasets.psai_schema import (
     BANNED_STATE_KEYS,
     CONTRACT_ROW_MAX,
     CONTRACT_ROW_MIN,
     METADATA_DECISIONS_SCHEMA,
     METADATA_SCHEMA_VERSION,
 )
-from typevet.eval_psai_stream import (
+from typevet.evaluation.datasets.psai_stream import (
     dedupe_shuffle_sample,
     iter_jsonl_rows,
     strip_heavy_fields,

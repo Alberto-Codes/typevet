@@ -13,13 +13,13 @@ from typevet.domain.errors import TransportError
 from typevet.domain.judgment_answers import ChoiceAnswer, NoulAnswer, ScoreAnswer
 from typevet.domain.judgment_questions import Choice, Question
 from typevet.domain.judgment_response import JudgmentResponse
-from typevet.eval_tpjep_loader import (
+from typevet.evaluation.tpjep.loader import (
     TPJEP_DATASET_GIT_COMMIT,
     TPJEP_MANIFEST_HASH,
     load_eight_task_fixture,
 )
-from typevet.eval_tpjep_records import summarize_tpjep_records
-from typevet.eval_tpjep_runner import TpjepRunConfig, run_tpjep_tasks
+from typevet.evaluation.tpjep.records import summarize_tpjep_records
+from typevet.evaluation.tpjep.runner import TpjepRunConfig, run_tpjep_tasks
 
 _FIXTURE = (
     Path(__file__).resolve().parents[1]

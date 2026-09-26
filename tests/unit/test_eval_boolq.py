@@ -10,7 +10,7 @@ import pytest
 import yaml
 
 from typevet.domain import compile_json_schema
-from typevet.eval_boolq import (
+from typevet.evaluation.datasets.boolq import (
     BANNED_STATE_KEYS,
     BOOLQ_ANSWER_NOUL_SCHEMA,
     BOOLQ_ANSWER_NOUL_SCHEMA_VERSION,
@@ -261,7 +261,7 @@ def test_load_validation_split_downloads_when_jsonl_missing(
         return FIXTURE_TEXT
 
     monkeypatch.setattr(
-        "typevet.eval_boolq.download_validation_jsonl",
+        "typevet.evaluation.datasets.boolq.download_validation_jsonl",
         fake_download,
     )
     rows = load_validation_split(limit=2)

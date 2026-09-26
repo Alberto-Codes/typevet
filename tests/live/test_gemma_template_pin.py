@@ -6,7 +6,7 @@ import httpx
 import pytest
 
 from typevet.adapters.inbound.settings import load_llama_settings
-from typevet.eval_runner_live_gate import live_skip_reason
+from typevet.evaluation.runner.live_gate import live_skip_reason
 from typevet.gemma_answer_binding import resolve_answer_anchor
 from typevet.gemma_served_template import ServedTemplateClass
 

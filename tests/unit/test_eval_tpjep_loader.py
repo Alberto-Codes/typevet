@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from typevet.domain.judgment_questions import Choice, Noul, Score
-from typevet.eval_tpjep_loader import (
+from typevet.evaluation.tpjep.loader import (
     EIGHT_TASK_IDS,
     jevbench_row_to_scheduled_task,
     load_eight_task_fixture,

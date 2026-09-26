@@ -12,7 +12,7 @@ from typevet.domain.candidate_scoring_request import (
     CandidateScoringRequest,
     CandidateTokenSpec,
 )
-from typevet.eval_runner_live_gate import live_skip_reason
+from typevet.evaluation.runner.live_gate import live_skip_reason
 
 _LLAMA = load_llama_settings()
 

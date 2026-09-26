@@ -21,9 +21,11 @@ element is a mapping with:
 | ``depends_on`` | no | Copied to the property schema when present |
 | ``permutations`` | no | Copied for enum fields when present |
 
-Examples live in [``typevet.eval_boolq``](../../src/typevet/eval_boolq.py)
-(``questions_payload``), [``typevet.eval_hyperpartisan``](../../src/typevet/eval_hyperpartisan.py),
-and [``typevet.eval_psai``](../../src/typevet/eval_psai.py).
+Examples live in
+[``typevet.evaluation.datasets.boolq``](../../src/typevet/evaluation/datasets/boolq.py)
+(``questions_payload``),
+[``typevet.evaluation.datasets.hyperpartisan``](../../src/typevet/evaluation/datasets/hyperpartisan.py),
+and [``typevet.evaluation.datasets.psai``](../../src/typevet/evaluation/datasets/psai.py).
 
 ## Mapping rules
 

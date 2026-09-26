@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from typevet.eval_partner_guard import (
+from typevet.evaluation.datasets.partner_guard import (
     packaging_line_is_forbidden,
     path_is_forbidden,
     scan_packaging_config,
@@ -23,7 +23,7 @@ def test_path_is_forbidden_examples() -> None:
     assert path_is_forbidden("data/collections_nba/foo.jsonl")
     assert path_is_forbidden("fixtures/collections_nba/val.jsonl")
     assert not path_is_forbidden("docs/reference/eval-partner-data-policy.md")
-    assert not path_is_forbidden("src/typevet/eval_partner_guard.py")
+    assert not path_is_forbidden("src/typevet/evaluation/datasets/partner_guard.py")
 
 
 @pytest.mark.unit

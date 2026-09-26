@@ -9,7 +9,7 @@ import pytest
 import yaml
 
 from typevet.domain import compile_json_schema
-from typevet.eval_hyperpartisan import (
+from typevet.evaluation.datasets.hyperpartisan import (
     BANNED_STATE_KEYS,
     BODY_MAX_CHARS,
     CONTRACT_ROW_MAX,

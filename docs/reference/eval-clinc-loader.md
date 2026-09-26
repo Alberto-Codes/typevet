@@ -14,7 +14,7 @@ docs [#74](https://github.com/Alberto-Codes/typevet/issues/74); loader
 | Row mapping | `typevet.eval_clinc_rows` |
 | Domain catalog and schemas | `typevet.eval_clinc_shard` |
 | HF JSONL stream | `typevet.eval_clinc_download` |
-| Domain intent map | `src/typevet/clinc_domains.json` (upstream `domains.json`) |
+| Domain intent map | `src/typevet/evaluation/datasets/clinc_domains.json` (upstream `domains.json`) |
 | Primary Choice | `intent` (15-enum per domain param) |
 | Optional OOS Noul | `in_scope` (`yes` / `no`) when `include_oos=True` |
 | Versioned Choice schema (banking default) | `evals/fixtures/clinc_banking_intent_choice_schema_v1.json` |

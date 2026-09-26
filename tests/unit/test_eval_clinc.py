@@ -9,7 +9,7 @@ import httpx
 import pytest
 
 from typevet.domain import compile_json_schema
-from typevet.eval_clinc import (
+from typevet.evaluation.datasets.clinc import (
     BANNED_STATE_KEYS,
     DEFAULT_DOMAIN,
     IN_SCOPE_NOUL_SCHEMA,
@@ -29,7 +29,7 @@ from typevet.eval_clinc import (
     map_row,
     plus_intent_names,
 )
-from typevet.eval_clinc_download import download_plus_jsonl
+from typevet.evaluation.datasets.clinc_download import download_plus_jsonl
 
 FIXTURE_JSONL = (
     Path(__file__).resolve().parents[1]
@@ -51,7 +51,12 @@ NOUL_SCHEMA_PATH = (
     / "clinc_in_scope_noul_schema_v1.json"
 )
 EVAL_CLINC_SOURCE = (
-    Path(__file__).resolve().parents[2] / "src" / "typevet" / "eval_clinc.py"
+    Path(__file__).resolve().parents[2]
+    / "src"
+    / "typevet"
+    / "evaluation"
+    / "datasets"
+    / "clinc.py"
 )
 
 

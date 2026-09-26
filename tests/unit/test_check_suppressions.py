@@ -36,7 +36,7 @@ class TestCountPerFileIgnores:
         assert len(per_pattern["tests/**/*.py"]) == 7
         assert len(per_pattern["scripts/build_wheel_for_tests.py"]) == 1
         assert len(per_pattern["scripts/check_commit_msg.py"]) == 1
-        assert len(per_pattern["src/typevet/eval_partner_guard.py"]) == 2
+        assert len(per_pattern["src/typevet/evaluation/datasets/partner_guard.py"]) == 2
 
     def test_main_fails_when_budget_exceeded(self) -> None:
         """main() returns 1 when per-file-ignores exceeds the budget."""

@@ -8,7 +8,7 @@ import pytest
 
 from typevet.adapters.inbound.settings import llama_cpp_adapter, load_llama_settings
 from typevet.domain.models import GenerationRequest
-from typevet.eval_runner_live_gate import live_skip_reason
+from typevet.evaluation.runner.live_gate import live_skip_reason
 
 _LLAMA = load_llama_settings()
 BASE = _LLAMA.base_url

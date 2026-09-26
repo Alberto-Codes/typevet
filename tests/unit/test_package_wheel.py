@@ -45,3 +45,18 @@ def test_built_wheel_contains_py_typed_marker(tmp_path: Path) -> None:
     assert len(wheels) == 1
     with zipfile.ZipFile(wheels[0]) as wheel:
         assert "typevet/py.typed" in wheel.namelist()
+
+
+def test_built_wheel_ships_clinc_json_resources(tmp_path: Path) -> None:
+    try:
+        build_wheel_to_directory(tmp_path)
+    except RuntimeError as exc:
+        if str(exc) == "uv not on PATH":
+            pytest.skip(str(exc))
+        raise
+    wheels = sorted(tmp_path.glob("typevet-*.whl"))
+    assert len(wheels) == 1
+    with zipfile.ZipFile(wheels[0]) as wheel:
+        names = wheel.namelist()
+    assert "typevet/evaluation/datasets/clinc_domains.json" in names
+    assert "typevet/evaluation/datasets/clinc_plus_intent_names.json" in names

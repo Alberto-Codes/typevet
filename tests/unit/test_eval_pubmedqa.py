@@ -9,7 +9,7 @@ import httpx
 import pytest
 
 from typevet.domain import compile_json_schema
-from typevet.eval_pubmedqa import (
+from typevet.evaluation.datasets.pubmedqa import (
     ANSWER_CHOICE_SCHEMA,
     BANNED_STATE_KEYS,
     CHOICE_LABELS,
@@ -250,7 +250,7 @@ def test_load_labeled_split_opens_ephemeral_client(
         return FIXTURE_TEXT
 
     monkeypatch.setattr(
-        "typevet.eval_pubmedqa.download_labeled_jsonl",
+        "typevet.evaluation.datasets.pubmedqa.download_labeled_jsonl",
         fake_download,
     )
     rows = load_labeled_split(limit=1)

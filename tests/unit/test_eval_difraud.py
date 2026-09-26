@@ -9,7 +9,7 @@ import httpx
 import pytest
 
 from typevet.domain import compile_json_schema
-from typevet.eval_difraud import (
+from typevet.evaluation.datasets.difraud import (
     DEFAULT_DOMAIN,
     IS_SCAM_NOUL_SCHEMA,
     IS_SCAM_NOUL_SCHEMA_VERSION,

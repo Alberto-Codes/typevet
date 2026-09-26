@@ -12,7 +12,7 @@ from typevet import decide_categorical
 from typevet.adapters.inbound.settings import load_llama_settings
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.candidate_scoring_request import CandidateTokenSpec
-from typevet.eval_runner_live_gate import live_skip_reason
+from typevet.evaluation.runner.live_gate import live_skip_reason
 from typevet.gemma_answer_binding import resolve_answer_anchor
 
 _LLAMA = load_llama_settings()

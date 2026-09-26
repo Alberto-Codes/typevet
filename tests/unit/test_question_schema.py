@@ -10,22 +10,25 @@ import pytest
 
 from typevet.domain import compile_json_schema
 from typevet.domain.decisions import MAX_ENUM_CHOICES
-from typevet.eval_boolq import (
+from typevet.evaluation.datasets.boolq import (
     BOOLQ_ANSWER_NOUL_SCHEMA,
     PRIMARY_NOUL_NAME,
 )
-from typevet.eval_boolq import (
+from typevet.evaluation.datasets.boolq import (
     questions_payload as boolq_questions,
 )
-from typevet.eval_clinc_shard import IN_SCOPE_NOUL_SCHEMA, choice_schema_for_domain
-from typevet.eval_hyperpartisan import (
+from typevet.evaluation.datasets.clinc_shard import (
+    IN_SCOPE_NOUL_SCHEMA,
+    choice_schema_for_domain,
+)
+from typevet.evaluation.datasets.hyperpartisan import (
     HYPERPARTISAN_NOUL_SCHEMA,
 )
-from typevet.eval_hyperpartisan import (
+from typevet.evaluation.datasets.hyperpartisan import (
     questions_payload as hyperpartisan_questions,
 )
-from typevet.eval_psai import questions_payload as psai_questions
-from typevet.eval_psai_schema import METADATA_DECISIONS_SCHEMA
+from typevet.evaluation.datasets.psai import questions_payload as psai_questions
+from typevet.evaluation.datasets.psai_schema import METADATA_DECISIONS_SCHEMA
 from typevet.question_schema import (
     compile_question_records,
     question_record_to_property,

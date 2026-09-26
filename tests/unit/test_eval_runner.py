@@ -12,10 +12,10 @@ from typevet.adapters.inbound.settings import LlamaSettings, load_llama_settings
 from typevet.adapters.outbound.fake import FakeGenerationAdapter
 from typevet.domain.errors import SchemaValidationError
 from typevet.domain.models import GenerationRequest
-from typevet.eval_runner import run_eval_tasks
-from typevet.eval_runner_datasets import EvalTaskSpec, load_eval_tasks
-from typevet.eval_runner_live_gate import live_skip_reason
-from typevet.eval_runner_report import EvalRunReport, format_report, merge_reports
+from typevet.evaluation.runner.core import run_eval_tasks
+from typevet.evaluation.runner.datasets import EvalTaskSpec, load_eval_tasks
+from typevet.evaluation.runner.live_gate import live_skip_reason
+from typevet.evaluation.runner.report import EvalRunReport, format_report, merge_reports
 
 BOOLQ_FIXTURE = (
     Path(__file__).resolve().parents[1]
@@ -142,7 +142,8 @@ def test_live_skip_when_model_unset(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_live_skip_when_router_unreachable() -> None:
     settings = LlamaSettings(base_url="http://127.0.0.1:1", default_model="gemma")
     with patch(
-        "typevet.eval_runner_live_gate.httpx.get", side_effect=httpx.HTTPError("down")
+        "typevet.evaluation.runner.live_gate.httpx.get",
+        side_effect=httpx.HTTPError("down"),
     ):
         reason = live_skip_reason(settings)
     assert reason == "llama.cpp router not reachable"
@@ -154,7 +155,9 @@ def test_live_skip_when_model_not_in_catalog() -> None:
     ok_response = MagicMock()
     ok_response.status_code = 200
     ok_response.json.return_value = {"data": [{"id": "other"}]}
-    with patch("typevet.eval_runner_live_gate.httpx.get", return_value=ok_response):
+    with patch(
+        "typevet.evaluation.runner.live_gate.httpx.get", return_value=ok_response
+    ):
         reason = live_skip_reason(settings)
     assert reason == "missing not in router catalog"
 
@@ -165,7 +168,9 @@ def test_live_skip_none_when_router_lists_model() -> None:
     ok_response = MagicMock()
     ok_response.status_code = 200
     ok_response.json.return_value = {"data": [{"id": "gemma"}]}
-    with patch("typevet.eval_runner_live_gate.httpx.get", return_value=ok_response):
+    with patch(
+        "typevet.evaluation.runner.live_gate.httpx.get", return_value=ok_response
+    ):
         assert live_skip_reason(settings) is None
 
 
@@ -175,7 +180,7 @@ def test_live_gate_model_list_handles_bad_json() -> None:
     bad_json = MagicMock()
     bad_json.status_code = 200
     bad_json.json.side_effect = ValueError("not json")
-    with patch("typevet.eval_runner_live_gate.httpx.get", return_value=bad_json):
+    with patch("typevet.evaluation.runner.live_gate.httpx.get", return_value=bad_json):
         reason = live_skip_reason(settings)
     assert reason == "gemma not in router catalog"
 

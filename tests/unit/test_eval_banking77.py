@@ -8,7 +8,7 @@ import httpx
 import pytest
 
 from typevet.domain import compile_json_schema
-from typevet.eval_banking77 import (
+from typevet.evaluation.datasets.banking77 import (
     FRAUD_INTENTS,
     PRIMARY_NOUL_NAME,
     REPORTS_UNAUTHORIZED_NOUL_SCHEMA,
@@ -150,7 +150,7 @@ def test_load_test_split_opens_ephemeral_client(
         return FIXTURE_TEXT
 
     monkeypatch.setattr(
-        "typevet.eval_banking77.download_test_csv",
+        "typevet.evaluation.datasets.banking77.download_test_csv",
         fake_download,
     )
     rows = load_test_split(limit=1)
