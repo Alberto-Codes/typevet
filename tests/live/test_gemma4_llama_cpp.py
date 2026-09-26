@@ -42,10 +42,17 @@ def _model_listed() -> bool:
     return MODEL in ids
 
 
+@pytest.fixture
+def gemma4_llama_router() -> None:
+    """Probe local llama.cpp only when a live test is selected to run."""
+    if not _router_up():
+        pytest.skip("llama.cpp router not reachable")
+    if not _model_listed():
+        pytest.skip(f"{MODEL} not in router catalog")
+
+
 @pytest.mark.live
-@pytest.mark.skipif(not _router_up(), reason="llama.cpp router not reachable")
-@pytest.mark.skipif(not _model_listed(), reason=f"{MODEL} not in router catalog")
-def test_gemma4_schema_in_valid_out() -> None:
+def test_gemma4_schema_in_valid_out(gemma4_llama_router: None) -> None:
     with LlamaCppGenerationAdapter(base_url=BASE, timeout=600.0) as adapter:
         result = adapter.generate(
             GenerationRequest(
