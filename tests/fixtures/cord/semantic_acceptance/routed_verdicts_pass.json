@@ -1,0 +1,157 @@
+{
+  "issue": 184,
+  "arm": "labeled-synthetic with routed verdicts",
+  "label_order": [
+    "insufficient_evidence",
+    "mismatch",
+    "match"
+  ],
+  "cases": [
+    {
+      "claim_id": "R01-C1",
+      "receipt_id": "R01",
+      "expected_verdict": "supported"
+    },
+    {
+      "claim_id": "R01-C2",
+      "receipt_id": "R01",
+      "expected_verdict": "contradicted"
+    },
+    {
+      "claim_id": "R01-C3",
+      "receipt_id": "R01",
+      "expected_verdict": "insufficient"
+    },
+    {
+      "claim_id": "R02-C1",
+      "receipt_id": "R02",
+      "expected_verdict": "supported"
+    },
+    {
+      "claim_id": "R02-C2",
+      "receipt_id": "R02",
+      "expected_verdict": "contradicted"
+    },
+    {
+      "claim_id": "R02-C3",
+      "receipt_id": "R02",
+      "expected_verdict": "insufficient"
+    },
+    {
+      "claim_id": "R03-C1",
+      "receipt_id": "R03",
+      "expected_verdict": "supported"
+    },
+    {
+      "claim_id": "R03-C2",
+      "receipt_id": "R03",
+      "expected_verdict": "contradicted"
+    },
+    {
+      "claim_id": "R03-C3",
+      "receipt_id": "R03",
+      "expected_verdict": "insufficient"
+    },
+    {
+      "claim_id": "R04-C1",
+      "receipt_id": "R04",
+      "expected_verdict": "supported"
+    },
+    {
+      "claim_id": "R04-C2",
+      "receipt_id": "R04",
+      "expected_verdict": "contradicted"
+    },
+    {
+      "claim_id": "R04-C3",
+      "receipt_id": "R04",
+      "expected_verdict": "insufficient"
+    },
+    {
+      "claim_id": "R05-C1",
+      "receipt_id": "R05",
+      "expected_verdict": "supported"
+    },
+    {
+      "claim_id": "R05-C2",
+      "receipt_id": "R05",
+      "expected_verdict": "contradicted"
+    },
+    {
+      "claim_id": "R05-C3",
+      "receipt_id": "R05",
+      "expected_verdict": "insufficient"
+    },
+    {
+      "claim_id": "R06-C1",
+      "receipt_id": "R06",
+      "expected_verdict": "supported"
+    },
+    {
+      "claim_id": "R06-C2",
+      "receipt_id": "R06",
+      "expected_verdict": "contradicted"
+    },
+    {
+      "claim_id": "R06-C3",
+      "receipt_id": "R06",
+      "expected_verdict": "insufficient"
+    }
+  ],
+  "combined": {
+    "R01-C1": {
+      "label": "supported"
+    },
+    "R01-C2": {
+      "label": "contradicted"
+    },
+    "R01-C3": {
+      "label": "insufficient"
+    },
+    "R02-C1": {
+      "label": "supported"
+    },
+    "R02-C2": {
+      "label": "contradicted"
+    },
+    "R02-C3": {
+      "label": "insufficient"
+    },
+    "R03-C1": {
+      "label": "supported"
+    },
+    "R03-C2": {
+      "label": "contradicted"
+    },
+    "R03-C3": {
+      "label": "insufficient"
+    },
+    "R04-C1": {
+      "label": "supported"
+    },
+    "R04-C2": {
+      "label": "contradicted"
+    },
+    "R04-C3": {
+      "label": "insufficient"
+    },
+    "R05-C1": {
+      "label": "supported"
+    },
+    "R05-C2": {
+      "label": "supported"
+    },
+    "R05-C3": {
+      "label": "supported"
+    },
+    "R06-C1": {
+      "label": "contradicted"
+    },
+    "R06-C2": {
+      "label": "insufficient"
+    },
+    "R06-C3": {
+      "label": "contradicted"
+    }
+  }
+}
