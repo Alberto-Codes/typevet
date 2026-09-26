@@ -38,6 +38,7 @@ The root `__all__` declares these supported names:
 | `GenerationRequest` | Prompt, schema, and model ask |
 | `GenerationResult` | Validated structured value |
 | `SchemaValidationError` | Output failed the requested schema |
+| `decide_categorical` | M1 categorical decision via injected scoring port |
 
 The attribute `__version__` exists on the package (`"0.1.0"` today) but is
 **not** listed in root `__all__` yet. Import it as

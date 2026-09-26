@@ -99,7 +99,14 @@ TYPEVET_LLAMA__DEFAULT_MODEL='<your-gemma-4-model-id>' \
 ```
 
 Library entry: ``LlamaCppCandidateScoringAdapter`` from
-``typevet.adapters.outbound``.
+``typevet.adapters.outbound``. For enum decisions, inject that adapter as
+``scoring_port`` on ``typevet.decide_categorical`` (caller owns client lifetime).
+
+```bash
+TYPEVET_LLAMA__DEFAULT_MODEL='<your-gemma-4-model-id>' \
+  TYPEVET_LLAMA__TIMEOUT=600 \
+  uv run pytest tests/live/test_decide_categorical_live.py -m live -q
+```
 
 ### Judgment template pin (opt-in)
 

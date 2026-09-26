@@ -33,12 +33,14 @@ Attributes:
     GenerationRequest (type): Prompt, schema and model ask.
     GenerationResult (type): Validated structured value.
     SchemaValidationError (type): Output failed the requested schema.
+    decide_categorical (callable): M1 categorical decision via scoring port.
     __version__ (str): Installed distribution version; matches
         ``importlib.metadata.version("typevet")`` when the package is on
         ``PYTHONPATH``. Exported in ``__all__``.
 """
 
 from typevet._version import __version__
+from typevet.decide_categorical import decide_categorical
 from typevet.domain.errors import (
     BackendHttpError,
     GenerationError,
@@ -59,4 +61,5 @@ __all__ = [
     "SchemaValidationError",
     "TransportError",
     "__version__",
+    "decide_categorical",
 ]
