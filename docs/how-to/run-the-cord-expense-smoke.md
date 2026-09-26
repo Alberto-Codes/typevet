@@ -63,6 +63,13 @@ less.
 
 ## Read the receipt
 
+- Each scored row may carry provenance from [#183](https://github.com/Alberto-Codes/typevet/issues/183):
+  `application_mode`, `receipt_required`, `routing`, `model_calls`, and
+  `deterministic_abstain`. When `combined` or `image_only` would run without
+  receipt bytes, the harness returns `insufficient_evidence` with
+  `routing=deterministic_missing_receipt` and **zero** model calls. That path is
+  application validation, not model abstention, and must not inflate
+  `#161` insufficient_abstention_rate as learned behavior.
 - `metrics.combined` holds the semantic metrics: `accuracy`, per-verdict
   `recall`, `macro_recall`, `insufficient_abstention_rate`, `false_supported`
   and `confusion_gold_by_predicted`.

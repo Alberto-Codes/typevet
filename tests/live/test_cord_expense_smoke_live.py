@@ -1,4 +1,4 @@
-"""Opt-in live CORD expense smoke with semantic metrics (#165, #185, #186).
+"""Opt-in live CORD expense smoke with semantic metrics (#165, #183, #185, #186).
 
 Skips when the router or the multimodal model id is unavailable. **Fails** when
 ``assert_cord_expense_live_smoke_gate`` rejects capability or the served
@@ -6,7 +6,10 @@ family, or when token gaps show a silently dropped receipt image (#185).
 Receipts carry experiment identity (#186) from a pre-scoring input snapshot
 and record one ``image_only`` omission control per run.
 
-Three modalities per receipt:
+Three modalities per receipt. ``combined`` and ``image_only`` call
+``judge_cord_expense_arm`` so a missing required receipt short-circuits before
+scoring ([#183][i183]). The ``image_only`` omission baseline still scores
+without media for attachment floors ([#185]).
 
 - ``text_only``: the claim statement, no image. Records the text prior.
 - ``image_only``: the receipt with a claim that states no amount. Run once per
@@ -23,7 +26,10 @@ Examples:
     ```
 
 See Also:
+    - [typevet.evaluation.cord_expense_receipt_requirement][]: receipt gate
     - [typevet.evaluation.datasets.cord_expense][]: cases, question and routing
+
+[i183]: https://github.com/Alberto-Codes/typevet/issues/183
 """
 
 from __future__ import annotations
@@ -48,6 +54,7 @@ from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.adapters.outbound.llama_cpp_multimodal import fetch_media_capability
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.media import ImageInput
+from typevet.evaluation.cord_expense_receipt_requirement import judge_cord_expense_arm
 from typevet.evaluation.cord_expense_smoke import (
     assert_cord_expense_attachment,
     assert_cord_expense_live_smoke_gate,
@@ -192,9 +199,16 @@ def _served_template(client: httpx.Client, model: str) -> ServedTemplateClass:
     return classify_served_template(rendered)
 
 
-def _judge(port, model: str, state: str, media: tuple[ImageInput, ...]):
+def _judge_omission_baseline(port, model: str, state: str) -> dict[str, object]:
+    """Score the ``image_only`` prompt without media for attachment baselines (#185).
+
+    This arm bypasses the receipt-requirement gate so token counts stay comparable.
+
+    Returns:
+        Label, probabilities and token metadata for the omission control row.
+    """
     started = time.perf_counter()
-    response = port.judge(state, {_QUESTION: expense_question()}, model, media=media)
+    response = port.judge(state, {_QUESTION: expense_question()}, model, media=())
     answer = response.choices[_QUESTION]
     return {
         "label": answer.choice,
@@ -208,16 +222,32 @@ def _run(port, model: str, cases: tuple[ExpenseCase, ...]):
     text_only: dict[str, dict[str, object]] = {}
     image_only: dict[str, dict[str, object]] = {}
     combined: dict[str, dict[str, object]] = {}
-    image_only_omission = _judge(port, model, _IMAGE_ONLY_STATE, ())
+    image_only_omission = _judge_omission_baseline(port, model, _IMAGE_ONLY_STATE)
     for case in cases:
         image = _receipt_image(case)
         statement = case.model_inputs()["statement"]
-        text_only[case.claim_id] = _judge(port, model, statement, ())
+        text_only[case.claim_id] = judge_cord_expense_arm(
+            port,
+            model,
+            statement,
+            (),
+            application_mode="text_only",
+        )
         if case.receipt_id not in image_only:
-            image_only[case.receipt_id] = _judge(
-                port, model, _IMAGE_ONLY_STATE, (image,)
+            image_only[case.receipt_id] = judge_cord_expense_arm(
+                port,
+                model,
+                _IMAGE_ONLY_STATE,
+                (image,),
+                application_mode="image_only",
             )
-        combined[case.claim_id] = _judge(port, model, statement, (image,))
+        combined[case.claim_id] = judge_cord_expense_arm(
+            port,
+            model,
+            statement,
+            (image,),
+            application_mode="combined",
+        )
     return text_only, image_only, combined, image_only_omission
 
 
