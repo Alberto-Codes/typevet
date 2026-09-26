@@ -77,3 +77,39 @@ Callers own input redaction, external audit records and resource budgets.
 Offline tests exercise both passing and failing consumer policy outcomes through
 the real public factory with `httpx.MockTransport`. They do not establish live
 service readiness, confidence calibration or general model quality.
+
+Run the installed offline policy proof with a retained bridge wheel and its SHA256:
+
+```bash
+uv run python integrations/consumer_bridge/scripts/installed_policy_proof.py \
+  --typevet-wheel /operator/artifacts/typevet-0.1.0-py3-none-any.whl \
+  --consumer-wheel /operator/artifacts/judgevet-0.13.0-py3-none-any.whl \
+  --bridge-wheel /operator/artifacts/bridge/typevet_consumer_bridge-0.1.0-py3-none-any.whl \
+  --bridge-sha256 YOUR_BRIDGE_SHA256 \
+  --receipt /operator/receipts/installed-policy.json
+```
+
+Use a new receipt path for each attempt. The command refuses to overwrite an existing receipt.
+It copies hash-verified wheels and exact proof inputs into an external temporary directory.
+It installs the wheels there and runs the real public factory with `MockTransport` and blocked socket connections.
+The proof checks passing and failing policies for all three question forms from the fixed fixture.
+It checks exact instructions, state, criteria, answers, distributions, unknown usage and context cleanup.
+It verifies installed file bytes against wheel contents and RECORD hashes, then records installed versions and module paths.
+The receipt retains success or failure evidence and identifies the temporary directory. Keep that directory for acceptance review.
+Remove it after review when you no longer need the installed evidence.
+Rebuild the wheel after changing the bridge source or this README. Use the resulting wheel hash in the command.
+This proof makes no model service calls. Installation can fetch public transitive dependencies through uv.
+It does not establish live service readiness or model quality.
+
+To run the executable proof contract tests, provide the frozen dependency paths:
+
+```bash
+TYPEVET_WHEEL=/operator/artifacts/typevet-0.1.0-py3-none-any.whl \
+CONSUMER_WHEEL=/operator/artifacts/judgevet-0.13.0-py3-none-any.whl \
+uv run --no-project --python /operator/gates/bin/python pytest -q \
+  integrations/consumer_bridge/tests/contract/test_installed_policy.py
+```
+
+The gate environment needs pytest, the accepted dependency wheels and the current bridge wheel.
+The tests build a fresh bridge wheel and reject three behavior mutations through the installed command.
+They also reject changed installed bytes and an incorrect wheel hash.
