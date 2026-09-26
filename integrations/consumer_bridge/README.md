@@ -3,7 +3,7 @@
 Kind: how-to.
 
 This distribution is private. Do not publish it.
-The current scaffold proves packaging only. It does not expose an adapter API yet.
+The bridge supports synchronous text Noul questions. Choice and Score remain unsupported in this slice.
 
 1. Obtain both wheels identified by `dependency-artifacts.json`.
 2. Run this command from the Typevet checkout with the wheel paths:
@@ -34,3 +34,41 @@ uv build integrations/consumer_bridge --wheel --out-dir /operator/artifacts/brid
 
 Keep the wheel and its SHA256 with the acceptance receipt.
 Packaging checks do not prove consumer policy behavior or live model quality.
+
+
+After installation, use the consumer question and policy types:
+
+```python
+from judgevet import Noul
+from typevet_consumer_bridge import BridgeSettings, open_typevet_system_one
+
+settings = BridgeSettings(
+    base_url="http://localhost:8080",
+    timeout=30.0,
+    multimodal_model="your-served-model",
+)
+with open_typevet_system_one(settings=settings) as adapter:
+    response = adapter.system_one(
+        "The invoice total is 42 dollars.",
+        {"total_is_42": Noul(instructions="Does the total equal 42 dollars?")},
+        "your-served-model",
+    )
+```
+
+This example makes a service call. The existing runtime requires a vision-capable
+native Gemma service even for text. The bridge passes text unchanged, preserves
+IDs and instructions, and returns new consumer answer objects. It validates the
+whole request before judgment IO. Factory entry still performs metadata probes.
+The response model is the requested routing identity, not an attested weight identity.
+Unknown usage remains `None`. It cannot establish token or currency spend.
+
+The context closes runtime-owned resources on every exit. A supplied HTTP client
+remains caller-owned. `TypevetSystemOneAdapter(session)` borrows an open public
+runtime session; its `close()` ends adapter access only. Closed adapters reject calls.
+Known errors use bridge error subclasses with fixed messages. Unexpected errors
+propagate. This does not provide a redactor, audit sink, retry policy or spend cap.
+Callers own input redaction, external audit records and resource budgets.
+
+Offline tests exercise both passing and failing consumer policy outcomes through
+the real public factory with `httpx.MockTransport`. They do not establish live
+service readiness, confidence calibration or general model quality.
