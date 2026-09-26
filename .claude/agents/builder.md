@@ -50,6 +50,9 @@ Never run `git checkout`, `git restore`, `git reset`, `git stash`, `git clean` o
 Never make a live API call unless the brief authorizes it.
 If the change needs a path outside the allowed scope, stop and name that path.
 
+When Claude Code PostToolUse reports gate findings, fix them before the next
+edit. Do not leave format or lint debt for the commit hook.
+
 ## Return format
 
 Return under 400 words, in this order:

@@ -140,7 +140,20 @@ change.
 
 | gate | command |
 |---|---|
-| _(none yet)_ | named in the brief |
+| _(none yet)_ | named in the brief; see #7 for the planned table |
+
+### Gates run themselves (Claude Code)
+
+A `PostToolUse` hook in `.claude/settings.json` runs `scripts/vet_file.sh`
+after every `Write`, `Edit` or `Bash` call once `pyproject.toml` exists. It
+runs ruff format, ruff check and docvet on each changed Python file, plus
+`check_loc` under `src` when that script exists. Silence means those gates are
+green for the files touched; do not re-run them by hand. `ty`, `lint-imports`
+and `pytest` stay in pre-commit and the gate table. Until the package exists,
+the hook exits quietly.
+
+Cursor CLI and other harnesses do not load this hook. Their briefs still
+require focused checks on edited files, then the full gate table.
 
 ### A summary is not evidence
 

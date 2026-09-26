@@ -1,3 +1,17 @@
 {
-  "bashEditDiffEnabled": true
+  "bashEditDiffEnabled": true,
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/scripts/vet_file.sh\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
 }
