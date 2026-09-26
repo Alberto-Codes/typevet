@@ -174,6 +174,9 @@ class ScoringJudgmentAdapter:
     ) -> JudgmentResponse:
         """Validate all questions, score sequentially, return typed answers.
 
+        Builds a scoring prefix whose field block maps each ordinal control
+        string to the public answer label before calling the scorer.
+
         Args:
             state: Content under evaluation (text or JSON-serializable value).
             questions: Named native questions.
@@ -198,7 +201,12 @@ class ScoringJudgmentAdapter:
             decision = normalize_question(raw, field_name=name)
             candidates = bind_candidates_for_execute(decision, raw, self._tokenize)
             criteria = _field_criteria(raw)
-            field_block = render_field_instructions(decision, choice_criteria=criteria)
+            originals = judgment_original_labels(raw)
+            field_block = render_field_instructions(
+                decision,
+                choice_criteria=criteria,
+                original_labels=originals,
+            )
             prefix = compose_scoring_prefix(
                 context=_state_context(state),
                 field_block=field_block,

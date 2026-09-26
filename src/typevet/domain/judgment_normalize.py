@@ -4,6 +4,7 @@ Examples:
     ```python
     from typevet.domain.judgment_normalize import (
         bind_control_candidates,
+        control_binding_pairs,
         normalize_question,
     )
 
@@ -174,11 +175,36 @@ def normalize_question(question: Question, *, field_name: str) -> Decision:
     raise JudgmentValidationError(msg)
 
 
+def control_binding_pairs(
+    original_labels: Sequence[Any],
+) -> tuple[tuple[str, str], ...]:
+    """Return ordinal ``(control_string, original_label)`` pairs in label order.
+
+    Args:
+        original_labels: Public answer keys before execute alignment.
+
+    Returns:
+        Pairs such as ``("0", "billing")`` for each scored candidate.
+
+    Raises:
+        JudgmentValidationError: Empty, blank, or duplicate original labels.
+    """
+    labels = tuple(str(label) for label in original_labels)
+    if not labels or any(not label.strip() for label in labels):
+        msg = "original labels must be non-empty"
+        raise JudgmentValidationError(msg)
+    _reject_duplicate_labels(labels)
+    return tuple((str(index), labels[index]) for index in range(len(labels)))
+
+
 def bind_control_candidates(
     original_labels: Sequence[Any],
     tokenize_content: Callable[[str], Sequence[int]],
 ) -> tuple[CandidateTokenSpec, ...]:
     """Bind ordinal control strings to original labels via ``tokenize_content``.
+
+    Uses ``control_binding_pairs`` for ``("0", label)`` … ordering, then attaches
+    single-token ids from ``tokenize_content``.
 
     Args:
         original_labels: Labels preserved on each ``CandidateTokenSpec``.
@@ -191,14 +217,8 @@ def bind_control_candidates(
     Raises:
         JudgmentValidationError: Duplicate or empty labels, or multi-token controls.
     """
-    labels = tuple(str(label) for label in original_labels)
-    if not labels or any(not label.strip() for label in labels):
-        msg = "original labels must be non-empty"
-        raise JudgmentValidationError(msg)
-    _reject_duplicate_labels(labels)
     specs: list[CandidateTokenSpec] = []
-    for index, label in enumerate(labels):
-        control = str(index)
+    for control, label in control_binding_pairs(original_labels):
         token_ids = tuple(tokenize_content(control))
         if len(token_ids) != 1:
             msg = (

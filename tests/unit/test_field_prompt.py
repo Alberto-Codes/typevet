@@ -63,6 +63,61 @@ def test_render_field_instructions_no_gold_reference_markers() -> None:
 
 
 @pytest.mark.unit
+def test_render_field_instructions_choice_control_mapping_with_descriptions() -> None:
+    decision = Decision(
+        "route",
+        "Pick the department.",
+        ("billing", "technical"),
+        syntax="Choice",
+    )
+    block = render_field_instructions(
+        decision,
+        choice_criteria={"billing": "Money", "technical": "Bugs"},
+        original_labels=("billing", "technical"),
+    )
+    assert "Control 0 → billing: Money" in block
+    assert "Control 1 → technical: Bugs" in block
+    assert "exactly one control string" in block.lower()
+
+
+@pytest.mark.unit
+def test_render_field_instructions_noul_control_zero_is_true() -> None:
+    decision = Decision("flag", "Is it urgent?", (True, False), syntax="Bool")
+    block = render_field_instructions(
+        decision,
+        choice_criteria={"true": "Yes", "false": "No"},
+        original_labels=("true", "false"),
+    )
+    assert "Control 0 → true: Yes" in block
+    assert "Control 1 → false: No" in block
+
+
+@pytest.mark.unit
+def test_render_field_instructions_score_maps_level_index_to_rubric() -> None:
+    decision = Decision("quality", "Rate:", (0, 1, 2), syntax="Choice")
+    block = render_field_instructions(
+        decision,
+        choice_criteria={"0": "Poor", "1": "Fair", "2": "Good"},
+        original_labels=("0", "1", "2"),
+    )
+    assert "Control 0 → 0: Poor" in block
+    assert "Control 2 → 2: Good" in block
+
+
+@pytest.mark.unit
+def test_render_field_instructions_choice_mapping_follows_criteria_order() -> None:
+    decision = Decision("m", "Choose.", ("z_last", "a_first"), syntax="Choice")
+    block = render_field_instructions(
+        decision,
+        choice_criteria={"z_last": "Z", "a_first": "A"},
+        original_labels=("z_last", "a_first"),
+    )
+    z_pos = block.index("Control 0 → z_last")
+    a_pos = block.index("Control 1 → a_first")
+    assert z_pos < a_pos
+
+
+@pytest.mark.unit
 def test_compose_scoring_prefix_ends_with_chatml_assistant_header() -> None:
     decision = Decision("c", "Question?", ("a", "b"), syntax="Choice")
     field_block = render_field_instructions(decision)

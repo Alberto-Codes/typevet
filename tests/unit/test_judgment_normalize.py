@@ -7,6 +7,7 @@ import pytest
 from typevet.domain.errors import JudgmentValidationError
 from typevet.domain.judgment_normalize import (
     bind_control_candidates,
+    control_binding_pairs,
     judgment_original_labels,
     normalize_choice,
     normalize_noul,
@@ -97,6 +98,12 @@ def test_bind_control_candidates_ordinal_controls() -> None:
     assert specs[0].token_ids == (ord("0"),)
     assert specs[1].label == "technical"
     assert specs[1].token_ids == (ord("1"),)
+
+
+@pytest.mark.unit
+def test_control_binding_pairs_ordinal_controls() -> None:
+    pairs = control_binding_pairs(("billing", "technical"))
+    assert pairs == (("0", "billing"), ("1", "technical"))
 
 
 @pytest.mark.unit

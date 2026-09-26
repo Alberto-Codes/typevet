@@ -6,7 +6,10 @@ Examples:
     from typevet.field_prompt import compose_scoring_prefix, render_field_instructions
 
     decision = Decision("label", "Pick one.", ("a", "b"), syntax="Choice")
-    block = render_field_instructions(decision)
+    block = render_field_instructions(
+        decision,
+        original_labels=("a", "b"),
+    )
     prefix = compose_scoring_prefix(context="Task text.", field_block=block)
     ```
 
@@ -17,9 +20,10 @@ See Also:
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 from typevet.domain.decisions import Decision
+from typevet.domain.judgment_normalize import control_binding_pairs
 from typevet.gemma_served_template import (
     CHATML_ASSISTANT_HEADER,
     CHATML_IM_END,
@@ -51,22 +55,40 @@ def _choice_label(value: object) -> str:
     return str(value)
 
 
+_ANSWER_WITH_CONTROL_INSTRUCTION = (
+    "Answer with exactly one control string (the digit shown), "
+    "not the original label text."
+)
+
+
 def render_field_instructions(
     decision: Decision,
     *,
     choice_criteria: Mapping[str, str] | None = None,
+    original_labels: Sequence[str] | None = None,
 ) -> str:
     """Render model-facing instructions for one categorical ``Decision``.
 
     Args:
         decision: Compiled Choice or Bool field.
         choice_criteria: Optional label-to-description lines for choices.
+        original_labels: When set, list ``Control <i> → <label>`` mappings for
+            ordinal scoring tokens aligned with ``bind_control_candidates``.
 
     Returns:
         Plain-text field block without user context or template wrappers.
     """
     lines: list[str] = [f"{decision.name}: {decision.question}", "", "Options:"]
     criteria = choice_criteria or {}
+    if original_labels is not None:
+        for control, label in control_binding_pairs(original_labels):
+            description = criteria.get(label) or criteria.get(label.lower())
+            if description:
+                lines.append(f"Control {control} → {label}: {description}")
+            else:
+                lines.append(f"Control {control} → {label}")
+        lines.extend(["", _ANSWER_WITH_CONTROL_INSTRUCTION])
+        return "\n".join(lines)
     for choice in decision.choices:
         if choice is None:
             continue

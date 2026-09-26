@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from tests.fixtures.judgment_scoring_contract import (
@@ -9,7 +11,44 @@ from tests.fixtures.judgment_scoring_contract import (
     exc_type_from_name,
     get_fixtures,
 )
+from typevet.domain.judgment_questions import Choice, Noul, Score
 from typevet.ports.judgment import JudgmentPort
+
+
+@pytest.mark.contract
+def test_adapter_prompt_maps_controls_while_answers_keep_original_labels() -> None:
+    adapter, fake = adapter_for(
+        logprobs_by_call=[
+            {label: math.log(p) for label, p in (("True", 0.6), ("False", 0.4))},
+            {
+                label: math.log(p)
+                for label, p in (("billing", 0.75), ("technical", 0.25))
+            },
+            {label: math.log(p) for label, p in (("0", 0.5), ("1", 0.3), ("2", 0.2))},
+        ],
+    )
+    questions = {
+        "noul": Noul(
+            instructions="Billing issue?", criteria={"true": "Yes", "false": "No"}
+        ),
+        "route": Choice(
+            criteria={"billing": "Money", "technical": "Bugs"},
+            instructions="Pick:",
+        ),
+        "quality": Score(criteria=["Poor", "Fair", "Good"], instructions="Rate:"),
+    }
+    response = adapter.judge("Charged twice.", questions, "fake-judgment")
+    assert response.nouls["noul"].noul == pytest.approx(0.6)
+    assert response.choices["route"].choice == "billing"
+    assert response.scores["quality"].legend == {0: "Poor", 1: "Fair", 2: "Good"}
+
+    noul_prefix = fake.calls[0].prefix
+    assert "Control 0 → true" in noul_prefix
+    assert "Control 1 → false" in noul_prefix
+    choice_prefix = fake.calls[1].prefix
+    assert "Control 0 → billing: Money" in choice_prefix
+    score_prefix = fake.calls[2].prefix
+    assert "Control 1 → 1: Fair" in score_prefix
 
 
 @pytest.mark.contract
