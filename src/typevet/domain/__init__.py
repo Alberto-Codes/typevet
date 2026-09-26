@@ -46,6 +46,9 @@ Attributes:
     compile_json_schema (callable): Compile object schema to decisions.
     dependency_layers (callable): Topological layers for decision dependencies.
     execute_categorical_decision (callable): IO-free Choice/Bool execution.
+    bind_control_candidates (callable): Ordinal control tokens for native labels.
+    judgment_original_labels (callable): Ordered labels for a native question.
+    normalize_question (callable): Native question to executable Decision.
 """
 
 from typevet.domain.candidate_scoring_request import (
@@ -88,6 +91,14 @@ from typevet.domain.judgment_answers import (
     ChoiceAnswer,
     NoulAnswer,
     ScoreAnswer,
+)
+from typevet.domain.judgment_normalize import (
+    bind_control_candidates,
+    judgment_original_labels,
+    normalize_choice,
+    normalize_noul,
+    normalize_question,
+    normalize_score,
 )
 from typevet.domain.judgment_questions import (
     Choice,
@@ -135,9 +146,15 @@ __all__ = [
     "ScoringValidationError",
     "TokenUsage",
     "TransportError",
+    "bind_control_candidates",
     "build_and_validate_result",
     "compile_json_schema",
     "dependency_layers",
     "execute_categorical_decision",
+    "judgment_original_labels",
+    "normalize_choice",
+    "normalize_noul",
+    "normalize_question",
+    "normalize_score",
     "question_types",
 ]

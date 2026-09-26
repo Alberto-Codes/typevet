@@ -53,6 +53,7 @@ def test_executor_result_shape_matches_contract() -> None:
         model="fake-scoring",
     )
     assert isinstance(result, CategoricalExecutionResult)
+    assert result.decision is decision
     assert result.model == "fake-scoring"
     assert result.value == "billing"
     assert len(result.probabilities) == 2

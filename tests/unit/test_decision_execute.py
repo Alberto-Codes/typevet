@@ -48,6 +48,7 @@ def test_two_way_softmax_oracle_exact() -> None:
         port=fake,
         model="fake",
     )
+    assert result.decision is decision
     assert result.value == "billing"
     assert len(result.probabilities) == 2
     for (_, prob), exp in zip(result.probabilities, expected_probs, strict=True):

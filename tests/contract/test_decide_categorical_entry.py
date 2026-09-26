@@ -41,6 +41,7 @@ def test_decide_categorical_public_entry_matches_executor_semantics() -> None:
         candidates=candidates,
     )
     assert isinstance(result, CategoricalExecutionResult)
+    assert result.decision.name == "c"
     assert result.model == "fake-scoring"
     assert result.value == "billing"
     assert len(result.probabilities) == 2

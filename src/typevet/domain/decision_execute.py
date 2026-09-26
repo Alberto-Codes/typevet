@@ -63,6 +63,7 @@ class CategoricalExecutionResult:
     """Greedy categorical decision outcome with full softmax distribution.
 
     Attributes:
+        decision (Decision): The categorical field that was executed.
         value (Any): Selected choice value from ``decision.choices``.
         probabilities (tuple[tuple[Any, float], ...]): Ordered choice/probability
             pairs aligned with ``decision.choices`` after softmax.
@@ -76,6 +77,7 @@ class CategoricalExecutionResult:
         ```
     """
 
+    decision: Decision
     value: Any
     probabilities: tuple[tuple[Any, float], ...]
     logprobs: tuple[float, ...]
@@ -195,7 +197,8 @@ def execute_categorical_decision(
         temperature: Softmax temperature; must be finite and strictly positive.
 
     Returns:
-        Selected value, full probability table, and raw logprobs.
+        ``CategoricalExecutionResult`` with the input ``decision``, selected
+        value, full probability table, and raw logprobs.
 
     Raises:
         DecisionExecutionError: Unsupported syntax, nullable field, permutations
@@ -221,6 +224,7 @@ def execute_categorical_decision(
         (choice, probabilities[i]) for i, choice in enumerate(decision.choices)
     )
     return CategoricalExecutionResult(
+        decision=decision,
         value=value,
         probabilities=pairs,
         logprobs=logprobs,

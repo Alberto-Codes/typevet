@@ -75,6 +75,8 @@ and decision helpers, import from `typevet.domain` instead of the root.
 | `CategoricalExecutionResult` | Greedy categorical execute outcome |
 | `DecisionExecutionError` | Categorical execute rejected inputs |
 | `execute_categorical_decision` | IO-free Choice/Bool execution |
+| `bind_control_candidates`, `judgment_original_labels` | Control-token binding for native questions |
+| `normalize_noul`, `normalize_choice`, `normalize_score`, `normalize_question` | Native question → ``Decision`` |
 
 ## `typevet.ports`
 
