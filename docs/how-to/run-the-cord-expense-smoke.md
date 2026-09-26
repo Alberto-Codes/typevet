@@ -70,12 +70,18 @@ less.
 
 Compare `tokens_evaluated` for the same claim in `text_only` and `combined`.
 One Gemma 3 image costs 256 prompt tokens. The test asserts a gap of at least
-200. The text-only prefix is ChatML and the imaged prefix is the native Gemma 3
-turn, so the gap also contains a small template difference.
+200. The test passes the served family to `ScoringJudgmentAdapter` as
+`served_template`, so `text_only` and `combined` both use the native Gemma 3
+turn. The gap holds the image and its marker, with no template difference.
+Every `/completion` request sends `"cache_prompt": false`.
 
-## Measured run
+## Historical run
 
-On 2026-09-26 against `gemma-3-4b-it-q4km-mm`:
+On 2026-09-26 against `gemma-3-4b-it-q4km-mm`, recorded with the smoke from
+revision `387285e`, before `aa1ad37`. At that revision the `text_only` prefix was ChatML and the imaged
+prefix was the native Gemma 3 turn, so the token gap below also holds a small
+template difference. Run the smoke again before you quote a value for the
+current revision.
 
 | Metric | `combined` | `text_only` |
 |---|---|---|

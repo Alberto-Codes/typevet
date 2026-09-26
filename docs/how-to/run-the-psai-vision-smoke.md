@@ -76,12 +76,20 @@ TYPEVET_LLAMA__MULTIMODAL_MODEL=gemma-3-4b-it-q4km-mm \
 
 The smoke writes a receipt to `scratchpad/psai-vision/live_receipt.json`. See
 [Run the image-conditioned live smoke](run-a-multimodal-live-smoke.md) for the
-router requirements and the nested prompt shape.
+router requirements, the nested prompt shape and the complete library recipe.
+
+The smoke renders one turn through `POST /apply-template`, classifies it with
+`classify_served_template`, and passes the family to `ScoringJudgmentAdapter`
+as `served_template`. Media scoring needs `native_gemma3_turn`. With that
+family, all three controls use the same Gemma 3 turn wrapper, so the `omitted`
+prefix differs from the imaged prefixes only in the media marker. Every
+`/completion` request sends `"cache_prompt": false`.
 
 | Result | Cause |
 |---|---|
 | Skip | The router is down, or the model id is not in the catalog |
 | Fail on `text-only input modalities` | The router serves that id without a projector |
+| `JudgmentValidationError` on `served template` | `/apply-template` renders a family other than native Gemma 3 |
 | Fail on `the image was not attached` | The prompt token count did not grow |
 | Fail on `did not move the judgment` | Swapping the screenshot changed nothing |
 | Pass | Each row's own screenshot outscored the opposite family's |
@@ -98,9 +106,18 @@ For every row the smoke runs the same question three ways.
 
 All three carry byte-identical text. An omitted image is recorded and never
 credited: with no image the model still answers from its prior, so a match there
-measures the prior rather than the pixels. On the measured run every omitted row
-returned the same `0.7545`, which is exactly what a blind harness would return
-for all fifteen rows.
+measures the prior rather than the pixels.
+
+## Historical run
+
+Every measured value on the rest of this page comes from one receipt recorded at
+revision `3ecea25` with `gemma-3-4b-it-q4km-mm`. That revision predates
+`cache_prompt: false` (`5c5df49`) and native Gemma 3 turns (`9d8d818`,
+`aa1ad37`). Run the smoke again before you quote a value for the current
+revision.
+
+On that run every omitted row returned the same `0.7545`, which is exactly what
+a blind harness would return for all fifteen rows.
 
 ## How the gate reads the result
 
@@ -110,24 +127,28 @@ non-Fox screenshot, under identical text, so the Fox one must score higher by
 `PAIRED_MARGIN_FLOOR`.
 
 A paired comparison needs no calibration assumption. Reading one probability
-against `NOUL_THRESHOLD` does, and this model does not meet it: the Home Depot
-home page scored `0.6929` on "Is the website in this screenshot Fox News?",
-above the `0.5` cut, while every Fox screenshot scored `0.91` or higher. The
+against `NOUL_THRESHOLD` does, and this model did not meet it on the historical
+run at `3ecea25`: the Home Depot store finder scored `0.6929` on "Is the
+website in this screenshot Fox News?", above the `0.5` cut, while every Fox
+screenshot scored `0.90` or higher. The
 smoke records that threshold reading under `threshold_diagnostic` and does not
 gate on it.
 
 ## Check the attachment yourself
 
 A valid distribution is not proof that the image arrived. Read
-`tokens_evaluated` in the receipt. One Gemma 3 image costs 256 prompt tokens, so
-an attached screenshot raises the count by about 259 over the omitted baseline.
-The measured run shows `363` against `104`. The live test asserts that gap for
-every imaged control.
+`tokens_evaluated` in the receipt. One Gemma 3 image costs 256 prompt tokens.
+The live test asserts a gap of at least 200 tokens over the omitted baseline
+for every imaged control. The historical run at `3ecea25` shows `363` against
+`104`.
 
 ## Known limits
 
 - One model, one router build, five screenshots. No corpus claim.
 - No calibration claim. The smoke reports probabilities, not reliability.
 - `shows_fox_news_chrome` is hand labelled, so it carries author judgement.
-- The adapter does not send `cache_prompt`. Repeated runs were identical, but the
-  values shift slightly when the flag is forced off.
+- The adapter sends `"cache_prompt": false` since `5c5df49`. The historical run
+  at `3ecea25` used the router default, so its values can differ slightly from a
+  run at the current revision.
+- One served template family, `native_gemma3_turn`. The smoke makes no claim
+  about any other model family.

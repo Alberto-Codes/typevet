@@ -17,6 +17,16 @@ model quality.
      | jq '.data[] | {id, mod: .architecture.input_modalities}'
    ```
 
+3. Confirm the served template renders the native Gemma 3 turn. The output
+   must start with `<start_of_turn>user` and hold no `<|im_start|>`:
+
+   ```bash
+   curl -s http://127.0.0.1:8090/apply-template \
+     -d '{"model": "gemma-3-4b-it-q4km-mm", "add_generation_prompt": true,
+          "messages": [{"role": "user", "content": "hello"}]}' \
+     | jq -r .prompt
+   ```
+
 ## Run the smoke
 
 ```bash
@@ -30,7 +40,8 @@ TYPEVET_LLAMA__MULTIMODAL_MODEL=gemma-3-4b-it-q4km-mm \
 
 The test builds three synthetic single-colour PNG images. It asks one `Choice`
 question about the fill colour four times: once with no image, then once per
-colour. It writes a receipt to `scratchpad/multimodal/live_receipt.json`.
+colour. It classifies the served template once and passes it to every
+request. It writes a receipt to `scratchpad/multimodal/live_receipt.json`.
 
 ## Read the result
 
@@ -38,6 +49,7 @@ colour. It writes a receipt to `scratchpad/multimodal/live_receipt.json`.
 |---|---|
 | Skip | The router is down, or the model id is not in the catalog |
 | Fail on `text-only input modalities` | The router serves that id without a projector |
+| `JudgmentValidationError` on `served template` | `/apply-template` renders a family other than native Gemma 3 |
 | Pass | Each image moved the decision to its own colour |
 
 A skip is not evidence. A text-only router **fails** the test, because upload
@@ -45,24 +57,101 @@ alone proves nothing about image conditioning.
 
 ## Call the library
 
-Pass images with the keyword-only `media` argument. The judgment adapter puts
-one `MEDIA_MARKER` in every field prefix for each image.
+A media call needs three things from the router before the first score:
+
+1. The served template family. Render one turn through `POST /apply-template`
+   and classify it with `classify_served_template`.
+2. A tokenizer for the control strings, through `POST /tokenize`.
+3. The media capability, which `LlamaCppCandidateScoringAdapter` probes from
+   `GET /props` on the first image request.
+
+Pass the family to `ScoringJudgmentAdapter` as `served_template`. Media
+scoring needs `ServedTemplateClass.NATIVE_GEMMA3_TURN`. When you omit
+`served_template`, or pass any other family, `judge` raises
+`JudgmentValidationError` before any scoring request.
 
 ```python
-from typevet.adapters.outbound import LlamaCppCandidateScoringAdapter
-from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
-from typevet.domain import Choice, ImageInput
+import httpx
 
-image = ImageInput(data=png_bytes, mime_type="image/png")
-question = {"fill": Choice(criteria={"red": "Red", "blue": "Blue"})}
-with LlamaCppCandidateScoringAdapter(n_vocab=262144) as scoring:
-    port = ScoringJudgmentAdapter(scoring, tokenize_content=tokenize)
-    response = port.judge("Look at the image.", question, model_id, media=(image,))
+from typevet.adapters.outbound import LlamaCppCandidateScoringAdapter
+from typevet.adapters.outbound.gemma import (
+    ServedTemplateClass,
+    classify_served_template,
+)
+from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
+from typevet.domain import Choice, ImageInput, JudgmentResponse
+
+QUESTIONS = {
+    "fill": Choice(
+        criteria={"red": "The image is red.", "blue": "The image is blue."},
+        instructions="What single colour fills the attached image?",
+    )
+}
+
+
+def judge_image(client: httpx.Client, model: str, png_bytes: bytes) -> JudgmentResponse:
+    rendered = (
+        client.post(
+            "/apply-template",
+            json={
+                "model": model,
+                "messages": [{"role": "user", "content": "hello"}],
+                "add_generation_prompt": True,
+            },
+        )
+        .raise_for_status()
+        .json()["prompt"]
+    )
+    served = classify_served_template(rendered)
+    if served is not ServedTemplateClass.NATIVE_GEMMA3_TURN:
+        msg = f"{model} serves {served.value}; media needs native_gemma3_turn"
+        raise RuntimeError(msg)
+
+    def tokenize(text: str) -> tuple[int, ...]:
+        body = client.post(
+            "/tokenize",
+            json={"model": model, "content": text, "add_special": False},
+        )
+        return tuple(body.raise_for_status().json()["tokens"])
+
+    image = ImageInput(data=png_bytes, mime_type="image/png")
+    with LlamaCppCandidateScoringAdapter(
+        str(client.base_url), client=client
+    ) as scoring:
+        port = ScoringJudgmentAdapter(
+            scoring,
+            tokenize_content=tokenize,
+            served_template=served,
+        )
+        return port.judge(
+            "Look at the attached image.", QUESTIONS, model, media=(image,)
+        )
+```
+
+Call it with one client for the router session:
+
+```python
+with httpx.Client(base_url="http://127.0.0.1:8090", timeout=900.0) as client:
+    response = judge_image(client, "gemma-3-4b-it-q4km-mm", png_bytes)
+print(response.choices["fill"].choice, response.usage.input_tokens)
+```
+
+`tests/contract/test_multimodal_howto_recipe.py` runs the `judge_image` block
+on this page against an offline router. It fails when the block stops passing
+`served_template`:
+
+```bash
+uv run pytest tests/contract/test_multimodal_howto_recipe.py -q
 ```
 
 `ImageInput` accepts `image/png`, `image/jpeg` and `image/webp`. It rejects
 empty bytes and every other mime type. A request must hold one `MEDIA_MARKER`
 per image, or the domain raises `ScoringValidationError`.
+
+With a native family, the adapter wraps every field prefix in the Gemma 3 turn,
+with or without images. An image-omitted request and an imaged request then
+differ only in the media markers. Without a family, a text-only request falls
+back to a ChatML prefix.
 
 ## Backend wire shape
 
@@ -76,9 +165,14 @@ Measured on router build `b11176-f805c57a2` with `gemma-3-4b-it-q4km-mm`.
     "multimodal_data": ["<raw base64>"]
   },
   "n_predict": 0,
-  "n_probs": 262144
+  "n_probs": 262144,
+  "cache_prompt": false
 }
 ```
+
+The adapter sends `"cache_prompt": false` on every `/completion` request, with
+or without images. A cached KV prefix from an earlier request can otherwise
+shift the scores.
 
 Three findings govern the adapter:
 
@@ -101,9 +195,15 @@ never probes `/props`.
 
 A valid distribution is not proof of attachment. Read
 `CandidateScoringResult.usage.input_tokens`, which carries `tokens_evaluated`.
-One Gemma 3 image costs 256 prompt tokens, so an attached image raises the
-count by about 259 over the text baseline. A dropped image raises it by about
-30, the cost of the marker as plain text. The live test asserts that gap.
+One Gemma 3 image costs 256 prompt tokens. A dropped image raises the count by
+about 30, the cost of the marker as plain text. The live test asserts a gap of
+at least 200 tokens over the image-omitted baseline.
+
+Historical run, recorded at revision `3ecea25` with `gemma-3-4b-it-q4km-mm`.
+That revision predates `cache_prompt: false` (`5c5df49`) and native Gemma 3
+turns (`9d8d818`, `aa1ad37`). The omitted request evaluated 103 prompt tokens
+and each imaged request evaluated 362, a gap of 259. Run the smoke again before
+you quote a count for the current revision.
 
 The marker rotates when the router reloads the model. A stale marker returns
 HTTP 400 `Failed to tokenize prompt`, so build a new adapter per session

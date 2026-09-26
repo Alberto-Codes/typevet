@@ -5,6 +5,7 @@ states compatibility expectations for the shipped wheel.
 
 Parent theme: [#29](https://github.com/Alberto-Codes/typevet/issues/29).
 Research baseline: [#33](https://github.com/Alberto-Codes/typevet/issues/33).
+Layer ownership: [#174](https://github.com/Alberto-Codes/typevet/issues/174).
 
 typevet ships one distribution and one version (`pyproject.toml` / package
 metadata). Optional extras (`cli`) add dependencies only. They do not define
@@ -17,6 +18,7 @@ Prefer the package path that re-exports a name in that package’s `__all__`:
 ```python
 from typevet.domain import compile_json_schema, GenerationRequest
 from typevet.adapters.outbound import LlamaCppGenerationAdapter
+from typevet.runtime import ScoringJudgmentAdapter
 ```
 
 Deep imports of the underlying module (for example
@@ -25,7 +27,9 @@ not the documented discovery path. Agents and new callers should start from the
 package `__init__.py` docstring and this page.
 
 Import-linter contracts in `pyproject.toml` enforce hex layers. Do not import
-adapters from domain code or pull `typevet.testing` into adapters.
+adapters from domain code or pull `typevet.testing` into adapters. See
+[library-first architecture](../explanation/library-first-architecture.md#hex-layers-keep-domain-pure)
+for the layer order.
 
 ## Root `typevet`
 
@@ -33,20 +37,24 @@ The root `__all__` declares these supported names:
 
 | Name | Role |
 |---|---|
+| `AsyncGenerationPort` | Structural protocol for async typed generation |
+| `BackendHttpError` | llama.cpp HTTP error status with a body snippet |
 | `GenerationError` | Base failure for a generation call |
 | `GenerationPort` | Structural protocol for typed generation |
 | `GenerationRequest` | Prompt, schema, and model ask |
 | `GenerationResult` | Validated structured value |
 | `SchemaValidationError` | Output failed the requested schema |
+| `TransportError` | HTTP client failure before a response |
+| `__version__` | Installed distribution version string |
 | `decide_categorical` | M1 categorical decision via injected scoring port (native ``context=`` or ``inject_prefix=True``) |
 
-The attribute `__version__` exists on the package (`"0.1.0"` today) but is
-**not** listed in root `__all__` yet. Import it as
-`from typevet import __version__` only when you accept that it may move into
-`__all__` in a later release without a breaking deep-import change.
+`__version__` comes from `importlib.metadata.version("typevet")`. An editable
+checkout without distribution metadata falls back to `[project].version` in
+`pyproject.toml`.
 
-Convenience re-exports at the root mirror domain and ports. For compiler types
-and decision helpers, import from `typevet.domain` instead of the root.
+Convenience re-exports at the root mirror domain, ports, and runtime. For
+compiler types, judgment types, and scoring types, import from
+`typevet.domain` instead of the root.
 
 ## `typevet.domain`
 
@@ -56,6 +64,8 @@ and decision helpers, import from `typevet.domain` instead of the root.
 | `MAX_PERMUTATIONS` | Upper bound on enum permutation budget |
 | `Decision` | One compiled TypeLLM field from JSON Schema |
 | `GenerationError` | Base generation failure |
+| `BackendHttpError`, `TransportError` | Generation failures raised by HTTP adapters |
+| `GemmaTemplateError` | Served template output is not a known Gemma or ChatML shape |
 | `GenerationRequest` | Prompt, schema, and model ask |
 | `GenerationResult` | Validated structured value |
 | `SchemaError` | Invalid or unsupported schema for compilation |
@@ -80,13 +90,6 @@ and decision helpers, import from `typevet.domain` instead of the root.
 | `bind_control_candidates`, `judgment_original_labels` | Control-token binding for native questions |
 | `normalize_noul`, `normalize_choice`, `normalize_score`, `normalize_question` | Native question → ``Decision`` |
 
-## `typevet.judge`
-
-| Name | Role |
-|---|---|
-| `ScoringJudgmentAdapter` | Sync ``JudgmentPort`` over ``CandidateScoringPort`` |
-| `judge_with_scoring` | One-shot helper wrapping the adapter |
-
 ## `typevet.ports`
 
 | Name | Role |
@@ -94,9 +97,19 @@ and decision helpers, import from `typevet.domain` instead of the root.
 | `GenerationPort` | Structural protocol for typed generation |
 | `AsyncGenerationPort` | Structural protocol for async typed generation |
 | `JudgmentPort` | Structural protocol for System One-shaped judgment |
-| `CandidateScoringPort`, `ScoringPort` | Structural protocol for candidate logprobs |
+| `CandidateScoringPort`, `ScoringPort` | Structural protocol for candidate logprobs (`ScoringPort` is an alias) |
 
-Root `typevet` also re-exports `AsyncGenerationPort` alongside the table above.
+## `typevet.runtime`
+
+Thin orchestration facades over domain, ports, and outbound adapters
+([#148](https://github.com/Alberto-Codes/typevet/issues/148)).
+
+| Name | Role |
+|---|---|
+| `ScoringJudgmentAdapter` | Sync ``JudgmentPort`` over ``CandidateScoringPort`` |
+| `judge_with_scoring` | One-shot helper wrapping the adapter |
+| `decide_categorical` | M1 categorical decision via injected scoring port |
+| `compose_scoring_prefix` | Degraded ChatML scoring prefix composition |
 
 ## `typevet.adapters.inbound`
 
@@ -116,16 +129,39 @@ Prefer `generate` for library entry when you already hold a `GenerationPort`.
 Prefer `run_sync(port.generate(request))` for `AsyncGenerationPort` in scripts
 instead of duplicating sync wrappers on each adapter.
 
+The module `typevet.adapters.inbound.eval_cli` is the eval runner command. It
+is a module entry, not a package export. See [Command-line entry](#command-line-entry).
+
 ## `typevet.adapters.outbound`
 
 | Name | Role |
 |---|---|
 | `FakeGenerationAdapter` | Offline adapter that validates a fixed or callable value |
+| `AsyncFakeGenerationAdapter` | Offline async adapter that validates a fixed value |
 | `LlamaCppGenerationAdapter` | OpenAI-compat llama.cpp router adapter |
+| `AsyncLlamaCppGenerationAdapter` | Async OpenAI-compat llama.cpp router adapter |
 | `LlamaCppCandidateScoringAdapter` | Pre-sampling ``/completion`` candidate scorer |
 
 Constructors take explicit arguments only (no settings module on the adapter).
 See [library-first architecture](../explanation/library-first-architecture.md).
+
+`typevet.adapters.outbound.gemma` exports Gemma and ChatML served-template
+constants, template classification, and answer-binding helpers. Import from
+that subpackage when you need them. Its `__all__` is the list of supported names.
+
+## `typevet.adapters.diagnostics`
+
+| Name | Role |
+|---|---|
+| `LogSettings`, `load_log_settings` | Frozen log settings and the `TYPEVET_LOG__*` reader |
+| `configure`, `configure_from_environ` | Apply log settings to stderr structlog |
+| `bind_run_id`, `new_run_id` | Invocation id helpers |
+| `generation_call_event`, `http_request_event` | Terminal diagnostic event context managers |
+| `diagnostic_model` | Keep safe model aliases in event fields |
+| `REDACTED`, `SECRET_KEYS` | Redaction placeholder and masked field names |
+
+Importing the package does not configure structlog. See
+[diagnostic events](diagnostic-events.md).
 
 ## `typevet.testing`
 
@@ -136,28 +172,80 @@ See [library-first architecture](../explanation/library-first-architecture.md).
 Use for fast unit doubles. Use `FakeGenerationAdapter` when tests must exercise
 schema validation like production outbound code.
 
+## `typevet.evaluation`
+
+Evaluation harnesses drive the library from the outside
+([#147](https://github.com/Alberto-Codes/typevet/issues/147)). The
+`typevet.evaluation` package itself has no `__all__` exports.
+
+| Package | Surface |
+|---|---|
+| `typevet.evaluation.runner` | `__all__`: loader eval tasks, run reports, live skip gate |
+| `typevet.evaluation.tpjep` | `__all__`: TPJEP eight-task fixture, records, runner, receipts |
+| `typevet.evaluation.datasets` | No `__all__`. Import one dataset submodule, for example `typevet.evaluation.datasets.boolq` |
+
+See [live eval runner](eval-live-runner.md) and
+[TPJEP v0 eight-task runner](eval-tpjep-runner.md).
+
 ## `typevet.adapters`
 
 Organizational package only. It has no `__all__` exports. Import from
-`typevet.adapters.inbound` or `typevet.adapters.outbound`.
+`typevet.adapters.inbound`, `typevet.adapters.outbound`, or
+`typevet.adapters.diagnostics`.
+
+## Root compatibility shims
+
+These root modules re-export names from their current home so pinned imports
+and commands keep working. New code imports from the current home.
+
+| Shim module | Current home |
+|---|---|
+| `typevet.decide_categorical` | `typevet.runtime` |
+| `typevet.judge` | `typevet.runtime` |
+| `typevet.field_prompt` | `typevet.domain.field_instructions` and `typevet.adapters.outbound.gemma` |
+| `typevet.gemma_served_template`, `typevet.gemma_answer_binding` | `typevet.adapters.outbound.gemma` |
+| `typevet.eval_runner_cli` | `typevet.adapters.inbound.eval_cli` |
+| `typevet.eval_runner`, `typevet.eval_runner_datasets`, `typevet.eval_runner_live_gate`, `typevet.eval_runner_report` | `typevet.evaluation.runner` |
+| `typevet.eval_tpjep_*` | `typevet.evaluation.tpjep` |
+| Other `typevet.eval_*` loaders, download helpers, and guards | One submodule of `typevet.evaluation.datasets` |
+
+`typevet.question_schema` is a root module, not a shim. It maps question
+records to JSON Schema. See [question-schema-map.md](question-schema-map.md).
+
+## Command-line entry
+
+typevet declares no console script. `pyproject.toml` has no
+`[project.scripts]` table, so installing the wheel does not put a `typevet`
+command on `PATH`.
+
+The one command is a Python module entry:
+
+```bash
+uv run python -m typevet.adapters.inbound.eval_cli --help
+```
+
+`python -m typevet.eval_runner_cli` runs the same `main` through the root
+shim. Without `TYPEVET_LLAMA__*` router settings, the command prints a skip
+reason and exits `0`. See [live eval runner](eval-live-runner.md).
 
 ## Typing and packaging
 
 - `src/typevet/py.typed` marks the package as typed for consumers.
 - Public API surface is the union of package `__all__` lists and documented
   module docstrings checked by docvet.
-- Version string authority today is `pyproject.toml` / `[project].version` and
-  `typevet.__version__`. A single-source release workflow may consolidate that
-  later ([#29](https://github.com/Alberto-Codes/typevet/issues/29) follow-ups).
+- Version string authority is `[project].version` in `pyproject.toml`.
+  `typevet.__version__` reads it back from distribution metadata. See
+  [verify package typing and version](../maintainers/verify-package.md).
 
 ## 0.1.0 compatibility assessment
 
 | Surface | Assessment | Notes |
 |---|---|---|
-| Library | Initial public hex surface | Root, domain, ports, inbound `generate`, outbound adapters, testing fake |
-| CLI | Not shipped | `cli` extra lists Typer only. No command module in this release |
+| Library | Initial public hex surface | Root, domain, ports, runtime, inbound, outbound, diagnostics, testing |
+| Evaluation | Shipped, research harness | `typevet.evaluation.runner` and `typevet.evaluation.tpjep`; dataset loaders by submodule |
+| CLI | Module entry only | `python -m typevet.adapters.inbound.eval_cli`. No console script. The `cli` extra lists Typer only and no module imports it |
 | MCP | Not shipped | No extra or entry point |
-| Dependencies | `httpx`, `jsonschema` | Locked via `uv.lock` in development |
+| Dependencies | `httpx`, `jsonschema`, `structlog` | Locked via `uv.lock` in development |
 
 Additive changes should extend `__all__` and this page. Breaking renames or
 removed exports require an explicit compatibility note in a future release

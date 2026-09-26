@@ -32,8 +32,8 @@ Obtain one offline typed judgment (no model):
 ```bash
 uv run python -c "
 from tests.fixtures.scoring_contract import ContractScoringFake
-from typevet.domain.judgment_questions import Noul
-from typevet.judge import ScoringJudgmentAdapter
+from typevet.domain import Noul
+from typevet.runtime import ScoringJudgmentAdapter
 fake = ContractScoringFake(logprobs={'True': -0.2, 'False': -1.0})
 port = ScoringJudgmentAdapter(fake, tokenize_content=lambda t: (ord(t[0]),))
 r = port.judge('text', {'q': Noul(instructions='Ok?', criteria={'true': 'Y', 'false': 'N'})}, 'fake')

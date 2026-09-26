@@ -13,15 +13,16 @@ answers a question, and a reference gives facts.
 
 ## Explanation
 
-- [TypeLLM, Jev and judgevet](explanation/typellm-and-judgevet.md): why the
-  grammar-JSON MVP is a floor, what TypeLLM’s decision runtime preserves, and
-  how judgevet could consume typevet later.
+- [TypeLLM, Jev and judgevet](explanation/typellm-and-judgevet.md): why
+  grammar-JSON is the transport floor, which TypeLLM decision ideas typevet
+  ships (compiler, candidate scoring, `JudgmentPort`), and what stays unproven.
 - [Verified evidence and inferred claims](explanation/verification.md): what
   unit, contract and live each prove; fixture labeling; link to the testing
   pyramid law.
 - [Library-first architecture](explanation/library-first-architecture.md): why
   the importable library is the artifact; composition root vs explicit adapter
-  args; hex layers and judgevet alignment.
+  args; hex layers including runtime and evaluation; module command vs console
+  script.
 
 - [Native typed judgments](explanation/native-typed-judgments.md): what typevet
   owns after M2 — questions → Gemma judgments → TPJEP eight-task smoke; validity
@@ -85,7 +86,7 @@ log” epic. Until then, accepted judgment comments on issues are the record.
 - [Question records → JSON Schema](reference/question-schema-map.md) (reference): Noul/Choice/Score export records to `compile_json_schema` fixtures ([#102](https://github.com/Alberto-Codes/typevet/issues/102)).
 - [Glossary](reference/glossary.md) (reference): the one meaning of each term.
 - [Supported imports](reference/supported-imports.md) (reference): package
-  `__all__` surfaces and `from typevet…` paths for library callers.
+  `__all__` surfaces, root compatibility shims, and the module command entry.
 - [Worker runs](reference/worker-runs.md) (reference): the launch evidence and
   commit trailers for each worker.
 - [Writing system](reference/writing-system.md) (reference): Diátaxis,

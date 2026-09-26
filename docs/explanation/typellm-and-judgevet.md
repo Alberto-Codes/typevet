@@ -4,8 +4,9 @@ Kind: explanation.
 
 TypeLLM is inspired by TypeSafe’s System One / Jev. judgevet is a typed
 client for that same Jev surface. typevet’s long game is local type-safe
-generation that can serve callers like judgevet without SGLang. The grammar
-JSON MVP is a floor. It is not yet the TypeLLM decision model.
+generation that can serve callers like judgevet without SGLang. Grammar-JSON
+generation is the transport floor. Categorical decisions scored from candidate
+logprobs are the part of the TypeLLM decision model that typevet ships today.
 
 ## Three products, one family
 
@@ -60,36 +61,47 @@ judgevet callers already depend on:
 
 A future `HTTPSystemOneAdapter` peer could be a **typevet-backed** adapter
 only if typevet can answer those primitives with distributions, not merely
-emit a schema-valid JSON blob.
+emit a schema-valid JSON blob. No such judgevet adapter ships.
 
-Approximate mapping (design target, not shipped):
+How typevet’s native questions map to decisions today:
 
-| judgevet | TypeLLM / typevet decision | Notes |
+| judgevet | typevet question → decision | Notes |
 |---|---|---|
-| Noul | boolean / two-label choice with probabilities | Noul has no separate confidence |
-| Choice | enum ≤ 24, `return_probabilities` | Optional permutation averaging (enum bias); not in JevBench protocol |
-| Score | closed integer/number enum only (no Score API; compiler rejects `x-score`) | Weighted mean is application/TypeSafe semantics |
-| state | TypeLLM `state` / `context` | Same role: content under evaluation |
+| Noul | `Noul` → Bool decision over `(False, True)` with probabilities | Noul has no separate confidence |
+| Choice | `Choice` → Choice decision over criteria keys with probabilities | JSON Schema enums compile up to 24 choices. The compiler accepts a `permutations` budget, but execution rejects any value other than `1`; the JevBench protocol does not average permutations |
+| Score | `Score` → Choice over rubric level indices `0..n-1` with probabilities | JSON Schema input still rejects `x-score`; use a closed number enum. Weighted mean is application/TypeSafe semantics |
+| state | `JudgmentPort.judge(state, …)` | Same role: content under evaluation |
 
-## What the MVP has today
+## What typevet has today
 
-- `GenerationPort.generate(prompt, schema, model)` → validated object via
-  llama.cpp `response_format` / `json_schema`.
-- Fail-fast schema validation after parse.
-- Offline fake + live Gemma 4 proof on the local router.
-- IO-free `JudgmentPort` plus domain question and answer types (judgevet-aligned
-  vocabulary; contract-tested offline fakes; no judgevet dependency). See
-  [supported imports](../reference/supported-imports.md).
+- `GenerationPort.generate(request)` → validated object via llama.cpp
+  `response_format` / `json_schema`, with fail-fast schema validation after
+  parse. Offline fake plus a live Gemma 4 proof on the local router.
+- `compile_json_schema` and `execute_categorical_decision`: the IO-free
+  TypeLLM compiler and categorical executor in `typevet.domain`.
+- `CandidateScoringPort` and `LlamaCppCandidateScoringAdapter`: pre-sampling
+  candidate logprobs from llama.cpp `/completion`.
+- `JudgmentPort` with `Noul`, `Choice`, and `Score` questions, and
+  `ScoringJudgmentAdapter`, which answers them from candidate scoring
+  (judgevet-aligned vocabulary; no judgevet dependency).
+- Evaluation harnesses: loader eval runner and TPJEP eight-task runner.
 
-That proves **constrained JSON on llama.cpp** and **offline judgment port
-structure**. It does **not** yet prove:
+See [supported imports](../reference/supported-imports.md) for paths and
+[native typed judgments](native-typed-judgments.md) for scope.
 
-- single-token logprob scoring ([#11](https://github.com/Alberto-Codes/typevet/issues/11))
-- TypeLLM numeric FSM vs grammar-only numbers ([#12](https://github.com/Alberto-Codes/typevet/issues/12))
-- probability-bearing answers from a live local backend ([#26](https://github.com/Alberto-Codes/typevet/issues/26))
+Live evidence is limited to recorded runs. The
+[#133 finvet-derived receipt](../reference/judgment-live-receipts.md) records
+probability-bearing Choice and Noul answers from a local llama.cpp router on
+six rows plus two semantic controls. That is one small exploratory sample.
+typevet does **not** yet prove:
+
+- calibration, ECE, or task accuracy at scale
+  ([#133](https://github.com/Alberto-Codes/typevet/issues/133) remains open)
+- TypeLLM numeric FSM vs grammar-only numbers ([#12](https://github.com/Alberto-Codes/typevet/issues/12)); no numeric FSM ships
+- native Gemma chat template parity ([#129](https://github.com/Alberto-Codes/typevet/issues/129))
 
 Treat grammar-JSON as the **transport floor**. The **product spine** is the
-decision runtime + a consumer-facing judgment port.
+decision runtime plus the consumer-facing `JudgmentPort`.
 
 ## Design rules so judgevet can use typevet later
 
@@ -97,9 +109,9 @@ decision runtime + a consumer-facing judgment port.
    llama.cpp (and later scoring).
 2. Prefer **Decision / Choice** compilation in domain or a pure compiler
    module before freeform schema dump to the backend.
-3. Plan a **judgment port** (name TBD) that can implement or adapt to
-   judgevet’s `SystemOnePort` shape — do not force judgevet to speak raw
-   JSON Schema forever.
+3. Keep `JudgmentPort` close enough to judgevet’s `SystemOnePort` shape that
+   an adapter can wrap it — do not force judgevet to speak raw JSON Schema
+   forever.
 4. Preserve **probabilities** on categorical answers; grammar JSON alone
    usually drops them.
 5. Keep judgevet’s evidence language: contract tests vs live; structure vs
@@ -113,3 +125,4 @@ decision runtime + a consumer-facing judgment port.
   [typellm.ai](https://typellm.ai/)
 - Sister: [judgevet docs](https://github.com/Alberto-Codes/judgevet/tree/main/docs)
 - typevet research: issues #2, #4, #11, #12; MVP epic #21
+- Live judgment evidence: [judgment live receipts](../reference/judgment-live-receipts.md)
