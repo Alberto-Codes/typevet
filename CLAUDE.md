@@ -106,6 +106,9 @@ repeated context. Explicit user scope and required gates still govern.
 
 ## Non-negotiables
 
+- **uv is the ground floor.** Install, sync, run tools, tests and hooks through
+  `uv` / `uv run`. Do not invent a parallel pip/poetry/conda path. When the
+  package does not exist yet, still plan gates and scripts for `uv run`.
 - **Diátaxis is law.** Every docs page is one kind: tutorial, how-to,
   explanation or reference. See
   [the writing system](docs/reference/writing-system.md).
@@ -146,14 +149,15 @@ change.
 
 A `PostToolUse` hook in `.claude/settings.json` runs `scripts/vet_file.sh`
 after every `Write`, `Edit` or `Bash` call once `pyproject.toml` exists. It
-runs ruff format, ruff check and docvet on each changed Python file, plus
-`check_loc` under `src` when that script exists. Silence means those gates are
-green for the files touched; do not re-run them by hand. `ty`, `lint-imports`
-and `pytest` stay in pre-commit and the gate table. Until the package exists,
-the hook exits quietly.
+runs `uv run ruff format`, `uv run ruff check` and `uv run docvet` on each
+changed Python file, plus `check_loc` under `src` when that script exists.
+Silence means those gates are green for the files touched; do not re-run them
+by hand. `ty`, `lint-imports` and `pytest` stay in pre-commit and the gate
+table. Until the package exists, the hook exits quietly. **uv is required** for
+every gate command; never call ruff/ty/docvet/pytest outside `uv run`.
 
 Cursor CLI and other harnesses do not load this hook. Their briefs still
-require focused checks on edited files, then the full gate table.
+require focused checks on edited files via `uv run`, then the full gate table.
 
 ### A summary is not evidence
 

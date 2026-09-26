@@ -47,9 +47,8 @@ issue. The specifier never edits code.
 acceptance and commits. The supervisor harness is independent of the worker
 harness.
 
-**TypeLLM.** The type-safe generation stack at
-[TypeLLM/TypeLLM](https://github.com/TypeLLM/TypeLLM). typevet evaluates and
-hardens work around it.
+**uv.** Astral’s package and tool runner. Ground floor for typevet: sync,
+locks, `uv run` for every gate and script. No parallel pip/poetry install path.
 
 **worker.** A bounded session that follows a brief, edits only allowed paths
 (or returns a named research artifact) and returns evidence. A worker never

@@ -10,7 +10,7 @@
 # command's duration. Findings return as additionalContext. A clean file
 # returns nothing, so a clean edit costs no tokens. Each gate's output is
 # capped at 30 lines. Paths are canonical (Python realpath) and prefixed
-# with ./ . Until pyproject.toml and uv tools exist, the hook exits 0 with
+# with ./ . Until pyproject.toml exists (uv is always the runner), the hook exits 0 with
 # no output so early sessions are not blocked.
 set -u
 input=$(cat)
