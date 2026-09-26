@@ -58,11 +58,11 @@ from typevet.domain.media import ImageInput
 from typevet.evaluation.cord_expense_call_accounting import (
     cord_expense_smoke_request_totals,
 )
-from typevet.evaluation.cord_expense_receipt_requirement import judge_cord_expense_arm
-from typevet.evaluation.cord_expense_smoke import (
-    assert_cord_expense_attachment,
-    assert_cord_expense_live_smoke_gate,
+from typevet.evaluation.cord_expense_live_harness import (
+    orchestrate_cord_expense_live_smoke,
 )
+from typevet.evaluation.cord_expense_receipt_requirement import judge_cord_expense_arm
+from typevet.evaluation.cord_expense_smoke import assert_cord_expense_attachment
 from typevet.evaluation.datasets.cord_expense import (
     INSUFFICIENT,
     INSUFFICIENT_EVIDENCE,
@@ -317,7 +317,7 @@ def test_cord_expense_triage_reads_the_receipt(
 ) -> None:
     """Run three modalities on 18 claims and record combined semantic metrics.
 
-    Runs ``assert_cord_expense_live_smoke_gate`` before scoring (#185), records
+    Runs ``orchestrate_cord_expense_live_smoke`` before scoring (#185), records
     an ``image_only`` omission control in judgment totals (#186), and attaches
     experiment identity from a pre-scoring snapshot.
     """
@@ -328,30 +328,41 @@ def test_cord_expense_triage_reads_the_receipt(
     with httpx.Client(base_url=base, timeout=settings.timeout) as client:
         capability = fetch_media_capability(client, f"{base}/", live_multimodal_model)
         served = _served_template(client, live_multimodal_model)
-        attachment_profile = assert_cord_expense_live_smoke_gate(
-            vision=capability.vision,
-            served_template=served.value,
-            model_id=live_multimodal_model,
-        )
         run_start = begin_run_identity(
             repo_root=_REPO_ROOT,
             runtime=_runtime_build(client, live_multimodal_model, served),
             working_tree=_working_tree_at_run_start(_REPO_ROOT),
         )
         evaluated_snapshot = _snapshot_evaluated_inputs_before_scoring()
-        with LlamaCppCandidateScoringAdapter(
-            base_url=base,
-            timeout=settings.timeout,
-            n_vocab=_N_VOCAB,
-        ) as scoring:
-            port = ScoringJudgmentAdapter(
-                scoring,
-                tokenize_content=_tokenizer(client, live_multimodal_model),
-                served_template=served,
-            )
-            text_only, image_only, combined, image_only_omission = _run(
-                port, live_multimodal_model, cases
-            )
+
+        def _score_after_gate(attachment_profile):
+            with LlamaCppCandidateScoringAdapter(
+                base_url=base,
+                timeout=settings.timeout,
+                n_vocab=_N_VOCAB,
+            ) as scoring_adapter:
+                port = ScoringJudgmentAdapter(
+                    scoring_adapter,
+                    tokenize_content=_tokenizer(client, live_multimodal_model),
+                    served_template=served,
+                )
+                arms = _run(port, live_multimodal_model, cases)
+            return attachment_profile, arms
+
+        (
+            attachment_profile,
+            (
+                text_only,
+                image_only,
+                combined,
+                image_only_omission,
+            ),
+        ) = orchestrate_cord_expense_live_smoke(
+            vision=capability.vision,
+            served_template=served.value,
+            model_id=live_multimodal_model,
+            scoring=_score_after_gate,
+        )
 
     requests, arm_call_counts = cord_expense_smoke_request_totals(
         text_only=text_only,

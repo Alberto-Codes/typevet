@@ -7,6 +7,7 @@ Examples:
 
 See Also:
     - [typevet.evaluation.cord_expense_smoke][]: capability gate and attachment
+    - [typevet.evaluation.cord_expense_live_harness][]: live orchestration entry
     - [tests.live.test_cord_expense_smoke_live][]: opt-in live wiring
 
 [i185]: https://github.com/Alberto-Codes/typevet/issues/185
@@ -18,11 +19,15 @@ from typing import Any
 
 import pytest
 
+from typevet.evaluation.cord_expense_live_harness import (
+    orchestrate_cord_expense_live_smoke,
+)
 from typevet.evaluation.cord_expense_smoke import (
     GEMMA3_DIRECT_RECEIPT_MODEL,
     GEMMA3_NATIVE_TURN,
     GEMMA4_DIRECT_RECEIPT_MODEL,
     GEMMA4_NATIVE_TURN,
+    CordExpenseAttachmentProfile,
     CordExpenseLiveSmokeGateError,
     assert_cord_expense_attachment,
     assert_cord_expense_live_smoke_gate,
@@ -32,56 +37,69 @@ from typevet.evaluation.cord_expense_smoke import (
 
 pytestmark = pytest.mark.unit
 
-_SCORING_PATH: list[str] = []
+
+def _append_scoring_call(
+    scoring_calls: list[str],
+    profile: CordExpenseAttachmentProfile,
+) -> CordExpenseAttachmentProfile:
+    """Append ``model_id`` and return the profile for orchestration callbacks.
+
+    Returns:
+        The same attachment profile passed in.
+    """
+    scoring_calls.append(profile.model_id)
+    return profile
 
 
-def _record_scoring_after_gate(model_id: str) -> None:
-    """Simulate the live harness entering scoring only after the gate passes."""
-    assert_cord_expense_live_smoke_gate(
+def test_live_orchestration_native_gemma4_reaches_scoring() -> None:
+    """Gemma 4 on the native turn must pass the gate before scoring runs."""
+    scoring_calls: list[str] = []
+    profile = orchestrate_cord_expense_live_smoke(
         vision=True,
         served_template=GEMMA4_NATIVE_TURN,
-        model_id=model_id,
+        model_id=GEMMA4_DIRECT_RECEIPT_MODEL,
+        scoring=lambda p: _append_scoring_call(scoring_calls, p),
     )
-    _SCORING_PATH.append(model_id)
+    assert scoring_calls == [GEMMA4_DIRECT_RECEIPT_MODEL]
+    assert profile.model_id == GEMMA4_DIRECT_RECEIPT_MODEL
 
 
-def test_live_harness_gate_native_gemma4_reaches_scoring() -> None:
-    """Gemma 4 on the native turn must pass the capability gate before scoring."""
-    _SCORING_PATH.clear()
-    _record_scoring_after_gate(GEMMA4_DIRECT_RECEIPT_MODEL)
-    assert _SCORING_PATH == [GEMMA4_DIRECT_RECEIPT_MODEL]
-
-
-def test_live_harness_gate_native_gemma3_reaches_scoring() -> None:
-    """Gemma 3 on the native turn remains compatible with the live gate."""
-    profile = assert_cord_expense_live_smoke_gate(
+def test_live_orchestration_native_gemma3_reaches_scoring() -> None:
+    """Gemma 3 on the native turn remains compatible with live orchestration."""
+    scoring_calls: list[str] = []
+    orchestrate_cord_expense_live_smoke(
         vision=True,
         served_template=GEMMA3_NATIVE_TURN,
         model_id=GEMMA3_DIRECT_RECEIPT_MODEL,
+        scoring=lambda p: _append_scoring_call(scoring_calls, p),
     )
-    assert profile.served_template == GEMMA3_NATIVE_TURN
+    assert scoring_calls == [GEMMA3_DIRECT_RECEIPT_MODEL]
 
 
-def test_live_harness_gate_rejects_non_vision_before_scoring() -> None:
-    """Text-only capability must fail before any scoring call."""
-    _SCORING_PATH.clear()
+def test_live_orchestration_rejects_non_vision_before_scoring() -> None:
+    """Text-only capability must fail before any scoring callback."""
+    scoring_calls: list[str] = []
     with pytest.raises(CordExpenseLiveSmokeGateError, match="text-only"):
-        assert_cord_expense_live_smoke_gate(
+        orchestrate_cord_expense_live_smoke(
             vision=False,
             served_template=GEMMA4_NATIVE_TURN,
             model_id=GEMMA4_DIRECT_RECEIPT_MODEL,
+            scoring=lambda p: _append_scoring_call(scoring_calls, p),
         )
-    assert _SCORING_PATH == []
+    assert scoring_calls == []
 
 
-def test_live_harness_gate_rejects_degraded_chatml_before_scoring() -> None:
-    """Unsupported served families must fail before scoring."""
+def test_live_orchestration_rejects_degraded_chatml_before_scoring() -> None:
+    """Unsupported served families must fail before the scoring callback runs."""
+    scoring_calls: list[str] = []
     with pytest.raises(CordExpenseLiveSmokeGateError, match="native Gemma"):
-        assert_cord_expense_live_smoke_gate(
+        orchestrate_cord_expense_live_smoke(
             vision=True,
             served_template="degraded_chatml",
             model_id=GEMMA4_DIRECT_RECEIPT_MODEL,
+            scoring=lambda _p: scoring_calls.append("called") or _p,
         )
+    assert scoring_calls == []
 
 
 def test_live_harness_gate_must_accept_gemma4_not_reject() -> None:
