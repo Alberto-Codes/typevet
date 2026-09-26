@@ -85,6 +85,20 @@ is down or the id is missing from `/v1/models`, they **skip** as well.
 Legacy names `TYPEVET_GEMMA_MODEL` and `TYPEVET_LLAMA_URL` still work. See
 [Configuration](../reference/configuration.md).
 
+### Loader eval slice (opt-in)
+
+After the schema smoke passes, run a tiny BoolQ or Banking77 slice through the
+same adapter. The runner reports attempted, schema-valid, and gold-match counts
+(structure + label agreement only — not ECE). See
+[Live eval runner](../reference/eval-live-runner.md).
+
+```bash
+TYPEVET_LLAMA__DEFAULT_MODEL='<your-gemma-4-model-id>' \
+  TYPEVET_LLAMA__TIMEOUT=600 \
+  uv run python -m typevet.eval_runner_cli --dataset boolq --limit 2
+```
+
+
 Or from Python:
 
 ```python

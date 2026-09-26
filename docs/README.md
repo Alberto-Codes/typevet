@@ -59,6 +59,7 @@ log” epic. Until then, accepted judgment comments on issues are the record.
 - [go_emotions loader and emotion Choice fixture](reference/eval-go-emotions-loader.md) (reference): simplified strict exactly-one; 24-enum; Apache 2.0.
 - [PubMedQA loader and answer Choice fixture](reference/eval-pubmedqa-loader.md) (reference): pqa_labeled yes/no/maybe; contexts state; MIT.
 - [BoolQ loader and answer Noul fixture](reference/eval-boolq-loader.md) (reference): validation split, no/yes Noul, CC BY-SA smoke cap, HF bulk stream.
+- [Live eval runner](reference/eval-live-runner.md) (reference): opt-in Banking77/BoolQ slice via GenerationPort; attempted / schema-valid / gold-match counts.
 - [Hyperpartisan loader and hyperpartisan Noul fixture](reference/eval-hyperpartisan-loader.md) (reference): byarticle train only, HTML cleanup, stratified holdout, excludes bypublisher.
 - [Complementary eval manifest](reference/eval-complementary-manifest.md) (reference): JevBench-primary ranked open sets; see also `evals/`.
 - [Question records → JSON Schema](reference/question-schema-map.md) (reference): Noul/Choice/Score export records to `compile_json_schema` fixtures ([#102](https://github.com/Alberto-Codes/typevet/issues/102)).

@@ -34,8 +34,13 @@ compatibility for those labeled cases only.
 **Live.** One exercised call against the configured router and model. Opt in
 with ``pytest -m live``. See [Run Gemma 4 on llama.cpp](../how-to/run-gemma4-llamacpp.md).
 
+The [live eval runner](eval-live-runner.md) adds an optional BoolQ/Banking77
+slice with attempted / schema-valid / gold-match counters over
+``GenerationPort``. That is task accuracy on gold for a tiny limit, not ECE.
+
 Valid JSON shape for a run is not the same as correct judgment. Do not infer
-calibration or task accuracy from pyramid passes alone.
+calibration or task accuracy from pyramid passes alone unless the run used the
+loader eval runner and you report its gold-match counter explicitly.
 
 ## Shared GenerationPort fixtures (judgevet shape)
 
