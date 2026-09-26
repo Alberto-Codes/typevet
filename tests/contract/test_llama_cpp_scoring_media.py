@@ -186,6 +186,15 @@ def test_media_request_keeps_pre_sampling_fields() -> None:
 
 
 @pytest.mark.contract
+def test_media_request_disables_prompt_cache() -> None:
+    router = _Router()
+    router.adapter().score_candidates(_request(media=(_image(),)))
+    body = router.completion_bodies[0]
+    assert "cache_prompt" in body
+    assert body["cache_prompt"] is False
+
+
+@pytest.mark.contract
 def test_media_request_probes_props_for_the_requested_model() -> None:
     router = _Router()
     router.adapter().score_candidates(_request(media=(_image(),)))

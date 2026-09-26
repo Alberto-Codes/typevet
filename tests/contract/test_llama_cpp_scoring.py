@@ -102,6 +102,28 @@ def test_llama_cpp_scoring_success() -> None:
 
 
 @pytest.mark.contract
+def test_llama_cpp_scoring_disables_prompt_cache() -> None:
+    bodies: list[dict[str, object]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        bodies.append(json.loads(request.content.decode()))
+        return httpx.Response(
+            200,
+            json=_completion_json(
+                [
+                    {"id": 101, "logprob": -0.5},
+                    {"id": 202, "logprob": -1.2},
+                ]
+            ),
+        )
+
+    _adapter(httpx.MockTransport(handler)).score_candidates(_request())
+    assert len(bodies) == 1
+    assert "cache_prompt" in bodies[0]
+    assert bodies[0]["cache_prompt"] is False
+
+
+@pytest.mark.contract
 def test_llama_cpp_scoring_omitted_low_ranked_candidate() -> None:
     def handler(_request: httpx.Request) -> httpx.Response:
         return httpx.Response(

@@ -123,7 +123,8 @@ class LlamaCppCandidateScoringAdapter:
         A request that carries ``media`` probes ``/props`` for the model's image
         support and marker, then sends the nested object prompt that attaches
         the images. A text request sends a plain string ``prompt`` and never
-        probes ``/props``.
+        probes ``/props``. Every request sends ``cache_prompt: false`` so a
+        cached KV prefix cannot shift the scores (#154, #155).
 
         Args:
             request: Model id, prefix, ordered single-token candidates, stage,
@@ -165,6 +166,7 @@ class LlamaCppCandidateScoringAdapter:
             "top_p": 1,
             "post_sampling_probs": False,
             "stream": False,
+            "cache_prompt": False,
         }
         url = urljoin(self._base_url, "completion")
         client = self._ensure_client()
