@@ -270,6 +270,57 @@ def test_candidate_count_mismatch_rejected() -> None:
 
 
 @pytest.mark.unit
+def test_execute_categorical_permutations_one_control_still_scores() -> None:
+    decision = Decision(
+        "field",
+        "Pick one.",
+        ("billing", "technical"),
+        syntax="Choice",
+        permutations=1,
+    )
+    fake = ContractScoringFake(
+        logprobs={"billing": -0.5, "technical": -1.2},
+    )
+    result = execute_categorical_decision(
+        decision,
+        prefix="Answer:",
+        candidates=_specs("billing", "technical"),
+        port=fake,
+        model="fake",
+    )
+    assert len(fake.calls) == 1
+    assert result.value == "billing"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "permutations",
+    [2, "all"],
+    ids=["permutations_2", "permutations_all"],
+)
+def test_execute_categorical_rejects_unsupported_permutations_before_io(
+    permutations: int | str,
+) -> None:
+    decision = Decision(
+        "field",
+        "Pick one.",
+        ("a", "b"),
+        syntax="Choice",
+        permutations=permutations,
+    )
+    fake = ContractScoringFake(logprobs={"a": -0.1, "b": -0.2})
+    with pytest.raises(DecisionExecutionError, match="permutation"):
+        execute_categorical_decision(
+            decision,
+            prefix="P:",
+            candidates=_specs("a", "b"),
+            port=fake,
+            model="m",
+        )
+    assert fake.calls == []
+
+
+@pytest.mark.unit
 def test_max_enum_choices_boundary_ok() -> None:
     labels = tuple(f"v{i}" for i in range(MAX_ENUM_CHOICES))
     logprobs = tuple(-1.0 for _ in labels)

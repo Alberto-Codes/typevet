@@ -70,6 +70,12 @@ def _validate_m1_decision(decision: Decision) -> None:
     if decision.nullable:
         msg = "nullable categorical fields are not supported in M1 decide_categorical"
         raise DecisionExecutionError(msg)
+    if decision.permutations != 1:
+        msg = (
+            "permutation averaging is not supported in M1 decide_categorical; "
+            "permutations must be 1"
+        )
+        raise DecisionExecutionError(msg)
 
 
 def _decision_from_schema(schema: Mapping[str, Any]) -> Decision:
@@ -127,7 +133,8 @@ def decide_categorical(
         Greedy value, full probability table, and raw logprobs from the executor.
 
     Raises:
-        DecisionExecutionError: Invalid ask, unsupported M1 shape, or unknown kwargs.
+        DecisionExecutionError: Invalid ask, unsupported M1 shape, permutations
+            other than ``1``, or unknown kwargs.
         SchemaError: Schema cannot be compiled.
         ScoringValidationError: Propagated from the scoring port or executor.
     """

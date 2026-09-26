@@ -160,6 +160,95 @@ def test_decide_categorical_rejects_unsupported_kwargs() -> None:
 
 
 @pytest.mark.unit
+def test_decide_categorical_permutations_one_control_still_scores() -> None:
+    schema = {
+        **_SINGLE_ENUM_SCHEMA,
+        "properties": {
+            "label": {
+                **_SINGLE_ENUM_SCHEMA["properties"]["label"],
+                "permutations": 1,
+            }
+        },
+    }
+    fake = ContractScoringFake(
+        logprobs={"billing": -0.5, "technical": -1.2},
+    )
+    result = decide_categorical(
+        field=schema,
+        prompt="Route.",
+        prefix="Answer:",
+        model="fake",
+        scoring_port=fake,
+        candidates=_specs("billing", "technical"),
+    )
+    assert len(fake.calls) == 1
+    assert result.value == "billing"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "field",
+    [
+        {
+            **_SINGLE_ENUM_SCHEMA,
+            "properties": {
+                "label": {
+                    **_SINGLE_ENUM_SCHEMA["properties"]["label"],
+                    "permutations": 2,
+                }
+            },
+        },
+        Decision(
+            "label",
+            "Pick.",
+            ("billing", "technical"),
+            syntax="Choice",
+            permutations=2,
+        ),
+    ],
+    ids=["schema_permutations_2", "decision_permutations_2"],
+)
+def test_decide_categorical_rejects_permutations_two_before_io(
+    field: Decision | dict[str, Any],
+) -> None:
+    fake = ContractScoringFake(logprobs={"billing": -0.5, "technical": -1.2})
+    with pytest.raises(DecisionExecutionError, match="permutation"):
+        decide_categorical(
+            field=field,
+            prompt="Route.",
+            prefix="Answer:",
+            model="fake",
+            scoring_port=fake,
+            candidates=_specs("billing", "technical"),
+        )
+    assert fake.calls == []
+
+
+@pytest.mark.unit
+def test_decide_categorical_rejects_permutations_all_before_io() -> None:
+    schema = {
+        **_SINGLE_ENUM_SCHEMA,
+        "properties": {
+            "label": {
+                **_SINGLE_ENUM_SCHEMA["properties"]["label"],
+                "permutations": "all",
+            }
+        },
+    }
+    fake = ContractScoringFake(logprobs={"billing": -0.5, "technical": -1.2})
+    with pytest.raises(DecisionExecutionError, match="permutation"):
+        decide_categorical(
+            field=schema,
+            prompt="Route.",
+            prefix="Answer:",
+            model="fake",
+            scoring_port=fake,
+            candidates=_specs("billing", "technical"),
+        )
+    assert fake.calls == []
+
+
+@pytest.mark.unit
 def test_decide_categorical_does_not_close_injected_port() -> None:
     class _CloseTrackingFake(ContractScoringFake):
         def __init__(self) -> None:

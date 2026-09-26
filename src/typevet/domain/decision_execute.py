@@ -1,5 +1,8 @@
 """IO-free categorical execution for closed Choice and Bool decisions.
 
+M1 execute rejects compiled ``permutations`` other than ``1`` before any
+scoring IO (permutation averaging is out of scope).
+
 Examples:
     ```python
     from typevet.domain.decision_execute import execute_categorical_decision
@@ -86,12 +89,23 @@ def _choice_label(choice: Any) -> str:
     return str(choice)
 
 
+def _reject_unsupported_permutations(decision: Decision) -> None:
+    if decision.permutations == 1:
+        return
+    msg = (
+        "permutation averaging is not supported in M1 categorical execute; "
+        "permutations must be 1"
+    )
+    raise DecisionExecutionError(msg)
+
+
 def _validate_inputs(
     decision: Decision,
     candidates: tuple[CandidateTokenSpec, ...],
     *,
     temperature: float,
 ) -> None:
+    _reject_unsupported_permutations(decision)
     if decision.syntax not in _CATEGORICAL_SYNTAX:
         msg = (
             f"unsupported decision syntax for categorical execute: {decision.syntax!r}"
@@ -184,8 +198,8 @@ def execute_categorical_decision(
         Selected value, full probability table, and raw logprobs.
 
     Raises:
-        DecisionExecutionError: Unsupported syntax, nullable field, alignment,
-            candidate shape, or invalid temperature.
+        DecisionExecutionError: Unsupported syntax, nullable field, permutations
+            other than ``1``, alignment, candidate shape, or invalid temperature.
         ScoringValidationError: Propagated when the port returns invalid scores.
     """
     _validate_inputs(decision, candidates, temperature=temperature)
