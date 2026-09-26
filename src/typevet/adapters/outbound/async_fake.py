@@ -24,6 +24,7 @@ Examples:
     ```
 
 See Also:
+    - [typevet.adapters.outbound.generation_finite][]: Non-finite float guard
     - [typevet.adapters.outbound.fake][]: Sync fake
     - [typevet.adapters.outbound.async_llama_cpp][]: Live llama.cpp adapter
 """
@@ -35,6 +36,7 @@ from typing import Any
 
 import jsonschema
 
+from typevet.adapters.outbound.generation_finite import reject_non_finite_numbers
 from typevet.domain.errors import GenerationError, SchemaValidationError
 from typevet.domain.models import GenerationRequest, GenerationResult
 
@@ -93,7 +95,7 @@ class AsyncFakeGenerationAdapter:
         Raises:
             Exception: The configured ``fail`` value when set.
             GenerationError: When the fake has no value source.
-            SchemaValidationError: When the fake value fails the schema.
+            SchemaValidationError: When the fake value is non-finite or fails schema.
         """
         if self._fail is not None:
             raise self._fail
@@ -106,11 +108,13 @@ class AsyncFakeGenerationAdapter:
             raise GenerationError(msg)
 
         schema_obj = dict(request.schema)
+        instance = dict(raw)
+        reject_non_finite_numbers(instance)
         try:
-            jsonschema.validate(instance=dict(raw), schema=schema_obj)
+            jsonschema.validate(instance=instance, schema=schema_obj)
         except jsonschema.ValidationError as exc:
             raise SchemaValidationError(
                 f"fake output failed schema: {exc.message}",
                 payload=raw,
             ) from exc
-        return GenerationResult(value=dict(raw), model=request.model, raw_text=None)
+        return GenerationResult(value=instance, model=request.model, raw_text=None)

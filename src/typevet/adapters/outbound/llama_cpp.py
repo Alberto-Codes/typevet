@@ -10,6 +10,7 @@ Examples:
 
 See Also:
     - [typevet.adapters.outbound.fake][]: Offline fake for tests
+    - [typevet.adapters.outbound.generation_finite][]: Non-finite float guard
     - [typevet.adapters.outbound.llama_cpp_http][]: Shared HTTP error mapping
     - [typevet.domain.errors][]: TransportError, BackendHttpError
     - [typevet.domain.models][]: GenerationRequest
@@ -24,6 +25,7 @@ from urllib.parse import urljoin
 import httpx
 import jsonschema
 
+from typevet.adapters.outbound.generation_finite import reject_non_finite_numbers
 from typevet.adapters.outbound.llama_cpp_http import (
     ensure_success_status,
     map_transport_error,
@@ -96,7 +98,7 @@ class LlamaCppGenerationAdapter:
             TransportError: When the HTTP client fails before a response.
             BackendHttpError: When llama.cpp returns HTTP status 400 or above.
             GenerationError: On other parse or response-shape failure.
-            SchemaValidationError: When the payload fails the schema (fail-fast).
+            SchemaValidationError: When the payload is non-finite or fails schema.
         """
         schema_obj = dict(request.schema)
         body: dict[str, Any] = {
@@ -136,6 +138,8 @@ class LlamaCppGenerationAdapter:
         if not isinstance(value, dict):
             msg = "model JSON root must be an object"
             raise SchemaValidationError(msg, payload=value)
+
+        reject_non_finite_numbers(value)
 
         try:
             jsonschema.validate(instance=value, schema=schema_obj)
