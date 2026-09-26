@@ -1,0 +1,97 @@
+{
+  "issue": 180,
+  "repair": "C10 swap donor re-pin (protocol)",
+  "prior_full_matrix_receipt": "scratchpad/gemma4-serve/180-visual-choice-receipt.json",
+  "prior_full_matrix_semantic": "15/16 pass; sole fail C10-swapped with wrong donor f18gc2",
+  "baseline_commit": "f37f5e1eacea7e8734f6ac10b3503403003f35a8",
+  "model_id": "gemma-4-31b-kv9-q4km-mm",
+  "served_template": "native_gemma4_turn",
+  "thinking_prefill_note": "Scoring prefixes use native Gemma 4 turn + GEMMA4_NO_THINKING_PREFILL (#187).",
+  "media_marker": "<__media_yzbHf8Hl77uigcWLp8Sd8q1xRDOJDjef__>",
+  "vision": true,
+  "c10_present_image": "cmcc8u6yc00va1p1ydsdu52zy",
+  "c10_swap_donor": "cmcc8u6yd00wr1p1yj7aot3ae",
+  "swap_donor_case": "C04 (freeze gold true, same Shop This Store instruction)",
+  "omitted_token_baseline": {
+    "source": "180-visual-choice-receipt.json C10-omitted-visibility",
+    "input_tokens": 94,
+    "note": "Repair budget is 2 scoring calls; \u0394tokens reuse rev2 omitted baseline."
+  },
+  "budget": {
+    "scoring_calls_this_repair": 2,
+    "cap": 2
+  },
+  "pass_rule": {
+    "present": "\u0394\u226550 and predicted matches gold false",
+    "swapped": "\u0394\u226550 and (predicted\u2260gold OR P(gold_key)_present \u2212 P(gold_key)_swapped \u2265 0.10)",
+    "paired_margin_floor": 0.1
+  },
+  "outcomes": [
+    {
+      "call_id": "C10-present-visibility",
+      "case_id": "C10",
+      "condition": "present",
+      "question": "Is an orange-outlined button labeled \"Shop This Store\" visible?",
+      "gold": "false",
+      "predicted": "false",
+      "pass_semantic": true,
+      "prefix_digest": "8ef7afd4396b922c8e7e2d9a809b1237efce89b99417f7b21e893833e8d8c1f7",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "true",
+        "false"
+      ],
+      "raw_logprobs": [
+        -13.388833999633789,
+        -0.00040151787106879056
+      ],
+      "raw_mass": 1.0000015327723302,
+      "normalized_probs": {
+        "true": 1.5327699807062977e-06,
+        "false": 0.9999984672300192
+      },
+      "input_tokens": 507,
+      "attachment_delta": 413,
+      "swap_donor_id": null,
+      "image_row_id": "cmcc8u6yc00va1p1ydsdu52zy",
+      "paired_margin_on_gold_key": null,
+      "seconds": 1.93,
+      "error": null
+    },
+    {
+      "call_id": "C10-swapped-visibility",
+      "case_id": "C10",
+      "condition": "swapped",
+      "question": "Is an orange-outlined button labeled \"Shop This Store\" visible?",
+      "gold": "false",
+      "predicted": "true",
+      "pass_semantic": true,
+      "prefix_digest": "8ef7afd4396b922c8e7e2d9a809b1237efce89b99417f7b21e893833e8d8c1f7",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "true",
+        "false"
+      ],
+      "raw_logprobs": [
+        -9.66834049904719e-05,
+        -11.308329582214355
+      ],
+      "raw_mass": 1.0000122714774022,
+      "normalized_probs": {
+        "true": 0.9999877286731851,
+        "false": 1.2271326814930177e-05
+      },
+      "input_tokens": 507,
+      "attachment_delta": 413,
+      "swap_donor_id": "cmcc8u6yd00wr1p1yj7aot3ae",
+      "image_row_id": "cmcc8u6yd00wr1p1yj7aot3ae",
+      "paired_margin_on_gold_key": 0.9999861959032043,
+      "seconds": 1.914,
+      "error": null
+    }
+  ],
+  "repair_accept": true,
+  "combined_180_accept_if_repair_pass": true
+}

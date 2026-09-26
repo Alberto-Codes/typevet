@@ -1,0 +1,734 @@
+{
+  "artifact_version": "vision_choice_probability_evidence_v1",
+  "issue": 180,
+  "parent_issue": 109,
+  "sources": {
+    "matrix_receipt_sha256": "83d7ece6fed48e887d9591adb1182407b01deb4c070c1a5dc66e3ec086692372",
+    "c10_repair_receipt_sha256": "76bd7e557ab31bb87263b1a96c9305991482dd3dc6fc052f6d7a91d13bffec47"
+  },
+  "model_id": "gemma-4-31b-kv9-q4km-mm",
+  "served_template": "native_gemma4_turn",
+  "baseline_commit": "f37f5e1eacea7e8734f6ac10b3503403003f35a8",
+  "prior_invalid_hub_matrix": {
+    "status": "INVALID protocol B (Hub category on task_name)",
+    "note": "180-matrix-post187-receipt.json used Hub category on task_name (protocol B). Void for rev2; not debited against rev2 cap."
+  },
+  "c10_donor_correction": {
+    "initial_matrix_swap_donor_c10": "cmcc8u6ym018l1p1yxhf18gc2",
+    "repaired_swap_donor_c10": "cmcc8u6yd00wr1p1yj7aot3ae",
+    "repair_scoring_calls": 2
+  },
+  "cumulative_scoring_calls": {
+    "rev2_visual_choice_matrix": 16,
+    "invalid_post187_hub_matrix": 16,
+    "c10_donor_repair": 2,
+    "note": "Invalid Hub matrix and rev2 matrix are separate runs; repair is additive."
+  },
+  "omitted_arms": {
+    "count": 4,
+    "semantic_credit": false,
+    "call_ids": [
+      "C01-omitted-visibility",
+      "C03-omitted-visibility",
+      "C08-omitted-visibility",
+      "C10-omitted-visibility"
+    ],
+    "note": "Four omitted visibility arms are expected non-credits."
+  },
+  "completeness_verdict": "Semantic evidence is complete for rev2 visual Choice plus C10 repair when sources match pinned SHA-256 digests. This is not a pristine 16/16 semantic pass: four omitted arms fail by design, the initial matrix had one swap fail before donor repair, and the earlier Hub matrix remains invalid.",
+  "summary": {
+    "present_pass": 4,
+    "swap_pass": 3,
+    "omitted_correctly_uncredited": 4,
+    "text_pass": 4,
+    "text_total": 4,
+    "semantic_pass_calls": 15,
+    "semantic_fail_calls": 1,
+    "total": 16,
+    "capability_accept": false
+  },
+  "budget": {
+    "contract_cap_scoring_calls": 16,
+    "this_run_scoring_calls": 16,
+    "prior_invalid_post187_matrix": 16,
+    "prior_invalid_note": "180-matrix-post187-receipt.json void under protocol B",
+    "remaining_after_run": 0
+  },
+  "matrix_outcomes": [
+    {
+      "call_id": "C01-omitted-visibility",
+      "case_id": "C01",
+      "condition": "omitted",
+      "question": "Is the Fox News Media logo visible in the screenshot?",
+      "gold": "true",
+      "predicted": "true",
+      "pass_semantic": false,
+      "prefix_digest": "6a34daa22d27159d0e3f8c9ef169f49203852800012e2f97caa632e7a9ff1bc6",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "true",
+        "false"
+      ],
+      "raw_logprobs": [
+        -5.15266227722168,
+        -6.921392440795898
+      ],
+      "raw_mass": 0.006770441040816295,
+      "normalized_probs": {
+        "true": 0.8542996834210924,
+        "false": 0.1457003165789076
+      },
+      "input_tokens": 91,
+      "attachment_delta": null,
+      "swap_donor_id": null,
+      "image_row_id": null,
+      "seconds": 1.432,
+      "error": null,
+      "recorded_raw_mass": 1.1705494212469356,
+      "legacy_denominator_mass": 1.1705494212469356,
+      "normalized_confidence_recomputed": {
+        "true": 0.8542996834210924,
+        "false": 0.1457003165789076
+      }
+    },
+    {
+      "call_id": "C01-present-visibility",
+      "case_id": "C01",
+      "condition": "present",
+      "question": "Is the Fox News Media logo visible in the screenshot?",
+      "gold": "true",
+      "predicted": "true",
+      "pass_semantic": true,
+      "prefix_digest": "086590d7245fca7ef5c027a5ff7b1aa027380a014411537f83d8cf644ed3513b",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "true",
+        "false"
+      ],
+      "raw_logprobs": [
+        -3.862455560010858e-05,
+        -16.361740112304688
+      ],
+      "raw_mass": 0.9999614545669427,
+      "normalized_probs": {
+        "true": 0.9999999216203544,
+        "false": 7.837964557006171e-08
+      },
+      "input_tokens": 504,
+      "attachment_delta": 413,
+      "swap_donor_id": null,
+      "image_row_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "seconds": 1.713,
+      "error": null,
+      "recorded_raw_mass": 1.0000000783796517,
+      "legacy_denominator_mass": 1.0000000783796517,
+      "normalized_confidence_recomputed": {
+        "true": 0.9999999216203544,
+        "false": 7.837964557006171e-08
+      }
+    },
+    {
+      "call_id": "C01-swapped-visibility",
+      "case_id": "C01",
+      "condition": "swapped",
+      "question": "Is the Fox News Media logo visible in the screenshot?",
+      "gold": "true",
+      "predicted": "false",
+      "pass_semantic": true,
+      "prefix_digest": "086590d7245fca7ef5c027a5ff7b1aa027380a014411537f83d8cf644ed3513b",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "true",
+        "false"
+      ],
+      "raw_logprobs": [
+        -12.567416191101074,
+        -0.0007354937260970473
+      ],
+      "raw_mass": 0.9992682603810924,
+      "normalized_probs": {
+        "true": 3.48624900423878e-06,
+        "false": 0.9999965137509957
+      },
+      "input_tokens": 504,
+      "attachment_delta": 413,
+      "swap_donor_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "image_row_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "seconds": 1.895,
+      "error": null,
+      "recorded_raw_mass": 1.0000034862611582,
+      "legacy_denominator_mass": 1.0000034862611582,
+      "normalized_confidence_recomputed": {
+        "true": 3.48624900423878e-06,
+        "false": 0.9999965137509957
+      }
+    },
+    {
+      "call_id": "C03-omitted-visibility",
+      "case_id": "C03",
+      "condition": "omitted",
+      "question": "Is a chat panel titled \"Magic Apron Beta\" visible?",
+      "gold": "true",
+      "predicted": "true",
+      "pass_semantic": false,
+      "prefix_digest": "9a8224b32ffa00cd609b5d8ba359b73f4320424723e6878f2cc89f5ab6914c69",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "true",
+        "false"
+      ],
+      "raw_logprobs": [
+        -3.0989975929260254,
+        -8.550803184509277
+      ],
+      "raw_mass": 0.045287772382991,
+      "normalized_probs": {
+        "true": 0.9957297588428815,
+        "false": 0.004270241157118485
+      },
+      "input_tokens": 93,
+      "attachment_delta": null,
+      "swap_donor_id": null,
+      "image_row_id": null,
+      "seconds": 1.352,
+      "error": null,
+      "recorded_raw_mass": 1.004288554318273,
+      "legacy_denominator_mass": 1.004288554318273,
+      "normalized_confidence_recomputed": {
+        "true": 0.9957297588428815,
+        "false": 0.004270241157118485
+      }
+    },
+    {
+      "call_id": "C03-present-visibility",
+      "case_id": "C03",
+      "condition": "present",
+      "question": "Is a chat panel titled \"Magic Apron Beta\" visible?",
+      "gold": "true",
+      "predicted": "true",
+      "pass_semantic": true,
+      "prefix_digest": "528664d0c2b48b424b7722fe28db5b1f4cf7d76b41f220f035bc4bb325b201c9",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "true",
+        "false"
+      ],
+      "raw_logprobs": [
+        -3.2663880119798705e-05,
+        -15.0762939453125
+      ],
+      "raw_mass": 0.9999676200852415,
+      "normalized_probs": {
+        "true": 0.9999997165589196,
+        "false": 2.834410803380671e-07
+      },
+      "input_tokens": 506,
+      "attachment_delta": 413,
+      "swap_donor_id": null,
+      "image_row_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "seconds": 1.758,
+      "error": null,
+      "recorded_raw_mass": 1.0000002834411608,
+      "legacy_denominator_mass": 1.0000002834411608,
+      "normalized_confidence_recomputed": {
+        "true": 0.9999997165589196,
+        "false": 2.834410803380671e-07
+      }
+    },
+    {
+      "call_id": "C03-swapped-visibility",
+      "case_id": "C03",
+      "condition": "swapped",
+      "question": "Is a chat panel titled \"Magic Apron Beta\" visible?",
+      "gold": "true",
+      "predicted": "false",
+      "pass_semantic": true,
+      "prefix_digest": "528664d0c2b48b424b7722fe28db5b1f4cf7d76b41f220f035bc4bb325b201c9",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "true",
+        "false"
+      ],
+      "raw_logprobs": [
+        -10.864052772521973,
+        -0.0033276549074798822
+      ],
+      "raw_mass": 0.9966970094262917,
+      "normalized_probs": {
+        "true": 1.9197234705979616e-05,
+        "false": 0.999980802765294
+      },
+      "input_tokens": 506,
+      "attachment_delta": 413,
+      "swap_donor_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "image_row_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "seconds": 1.89,
+      "error": null,
+      "recorded_raw_mass": 1.0000191976032469,
+      "legacy_denominator_mass": 1.0000191976032469,
+      "normalized_confidence_recomputed": {
+        "true": 1.9197234705979616e-05,
+        "false": 0.999980802765294
+      }
+    },
+    {
+      "call_id": "C08-omitted-visibility",
+      "case_id": "C08",
+      "condition": "omitted",
+      "question": "Is the page heading \"Privacy Policy\" visible?",
+      "gold": "false",
+      "predicted": "true",
+      "pass_semantic": false,
+      "prefix_digest": "5bf5db7ee94e2b8cf8527efa620393ea44cafa297beda37acf519bba10cde8f2",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "true",
+        "false"
+      ],
+      "raw_logprobs": [
+        -1.8004854917526245,
+        -8.557071685791016
+      ],
+      "raw_mass": 0.16541083768965734,
+      "normalized_probs": {
+        "true": 0.9988381581267737,
+        "false": 0.0011618418732263847
+      },
+      "input_tokens": 90,
+      "attachment_delta": null,
+      "swap_donor_id": null,
+      "image_row_id": null,
+      "seconds": 1.315,
+      "error": null,
+      "recorded_raw_mass": 1.001163193319932,
+      "legacy_denominator_mass": 1.001163193319932,
+      "normalized_confidence_recomputed": {
+        "true": 0.9988381581267737,
+        "false": 0.0011618418732263847
+      }
+    },
+    {
+      "call_id": "C08-present-visibility",
+      "case_id": "C08",
+      "condition": "present",
+      "question": "Is the page heading \"Privacy Policy\" visible?",
+      "gold": "false",
+      "predicted": "false",
+      "pass_semantic": true,
+      "prefix_digest": "7f3ddadbe74d014680fdf9aa1df393169bbdfc13581e8b7c11b44939e3a7faca",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "true",
+        "false"
+      ],
+      "raw_logprobs": [
+        -11.153575897216797,
+        -0.0008873703191056848
+      ],
+      "raw_mass": 0.9991273472518456,
+      "normalized_probs": {
+        "true": 1.4336485113304116e-05,
+        "false": 0.9999856635148866
+      },
+      "input_tokens": 503,
+      "attachment_delta": 413,
+      "swap_donor_id": null,
+      "image_row_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "seconds": 1.745,
+      "error": null,
+      "recorded_raw_mass": 1.000014336690651,
+      "legacy_denominator_mass": 1.000014336690651,
+      "normalized_confidence_recomputed": {
+        "true": 1.4336485113304116e-05,
+        "false": 0.9999856635148866
+      }
+    },
+    {
+      "call_id": "C08-swapped-visibility",
+      "case_id": "C08",
+      "condition": "swapped",
+      "question": "Is the page heading \"Privacy Policy\" visible?",
+      "gold": "false",
+      "predicted": "true",
+      "pass_semantic": true,
+      "prefix_digest": "7f3ddadbe74d014680fdf9aa1df393169bbdfc13581e8b7c11b44939e3a7faca",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "true",
+        "false"
+      ],
+      "raw_logprobs": [
+        -0.0002447070146445185,
+        -8.604050636291504
+      ],
+      "raw_mass": 0.999938684480068,
+      "normalized_probs": {
+        "true": 0.9998166272000084,
+        "false": 0.0001833727999917014
+      },
+      "input_tokens": 503,
+      "attachment_delta": 413,
+      "swap_donor_id": "cmcc8u6yc00va1p1ydsdu52zy",
+      "image_row_id": "cmcc8u6yc00va1p1ydsdu52zy",
+      "seconds": 1.836,
+      "error": null,
+      "recorded_raw_mass": 1.0001834064317425,
+      "legacy_denominator_mass": 1.0001834064317425,
+      "normalized_confidence_recomputed": {
+        "true": 0.9998166272000084,
+        "false": 0.0001833727999917014
+      }
+    },
+    {
+      "call_id": "C10-omitted-visibility",
+      "case_id": "C10",
+      "condition": "omitted",
+      "question": "Is an orange-outlined button labeled \"Shop This Store\" visible?",
+      "gold": "false",
+      "predicted": "true",
+      "pass_semantic": false,
+      "prefix_digest": "9523b9158165bd37f18feeed07bb241e2ea973c3f6b1404db91da209ad08eb3d",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "true",
+        "false"
+      ],
+      "raw_logprobs": [
+        -4.380624771118164,
+        -8.105113983154297
+      ],
+      "raw_mass": 0.012819526389307272,
+      "normalized_probs": {
+        "true": 0.9764429045727283,
+        "false": 0.023557095427271774
+      },
+      "input_tokens": 94,
+      "attachment_delta": null,
+      "swap_donor_id": null,
+      "image_row_id": null,
+      "seconds": 1.323,
+      "error": null,
+      "recorded_raw_mass": 1.0241254202544283,
+      "legacy_denominator_mass": 1.0241254202544283,
+      "normalized_confidence_recomputed": {
+        "true": 0.9764429045727283,
+        "false": 0.023557095427271774
+      }
+    },
+    {
+      "call_id": "C10-present-visibility",
+      "case_id": "C10",
+      "condition": "present",
+      "question": "Is an orange-outlined button labeled \"Shop This Store\" visible?",
+      "gold": "false",
+      "predicted": "false",
+      "pass_semantic": true,
+      "prefix_digest": "8ef7afd4396b922c8e7e2d9a809b1237efce89b99417f7b21e893833e8d8c1f7",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "true",
+        "false"
+      ],
+      "raw_logprobs": [
+        -13.388833999633789,
+        -0.00040151787106879056
+      ],
+      "raw_mass": 0.9996000948834624,
+      "normalized_probs": {
+        "true": 1.5327699807062977e-06,
+        "false": 0.9999984672300192
+      },
+      "input_tokens": 507,
+      "attachment_delta": 413,
+      "swap_donor_id": null,
+      "image_row_id": "cmcc8u6yc00va1p1ydsdu52zy",
+      "seconds": 1.732,
+      "error": null,
+      "recorded_raw_mass": 1.0000015327723302,
+      "legacy_denominator_mass": 1.0000015327723302,
+      "normalized_confidence_recomputed": {
+        "true": 1.5327699807062977e-06,
+        "false": 0.9999984672300192
+      }
+    },
+    {
+      "call_id": "C10-swapped-visibility",
+      "case_id": "C10",
+      "condition": "swapped",
+      "question": "Is an orange-outlined button labeled \"Shop This Store\" visible?",
+      "gold": "false",
+      "predicted": "false",
+      "pass_semantic": false,
+      "prefix_digest": "8ef7afd4396b922c8e7e2d9a809b1237efce89b99417f7b21e893833e8d8c1f7",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "true",
+        "false"
+      ],
+      "raw_logprobs": [
+        -13.114051818847656,
+        -0.0033449979964643717
+      ],
+      "raw_mass": 0.9966626069690675,
+      "normalized_probs": {
+        "true": 2.0234454235654666e-06,
+        "false": 0.9999979765545765
+      },
+      "input_tokens": 507,
+      "attachment_delta": 413,
+      "swap_donor_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "image_row_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "seconds": 1.904,
+      "error": null,
+      "recorded_raw_mass": 1.000002023449518,
+      "legacy_denominator_mass": 1.000002023449518,
+      "normalized_confidence_recomputed": {
+        "true": 2.0234454235654666e-06,
+        "false": 0.9999979765545765
+      }
+    },
+    {
+      "call_id": "TR-N1",
+      "case_id": "C01",
+      "condition": "text_only",
+      "question": "requires_login",
+      "gold": false,
+      "predicted": false,
+      "pass_semantic": true,
+      "prefix_digest": "26cdef7e7bbf1ba833278dea3db01dc5f92edd1be0905797754aed2054ff379c",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "False",
+        "True"
+      ],
+      "raw_logprobs": [
+        -0.010790660977363586,
+        -14.7718505859375
+      ],
+      "raw_mass": 0.9892677336575075,
+      "normalized_probs": {
+        "False": 0.9999996115340491,
+        "True": 3.884659509094842e-07
+      },
+      "input_tokens": 128,
+      "attachment_delta": null,
+      "swap_donor_id": null,
+      "image_row_id": null,
+      "seconds": 1.281,
+      "error": null,
+      "recorded_raw_mass": 1.0000003884661017,
+      "legacy_denominator_mass": 1.0000003884661017,
+      "normalized_confidence_recomputed": {
+        "False": 0.9999996115340491,
+        "True": 3.884659509094842e-07
+      }
+    },
+    {
+      "call_id": "TR-N2",
+      "case_id": "C08",
+      "condition": "text_only",
+      "question": "requires_login",
+      "gold": false,
+      "predicted": false,
+      "pass_semantic": true,
+      "prefix_digest": "ab7b3d9150aea441f1f72ffbca62c544b51bc834bf1db50c193c4bf4ab228c6b",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "False",
+        "True"
+      ],
+      "raw_logprobs": [
+        -0.22382527589797974,
+        -12.177755355834961
+      ],
+      "raw_mass": 0.7994599498002882,
+      "normalized_probs": {
+        "False": 0.9999935661440212,
+        "True": 6.433855978669495e-06
+      },
+      "input_tokens": 138,
+      "attachment_delta": null,
+      "swap_donor_id": null,
+      "image_row_id": null,
+      "seconds": 1.143,
+      "error": null,
+      "recorded_raw_mass": 1.0000064338973735,
+      "legacy_denominator_mass": 1.0000064338973735,
+      "normalized_confidence_recomputed": {
+        "False": 0.9999935661440212,
+        "True": 6.433855978669495e-06
+      }
+    },
+    {
+      "call_id": "TR-C1",
+      "case_id": "C03",
+      "condition": "text_only",
+      "question": "category",
+      "gold": "BROWSER_TASK",
+      "predicted": "BROWSER_TASK",
+      "pass_semantic": true,
+      "prefix_digest": "de7b6acbeb8539f6ef34acc82bc5300d65560615e1f9bab67c511c50ba41df25",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "BROWSER_TASK",
+        "COMPUTER_TASK"
+      ],
+      "raw_logprobs": [
+        -6.520960596390069e-05,
+        -14.003506660461426
+      ],
+      "raw_mass": 0.999935621138073,
+      "normalized_probs": {
+        "BROWSER_TASK": 0.9999991713287143,
+        "COMPUTER_TASK": 8.286712856814395e-07
+      },
+      "input_tokens": 132,
+      "attachment_delta": null,
+      "swap_donor_id": null,
+      "image_row_id": null,
+      "seconds": 1.158,
+      "error": null,
+      "recorded_raw_mass": 1.0000008286719724,
+      "legacy_denominator_mass": 1.0000008286719724,
+      "normalized_confidence_recomputed": {
+        "BROWSER_TASK": 0.9999991713287143,
+        "COMPUTER_TASK": 8.286712856814395e-07
+      }
+    },
+    {
+      "call_id": "TR-C2",
+      "case_id": "C10",
+      "condition": "text_only",
+      "question": "category",
+      "gold": "BROWSER_TASK",
+      "predicted": "BROWSER_TASK",
+      "pass_semantic": true,
+      "prefix_digest": "85f1cd3bc49f84e05dff72423cc17a77e9ed50793fddd82bc61e0f9d17b4f1bf",
+      "anchor_template": "native_gemma4_turn",
+      "anchor_ok": true,
+      "candidate_labels": [
+        "BROWSER_TASK",
+        "COMPUTER_TASK"
+      ],
+      "raw_logprobs": [
+        -0.001399005064740777,
+        -13.353665351867676
+      ],
+      "raw_mass": 0.9986035600862718,
+      "normalized_probs": {
+        "BROWSER_TASK": 0.999998410781125,
+        "COMPUTER_TASK": 1.5892188750133047e-06
+      },
+      "input_tokens": 126,
+      "attachment_delta": null,
+      "swap_donor_id": null,
+      "image_row_id": null,
+      "seconds": 1.153,
+      "error": null,
+      "recorded_raw_mass": 1.0000015892214007,
+      "legacy_denominator_mass": 1.0000015892214007,
+      "normalized_confidence_recomputed": {
+        "BROWSER_TASK": 0.999998410781125,
+        "COMPUTER_TASK": 1.5892188750133047e-06
+      }
+    }
+  ],
+  "c10_repair": {
+    "source_sha256": "76bd7e557ab31bb87263b1a96c9305991482dd3dc6fc052f6d7a91d13bffec47",
+    "outcomes": [
+      {
+        "call_id": "C10-present-visibility",
+        "case_id": "C10",
+        "condition": "present",
+        "question": "Is an orange-outlined button labeled \"Shop This Store\" visible?",
+        "gold": "false",
+        "predicted": "false",
+        "pass_semantic": true,
+        "prefix_digest": "8ef7afd4396b922c8e7e2d9a809b1237efce89b99417f7b21e893833e8d8c1f7",
+        "anchor_template": "native_gemma4_turn",
+        "anchor_ok": true,
+        "candidate_labels": [
+          "true",
+          "false"
+        ],
+        "raw_logprobs": [
+          -13.388833999633789,
+          -0.00040151787106879056
+        ],
+        "raw_mass": 0.9996000948834624,
+        "normalized_probs": {
+          "true": 1.5327699807062977e-06,
+          "false": 0.9999984672300192
+        },
+        "input_tokens": 507,
+        "attachment_delta": 413,
+        "swap_donor_id": null,
+        "image_row_id": "cmcc8u6yc00va1p1ydsdu52zy",
+        "paired_margin_on_gold_key": null,
+        "seconds": 1.93,
+        "error": null,
+        "recorded_raw_mass": 1.0000015327723302,
+        "legacy_denominator_mass": 1.0000015327723302,
+        "normalized_confidence_recomputed": {
+          "true": 1.5327699807062977e-06,
+          "false": 0.9999984672300192
+        }
+      },
+      {
+        "call_id": "C10-swapped-visibility",
+        "case_id": "C10",
+        "condition": "swapped",
+        "question": "Is an orange-outlined button labeled \"Shop This Store\" visible?",
+        "gold": "false",
+        "predicted": "true",
+        "pass_semantic": true,
+        "prefix_digest": "8ef7afd4396b922c8e7e2d9a809b1237efce89b99417f7b21e893833e8d8c1f7",
+        "anchor_template": "native_gemma4_turn",
+        "anchor_ok": true,
+        "candidate_labels": [
+          "true",
+          "false"
+        ],
+        "raw_logprobs": [
+          -9.66834049904719e-05,
+          -11.308329582214355
+        ],
+        "raw_mass": 0.9999155915597107,
+        "normalized_probs": {
+          "true": 0.9999877286731851,
+          "false": 1.2271326814930177e-05
+        },
+        "input_tokens": 507,
+        "attachment_delta": 413,
+        "swap_donor_id": "cmcc8u6yd00wr1p1yj7aot3ae",
+        "image_row_id": "cmcc8u6yd00wr1p1yj7aot3ae",
+        "paired_margin_on_gold_key": 0.9999861959032043,
+        "seconds": 1.914,
+        "error": null,
+        "recorded_raw_mass": 1.0000122714774022,
+        "legacy_denominator_mass": 1.0000122714774022,
+        "normalized_confidence_recomputed": {
+          "true": 0.9999877286731851,
+          "false": 1.2271326814930177e-05
+        }
+      }
+    ],
+    "swap_donor": "cmcc8u6yd00wr1p1yj7aot3ae",
+    "note": "Protocol repair: C10 swap donor re-pinned to opposite-gold C04 after neg/neg f18gc2 pin failed semantic swap."
+  }
+}
