@@ -138,6 +138,8 @@ balanced sample is not the raw intent distribution.
 
 ## Related typevet pages
 
+- [CLINC150 domain shard map](eval-clinc-shard-map.md) — complementary Choice
+  shards; **no** label mapping to Banking77 or **`FRAUD_INTENTS`** ([#66](https://github.com/Alberto-Codes/typevet/issues/66)).
 - [Eval partner data policy](eval-partner-data-policy.md) — public Banking77
   vs partner NBA exclusion.
 - [TypeLLM, Jev and judgevet](../explanation/typellm-and-judgevet.md) — Noul,

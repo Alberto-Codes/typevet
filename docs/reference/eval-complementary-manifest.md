@@ -30,8 +30,10 @@ accepted #54:
 - Prefer permissive licenses; **sample** large corpora.
 - Prioritize **primitive gaps** (especially Noul) over topic-matching JevBench.
 - Require a **pair `state` schema** before BoolQ, SNLI, or PubMedQA loaders.
-- Coordinate CLINC Choice sharding with Banking77 ([#58](https://github.com/Alberto-Codes/typevet/issues/58))
-  — do not invent a second intent map ([#53](https://github.com/Alberto-Codes/typevet/issues/53)).
+- CLINC uses **domain shards** only ([#66](https://github.com/Alberto-Codes/typevet/issues/66) accepted):
+  [CLINC150 domain shard map](eval-clinc-shard-map.md). **Separate loaders** from
+  Banking77 ([#58](https://github.com/Alberto-Codes/typevet/issues/58)); do not
+  reuse Banking77 intent maps or finvet **`FRAUD_INTENTS`** ([#53](https://github.com/Alberto-Codes/typevet/issues/53)).
 
 | Rank | Dataset | License | Decision |
 |---:|---|---|---|
@@ -39,8 +41,8 @@ accepted #54:
 | 2 | google/civil_comments | CC0 1.0 | Noul (toxicity threshold) |
 | 3 | qiaojin/PubMedQA (pqa_labeled) | MIT | Choice {yes, no, maybe} |
 | 4 | SemEval hyperpartisan | CC BY 4.0 | Noul |
-| 5 | clinc/clinc_oos | CC BY 3.0 | Choice (domain shards ≤24) |
-| 6 | go_emotions | Apache 2.0 | Choice (single-label policy) |
+| 5 | clinc/clinc_oos | CC BY 3.0 | Choice (10×15 domain shards; [map](eval-clinc-shard-map.md)) |
+| 6 | go_emotions | Apache 2.0 | Choice ([conversion + prune policy](go-emotions-conversion-and-prune.md)) |
 | 7 | stanfordnlp/snli | CC BY-SA 4.0 | Choice 3-way |
 
 Edit ranks in the YAML when research accepts a new revision; bump

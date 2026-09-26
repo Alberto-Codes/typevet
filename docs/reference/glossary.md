@@ -16,6 +16,12 @@ collapsed via finvet’s six `FRAUD_INTENTS` into binary fraud / not_fraud for
 Noul-primary metrics. See
 [Banking77 proxy and metrics](banking77-proxy-and-metrics.md).
 
+**CLINC domain shard.** One of ten topical domains in CLINC150 OOS eval
+(`domains.json`). Each shard exposes exactly **15** intent slugs as a single
+**Choice** task (≤24 labels). Shards do **not** map to Banking77 categories or
+finvet **`FRAUD_INTENTS`**. See
+[CLINC150 domain shard map](eval-clinc-shard-map.md).
+
 **composition root.** The process or module that reads configuration,
 constructs adapters, runs work, and closes adapters when work ends. A future
 typevet CLI or MCP inbound adapter owns this role. Direct library callers
