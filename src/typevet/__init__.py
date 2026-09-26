@@ -24,7 +24,9 @@ See Also:
     - [typevet.adapters.outbound][]: llama.cpp and fake adapters
 
 Attributes:
+    BackendHttpError (type): llama.cpp HTTP error status with body snippet.
     GenerationError (type): Base failure for a generation call.
+    TransportError (type): HTTP client failure before a response.
     AsyncGenerationPort (type): Structural protocol for async typed generation.
     GenerationPort (type): Structural protocol for typed generation.
     GenerationRequest (type): Prompt, schema and model ask.
@@ -33,18 +35,25 @@ Attributes:
     __version__ (str): Package version string.
 """
 
-from typevet.domain.errors import GenerationError, SchemaValidationError
+from typevet.domain.errors import (
+    BackendHttpError,
+    GenerationError,
+    SchemaValidationError,
+    TransportError,
+)
 from typevet.domain.models import GenerationRequest, GenerationResult
 from typevet.ports.async_generation import AsyncGenerationPort
 from typevet.ports.generation import GenerationPort
 
 __all__ = [
     "AsyncGenerationPort",
+    "BackendHttpError",
     "GenerationError",
     "GenerationPort",
     "GenerationRequest",
     "GenerationResult",
     "SchemaValidationError",
+    "TransportError",
 ]
 
 __version__ = "0.1.0"

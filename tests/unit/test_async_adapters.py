@@ -11,7 +11,7 @@ from typevet.adapters.outbound import (
     AsyncFakeGenerationAdapter,
     AsyncLlamaCppGenerationAdapter,
 )
-from typevet.domain.errors import GenerationError
+from typevet.domain.errors import GenerationError, TransportError
 from typevet.domain.models import GenerationRequest
 
 SCHEMA = {
@@ -59,7 +59,7 @@ def test_async_llama_transport_error() -> None:
 
     client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
     adapter = AsyncLlamaCppGenerationAdapter(base_url="http://test", client=client)
-    with pytest.raises(GenerationError, match="request failed"):
+    with pytest.raises(TransportError, match="request failed"):
         asyncio.run(
             adapter.generate(GenerationRequest(prompt="x", schema=SCHEMA, model="m"))
         )
@@ -145,7 +145,7 @@ def test_async_llama_owned_client_lifecycle() -> None:
             base_url="http://127.0.0.1:1",
             timeout=0.01,
         )
-        with pytest.raises(GenerationError, match="request failed"):
+        with pytest.raises(TransportError, match="request failed"):
             await adapter.generate(
                 GenerationRequest(prompt="x", schema=SCHEMA, model="m")
             )

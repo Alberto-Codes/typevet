@@ -8,7 +8,7 @@ import httpx
 import pytest
 
 from typevet.adapters.outbound import FakeGenerationAdapter, LlamaCppGenerationAdapter
-from typevet.domain.errors import GenerationError
+from typevet.domain.errors import GenerationError, TransportError
 from typevet.domain.models import GenerationRequest
 
 SCHEMA = {
@@ -104,7 +104,7 @@ def test_llama_transport_error() -> None:
 
     client = httpx.Client(transport=httpx.MockTransport(handler))
     adapter = LlamaCppGenerationAdapter(base_url="http://test", client=client)
-    with pytest.raises(GenerationError, match="request failed"):
+    with pytest.raises(TransportError, match="request failed"):
         adapter.generate(GenerationRequest(prompt="x", schema=SCHEMA, model="m"))
 
 

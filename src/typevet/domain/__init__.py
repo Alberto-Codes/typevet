@@ -25,7 +25,9 @@ See Also:
 
 Attributes:
     Decision (type): One compiled TypeLLM field from JSON Schema.
+    BackendHttpError (type): llama.cpp HTTP status 400 or above.
     GenerationError (type): Base failure for a generation call.
+    TransportError (type): HTTP client failure before a response.
     GenerationRequest (type): Prompt, schema and model ask.
     GenerationResult (type): Validated structured value.
     MAX_ENUM_CHOICES (int): Upper bound on enum size when compiling.
@@ -44,18 +46,25 @@ from typevet.domain.decisions import (
     SchemaError,
     dependency_layers,
 )
-from typevet.domain.errors import GenerationError, SchemaValidationError
+from typevet.domain.errors import (
+    BackendHttpError,
+    GenerationError,
+    SchemaValidationError,
+    TransportError,
+)
 from typevet.domain.models import GenerationRequest, GenerationResult
 
 __all__ = [
     "MAX_ENUM_CHOICES",
     "MAX_PERMUTATIONS",
+    "BackendHttpError",
     "Decision",
     "GenerationError",
     "GenerationRequest",
     "GenerationResult",
     "SchemaError",
     "SchemaValidationError",
+    "TransportError",
     "compile_json_schema",
     "dependency_layers",
 ]

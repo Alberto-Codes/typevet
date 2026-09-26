@@ -16,15 +16,21 @@ Parent: [#29](https://github.com/Alberto-Codes/typevet/issues/29).
 `typevet.domain`. They do not perform HTTP. Callers use them to classify bad
 input, unsupported schema shapes and invalid model output.
 
-**Adapter errors** are the same domain exception types raised from outbound
-adapters (`FakeGenerationAdapter`, `LlamaCppGenerationAdapter`). Adapters
-translate transport and parse failures into `GenerationError` and run
-`jsonschema` validation into `SchemaValidationError`. They do not define a
-parallel adapter-specific hierarchy.
+**Adapter errors** are domain exception types raised from outbound adapters
+(`FakeGenerationAdapter`, `LlamaCppGenerationAdapter`). Adapters translate
+httpx transport failures into `TransportError`, llama.cpp HTTP error statuses
+into `BackendHttpError`, other parse or shape failures into `GenerationError`,
+and run `jsonschema` validation into `SchemaValidationError`. They do not
+define a parallel adapter-specific hierarchy.
 
-The [generation port](../../src/typevet/ports/generation.py) documents the
-two failure modes every implementation may raise: `GenerationError` and
-`SchemaValidationError`.
+**Schema compilation** uses `SchemaError` (`ValueError` subclass) from
+`typevet.domain` when a JSON Schema mapping cannot be compiled. That happens
+before any generation port call. It is not a `GenerationError` and is never
+raised from `GenerationPort.generate`.
+
+The [generation port](../../src/typevet/ports/generation.py) documents failure
+modes every implementation may raise: `TransportError`, `BackendHttpError`,
+other `GenerationError` parse failures, and fail-fast `SchemaValidationError`.
 
 ## Generation failures
 
@@ -32,7 +38,9 @@ Export from `typevet` (package root) or `typevet.domain.errors`:
 
 | Type | Parent | Meaning |
 |---|---|---|
-| `GenerationError` | `Exception` | A generation call failed before a valid `GenerationResult` existed (transport, parse, or empty fake). |
+| `GenerationError` | `Exception` | A generation call failed before a valid `GenerationResult` existed (parse, shape, or empty fake). |
+| `TransportError` | `GenerationError` | The HTTP client failed before a usable response (`status_code` and `body_snippet` are `None`). |
+| `BackendHttpError` | `GenerationError` | llama.cpp returned HTTP status 400 or above; carries `status_code` and truncated `body_snippet` (500 chars max). |
 | `SchemaValidationError` | `GenerationError` | Parsed output failed JSON Schema validation. Optional `payload` holds the rejected value. |
 
 `SchemaValidationError` stores the message in standard exception `args`. When
@@ -77,8 +85,8 @@ POSTs to `v1/chat/completions` with `response_format` `json_schema`. HTTP status
 
 | Condition | Raised type | Typical message prefix |
 |---|---|---|
-| `httpx.HTTPError` on POST | `GenerationError` | `llama.cpp request failed:` |
-| HTTP status ≥ 400 | `GenerationError` | `llama.cpp HTTP {status}:` (body truncated to 500 chars) |
+| `httpx.HTTPError` on POST | `TransportError` | `llama.cpp request failed:` |
+| HTTP status ≥ 400 | `BackendHttpError` | `llama.cpp HTTP {status}:` (`body_snippet` truncated to 500 chars) |
 | Response body is not JSON | `GenerationError` | `llama.cpp returned non-JSON HTTP body` |
 | Missing or empty `choices[0].message.content` | `GenerationError` | `llama.cpp response missing…` or `empty message content` |
 | Message content is not valid JSON | `GenerationError` | `model content was not valid JSON` |
@@ -112,8 +120,9 @@ Use these boundaries when a caller adds retries:
 | Failure | Retry at generation layer? | Notes |
 |---|---|---|
 | `SchemaValidationError` | No (fail-fast) | Same prompt and schema may repeat the same invalid output; fix schema, prompt, or model. Adapter docstring: fail-fast on schema mismatch. |
-| `GenerationError` (HTTP 5xx, timeout, transport) | Optional caller policy | Not implemented in-repo; a supervisor may retry with backoff outside the adapter. |
-| `GenerationError` (HTTP 4xx, bad JSON shape) | Usually no | Often indicates router config, model id, or a non-recoverable response shape. |
+| `TransportError`, `BackendHttpError` (5xx) | Optional caller policy | Not implemented in-repo; a supervisor may retry with backoff outside the adapter. |
+| `BackendHttpError` (4xx) | Usually no | Router config, model id, or request the backend rejects. |
+| `GenerationError` (bad JSON shape on 2xx) | Usually no | Non-recoverable response shape from the model or router. |
 | `SchemaError`, `NotImplementedError` | No | Fix or narrow the schema before calling generation. |
 | `GenerationRequest` `ValueError` / `TypeError` | No | Fix the request object. |
 
@@ -121,21 +130,30 @@ Use these boundaries when a caller adds retries:
 `GenerationError`. Use `except SchemaValidationError` when validation failures
 need distinct handling (for example logging `payload`).
 
-Adapters do not catch arbitrary exceptions from `httpx` beyond mapping
-`httpx.HTTPError` to `GenerationError`. Other library or application errors
-propagate unless the caller handles them.
+Shared mapping lives in
+[`llama_cpp_http.py`](../../src/typevet/adapters/outbound/llama_cpp_http.py).
+Adapters map `httpx.HTTPError` to `TransportError` and HTTP status ≥ 400 to
+`BackendHttpError`. Other library or application errors propagate unless the
+caller handles them.
 
 The following example runs offline and prints nothing when its assertions pass.
 It demonstrates types only; it makes no network call.
 
 ```python
-from typevet import GenerationError, SchemaValidationError
+from typevet import BackendHttpError, GenerationError, SchemaValidationError
 from typevet.domain import SchemaError, compile_json_schema
 
 assert issubclass(SchemaValidationError, GenerationError)
+assert issubclass(BackendHttpError, GenerationError)
 
 err = SchemaValidationError("missing key", payload={"x": 1})
 assert err.payload == {"x": 1}
+
+http_err = BackendHttpError(
+    "llama.cpp HTTP 500: oops", status_code=500, body_snippet="oops"
+)
+assert http_err.status_code == 500
+assert http_err.body_snippet == "oops"
 
 try:
     compile_json_schema({"type": "array"})
@@ -143,13 +161,14 @@ except SchemaError:
     pass
 else:
     raise AssertionError("expected SchemaError")
+assert not issubclass(SchemaError, GenerationError)
 ```
 
 ## Public surface
 
 | Symbol | Import from |
 |---|---|
-| `GenerationError`, `SchemaValidationError` | `typevet` or `typevet.domain.errors` |
+| `GenerationError`, `TransportError`, `BackendHttpError`, `SchemaValidationError` | `typevet` or `typevet.domain.errors` |
 | `SchemaError`, `compile_json_schema`, `Decision` | `typevet.domain` |
 | `GenerationPort` | `typevet.ports.generation` |
 | `LlamaCppGenerationAdapter`, `FakeGenerationAdapter` | `typevet.adapters.outbound` |

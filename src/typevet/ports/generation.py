@@ -44,7 +44,12 @@ class GenerationPort(Protocol):
             A validated ``GenerationResult``.
 
         Raises:
-            typevet.domain.errors.GenerationError: On transport or parse failure.
-            typevet.domain.errors.SchemaValidationError: When output fails the schema.
+            typevet.domain.errors.TransportError: HTTP client failure (no response).
+            typevet.domain.errors.BackendHttpError: llama.cpp HTTP status 400+.
+            typevet.domain.errors.GenerationError: Other parse or shape failure.
+            typevet.domain.errors.SchemaValidationError: Output fails the schema
+                (fail-fast; not retried in-repo).
+            typevet.domain.decisions.SchemaError: Not raised here; raised by
+                ``compile_json_schema`` when the schema cannot be compiled.
         """
         ...

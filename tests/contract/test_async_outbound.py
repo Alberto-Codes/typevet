@@ -13,7 +13,10 @@ from typevet.adapters.outbound import (
     AsyncFakeGenerationAdapter,
     AsyncLlamaCppGenerationAdapter,
 )
-from typevet.domain.errors import GenerationError, SchemaValidationError
+from typevet.domain.errors import (
+    BackendHttpError,
+    SchemaValidationError,
+)
 from typevet.domain.models import GenerationRequest
 
 
@@ -102,7 +105,9 @@ def test_async_llama_cpp_adapter_http_error() -> None:
 
     client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
     adapter = AsyncLlamaCppGenerationAdapter(base_url="http://test", client=client)
-    with pytest.raises(GenerationError, match="HTTP 500"):
+    with pytest.raises(BackendHttpError, match="HTTP 500") as exc_info:
         asyncio.run(
             adapter.generate(GenerationRequest(prompt="x", schema=SCHEMA, model="m"))
         )
+    assert exc_info.value.status_code == 500
+    assert exc_info.value.body_snippet == "boom"

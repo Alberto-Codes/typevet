@@ -9,7 +9,10 @@ import pytest
 
 from tests.fixtures.generation_contract import CONTRACT_SCHEMA as SCHEMA
 from typevet.adapters.outbound import FakeGenerationAdapter, LlamaCppGenerationAdapter
-from typevet.domain.errors import GenerationError, SchemaValidationError
+from typevet.domain.errors import (
+    BackendHttpError,
+    SchemaValidationError,
+)
 from typevet.domain.models import GenerationRequest
 
 
@@ -87,5 +90,7 @@ def test_llama_cpp_adapter_http_error() -> None:
 
     client = httpx.Client(transport=httpx.MockTransport(handler))
     adapter = LlamaCppGenerationAdapter(base_url="http://test", client=client)
-    with pytest.raises(GenerationError, match="HTTP 500"):
+    with pytest.raises(BackendHttpError, match="HTTP 500") as exc_info:
         adapter.generate(GenerationRequest(prompt="x", schema=SCHEMA, model="m"))
+    assert exc_info.value.status_code == 500
+    assert exc_info.value.body_snippet == "boom"

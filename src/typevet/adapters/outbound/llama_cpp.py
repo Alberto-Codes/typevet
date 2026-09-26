@@ -10,6 +10,8 @@ Examples:
 
 See Also:
     - [typevet.adapters.outbound.fake][]: Offline fake for tests
+    - [typevet.adapters.outbound.llama_cpp_http][]: Shared HTTP error mapping
+    - [typevet.domain.errors][]: TransportError, BackendHttpError
     - [typevet.domain.models][]: GenerationRequest
 """
 
@@ -22,10 +24,13 @@ from urllib.parse import urljoin
 import httpx
 import jsonschema
 
+from typevet.adapters.outbound.llama_cpp_http import (
+    ensure_success_status,
+    map_transport_error,
+    parse_json_response,
+)
 from typevet.domain.errors import GenerationError, SchemaValidationError
 from typevet.domain.models import GenerationRequest, GenerationResult
-
-_HTTP_ERROR_STATUS = 400
 
 
 class LlamaCppGenerationAdapter:
@@ -88,7 +93,9 @@ class LlamaCppGenerationAdapter:
             Validated structured value.
 
         Raises:
-            GenerationError: On HTTP or JSON parse failure.
+            TransportError: When the HTTP client fails before a response.
+            BackendHttpError: When llama.cpp returns HTTP status 400 or above.
+            GenerationError: On other parse or response-shape failure.
             SchemaValidationError: When the payload fails the schema (fail-fast).
         """
         schema_obj = dict(request.schema)
@@ -114,18 +121,10 @@ class LlamaCppGenerationAdapter:
         try:
             response = client.post(url, json=body)
         except httpx.HTTPError as exc:
-            msg = f"llama.cpp request failed: {exc}"
-            raise GenerationError(msg) from exc
+            raise map_transport_error(exc) from exc
 
-        if response.status_code >= _HTTP_ERROR_STATUS:
-            msg = f"llama.cpp HTTP {response.status_code}: {response.text[:500]}"
-            raise GenerationError(msg)
-
-        try:
-            payload = response.json()
-        except json.JSONDecodeError as exc:
-            msg = "llama.cpp returned non-JSON HTTP body"
-            raise GenerationError(msg) from exc
+        ensure_success_status(response)
+        payload = parse_json_response(response)
 
         raw_text = self._extract_content(payload)
         try:
