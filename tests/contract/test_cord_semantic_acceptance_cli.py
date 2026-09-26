@@ -60,6 +60,12 @@ def test_cli_nonzero_on_malformed_json(tmp_path: Path) -> None:
     assert main([str(bad)]) == 2
 
 
+def test_cli_nonzero_on_non_object_json_root(tmp_path: Path) -> None:
+    bad = tmp_path / "array.json"
+    bad.write_text("[1, 2]", encoding="utf-8")
+    assert main([str(bad)]) == 2
+
+
 def test_cli_nonzero_on_missing_path() -> None:
     assert main(["/no/such/receipt.json"]) == 2
 

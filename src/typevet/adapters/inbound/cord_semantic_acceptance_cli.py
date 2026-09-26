@@ -69,7 +69,8 @@ def main(argv: list[str] | None = None) -> int:
 
     Returns:
         ``0`` when ``accepted`` is true, ``1`` when checks fail, ``2`` on
-        usage errors or malformed receipts.
+        usage errors, malformed receipts, or ``ValueError`` / ``TypeError`` from
+        parsing.
     """
     parser = _build_parser()
     parser.add_argument(
@@ -91,7 +92,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         receipt = _load_receipt(args.receipt)
         outcome = evaluate_combined_receipt(receipt)
-    except ValueError as exc:
+    except (ValueError, TypeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return _EXIT_USAGE_OR_MALFORMED
     print(format_semantic_acceptance_report(outcome))
