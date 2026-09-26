@@ -44,6 +44,7 @@ answers a question, and a reference gives facts.
 - [Run the image-conditioned live smoke](how-to/run-a-multimodal-live-smoke.md):
   opt-in vision check, `media=` calls, and the llama.cpp nested prompt shape.
 
+- [Run the CORD expense smoke](how-to/run-the-cord-expense-smoke.md) (how-to): 18 synthetic claims on six CORD receipts; semantic metrics + attachment gates ([#165](https://github.com/Alberto-Codes/typevet/issues/165)).
 - [Run the PSAI vision smoke](how-to/run-the-psai-vision-smoke.md): five
   vendored computer-use screenshots, annotation-backed and manual visual
   questions, and matched present / omitted / swapped image controls (#154).
