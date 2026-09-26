@@ -13,11 +13,12 @@ JSON MVP is a floor. It is not yet the TypeLLM decision model.
 |---|---|
 | **Jev (TypeSafe)** | Hosted System One model. Questions are Noul, Choice, Score. Answers carry probabilities (and confidence where defined). |
 | **judgevet** | Hex library around Jev: `SystemOnePort`, domain questions/answers, HTTP adapter, offline fakes, local policy. |
-| **TypeLLM** | Open-weight path to Jev-like typed decisions: compile JSON Schema → decisions, score single-token choices, optional numeric FSM, permutation averaging. Today wired to SGLang. |
+| **TypeLLM** | Open-weight path to Jev-like typed decisions: compile JSON Schema → decisions, score single-token choices, optional numeric FSM, optional permutation averaging (enum bias). Today wired to SGLang. |
 | **typevet** | Hex rebuild of that open path on llama.cpp (and later peers), without SGLang. |
 
 TypeLLM’s README states the inspiration explicitly and ships **JevBench**
-evals. judgevet’s docs stress the same trust split typevet must keep:
+evals under the published protocol (no permutation averaging). judgevet’s
+docs stress the same trust split typevet must keep:
 **valid structure ≠ correct judgment**; live transport proof ≠ calibration.
 
 ## What TypeLLM actually does
@@ -25,19 +26,23 @@ evals. judgevet’s docs stress the same trust split typevet must keep:
 Portable core (see also closed research [#2](https://github.com/Alberto-Codes/typevet/issues/2)):
 
 1. **`compile_json_schema`** → ordered `Decision` list (object root, properties,
-   enums ≤ 24, booleans, bounded integer/number, open string, `depends_on`,
-   optional `return_probabilities` / permutations).
+   enums ≤ 24, booleans, bounded integer/number, open string and enum strings
+   with `maxLength`, nullable via `["type","null"]`, `depends_on`, optional
+   `return_probabilities` / permutations). `required` is validated at compile
+   time; every property in the schema is still compiled and executed.
 2. **Runtime `Choice`** binds labels; builds Field / Type / Instructions /
    Answer prompts; prefills `{"name":` for open or choice continuations.
 3. **Categorical path** scores candidate token ids (logprobs), softmax,
-   argmax or sample; **permutation averaging** reduces option-order bias.
+   argmax or sample; optional **permutation averaging** reduces enum-order
+   bias in the product — the published JevBench protocol does not use it.
 4. **Numeric path** digit-by-digit FSM with tokenizer tables (not “dump a
    JSON number into a grammar and hope”).
 5. **SGLang glue** (`sglang.py`) is the HTTP/logprob/prefix-cache adapter —
    replaceable. The decision engine is not.
 
-Public call shape mirrors Jev’s vocabulary: `state` / `context`, `questions`
-or `schema`, `model` → a mapping of field answers (with optional
+Public call shape mirrors Jev’s vocabulary: exactly one of `state` or
+`context`, and exactly one of `questions` or `schema` (mutual exclusion in
+each pair), plus `model` → a mapping of field answers (with optional
 probabilities).
 
 ## What judgevet needs from a local backend
@@ -62,8 +67,8 @@ Approximate mapping (design target, not shipped):
 | judgevet | TypeLLM / typevet decision | Notes |
 |---|---|---|
 | Noul | boolean / two-label choice with probabilities | Noul has no separate confidence |
-| Choice | enum ≤ 24, `return_probabilities` | Permutation averaging matters |
-| Score | ordered levels as enum or dedicated score path | Weighted mean is application/TypeSafe semantics |
+| Choice | enum ≤ 24, `return_probabilities` | Optional permutation averaging (enum bias); not in JevBench protocol |
+| Score | closed integer/number enum only (no Score API; compiler rejects `x-score`) | Weighted mean is application/TypeSafe semantics |
 | state | TypeLLM `state` / `context` | Same role: content under evaluation |
 
 ## What the MVP has today
