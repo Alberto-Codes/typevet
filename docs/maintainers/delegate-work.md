@@ -46,6 +46,12 @@ The supervisor never spawns a sub agent to verify its own work.
 The supervisor never asks a worker to double-check itself.
 An acceptance review runs in a fresh agent, separate from the builder.
 
+**Never run a Claude Code sub agent on Fable.** Fable (Claude Fable) is a
+supervisor / main-conversation model only. On every Agent tool call, pass an
+explicit worker `model` (`haiku`, `sonnet`, or `opus` as the job needs). Do not
+use `fork` (it inherits Fable). Do not request Fable, `fable`, or any Fable
+alias as a worker or Cursor Task model.
+
 ## 1. Make the task ready
 
 Confirm the issue exists and is classified (`judgment` or `worker-fit`, size,

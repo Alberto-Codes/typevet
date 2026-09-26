@@ -63,6 +63,12 @@ commits. A worker follows its brief, skips session bookkeeping, and never
 commits, pushes or changes policy unless the brief assigns it. Each checkout
 has one writer. Workers preserve unrelated changes.
 
+**Fable is supervisor-only.** Never run a Claude Code sub agent (or any
+worker dispatch) on Fable / `fable`. Pass an explicit worker model on every
+Agent call. Do not `fork` from a Fable session. User-scope routing in
+`~/.claude/CLAUDE.md` is authoritative for Claude Code; this repo repeats the
+rule so every harness sees it.
+
 ## Issues before agents
 
 A research, port, design or implementation ask that will outlive one turn
