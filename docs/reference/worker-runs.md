@@ -42,6 +42,13 @@ typevet has three verified worker harnesses:
 Choose the worker independently from the supervisor. `worker-fit` on an issue
 authorizes any of these harnesses; it does not select one.
 
+**User-scope configuration** (global Claude/Cursor/Codex/Copilot/pi settings,
+skills, hooks, model defaults) may already exist on the operator machine. That
+is fine. Record the effective harness in the receipt. Do not treat missing
+in-repo harness chrome as a blocker when the user harness is set up. Project
+files here are the floor for a clean checkout, not the only allowed place to
+configure a harness.
+
 | Harness | Required launch evidence |
 |---|---|
 | pi | Installed version. Provider and model. Effective `--thinking` setting. Instruction loading. Tool permissions. Session identifier |

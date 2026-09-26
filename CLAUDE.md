@@ -168,8 +168,16 @@ by hand. `ty`, `lint-imports` and `pytest` stay in pre-commit and the gate
 table. Until the package exists, the hook exits quietly. **uv is required** for
 every gate command; never call ruff/ty/docvet/pytest outside `uv run`.
 
-Cursor CLI and other harnesses do not load this hook. Their briefs still
-require focused checks on edited files via `uv run`, then the full gate table.
+Cursor CLI and other harnesses do not load this Claude project hook. Their
+briefs still require focused checks on edited files via `uv run`, then the
+full gate table.
+
+**User-scope harness setup is allowed and not this repo's job.** If Claude,
+Cursor, Codex, Copilot or pi is already configured in the operator's user
+settings (hooks, permissions, models, skills), leave it. The repo ships
+project floors (`.claude/settings.json`, `.cursor/cli.json`, `AGENTS.md`) for
+checkouts that lack user config. Do not duplicate or fight a working
+user-level setup. Do not require every harness's full config to live in-tree.
 
 ### A summary is not evidence
 
