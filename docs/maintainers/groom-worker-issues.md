@@ -30,11 +30,13 @@ gh issue list -R Alberto-Codes/typevet --state open
 gh issue list -R Alberto-Codes/typevet --state all --search "<keywords>"
 ```
 
-If nothing matches, open a parent issue (or draft the body for the user to
-confirm). Prefer the GitHub issue forms under `.github/ISSUE_TEMPLATE/`
-(epic, bounded task, bug). Record observed need, desired outcome, non-goals,
-and a provisional done-when. Do not start research or implementation agents
-from chat alone.
+If nothing matches, open a parent or child issue. **Standing permission:**
+supervisors file and groom from research open questions, bugs and coding
+discoveries without waiting for chat confirmation when the ask is clear.
+Prefer the GitHub issue forms under `.github/ISSUE_TEMPLATE/` (epic, bounded
+task, bug). Record observed need, desired outcome, non-goals, and a
+provisional done-when. Do not start research or implementation agents from
+chat alone. Do not invent scope that contradicts an epic non-goal.
 
 ## 2. Classify
 
@@ -108,6 +110,10 @@ Hard stops:
 - Research that cannot name an accept-when stays `judgment` until a specifier
   or supervisor names it.
 - Never dispatch a tracker as one builder task.
+- For Python packages: prefer **flat modules** (one concern per file at the
+  layer). Flesh out each package `__init__.py` (re-exports + docs). Do not
+  nest a new subpackage until the layer clearly needs it. See `CLAUDE.md`
+  Architecture and the glossary term “flat module”.
 
 Each child has its own acceptance. Narrow repairs stay as named slices on the
 same issue when they share one acceptance boundary.
@@ -168,6 +174,12 @@ Use [delegate a bounded change](delegate-work.md) for the brief and acceptance.
 Record the run receipt on the issue. Link the commit with `Closes #N` or
 `Refs #N`. Leave remaining parent lines open with an explicit status comment.
 Verify leaves. Roll summaries up. Do not treat a child receipt as parent done.
+
+When a judgment locks a durable architecture choice, file a child under the
+ADR epic (or open that epic’s next scaffold/write task) so the decision lands
+in `docs/adr/`. Do not write the ADR on the judgment issue alone once the ADR
+log exists. Until the ADR epic is ready, the accepted judgment comment is
+enough.
 
 ## Labels this repo uses
 

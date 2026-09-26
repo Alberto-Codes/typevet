@@ -30,6 +30,17 @@ kind and one job:
 Do not mix kinds on one page. Name the kind in the page header. The README is
 the overview. Do not add a second summary file.
 
+### Architecture decision records (when ready)
+
+Durable architecture choices live under `docs/adr/` (sisters: automarket,
+gepa-adk). Prefer automarket’s shape: `NNNN-slug.md`, Context / Decision /
+Consequences, status Proposed → Accepted with a human mark.
+
+ADRs are not how-to pages and not the issue bus. File a write issue when a
+judgment locks and should outlive chat. Do not invent ADRs ahead of a locked
+decision. Tracker: GitHub epic “adopt ADR log”. See also
+[groom worker issues](../maintainers/groom-worker-issues.md).
+
 ## Conventional Commits is law
 
 Every commit follows [Conventional Commits

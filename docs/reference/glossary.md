@@ -11,13 +11,33 @@ in alphabetical order.
 **acceptance review.** An independent check of a builder's diff against the
 accepted issue contract. The reviewer changes no file.
 
+**Decision.** A TypeLLM-compiled field from JSON Schema (enum, boolean,
+bounded number or open string). The portable core executes Decisions; it is
+not the same as dumping a whole object through a grammar.
+
+**generation port.** typevet’s MVP `GenerationPort`: prompt + JSON Schema +
+model → validated object. The transport floor on llama.cpp. Not yet a
+System One judgment port.
+
+**Jev.** TypeSafe’s hosted System One model. judgevet calls it over HTTP.
+TypeLLM and typevet target open-weight typed decisions in the same family.
+
+**judgevet.** Sister hex client for Jev. Port shape: `system_one(state,
+questions, model)` with Noul / Choice / Score answers and probabilities. A
+future consumer of typevet if typevet exposes a compatible judgment surface.
+
+**System One.** TypeSafe’s typed-judgment model family (Noul, Choice, Score).
+TypeLLM is explicitly inspired by it. typevet aims at a local open path to
+similar guarantees.
+
 **Copilot.** GitHub Copilot CLI (`copilot`). Present on this operator
 machine. For typevet worker dispatches, request `--model auto` only. Named
 Copilot models (including Fable) are out.
 
-**Diátaxis.** Documentation standard at [diataxis.fr](https://diataxis.fr/).
-Every page is one kind: tutorial, how-to, explanation or reference. Law in
-this repo.
+**flat module.** One concern in one `.py` file at the package level. Prefer
+`domain/models.py` over a nested `domain/models/` package. Package
+`__init__.py` files re-export the public surface and carry full module docs
+so agents and callers can discover names from the init.
 
 **glossary.** The one allowed meaning of each domain term. One term per
 concept. The writing system binds prose to it.

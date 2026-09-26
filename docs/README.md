@@ -11,6 +11,23 @@ answers a question, and a reference gives facts.
 - [README.md](../README.md) (explanation): what typevet is and where the
   worker harness lives.
 
+## Explanation
+
+- [TypeLLM, Jev and judgevet](explanation/typellm-and-judgevet.md): why the
+  grammar-JSON MVP is a floor, what TypeLLM’s decision runtime preserves, and
+  how judgevet could consume typevet later.
+
+## How-to
+
+- [Run Gemma 4 on llama.cpp](how-to/run-gemma4-llamacpp.md): local router,
+  preset, and live pytest for the MVP path.
+
+## Architecture decisions (planned)
+
+`docs/adr/` is not present yet. When hex and related judgments lock, add an
+ADR log in the automarket shape (`NNNN-slug.md`). Tracked on the “adopt ADR
+log” epic. Until then, accepted judgment comments on issues are the record.
+
 ## Reference
 
 - [Glossary](reference/glossary.md) (reference): the one meaning of each term.

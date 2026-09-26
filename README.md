@@ -2,9 +2,14 @@
 
 Kind: explanation, the project overview.
 
-typevet evaluates and hardens type-safe generation around
-[TypeLLM](https://github.com/TypeLLM/TypeLLM). The product surface is still
-forming.
+typevet delivers type-safe structured generation under hexagonal architecture.
+The MVP path is **local llama.cpp** with **Gemma 4** (schema in → validated
+JSON out). That is the transport floor. The product spine follows
+[TypeLLM](https://github.com/TypeLLM/TypeLLM)’s decision model (Jev-inspired)
+so sisters like [judgevet](https://github.com/Alberto-Codes/judgevet) can
+consume a local System One–shaped backend later. See
+[TypeLLM, Jev and judgevet](docs/explanation/typellm-and-judgevet.md).
+No SGLang dependency.
 
 It shares the supervised-worker pattern with
 [judgevet](https://github.com/Alberto-Codes/judgevet),
@@ -12,6 +17,18 @@ It shares the supervised-worker pattern with
 [gepa-adk](https://github.com/Alberto-Codes/gepa-adk),
 [automarket](https://github.com/Alberto-Codes/automarket) and
 [docvet](https://github.com/Alberto-Codes/docvet).
+
+## Quick start (MVP)
+
+```bash
+uv sync
+uv run pre-commit install --hook-types pre-commit --hook-types pre-push --hook-types commit-msg
+uv run pytest -q
+# optional live (loads Gemma 4 on the local router; slow first load):
+uv run pytest -m live -q
+```
+
+See [Run Gemma 4 on llama.cpp](docs/how-to/run-gemma4-llamacpp.md).
 
 ## How work moves
 

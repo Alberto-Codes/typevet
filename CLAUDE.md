@@ -10,9 +10,10 @@ Kind: reference and how-to, for agents. Guidance for coding agents. `AGENTS.md` 
    multi-step plan only in chat when an issue should exist.
 3. List open issues before inventing work:
    `gh issue list -R Alberto-Codes/typevet --state open`.
-4. If the user states a new goal and no issue captures it, **file or update an
-   issue first** (or draft the body and ask to file). Then triage, size and
-   split. Only then delegate.
+4. If a new goal, research open question, bug or coding discovery needs a
+   durable ask and no issue captures it, **file or update an issue**. Standing
+   permission: do not wait for chat approval when the ask is clear. Then
+   triage, size and split. Only then delegate.
 5. Use [groom worker issues](docs/maintainers/groom-worker-issues.md) for the
    select → classify → split → contract path. Use
    [delegate a bounded change](docs/maintainers/delegate-work.md) only after a
@@ -78,6 +79,11 @@ the resolved identity if the receipt shows one; otherwise `unknown`.
 
 A research, port, design or implementation ask that will outlive one turn
 belongs on a GitHub issue before a worker runs.
+
+**Standing permission to open and groom.** Supervisors may file, label, split
+and groom issues from research returns, bugs and where coding takes the work
+without waiting for chat approval. List open and closed issues first to avoid
+duplicates. Do not invent product scope that contradicts an epic non-goal.
 
 - **Parent / epic** (`size-L`): the goal and combined done-when. Not one
   builder dispatch.
@@ -154,19 +160,37 @@ repeated context. Explicit user scope and required gates still govern.
 
 ## Architecture
 
-The package layout is not fixed yet. Prefer small modules, typed public
-surfaces and one inbound adapter for the CLI when that exists. Record lasting
-decisions in docs or issue contracts, not only in chat.
+Hex layers are fixed for the MVP (`domain` / `ports` / `adapters` /
+`testing`). Within a layer, prefer **flat modules**:
+
+- One concern → one module file at that package level
+  (`domain/models.py`, not `domain/models/request.py`).
+- Do not add a nested package until several modules clearly share a
+  sub-boundary and import-linter needs it.
+- Every package `__init__.py` is a real surface: module docstring
+  (Attributes / Examples / See Also as docvet requires), `__all__`, and
+  re-exports of the public names. Do not leave empty or one-line inits.
+- Public imports prefer the package path (`from typevet.domain import …`)
+  so agents and callers discover the surface from the init.
+
+Record lasting decisions in docs, ADRs or issue contracts, not only in chat.
 
 ## Build and gates
 
-Gates are not installed yet. Until they are, the brief names every required
-check. When a gate lands, add it to this table and to the hooks in the same
-change.
-
 | gate | command |
 |---|---|
-| _(none yet)_ | named in the brief; see #7 for the planned table |
+| ruff | `uv run ruff check .` and `uv run ruff format --check .` |
+| ty | `uv run ty check` |
+| import-linter | `uv run lint-imports` |
+| loc | `uv run python scripts/check_loc.py src` |
+| docvet | `uv run docvet check --all` |
+| pytest | `uv run pytest -q` |
+| coverage (push) | `uv run pytest -q --cov=typevet --cov-report=term-missing` |
+| commit-msg | `uv run python scripts/check_commit_msg.py` (hook) |
+
+Install hooks once per clone:
+
+`uv run pre-commit install -t pre-commit -t pre-push -t commit-msg`
 
 ### Gates run themselves (Claude Code)
 

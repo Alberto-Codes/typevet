@@ -13,3 +13,4 @@ build/
 .envrc
 scratchpad/
 .claude/worktrees/
+.serena/
