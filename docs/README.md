@@ -50,6 +50,7 @@ log” epic. Until then, accepted judgment comments on issues are the record.
 - [go_emotions conversion and prune](reference/go-emotions-conversion-and-prune.md) (reference): strict exactly-one gold, 24-enum prune, neutral co-label rule.
 - [CLINC150 domain shard map](reference/eval-clinc-shard-map.md) (reference): 10×15 Choice shards; CC BY 3.0; no Banking77 / FRAUD_INTENTS mapping.
 - [DIFrauD loader and is_scam fixture](reference/eval-difraud-loader.md) (reference): SMS-default domain flag, natural binary Noul, class imbalance notes.
+- [Civil Comments loader and is_toxic fixture](reference/eval-civil-comments-loader.md) (reference): τ=0.5 toxicity Noul, balanced tiers A/B, sensitive-text policy.
 - [Complementary eval manifest](reference/eval-complementary-manifest.md) (reference): JevBench-primary ranked open sets; see also `evals/`.
 - [Glossary](reference/glossary.md) (reference): the one meaning of each term.
 - [Supported imports](reference/supported-imports.md) (reference): package

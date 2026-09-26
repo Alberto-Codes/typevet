@@ -1,0 +1,17 @@
+# Seeded Civil Comments eval tiers (#65 accepted, loader #72).
+manifest_version: 1
+loader_issue: 72
+research_issue: 65
+dataset_id: google/civil_comments
+split: test
+toxicity_threshold: 0.5
+default_seed: 0
+tiers:
+  A:
+    total_limit: 200
+    balanced: true
+    per_class: 100
+  B:
+    total_limit: 2000
+    balanced: true
+    per_class: 1000

@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "is_toxic": {
+      "type": "boolean",
+      "instructions": "Is this comment toxic or harmful to others?",
+      "return_probabilities": true
+    }
+  },
+  "required": ["is_toxic"],
+  "additionalProperties": false
+}
