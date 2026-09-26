@@ -17,6 +17,7 @@ re-litigate dataset research.
 | [fixtures/pubmedqa_answer_choice_schema_v1.json](fixtures/pubmedqa_answer_choice_schema_v1.json) | Versioned yes/no/maybe Choice schema for PubMedQA (#78) |
 | [fixtures/boolq_answer_noul_schema_v1.json](fixtures/boolq_answer_noul_schema_v1.json) | Versioned `answer` Noul JSON Schema for BoolQ (#77) |
 | [fixtures/boolq_tier_manifest_v1.yaml](fixtures/boolq_tier_manifest_v1.yaml) | Seeded tier A/B limits and CC BY-SA smoke policy (#77) |
+| [fixtures/go_emotions_emotion_choice_schema_v1.json](fixtures/go_emotions_emotion_choice_schema_v1.json) | Versioned 24-emotion Choice schema for go_emotions (#79) |
 
 Human-readable commentary and epic links:
 [Eval complementary manifest](../docs/reference/eval-complementary-manifest.md).

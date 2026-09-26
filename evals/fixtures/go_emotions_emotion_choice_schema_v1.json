@@ -1,0 +1,37 @@
+{
+  "type": "object",
+  "properties": {
+    "emotion": {
+      "type": "string",
+      "enum": [
+        "admiration",
+        "amusement",
+        "anger",
+        "annoyance",
+        "approval",
+        "caring",
+        "confusion",
+        "curiosity",
+        "desire",
+        "disappointment",
+        "disapproval",
+        "disgust",
+        "embarrassment",
+        "excitement",
+        "fear",
+        "gratitude",
+        "joy",
+        "love",
+        "optimism",
+        "realization",
+        "remorse",
+        "sadness",
+        "surprise",
+        "neutral"
+      ],
+      "instructions": "Given the user message, which single emotion label best applies?"
+    }
+  },
+  "required": ["emotion"],
+  "additionalProperties": false
+}
