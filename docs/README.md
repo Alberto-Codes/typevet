@@ -1,0 +1,25 @@
+# typevet documentation
+
+Kind: reference, the index. This page lists every typevet page and its kind.
+
+The pages follow [Diátaxis](https://diataxis.fr/). Each page is one of four
+kinds: a tutorial teaches, a how-to gives steps for a task, an explanation
+answers a question, and a reference gives facts.
+
+## Overview
+
+- [README.md](../README.md) (explanation): what typevet is and where the
+  worker harness lives.
+
+## Reference
+
+- [Glossary](reference/glossary.md) (reference): the one meaning of each term.
+- [Worker runs](reference/worker-runs.md) (reference): the launch evidence and
+  commit trailers for each worker.
+
+## For maintainers and agents
+
+- [CLAUDE.md](../CLAUDE.md) (reference and how-to, for agents): the
+  non-negotiables, the gate table and the commit rules.
+- [Delegate a bounded change](maintainers/delegate-work.md) (how-to, for
+  maintainers): the procedure for supervised work.
