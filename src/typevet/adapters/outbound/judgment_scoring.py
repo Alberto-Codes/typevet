@@ -14,6 +14,7 @@ Examples:
 See Also:
     - [typevet.ports.judgment][]: JudgmentPort protocol
     - [typevet.domain.judgment_normalize][]: Normalize and control bind
+    - [typevet.domain.media][]: Images the keyword-only ``media`` argument takes
 """
 
 from __future__ import annotations
@@ -42,6 +43,7 @@ from typevet.domain.judgment_normalize import (
 )
 from typevet.domain.judgment_questions import Choice, Noul, Question, Score
 from typevet.domain.judgment_response import JudgmentResponse, TokenUsage
+from typevet.domain.media import MEDIA_MARKER, ImageInput
 from typevet.field_prompt import compose_scoring_prefix, render_field_instructions
 from typevet.ports.scoring import CandidateScoringPort
 
@@ -139,6 +141,25 @@ def _state_context(state: str | dict[str, Any] | list[Any]) -> str:
     return json.dumps(state, ensure_ascii=False)
 
 
+def _media_context(
+    state: str | dict[str, Any] | list[Any],
+    media: tuple[ImageInput, ...],
+) -> str:
+    """Prepend one media marker per image to the rendered state context.
+
+    Args:
+        state: Content under evaluation.
+        media: Images the scoring prefix must mark.
+
+    Returns:
+        Context text whose marker count matches ``len(media)``.
+    """
+    context = _state_context(state)
+    if not media:
+        return context
+    return "\n".join([MEDIA_MARKER] * len(media) + [context])
+
+
 class ScoringJudgmentAdapter:
     """JudgmentPort implementation using injected candidate scoring.
 
@@ -171,16 +192,21 @@ class ScoringJudgmentAdapter:
         state: str | dict[str, Any] | list[Any],
         questions: Mapping[str, Question | Mapping[str, Any]],
         model: str,
+        *,
+        media: tuple[ImageInput, ...] | None = None,
     ) -> JudgmentResponse:
         """Validate all questions, score sequentially, return typed answers.
 
         Builds a scoring prefix whose field block maps each ordinal control
-        string to the public answer label before calling the scorer.
+        string to the public answer label before calling the scorer. When
+        ``media`` is non-empty, every field prefix carries one ``MEDIA_MARKER``
+        per image and every scoring request carries the same image tuple.
 
         Args:
             state: Content under evaluation (text or JSON-serializable value).
             questions: Named native questions.
             model: Backend model id forwarded to the scorer.
+            media: Images to condition every scored field on, in order.
 
         Returns:
             ``JudgmentResponse`` with one typed answer per question id.
@@ -191,6 +217,8 @@ class ScoringJudgmentAdapter:
         """
         if not model.strip():
             raise JudgmentValidationError("model must be non-empty")
+        images = media or ()
+        context = _media_context(state, images)
         prepared: list[
             tuple[str, Question, Decision, tuple[CandidateTokenSpec, ...], str]
         ] = []
@@ -208,7 +236,7 @@ class ScoringJudgmentAdapter:
                 original_labels=originals,
             )
             prefix = compose_scoring_prefix(
-                context=_state_context(state),
+                context=context,
                 field_block=field_block,
             )
             prepared.append((name, raw, decision, candidates, prefix))
@@ -224,6 +252,7 @@ class ScoringJudgmentAdapter:
                 port=self._port,
                 model=model,
                 temperature=self._temperature,
+                media=images,
             )
             answers[name] = answer_from_execution(raw, executed)
             result_model = executed.model
@@ -260,6 +289,7 @@ def judge_with_scoring(
     scoring_port: CandidateScoringPort,
     tokenize_content: Callable[[str], Sequence[int]],
     temperature: float = 1.0,
+    media: tuple[ImageInput, ...] | None = None,
 ) -> JudgmentResponse:
     """One-shot judgment via ``ScoringJudgmentAdapter``.
 
@@ -270,6 +300,7 @@ def judge_with_scoring(
         scoring_port: Injected candidate scorer.
         tokenize_content: Control-string tokenizer hook.
         temperature: Softmax temperature for execute.
+        media: Images to condition every scored field on, in order.
 
     Returns:
         ``JudgmentResponse`` from a fresh adapter instance.
@@ -278,4 +309,4 @@ def judge_with_scoring(
         scoring_port,
         tokenize_content=tokenize_content,
         temperature=temperature,
-    ).judge(state, questions, model)
+    ).judge(state, questions, model, media=media)

@@ -22,6 +22,7 @@ See Also:
     - [typevet.adapters.outbound.llama_cpp][]: Sync llama.cpp adapter
     - [typevet.adapters.diagnostics.settings][]: ``TYPEVET_LOG__*`` settings
     - docs/reference/configuration.md: Environment variable reference
+    - docs/how-to/run-a-multimodal-live-smoke.md: ``multimodal_model`` consumer
 """
 
 from __future__ import annotations
@@ -34,6 +35,7 @@ from typevet.adapters.outbound.llama_cpp import LlamaCppGenerationAdapter
 
 _DEFAULT_BASE_URL = "http://127.0.0.1:8090"
 _DEFAULT_TIMEOUT = 300.0
+_DEFAULT_MULTIMODAL_MODEL = "gemma-3-4b-it-q4km-mm"
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,6 +46,7 @@ class LlamaSettings:
         base_url (str): Router root without a trailing slash.
         timeout (float): HTTP request timeout in seconds.
         default_model (str | None): Default model id when a call omits one.
+        multimodal_model (str): Model id the opt-in image smoke asks for.
 
     Examples:
         ```python
@@ -56,6 +59,7 @@ class LlamaSettings:
     base_url: str = _DEFAULT_BASE_URL
     timeout: float = _DEFAULT_TIMEOUT
     default_model: str | None = None
+    multimodal_model: str = _DEFAULT_MULTIMODAL_MODEL
 
 
 def _read_base_url(source: Mapping[str, str]) -> str:
@@ -74,6 +78,11 @@ def _read_default_model(source: Mapping[str, str]) -> str | None:
         return nested
     legacy = source.get("TYPEVET_GEMMA_MODEL", "").strip()
     return legacy or None
+
+
+def _read_multimodal_model(source: Mapping[str, str]) -> str:
+    nested = source.get("TYPEVET_LLAMA__MULTIMODAL_MODEL", "").strip()
+    return nested or _DEFAULT_MULTIMODAL_MODEL
 
 
 def _read_timeout(source: Mapping[str, str]) -> float:
@@ -98,6 +107,8 @@ def load_llama_settings(
 
     Legacy single-segment names ``TYPEVET_LLAMA_URL`` and ``TYPEVET_GEMMA_MODEL``
     remain supported when the nested names are unset.
+    ``TYPEVET_LLAMA__MULTIMODAL_MODEL`` names the model id for the opt-in image
+    smoke and has no legacy alias.
 
     Args:
         environ: Mapping to read. Defaults to ``os.environ``.
@@ -113,6 +124,7 @@ def load_llama_settings(
         base_url=_read_base_url(source),
         timeout=_read_timeout(source),
         default_model=_read_default_model(source),
+        multimodal_model=_read_multimodal_model(source),
     )
 
 

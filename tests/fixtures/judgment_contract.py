@@ -19,6 +19,7 @@ from typevet.domain.judgment_answers import (
 )
 from typevet.domain.judgment_questions import Choice, Noul, Question, Score
 from typevet.domain.judgment_response import JudgmentResponse, TokenUsage
+from typevet.domain.media import ImageInput
 
 
 def _choice_answer(label: str, options: Mapping[str, Any]) -> ChoiceAnswer:
@@ -72,14 +73,18 @@ class ContractJudgmentFake:
         self.calls: list[
             tuple[Any, Mapping[str, Question | Mapping[str, Any]], str]
         ] = []
+        self.media_calls: list[tuple[ImageInput, ...]] = []
 
     def judge(
         self,
         state: str | dict[str, Any] | list[Any],
         questions: Mapping[str, Question | Mapping[str, Any]],
         model: str,
+        *,
+        media: tuple[ImageInput, ...] | None = None,
     ) -> JudgmentResponse:
         self.calls.append((state, questions, model))
+        self.media_calls.append(media or ())
         if self._fail is not None:
             raise self._fail
         if not model.strip():

@@ -36,6 +36,28 @@ def test_load_llama_settings_nested_env() -> None:
 
 
 @pytest.mark.unit
+def test_load_llama_settings_defaults_the_multimodal_model() -> None:
+    assert load_llama_settings({}).multimodal_model == "gemma-3-4b-it-q4km-mm"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "raw",
+    ["gemma-vision", "  gemma-vision  "],
+    ids=["plain", "padded"],
+)
+def test_load_llama_settings_reads_multimodal_model(raw: str) -> None:
+    settings = load_llama_settings({"TYPEVET_LLAMA__MULTIMODAL_MODEL": raw})
+    assert settings.multimodal_model == "gemma-vision"
+
+
+@pytest.mark.unit
+def test_load_llama_settings_ignores_blank_multimodal_model() -> None:
+    settings = load_llama_settings({"TYPEVET_LLAMA__MULTIMODAL_MODEL": "   "})
+    assert settings.multimodal_model == "gemma-3-4b-it-q4km-mm"
+
+
+@pytest.mark.unit
 def test_load_llama_settings_legacy_aliases() -> None:
     settings = load_llama_settings(
         {

@@ -16,6 +16,7 @@ from typevet.domain.judgment_answers import (
 )
 from typevet.domain.judgment_questions import Choice, Noul, Question, Score
 from typevet.domain.judgment_response import JudgmentResponse, TokenUsage
+from typevet.domain.media import ImageInput
 from typevet.evaluation.tpjep.loader import TpjepScheduledTask
 from typevet.evaluation.tpjep.outcome import outcome_from_answer, prob_valid
 from typevet.evaluation.tpjep.runner import TpjepRunConfig, run_tpjep_tasks
@@ -76,8 +77,10 @@ class _ScriptedJudgmentPort:
         state: str | dict[str, Any] | list[Any],
         questions: Mapping[str, Question | Mapping[str, Any]],
         model: str,
+        *,
+        media: tuple[ImageInput, ...] | None = None,
     ) -> JudgmentResponse:
-        del state
+        del state, media
         return JudgmentResponse(
             model=model,
             usage=TokenUsage(),

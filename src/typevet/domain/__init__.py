@@ -22,11 +22,16 @@ See Also:
     - [typevet.domain.errors][]: Generation failures
     - [typevet.domain.decisions][]: Decision types and dependency layers
     - [typevet.domain.decision_compile][]: JSON Schema compilation
+    - [typevet.domain.media][]: Image inputs and the media marker
 
 Attributes:
     Decision (type): One compiled TypeLLM field from JSON Schema.
     BackendHttpError (type): llama.cpp HTTP status 400 or above.
     CandidateScoringRequest (type): Prompt and candidate tokens to score.
+    ImageInput (type): One image to condition a judgment on.
+    MEDIA_MARKER (str): Documented media placeholder in a scoring prefix.
+    SUPPORTED_IMAGE_MIME_TYPES (frozenset): Accepted v1 image mime types.
+    count_media_markers (callable): Count media markers in a prefix.
     CandidateScoringResult (type): Fail-closed scored candidates.
     CategoricalExecutionResult (type): Greedy categorical execute outcome.
     DecisionExecutionError (type): Categorical execute rejected inputs.
@@ -108,12 +113,20 @@ from typevet.domain.judgment_questions import (
     question_types,
 )
 from typevet.domain.judgment_response import JudgmentResponse, TokenUsage
+from typevet.domain.media import (
+    MEDIA_MARKER,
+    SUPPORTED_IMAGE_MIME_TYPES,
+    ImageInput,
+    count_media_markers,
+)
 from typevet.domain.models import GenerationRequest, GenerationResult
 from typevet.domain.scoring_stage import ScoreStage
 
 __all__ = [
     "MAX_ENUM_CHOICES",
     "MAX_PERMUTATIONS",
+    "MEDIA_MARKER",
+    "SUPPORTED_IMAGE_MIME_TYPES",
     "Answer",
     "BackendHttpError",
     "CandidateScoringRequest",
@@ -128,6 +141,7 @@ __all__ = [
     "GenerationError",
     "GenerationRequest",
     "GenerationResult",
+    "ImageInput",
     "JudgmentError",
     "JudgmentResponse",
     "JudgmentValidationError",
@@ -149,6 +163,7 @@ __all__ = [
     "bind_control_candidates",
     "build_and_validate_result",
     "compile_json_schema",
+    "count_media_markers",
     "dependency_layers",
     "execute_categorical_decision",
     "judgment_original_labels",

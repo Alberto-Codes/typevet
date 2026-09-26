@@ -20,6 +20,7 @@ Examples:
 See Also:
     - [typevet.ports.scoring][]: CandidateScoringPort protocol
     - [typevet.domain.scoring_stage][]: ScoreStage enum
+    - [typevet.domain.media][]: ``ImageInput`` and the media marker
 """
 
 from __future__ import annotations
@@ -27,6 +28,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from typevet.domain.errors import ScoringValidationError
+from typevet.domain.media import MEDIA_MARKER, ImageInput, count_media_markers
 from typevet.domain.scoring_stage import ScoreStage
 
 
@@ -72,11 +74,15 @@ class CandidateScoringRequest:
     Complete candidate coverage is required: adapters must return a score for
     every requested label and must not invent scores for omitted labels.
 
+    ``prefix`` must hold exactly one ``MEDIA_MARKER`` for each entry in
+    ``media``. An empty ``media`` tuple is the text-only ask.
+
     Attributes:
         model (str): Backend model id or alias.
         prefix (str): Rendered prompt prefix ending before candidate tokens.
         candidates (tuple[CandidateTokenSpec, ...]): Ordered candidate set.
         stage (ScoreStage): Required logprob extraction stage.
+        media (tuple[ImageInput, ...]): Images the prefix marks, in order.
 
     Examples:
         ```python
@@ -93,12 +99,14 @@ class CandidateScoringRequest:
     prefix: str
     candidates: tuple[CandidateTokenSpec, ...]
     stage: ScoreStage = ScoreStage.PRE_SAMPLING
+    media: tuple[ImageInput, ...] = ()
 
     def __post_init__(self) -> None:
-        """Reject empty model, prefix, candidates, or duplicate ids.
+        """Reject empty model, prefix, candidates, duplicate ids, or bad markers.
 
         Raises:
-            ScoringValidationError: When the ask violates coverage rules.
+            ScoringValidationError: When the ask violates coverage rules or the
+                media marker count does not match ``len(media)``.
         """
         if not self.model.strip():
             msg = "model must be non-empty"
@@ -116,4 +124,11 @@ class CandidateScoringRequest:
         sequences = [spec.token_ids for spec in self.candidates]
         if len(set(sequences)) != len(sequences):
             msg = "duplicate candidate token-id sequences are not allowed"
+            raise ScoringValidationError(msg)
+        markers = count_media_markers(self.prefix)
+        if markers != len(self.media):
+            msg = (
+                f"prefix holds {markers} {MEDIA_MARKER} media marker(s) "
+                f"but {len(self.media)} image(s) were supplied"
+            )
             raise ScoringValidationError(msg)

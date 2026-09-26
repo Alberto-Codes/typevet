@@ -68,6 +68,8 @@ and decision helpers, import from `typevet.domain` instead of the root.
 | `JudgmentError`, `JudgmentValidationError` | Judgment failure types |
 | `question_types` | Map question ids to wire type names |
 | `CandidateScoringRequest`, `CandidateTokenSpec` | Candidate logprob scoring ask |
+| `ImageInput` | One image to condition a judgment on |
+| `MEDIA_MARKER`, `SUPPORTED_IMAGE_MIME_TYPES`, `count_media_markers` | Media marker and accepted image mime types |
 | `CandidateScoringResult`, `ScoredCandidate`, `ScoringTermination` | Scoring result and metadata |
 | `ScoreStage` | Pre- vs post-sampling stage enum |
 | `ScoringError`, `ScoringValidationError`, `ScoringUnsupportedCapabilityError` | Scoring failure types |

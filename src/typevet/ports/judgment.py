@@ -16,6 +16,7 @@ Examples:
 See Also:
     - [typevet.domain.judgment_response][]: Response container
     - [typevet.domain.judgment_questions][]: Question types
+    - [typevet.domain.media][]: ``ImageInput`` and the media marker
 """
 
 from __future__ import annotations
@@ -25,6 +26,7 @@ from typing import Any, Protocol
 
 from typevet.domain.judgment_questions import Question
 from typevet.domain.judgment_response import JudgmentResponse
+from typevet.domain.media import ImageInput
 
 
 class JudgmentPort(Protocol):
@@ -44,13 +46,20 @@ class JudgmentPort(Protocol):
         state: str | dict[str, Any] | list[Any],
         questions: Mapping[str, Question | Mapping[str, Any]],
         model: str,
+        *,
+        media: tuple[ImageInput, ...] | None = None,
     ) -> JudgmentResponse:
         """Evaluate ``state`` against named questions.
+
+        ``None`` or an empty ``media`` tuple is the text path and behaves as it
+        did before images existed. A non-empty tuple conditions every scored
+        field on the same images.
 
         Args:
             state: Content under evaluation (text, JSON object, or array).
             questions: Question names to typed questions or raw wire dictionaries.
             model: Backend model id or alias.
+            media: Images to condition every scored field on, in order.
 
         Returns:
             Typed ``JudgmentResponse`` with one answer per question.

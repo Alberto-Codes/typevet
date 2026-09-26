@@ -98,6 +98,10 @@ TYPEVET_LLAMA__DEFAULT_MODEL='<your-gemma-4-model-id>' \
   uv run pytest tests/live/test_llama_cpp_scoring_live.py -m live -q
 ```
 
+To condition that scoring on an image, see
+[Run the image-conditioned live smoke](run-a-multimodal-live-smoke.md). That
+page holds the nested ``prompt`` shape and the marker the router randomizes.
+
 Library entry: ``LlamaCppCandidateScoringAdapter`` from
 ``typevet.adapters.outbound``. For enum decisions, inject that adapter as
 ``scoring_port`` on ``typevet.decide_categorical`` (caller owns client lifetime).

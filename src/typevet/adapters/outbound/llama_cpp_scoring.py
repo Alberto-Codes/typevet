@@ -21,6 +21,7 @@ Examples:
 
 See Also:
     - [typevet.adapters.outbound.llama_cpp_http][]: Shared HTTP error mapping
+    - [typevet.adapters.outbound.llama_cpp_multimodal][]: Media probe and shaping
     - [typevet.domain.candidate_scoring_validate][]: Fail-closed result assembly
     - [typevet.ports.scoring][]: CandidateScoringPort protocol
 
@@ -30,6 +31,7 @@ Attributes:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any, Self
 from urllib.parse import urljoin
 
@@ -39,6 +41,11 @@ from typevet.adapters.outbound.llama_cpp_http import (
     ensure_success_status,
     map_transport_error,
     parse_json_response,
+)
+from typevet.adapters.outbound.llama_cpp_multimodal import (
+    MediaCapability,
+    fetch_media_capability,
+    media_prompt_field,
 )
 from typevet.domain.candidate_scoring_request import CandidateScoringRequest
 from typevet.domain.candidate_scoring_response import CandidateScoringResult
@@ -63,6 +70,7 @@ class LlamaCppCandidateScoringAdapter:
         _client (httpx.Client | None): Shared or owned HTTP client.
         _owns_client (bool): Whether ``close`` should close the client.
         _n_vocab (int): ``n_probs`` sent on each completion request.
+        _media_capabilities (dict[str, MediaCapability]): Per-model props cache.
 
     Examples:
         ```python
@@ -78,7 +86,7 @@ class LlamaCppCandidateScoringAdapter:
         client: httpx.Client | None = None,
         n_vocab: int = DEFAULT_N_VOCAB,
     ) -> None:
-        """Create the scoring adapter.
+        """Create the scoring adapter with an empty media capability cache.
 
         Args:
             base_url: llama.cpp server root URL.
@@ -91,6 +99,7 @@ class LlamaCppCandidateScoringAdapter:
         self._client = client
         self._owns_client = client is None
         self._n_vocab = n_vocab
+        self._media_capabilities: dict[str, MediaCapability] = {}
 
     def close(self) -> None:
         """Close the owned HTTP client when the adapter created it."""
@@ -111,15 +120,21 @@ class LlamaCppCandidateScoringAdapter:
     ) -> CandidateScoringResult:
         """POST ``/completion`` and map top logprobs to requested candidates.
 
+        A request that carries ``media`` probes ``/props`` for the model's image
+        support and marker, then sends the nested object prompt that attaches
+        the images. A text request sends a plain string ``prompt`` and never
+        probes ``/props``.
+
         Args:
-            request: Model id, prefix, ordered single-token candidates, stage.
+            request: Model id, prefix, ordered single-token candidates, stage,
+                and optional images.
 
         Returns:
             Validated ``CandidateScoringResult`` with raw logprobs per label.
 
         Raises:
-            ScoringUnsupportedCapabilityError: Non-``PRE_SAMPLING`` stage or
-                multi-token candidates.
+            ScoringUnsupportedCapabilityError: Non-``PRE_SAMPLING`` stage,
+                multi-token candidates, or images for a text-only model.
             ScoringValidationError: Missing candidate token coverage or invalid
                 logprob values (via ``build_and_validate_result``).
             TransportError: When the HTTP client fails before a response.
@@ -141,7 +156,7 @@ class LlamaCppCandidateScoringAdapter:
                 raise ScoringUnsupportedCapabilityError(msg)
 
         body: dict[str, Any] = {
-            "prompt": request.prefix,
+            "prompt": self._prompt_field(request),
             "model": request.model,
             "n_predict": 0,
             "n_probs": self._n_vocab,
@@ -160,6 +175,7 @@ class LlamaCppCandidateScoringAdapter:
 
         ensure_success_status(response)
         payload = parse_json_response(response)
+        # Validates the root is an object, which _extract_usage then assumes.
         token_logprobs = _extract_token_logprobs(payload)
         raw_by_label = {
             spec.label: token_logprobs[spec.token_ids[0]]
@@ -170,8 +186,55 @@ class LlamaCppCandidateScoringAdapter:
             request,
             raw_logprobs=raw_by_label,
             model=request.model,
-            usage=TokenUsage(),
+            usage=_extract_usage(payload),
         )
+
+    def _prompt_field(self, request: CandidateScoringRequest) -> Any:
+        """Return the ``prompt`` body value for a text or media request.
+
+        Args:
+            request: The scoring ask, with or without images.
+
+        Returns:
+            The prefix string for a text ask, or the nested object prompt that
+            attaches ``request.media``.
+
+        Raises:
+            ScoringUnsupportedCapabilityError: When the model declares no image
+                input modality.
+        """
+        if not request.media:
+            return request.prefix
+        capability = self._media_capability(request.model)
+        if not capability.vision:
+            msg = (
+                f"llama.cpp model {request.model!r} does not declare image input "
+                "support; scoring with media is refused"
+            )
+            raise ScoringUnsupportedCapabilityError(msg)
+        return media_prompt_field(
+            request.prefix,
+            request.media,
+            marker=capability.marker,
+        )
+
+    def _media_capability(self, model: str) -> MediaCapability:
+        """Return the cached media capability for ``model``, probing once.
+
+        Args:
+            model: Router model id.
+
+        Returns:
+            Declared ``MediaCapability`` for that model.
+        """
+        cached = self._media_capabilities.get(model)
+        if cached is not None:
+            return cached
+        capability = fetch_media_capability(
+            self._ensure_client(), self._base_url, model
+        )
+        self._media_capabilities[model] = capability
+        return capability
 
     def _ensure_client(self) -> httpx.Client:
         """Return the HTTP client, creating one when needed.
@@ -182,6 +245,42 @@ class LlamaCppCandidateScoringAdapter:
         if self._client is None:
             self._client = httpx.Client(timeout=self._timeout)
         return self._client
+
+
+def _non_negative_int(value: Any) -> int | None:
+    """Coerce a llama.cpp token count to a non-negative int, else ``None``.
+
+    Args:
+        value: Raw field from the ``/completion`` body.
+
+    Returns:
+        The count, or ``None`` when the router omits it or reports a value that
+        is not a non-negative whole number.
+    """
+    if isinstance(value, bool) or not isinstance(value, int):
+        return None
+    return value if value >= 0 else None
+
+
+def _extract_usage(payload: Mapping[str, Any]) -> TokenUsage:
+    """Read prompt and completion token counts from a ``/completion`` body.
+
+    ``tokens_evaluated`` is the only signal that distinguishes an attached
+    image from a silently dropped one: both return HTTP 200 with a valid
+    logprob distribution, but a dropped image leaves the count at the text
+    baseline (#155 recipe). Callers pass a body that
+    ``_extract_token_logprobs`` already proved is an object.
+
+    Args:
+        payload: Parsed JSON object from llama.cpp ``/completion``.
+
+    Returns:
+        ``TokenUsage`` with unknown counts left as ``None``.
+    """
+    return TokenUsage(
+        input_tokens=_non_negative_int(payload.get("tokens_evaluated")),
+        output_tokens=_non_negative_int(payload.get("tokens_predicted")),
+    )
 
 
 def _extract_token_logprobs(payload: Any) -> dict[int, float]:

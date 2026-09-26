@@ -17,6 +17,7 @@ See Also:
     - [typevet.domain.decisions][]: Decision compile shape
     - [typevet.ports.scoring][]: ``CandidateScoringPort`` (TYPE_CHECKING only)
     - [typevet.domain.candidate_scoring_validate][]: Fail-closed score coverage
+    - [typevet.domain.media][]: Images the ``media`` argument carries
 """
 
 from __future__ import annotations
@@ -32,6 +33,7 @@ from typevet.domain.candidate_scoring_request import (
 from typevet.domain.decisions import MAX_ENUM_CHOICES, Decision
 from typevet.domain.errors import DecisionExecutionError, ScoringValidationError
 from typevet.domain.judgment_response import TokenUsage
+from typevet.domain.media import ImageInput
 from typevet.domain.scoring_stage import ScoreStage
 
 _PROB_SUM_TOLERANCE = 1e-6
@@ -166,6 +168,7 @@ def execute_categorical_decision(
     port: CandidateScoringPort,
     model: str,
     temperature: float = 1.0,
+    media: tuple[ImageInput, ...] = (),
 ) -> CategoricalExecutionResult:
     """Score candidates, softmax logprobs, and pick the greedy choice.
 
@@ -179,6 +182,7 @@ def execute_categorical_decision(
         port: Scoring port; ``ScoreStage.PRE_SAMPLING`` is required.
         model: Model id forwarded to the scoring request.
         temperature: Softmax temperature; must be finite and strictly positive.
+        media: Images the ``prefix`` marks, one ``MEDIA_MARKER`` each.
 
     Returns:
         ``CategoricalExecutionResult`` with the input ``decision``, selected
@@ -187,7 +191,8 @@ def execute_categorical_decision(
     Raises:
         DecisionExecutionError: Unsupported syntax, nullable field, permutations
             other than ``1``, alignment, candidate shape, or invalid temperature.
-        ScoringValidationError: Propagated when the port returns invalid scores.
+        ScoringValidationError: Propagated when the port returns invalid scores,
+            or when ``prefix`` markers do not match ``media``.
     """
     _validate_inputs(decision, candidates, temperature=temperature)
     request = CandidateScoringRequest(
@@ -195,6 +200,7 @@ def execute_categorical_decision(
         prefix=prefix,
         candidates=candidates,
         stage=ScoreStage.PRE_SAMPLING,
+        media=media,
     )
     scored = port.score_candidates(request)
     logprobs = tuple(row.logprob for row in scored.candidates)

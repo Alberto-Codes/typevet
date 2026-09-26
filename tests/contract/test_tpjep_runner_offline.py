@@ -13,6 +13,7 @@ from typevet.domain.errors import TransportError
 from typevet.domain.judgment_answers import ChoiceAnswer, NoulAnswer, ScoreAnswer
 from typevet.domain.judgment_questions import Choice, Question
 from typevet.domain.judgment_response import JudgmentResponse
+from typevet.domain.media import ImageInput
 from typevet.evaluation.tpjep.loader import (
     TPJEP_DATASET_GIT_COMMIT,
     TPJEP_MANIFEST_HASH,
@@ -37,8 +38,10 @@ class _TransportJudgmentFake:
         state: str | dict[str, Any] | list[Any],
         questions: Mapping[str, Question | Mapping[str, Any]],
         model: str,
+        *,
+        media: tuple[ImageInput, ...] | None = None,
     ) -> JudgmentResponse:
-        _ = (state, questions, model)
+        _ = (state, questions, model, media)
         raise TransportError("reset")
         return JudgmentResponse(model=model)
 
