@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 
 from tests.fixtures.judgment_scoring_contract import SequentialScoringFake
+from typevet.adapters.outbound.gemma import ServedTemplateClass
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.domain.media import count_media_markers
 from typevet.evaluation.datasets.psai_vision import (
@@ -63,7 +64,12 @@ def _noul(probability: float) -> dict[str, float]:
 
 def _adapter(logprobs: list[dict[str, float]]):
     fake = SequentialScoringFake(logprobs)
-    return ScoringJudgmentAdapter(fake, tokenize_content=_tokenize), fake
+    adapter = ScoringJudgmentAdapter(
+        fake,
+        tokenize_content=_tokenize,
+        served_template=ServedTemplateClass.NATIVE_GEMMA3_TURN,
+    )
+    return adapter, fake
 
 
 def _judge_control(control, fixture_set, probability: float):

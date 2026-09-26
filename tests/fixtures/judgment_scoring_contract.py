@@ -7,6 +7,7 @@ from collections.abc import Callable
 from typing import Any
 
 from tests.fixtures.scoring_contract import ContractScoringFake
+from typevet.adapters.outbound.gemma import ServedTemplateClass
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.domain.candidate_scoring_request import CandidateScoringRequest
 from typevet.domain.candidate_scoring_response import CandidateScoringResult
@@ -42,9 +43,12 @@ def adapter_for(
     *,
     logprobs_by_call: list[dict[str, float]] | None = None,
     tokenize: Callable[[str], tuple[int, ...]] = _tokenize,
+    served_template: ServedTemplateClass | None = None,
 ) -> tuple[ScoringJudgmentAdapter, SequentialScoringFake]:
     fake = SequentialScoringFake(logprobs_by_call or [])
-    adapter = ScoringJudgmentAdapter(fake, tokenize_content=tokenize)
+    adapter = ScoringJudgmentAdapter(
+        fake, tokenize_content=tokenize, served_template=served_template
+    )
     return adapter, fake
 
 

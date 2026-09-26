@@ -1,5 +1,8 @@
 """Sync JudgmentPort adapter over CandidateScoringPort (#125).
 
+Text-only prefixes use degraded ChatML. Media prefixes use the served native
+turn family and fail closed when that family is unknown (#157).
+
 Examples:
     ```python
     from typevet.judge import ScoringJudgmentAdapter
@@ -23,6 +26,10 @@ import json
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
+from typevet.adapters.outbound.gemma import (
+    ServedTemplateClass,
+    compose_media_scoring_prefix,
+)
 from typevet.domain.candidate_scoring_request import CandidateTokenSpec
 from typevet.domain.decision_execute import (
     CategoricalExecutionResult,
@@ -160,6 +167,43 @@ def _media_context(
     return "\n".join([MEDIA_MARKER] * len(media) + [context])
 
 
+def _compose_prefix(
+    *,
+    context: str,
+    field_block: str,
+    media: tuple[ImageInput, ...],
+    served_template: ServedTemplateClass | None,
+) -> str:
+    """Pick ChatML for text and the served native turn family for media.
+
+    Args:
+        context: Rendered state context, media markers included.
+        field_block: Rendered field instructions.
+        media: Images the prefix marks.
+        served_template: Served-template family, or ``None`` when unknown.
+
+    Returns:
+        Scoring prefix ending at the answer boundary.
+
+    Raises:
+        JudgmentValidationError: Media with an unknown or unsupported family.
+    """
+    if not media:
+        return compose_scoring_prefix(context=context, field_block=field_block)
+    if served_template is not ServedTemplateClass.NATIVE_GEMMA3_TURN:
+        family = "unknown" if served_template is None else served_template.value
+        msg = (
+            "media scoring needs a native Gemma 3 served template "
+            f"(served template={family})"
+        )
+        raise JudgmentValidationError(msg)
+    return compose_media_scoring_prefix(
+        context=context,
+        field_block=field_block,
+        template_class=served_template,
+    )
+
+
 class ScoringJudgmentAdapter:
     """JudgmentPort implementation using injected candidate scoring.
 
@@ -173,6 +217,8 @@ class ScoringJudgmentAdapter:
         _port (CandidateScoringPort): Injected scorer; not closed by this adapter.
         _tokenize (Callable[[str], Sequence[int]]): Control-string tokenizer hook.
         _temperature (float): Softmax temperature forwarded to execute.
+        _served_template (ServedTemplateClass | None): Served family for media
+            prefixes; ``None`` when unknown.
     """
 
     def __init__(
@@ -181,11 +227,13 @@ class ScoringJudgmentAdapter:
         *,
         tokenize_content: Callable[[str], Sequence[int]],
         temperature: float = 1.0,
+        served_template: ServedTemplateClass | None = None,
     ) -> None:
-        """Wire scoring port, tokenizer hook, and softmax temperature."""
+        """Wire scoring port, tokenizer hook, temperature and served family."""
         self._port = scoring_port
         self._tokenize = tokenize_content
         self._temperature = temperature
+        self._served_template = served_template
 
     def judge(
         self,
@@ -199,8 +247,9 @@ class ScoringJudgmentAdapter:
 
         Builds a scoring prefix whose field block maps each ordinal control
         string to the public answer label before calling the scorer. When
-        ``media`` is non-empty, every field prefix carries one ``MEDIA_MARKER``
-        per image and every scoring request carries the same image tuple.
+        ``media`` is non-empty, every field prefix uses the served native turn
+        family, carries one ``MEDIA_MARKER`` per image, and every scoring
+        request carries the same image tuple. Text-only prefixes use ChatML.
 
         Args:
             state: Content under evaluation (text or JSON-serializable value).
@@ -212,8 +261,9 @@ class ScoringJudgmentAdapter:
             ``JudgmentResponse`` with one typed answer per question id.
 
         Raises:
-            JudgmentValidationError: Invalid model, wire shape, or question payload
-                before any scoring IO.
+            JudgmentValidationError: Invalid model, wire shape, question payload,
+                or media without a native Gemma 3 served template, before any
+                scoring IO.
         """
         if not model.strip():
             raise JudgmentValidationError("model must be non-empty")
@@ -235,9 +285,11 @@ class ScoringJudgmentAdapter:
                 choice_criteria=criteria,
                 original_labels=originals,
             )
-            prefix = compose_scoring_prefix(
+            prefix = _compose_prefix(
                 context=context,
                 field_block=field_block,
+                media=images,
+                served_template=self._served_template,
             )
             prepared.append((name, raw, decision, candidates, prefix))
 
@@ -292,6 +344,9 @@ def judge_with_scoring(
     media: tuple[ImageInput, ...] | None = None,
 ) -> JudgmentResponse:
     """One-shot judgment via ``ScoringJudgmentAdapter``.
+
+    The served template is unknown here, so non-empty ``media`` fails closed;
+    construct ``ScoringJudgmentAdapter`` with ``served_template`` instead.
 
     Args:
         state: Content under evaluation.

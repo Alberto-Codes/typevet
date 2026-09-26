@@ -16,6 +16,10 @@ import pytest
 
 from tests.fixtures.synthetic_images import solid_image
 from typevet.adapters.inbound.settings import load_llama_settings
+from typevet.adapters.outbound.gemma import (
+    ServedTemplateClass,
+    classify_served_template,
+)
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.adapters.outbound.llama_cpp_multimodal import fetch_media_capability
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
@@ -67,6 +71,22 @@ def _tokenizer(client: httpx.Client, model: str):
     return tokenize_content
 
 
+def _served_template(client: httpx.Client, model: str) -> ServedTemplateClass:
+    rendered = (
+        client.post(
+            "/apply-template",
+            json={
+                "model": model,
+                "messages": [{"role": "user", "content": "hello"}],
+                "add_generation_prompt": True,
+            },
+        )
+        .raise_for_status()
+        .json()["prompt"]
+    )
+    return classify_served_template(rendered)
+
+
 def _probabilities(response: JudgmentResponse) -> dict[str, float]:
     return dict(response.choices["fill"].probabilities)
 
@@ -93,6 +113,7 @@ def test_image_conditioned_scoring_changes_the_judgment(
             port = ScoringJudgmentAdapter(
                 scoring,
                 tokenize_content=_tokenizer(client, live_multimodal_model),
+                served_template=_served_template(client, live_multimodal_model),
             )
             results["omitted"] = port.judge(_STATE, _QUESTIONS, live_multimodal_model)
             for colour in ("red", "green", "blue"):

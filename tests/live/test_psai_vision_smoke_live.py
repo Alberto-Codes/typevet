@@ -20,6 +20,10 @@ import httpx
 import pytest
 
 from typevet.adapters.inbound.settings import load_llama_settings
+from typevet.adapters.outbound.gemma import (
+    ServedTemplateClass,
+    classify_served_template,
+)
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.adapters.outbound.llama_cpp_multimodal import fetch_media_capability
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
@@ -88,6 +92,22 @@ def _tokenizer(client: httpx.Client, model: str):
         return tuple(payload["tokens"])
 
     return tokenize_content
+
+
+def _served_template(client: httpx.Client, model: str) -> ServedTemplateClass:
+    rendered = (
+        client.post(
+            "/apply-template",
+            json={
+                "model": model,
+                "messages": [{"role": "user", "content": "hello"}],
+                "add_generation_prompt": True,
+            },
+        )
+        .raise_for_status()
+        .json()["prompt"]
+    )
+    return classify_served_template(rendered)
 
 
 def _image_for(control, fixture_set):
@@ -194,6 +214,7 @@ def test_psai_screenshots_condition_the_visual_judgment(
             port = ScoringJudgmentAdapter(
                 scoring,
                 tokenize_content=_tokenizer(client, live_multimodal_model),
+                served_template=_served_template(client, live_multimodal_model),
             )
             visual_rows, probabilities = _run_visual_controls(
                 port, live_multimodal_model, fixture_set, controls
