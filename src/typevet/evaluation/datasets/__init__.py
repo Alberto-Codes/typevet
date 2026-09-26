@@ -14,6 +14,7 @@ See Also:
     - [typevet.evaluation.datasets.boolq][]: BoolQ tiers and task export
     - [typevet.evaluation.datasets.civil_comments][]: Civil Comments toxicity proxy
     - [typevet.evaluation.datasets.clinc][]: CLINC150 ``plus`` shards
+    - [typevet.evaluation.datasets.cord_expense][]: CORD expense claim cases
     - [typevet.evaluation.datasets.difraud][]: DIFrauD scam domains
     - [typevet.evaluation.datasets.go_emotions][]: GoEmotions single-label subset
     - [typevet.evaluation.datasets.hyperpartisan][]: Hyperpartisan holdout split
