@@ -1,0 +1,321 @@
+{
+  "consumer_live_protocol_revision": 2,
+  "evidence_kind": "isolated_wheel_live",
+  "git_head": "unknown",
+  "wheel_sha256": "b01ef692945a65e3329d90b21c02be5ba7fa651002e8f6eeea8098bd38484713",
+  "typevet_version": "0.1.0",
+  "typevet_install_path": "/var/home/Alberto-Codes/.cache/uv/archive-v0/tPk5fpY7lPwUmb-D/lib/python3.13/site-packages/typevet/__init__.py",
+  "model": "gemma-4-31b-kv9-q4km-mm",
+  "require_live": true,
+  "questions_per_judge_call_annotation": 2,
+  "judgment_call_count": 14,
+  "scoring_request_count": 16,
+  "scoring_requests_observed": 16,
+  "auxiliary_http_count": 3,
+  "failed_attempts": 0,
+  "matrix_rows": [
+    {
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 0.9999997955032472
+        }
+      },
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      },
+      "latency_s": 1.873,
+      "unique_data_id": "cmcc8u6yc00va1p1ydsdu52zy",
+      "condition": "present",
+      "leg": "visual"
+    },
+    {
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 0.27196006242966697
+        }
+      },
+      "usage": {
+        "input_tokens": 94,
+        "output_tokens": 1
+      },
+      "latency_s": 1.353,
+      "unique_data_id": "cmcc8u6yc00va1p1ydsdu52zy",
+      "condition": "omitted",
+      "leg": "visual"
+    },
+    {
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 9.747176713457239e-08
+        }
+      },
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      },
+      "latency_s": 1.819,
+      "unique_data_id": "cmcc8u6yc00va1p1ydsdu52zy",
+      "condition": "swapped",
+      "leg": "visual"
+    },
+    {
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 0.9999995543505439
+        }
+      },
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      },
+      "latency_s": 1.952,
+      "unique_data_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "condition": "present",
+      "leg": "visual"
+    },
+    {
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 0.27196006242966697
+        }
+      },
+      "usage": {
+        "input_tokens": 94,
+        "output_tokens": 1
+      },
+      "latency_s": 1.332,
+      "unique_data_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "condition": "omitted",
+      "leg": "visual"
+    },
+    {
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 7.352813310608816e-08
+        }
+      },
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      },
+      "latency_s": 1.82,
+      "unique_data_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "condition": "swapped",
+      "leg": "visual"
+    },
+    {
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 9.747176713457239e-08
+        }
+      },
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      },
+      "latency_s": 1.948,
+      "unique_data_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "condition": "present",
+      "leg": "visual"
+    },
+    {
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 0.27196006242966697
+        }
+      },
+      "usage": {
+        "input_tokens": 94,
+        "output_tokens": 1
+      },
+      "latency_s": 1.304,
+      "unique_data_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "condition": "omitted",
+      "leg": "visual"
+    },
+    {
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 0.9999997955032472
+        }
+      },
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      },
+      "latency_s": 1.793,
+      "unique_data_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "condition": "swapped",
+      "leg": "visual"
+    },
+    {
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 7.352813310608816e-08
+        }
+      },
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      },
+      "latency_s": 1.954,
+      "unique_data_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "condition": "present",
+      "leg": "visual"
+    },
+    {
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 0.27196006242966697
+        }
+      },
+      "usage": {
+        "input_tokens": 94,
+        "output_tokens": 1
+      },
+      "latency_s": 1.331,
+      "unique_data_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "condition": "omitted",
+      "leg": "visual"
+    },
+    {
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 0.9999995543505439
+        }
+      },
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      },
+      "latency_s": 1.805,
+      "unique_data_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "condition": "swapped",
+      "leg": "visual"
+    },
+    {
+      "answers": {
+        "category": {
+          "kind": "Choice",
+          "choice": "BROWSER_TASK",
+          "confidence": 0.9999982621947224,
+          "probabilities": {
+            "BROWSER_TASK": 0.9999982621947224,
+            "COMPUTER_TASK": 1.7378052775655324e-06
+          }
+        },
+        "requires_login": {
+          "kind": "Noul",
+          "noul": 3.884659509094842e-07
+        }
+      },
+      "usage": {
+        "input_tokens": 262,
+        "output_tokens": 2
+      },
+      "latency_s": 2.56,
+      "unique_data_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "condition": "text_annotation",
+      "leg": "annotation"
+    },
+    {
+      "answers": {
+        "category": {
+          "kind": "Choice",
+          "choice": "BROWSER_TASK",
+          "confidence": 0.999998854650513,
+          "probabilities": {
+            "BROWSER_TASK": 0.999998854650513,
+            "COMPUTER_TASK": 1.145349487150529e-06
+          }
+        },
+        "requires_login": {
+          "kind": "Noul",
+          "noul": 6.433855978669495e-06
+        }
+      },
+      "usage": {
+        "input_tokens": 282,
+        "output_tokens": 2
+      },
+      "latency_s": 2.55,
+      "unique_data_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "condition": "text_annotation",
+      "leg": "annotation"
+    }
+  ],
+  "health": {
+    "status": "ok"
+  },
+  "capability": {
+    "vision": true,
+    "marker": "<__media_Ud8WfnPW7zSvZofdkGJwv4n36nYLWGzP__>"
+  },
+  "served_template": "NATIVE_GEMMA4_TURN",
+  "unsupported_capability_negative": {
+    "ok": true,
+    "exception": "JudgmentValidationError",
+    "message": "media scoring needs a native Gemma 3 or Gemma 4 served template (served template=unknown)"
+  },
+  "paired_ordering": [
+    {
+      "unique_data_id": "cmcc8u6yc00va1p1ydsdu52zy",
+      "ordered": true,
+      "margin": 0.9999996980314801
+    },
+    {
+      "unique_data_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "ordered": true,
+      "margin": 0.9999994808224107
+    },
+    {
+      "unique_data_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "ordered": true,
+      "margin": 0.9999996980314801
+    },
+    {
+      "unique_data_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "ordered": true,
+      "margin": 0.9999994808224107
+    }
+  ],
+  "elapsed_s": 25.401,
+  "fixture_root": "/var/home/Alberto-Codes/Projects/typevet/tests/fixtures/psai/vision_smoke",
+  "manifest_sha256": "312d954ea3f59834caaafbd13b2217effea7e92040d7dfe42e72883f81f8f649",
+  "frozen_case_image_digests": [
+    {
+      "unique_data_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "file_name": "cmcc8u6yc00v91p1yw2eruz95.png",
+      "sha256": "8adc6a49d46b50ada50ed23a40ea88d5560634cbe2c164b48b88085bb90b3101"
+    },
+    {
+      "unique_data_id": "cmcc8u6yc00va1p1ydsdu52zy",
+      "file_name": "cmcc8u6yc00va1p1ydsdu52zy.png",
+      "sha256": "4e47c7bf25d49c171106a0c57047432abb25465aa6412c85646282bd6c984d9f"
+    },
+    {
+      "unique_data_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "file_name": "cmcc8u6yd00wv1p1yy8guorre.png",
+      "sha256": "426fd1f1827ccd7c94b694a6b3fa83a98225d1708a30a8458288b51a1486b703"
+    },
+    {
+      "unique_data_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "file_name": "cmcc8u6ym018l1p1yxhf18gc2.png",
+      "sha256": "82583cede3f62a847b426c1c0cd748ea3845a81e4c972a8fd0f2b2ee0051d68b"
+    }
+  ],
+  "harness_entrypoint": "scripts/run_psai_vision_consumer_proof.py"
+}

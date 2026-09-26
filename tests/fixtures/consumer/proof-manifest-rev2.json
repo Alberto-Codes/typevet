@@ -1,24 +1,32 @@
 {
   "consumer_live_protocol_revision": 2,
-  "git_head_at_manifest": "a103247",
+  "git_head_at_manifest": "070175a",
   "wheel_sha256_offline_proof": "b01ef692945a65e3329d90b21c02be5ba7fa651002e8f6eeea8098bd38484713",
+  "wheel_sha256_live_proof": "b01ef692945a65e3329d90b21c02be5ba7fa651002e8f6eeea8098bd38484713",
   "consumer_harness_entrypoints": [
     "scripts/run_psai_vision_consumer_proof.py",
     "scripts/psai_vision_consumer_wheel_proof.py"
   ],
   "offline_wheel_status": "pass",
-  "live_wheel_status": "not_run_router_or_model_unconfigured",
-  "live_receipt_path": null,
+  "live_wheel_status": "pass",
+  "live_receipt_path": "tests/fixtures/consumer/consumer-receipt-p2-b01ef692945a65e3-gemma-4-31b-kv9-q4km-mm.json",
+  "live_receipt_sha256": "7e0303bf923d977aa1bfb9e1fdd283d74923f179eceebaf0d4ce73925eea7dfa",
   "historical_live_receipt_preserved": "tests/fixtures/consumer/live-receipt-v1-checkout.json",
   "accounting": {
     "judgment_call_count": 14,
     "scoring_request_count": 16,
-    "auxiliary_http_budget_live": 3
+    "auxiliary_http_budget_live": 3,
+    "judgment_call_count_observed_live": 14,
+    "scoring_request_count_observed_live": 16,
+    "auxiliary_http_count_observed_live": 3
   },
   "evidence_kind_when_live_runs": "isolated_wheel_live",
+  "live_model_id": "gemma-4-31b-kv9-q4km-mm",
+  "live_elapsed_s": 25.401,
   "limitations": [
-    "Live isolated receipt requires TYPEVET_REQUIRE_LIVE=1, router up, Gemma 4 multimodal model id, and NATIVE_GEMMA4_TURN.",
-    "This manifest records offline wheel proof only; live receipt path stays null until a supervised live rerun succeeds.",
-    "#189 consumer-repo wiring is visible documentation only; not a merge prerequisite for typevet r6."
+    "Receipt git_head is unknown inside isolated wheel cwd; manifest pins checkout 070175a.",
+    "Live matrix uses frozen C01/C03/C08/C10 pins under tests/fixtures/psai/vision_smoke only.",
+    "#189 consumer-repo wiring is visible documentation only; not a merge prerequisite for typevet r6.",
+    "Historical live-receipt-v1-checkout.json preserved; rev2 receipt is exclusive path."
   ]
 }
