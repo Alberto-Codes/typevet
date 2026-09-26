@@ -40,7 +40,10 @@ typevet has three verified worker harnesses:
 - The Cursor CLI runs Cursor-pool models in print mode.
 
 Choose the worker independently from the supervisor. `worker-fit` on an issue
-authorizes any of these harnesses; it does not select one.
+authorizes any of these harnesses; it does not select one. **Cursor `auto`
+(or Task `inherit`) is an allowed model choice** when the operator or
+supervisor picks it. Still record the resolved identity in the receipt when
+the harness reports one; otherwise `unknown`.
 
 **User-scope configuration** (global Claude/Cursor/Codex/Copilot/pi settings,
 skills, hooks, model defaults) may already exist on the operator machine. That
