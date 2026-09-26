@@ -66,9 +66,11 @@ A media call needs three things from the router before the first score:
    `GET /props` on the first image request.
 
 Pass the family to `ScoringJudgmentAdapter` as `served_template`. Media
-scoring needs `ServedTemplateClass.NATIVE_GEMMA3_TURN`. When you omit
-`served_template`, or pass any other family, `judge` raises
-`JudgmentValidationError` before any scoring request.
+scoring needs a native turn family: `ServedTemplateClass.NATIVE_GEMMA3_TURN`
+or `ServedTemplateClass.NATIVE_GEMMA4_TURN`. When you omit `served_template`,
+or pass ChatML or an unsupported family, `judge` raises
+`JudgmentValidationError` before any scoring request. The recipe below guards
+on Gemma 3, because the smoke runs a Gemma 3 model.
 
 ```python
 import httpx
@@ -148,10 +150,10 @@ uv run pytest tests/contract/test_multimodal_howto_recipe.py -q
 empty bytes and every other mime type. A request must hold one `MEDIA_MARKER`
 per image, or the domain raises `ScoringValidationError`.
 
-With a native family, the adapter wraps every field prefix in the Gemma 3 turn,
-with or without images. An image-omitted request and an imaged request then
-differ only in the media markers. Without a family, a text-only request falls
-back to a ChatML prefix.
+With a native family, the adapter wraps every field prefix in that family's
+turn, with or without images. An image-omitted request and an imaged request
+then differ only in the media markers. Without a family, a text-only request
+falls back to a ChatML prefix.
 
 ## Backend wire shape
 

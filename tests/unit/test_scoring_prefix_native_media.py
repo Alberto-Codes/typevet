@@ -1,4 +1,4 @@
-"""Unit tests for native Gemma 3 media scoring prefixes (#157, #171)."""
+"""Unit tests for native media scoring prefixes (#157, #171, #179)."""
 
 from __future__ import annotations
 
@@ -13,6 +13,9 @@ from typevet.adapters.outbound.gemma import (
     GEMMA3_END_OF_TURN,
     GEMMA3_MODEL_TURN_HEADER,
     GEMMA3_START_OF_TURN,
+    GEMMA4_MODEL_TURN_HEADER,
+    GEMMA4_TURN_CLOSE,
+    GEMMA4_TURN_OPEN,
     ServedTemplateClass,
     classify_served_template,
     compose_media_scoring_prefix,
@@ -30,6 +33,18 @@ _IMAGE = ImageInput(data=b"\x89PNG\r\n\x1a\nunit", mime_type="image/png")
 def _served_gemma3(content: str) -> str:
     """Mirror ``/apply-template`` output for gemma-3-4b-it-q4km-mm."""
     return f"<start_of_turn>user\n{content}<end_of_turn>\n<start_of_turn>model\n"
+
+
+def _served_gemma4(content: str) -> str:
+    """Mirror the native Gemma 4 turn shape for a single user turn.
+
+    Returns:
+        User turn wrapped in ``<|turn>`` markers, ending at the model header.
+    """
+    return (
+        f"{GEMMA4_TURN_OPEN}user\n{content}{GEMMA4_TURN_CLOSE}\n"
+        f"{GEMMA4_MODEL_TURN_HEADER}"
+    )
 
 
 def _tokenize(text: str) -> tuple[int, ...]:
@@ -86,15 +101,30 @@ def test_media_prefix_matches_served_gemma3_shape() -> None:
     assert CHATML_IM_START not in prefix
 
 
+def test_media_prefix_matches_served_gemma4_shape() -> None:
+    prefix = compose_media_scoring_prefix(
+        context=f"{MEDIA_MARKER}\nLook.",
+        field_block="Control 0 → red",
+        template_class=ServedTemplateClass.NATIVE_GEMMA4_TURN,
+    )
+    assert prefix == _served_gemma4(f"{MEDIA_MARKER}\nLook.\n\nControl 0 → red")
+    assert prefix.startswith(f"{GEMMA4_TURN_OPEN}user\n")
+    assert prefix.endswith(f"{GEMMA4_TURN_CLOSE}\n{GEMMA4_MODEL_TURN_HEADER}")
+    assert MEDIA_MARKER in prefix
+    assert CHATML_IM_START not in prefix
+    assert GEMMA3_START_OF_TURN not in prefix
+    assert GEMMA3_END_OF_TURN not in prefix
+    assert classify_served_template(prefix) is ServedTemplateClass.NATIVE_GEMMA4_TURN
+
+
 @pytest.mark.parametrize(
     "template_class",
     [
-        ServedTemplateClass.NATIVE_GEMMA4_TURN,
         ServedTemplateClass.DEGRADED_CHATML,
         ServedTemplateClass.UNSUPPORTED,
     ],
 )
-def test_media_prefix_fails_closed_off_gemma3(
+def test_media_prefix_fails_closed_off_native_families(
     template_class: ServedTemplateClass,
 ) -> None:
     with pytest.raises(GemmaTemplateError):
@@ -144,6 +174,67 @@ def test_adapter_omitted_media_keeps_native_gemma3_prefix(
         assert without_image.media == ()
 
 
+def test_adapter_media_uses_native_gemma4_prefix_and_keeps_bindings() -> None:
+    adapter, fake = _adapter(ServedTemplateClass.NATIVE_GEMMA4_TURN)
+    media = (_IMAGE, ImageInput(data=b"second", mime_type="image/jpeg"))
+    response = adapter.judge(
+        "Attached receipt.", _questions(), "gemma4-mm", media=media
+    )
+    assert len(fake.calls) == 2
+    for call in fake.calls:
+        assert call.prefix.startswith(f"{GEMMA4_TURN_OPEN}user\n")
+        assert call.prefix.endswith(f"{GEMMA4_TURN_CLOSE}\n{GEMMA4_MODEL_TURN_HEADER}")
+        assert CHATML_IM_START not in call.prefix
+        assert GEMMA3_START_OF_TURN not in call.prefix
+        assert call.prefix.count(MEDIA_MARKER) == len(media)
+        assert call.media == media
+        assert (
+            classify_served_template(call.prefix)
+            is ServedTemplateClass.NATIVE_GEMMA4_TURN
+        )
+    assert "Control 0 → billing: Money" in fake.calls[1].prefix
+    assert response.choices["route"].choice == "billing"
+    assert response.nouls["flagged"].noul == pytest.approx(0.6)
+
+
+@pytest.mark.parametrize("omitted", [None, ()])
+def test_adapter_omitted_media_keeps_native_gemma4_prefix(
+    omitted: tuple[ImageInput, ...] | None,
+) -> None:
+    present, present_fake = _adapter(ServedTemplateClass.NATIVE_GEMMA4_TURN)
+    absent, absent_fake = _adapter(ServedTemplateClass.NATIVE_GEMMA4_TURN)
+    present.judge("Charged twice.", _questions(), "gemma4-mm", media=(_IMAGE,))
+    absent.judge("Charged twice.", _questions(), "gemma4-mm", media=omitted)
+    pairs = list(zip(present_fake.calls, absent_fake.calls, strict=True))
+    assert len(pairs) == 2
+    for with_image, without_image in pairs:
+        assert without_image.prefix.startswith(f"{GEMMA4_TURN_OPEN}user\n")
+        assert without_image.prefix.endswith(
+            f"{GEMMA4_TURN_CLOSE}\n{GEMMA4_MODEL_TURN_HEADER}"
+        )
+        assert CHATML_IM_START not in without_image.prefix
+        assert GEMMA3_START_OF_TURN not in without_image.prefix
+        assert MEDIA_MARKER not in without_image.prefix
+        assert with_image.prefix.replace(f"{MEDIA_MARKER}\n", "", 1) == (
+            without_image.prefix
+        )
+        assert with_image.candidates == without_image.candidates
+        assert with_image.media == (_IMAGE,)
+        assert without_image.media == ()
+
+
+def test_adapter_text_only_uses_native_gemma4_wrappers() -> None:
+    adapter, fake = _adapter(ServedTemplateClass.NATIVE_GEMMA4_TURN)
+    adapter.judge("Charged twice.", _questions(), "gemma4-mm")
+    assert len(fake.calls) == 2
+    for call in fake.calls:
+        assert call.prefix.startswith(f"{GEMMA4_TURN_OPEN}user\nCharged twice.\n\n")
+        assert call.prefix.endswith(f"{GEMMA4_TURN_CLOSE}\n{GEMMA4_MODEL_TURN_HEADER}")
+        assert CHATML_IM_START not in call.prefix
+        assert GEMMA3_START_OF_TURN not in call.prefix
+        assert MEDIA_MARKER not in call.prefix
+
+
 @pytest.mark.parametrize("served_template", [None, ServedTemplateClass.DEGRADED_CHATML])
 def test_adapter_text_only_keeps_chatml_without_native_family(
     served_template: ServedTemplateClass | None,
@@ -157,14 +248,8 @@ def test_adapter_text_only_keeps_chatml_without_native_family(
         assert GEMMA3_START_OF_TURN not in call.prefix
 
 
-@pytest.mark.parametrize(
-    "served_template",
-    [ServedTemplateClass.NATIVE_GEMMA4_TURN, ServedTemplateClass.UNSUPPORTED],
-)
-def test_adapter_text_only_rejects_unsupported_family_before_scoring(
-    served_template: ServedTemplateClass,
-) -> None:
-    adapter, fake = _adapter(served_template)
+def test_adapter_text_only_rejects_unsupported_family_before_scoring() -> None:
+    adapter, fake = _adapter(ServedTemplateClass.UNSUPPORTED)
     with pytest.raises(JudgmentValidationError, match="served template"):
         adapter.judge("x", _questions(), "gemma-mm")
     assert fake.calls == []
@@ -174,12 +259,11 @@ def test_adapter_text_only_rejects_unsupported_family_before_scoring(
     "served_template",
     [
         None,
-        ServedTemplateClass.NATIVE_GEMMA4_TURN,
         ServedTemplateClass.DEGRADED_CHATML,
         ServedTemplateClass.UNSUPPORTED,
     ],
 )
-def test_adapter_media_fails_closed_before_scoring_off_gemma3(
+def test_adapter_media_fails_closed_before_scoring_off_native_families(
     served_template: ServedTemplateClass | None,
 ) -> None:
     adapter, fake = _adapter(served_template)

@@ -1,8 +1,8 @@
 """Sync JudgmentPort adapter over CandidateScoringPort (#125).
 
-A native served family wraps every prefix, with or without media (#171).
-Without one, text-only prefixes use degraded ChatML and media fails closed
-(#157).
+A native served family wraps every prefix, with or without media; Gemma 3 and
+Gemma 4 turns both qualify (#171, #179). Without one, text-only prefixes use
+degraded ChatML and media fails closed (#157).
 
 Examples:
     ```python
@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable, Mapping, Sequence
-from typing import Any, TypedDict, Unpack
+from typing import Any, Final, TypedDict, Unpack
 
 from typevet.adapters.outbound.gemma import (
     ServedTemplateClass,
@@ -54,6 +54,13 @@ from typevet.domain.judgment_response import JudgmentResponse, TokenUsage
 from typevet.domain.media import MEDIA_MARKER, ImageInput
 from typevet.field_prompt import compose_scoring_prefix, render_field_instructions
 from typevet.ports.scoring import CandidateScoringPort
+
+_NATIVE_TURN_FAMILIES: Final[frozenset[ServedTemplateClass]] = frozenset(
+    {
+        ServedTemplateClass.NATIVE_GEMMA3_TURN,
+        ServedTemplateClass.NATIVE_GEMMA4_TURN,
+    }
+)
 
 
 def _execute_label(choice: object) -> str:
@@ -177,8 +184,9 @@ def _compose_prefix(
 ) -> str:
     """Pick the served native turn family when set, else ChatML for text.
 
-    A native family keeps one wrapper whether or not ``media`` is empty, so
-    image-present and image-omitted prefixes differ only in media markers.
+    A native family — Gemma 3 or Gemma 4 turns — keeps one wrapper whether or
+    not ``media`` is empty, so image-present and image-omitted prefixes differ
+    only in media markers.
 
     Args:
         context: Rendered state context, media markers included.
@@ -196,10 +204,10 @@ def _compose_prefix(
     text_default = served_template in {None, ServedTemplateClass.DEGRADED_CHATML}
     if text_default and not media:
         return compose_scoring_prefix(context=context, field_block=field_block)
-    if served_template is not ServedTemplateClass.NATIVE_GEMMA3_TURN:
+    if served_template is None or served_template not in _NATIVE_TURN_FAMILIES:
         family = "unknown" if served_template is None else served_template.value
         reason = (
-            "media scoring needs a native Gemma 3 served template"
+            "media scoring needs a native Gemma 3 or Gemma 4 served template"
             if text_default
             else "scoring does not support this served template"
         )
@@ -272,7 +280,7 @@ class ScoringJudgmentAdapter:
         Raises:
             JudgmentValidationError: Invalid model, wire shape, question payload,
                 unsupported served template, or media without a native Gemma 3
-                served template, before any scoring IO.
+                or Gemma 4 served template, before any scoring IO.
         """
         if not model.strip():
             raise JudgmentValidationError("model must be non-empty")
@@ -367,8 +375,9 @@ def judge_with_scoring(
 ) -> JudgmentResponse:
     """One-shot judgment via ``ScoringJudgmentAdapter``.
 
-    Non-empty ``media`` needs ``served_template=NATIVE_GEMMA3_TURN``; an
-    omitted, unknown or unsupported family fails closed before any scoring IO.
+    Non-empty ``media`` needs ``served_template=NATIVE_GEMMA3_TURN`` or
+    ``NATIVE_GEMMA4_TURN``; an omitted, unknown or unsupported family fails
+    closed before any scoring IO.
 
     Args:
         state: Content under evaluation.
