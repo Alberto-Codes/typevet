@@ -67,15 +67,21 @@ and decision helpers, import from `typevet.domain` instead of the root.
 | Name | Role |
 |---|---|
 | `GenerationPort` | Structural protocol for typed generation |
+| `AsyncGenerationPort` | Structural protocol for async typed generation |
+
+Root `typevet` also re-exports `AsyncGenerationPort` alongside the table above.
 
 ## `typevet.adapters.inbound`
 
 | Name | Role |
 |---|---|
-| `generate` | Build a `GenerationRequest` and invoke a port |
+| `generate` | Build a `GenerationRequest` and invoke a sync port |
+| `run_sync` | Run an async generation coroutine from sync scripts |
 
 Signature: keyword-only `prompt`, `schema`, and `model` after the port argument.
-Prefer this helper for library entry when you already hold a `GenerationPort`.
+Prefer `generate` for library entry when you already hold a `GenerationPort`.
+Prefer `run_sync(port.generate(request))` for `AsyncGenerationPort` in scripts
+instead of duplicating sync wrappers on each adapter.
 
 ## `typevet.adapters.outbound`
 

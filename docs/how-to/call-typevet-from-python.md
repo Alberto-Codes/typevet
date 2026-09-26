@@ -31,11 +31,15 @@ application code):
 from typevet.adapters.outbound import FakeGenerationAdapter, LlamaCppGenerationAdapter
 ```
 
-Optional **inbound helper** (builds a `GenerationRequest` for you):
+Optional **inbound helpers**:
 
 ```python
-from typevet.adapters.inbound import generate
+from typevet.adapters.inbound import generate, run_sync
 ```
+
+`generate` builds a `GenerationRequest` for sync ports. `run_sync` runs async
+port coroutines from scripts (for example `run_sync(port.generate(request))`)
+without adding `*_sync` methods on adapters.
 
 For live llama.cpp setup and Gemma 4 model ids, see
 [Run Gemma 4 on llama.cpp](run-gemma4-llamacpp.md).
@@ -139,6 +143,33 @@ HTTP client.
 | `generate(port, prompt=..., schema=..., model=...)` | `typevet.adapters.inbound.generate` | Same behaviour; avoids constructing `GenerationRequest` at the call site. |
 
 Both paths end in `port.generate`. Pick one style per module and stay consistent.
+
+## Async ports from a script
+
+Async adapters implement `AsyncGenerationPort`. In library code, `await
+port.generate(request)`. In a one-off script or CLI entry point, wrap the
+coroutine with `run_sync`:
+
+```python
+from typevet import GenerationRequest
+from typevet.adapters.inbound import run_sync
+from typevet.adapters.outbound import AsyncFakeGenerationAdapter
+
+schema = {
+    "type": "object",
+    "properties": {"ok": {"type": "boolean"}},
+    "required": ["ok"],
+    "additionalProperties": False,
+}
+port = AsyncFakeGenerationAdapter(value={"ok": True})
+result = run_sync(
+    port.generate(GenerationRequest(prompt="Say ok.", schema=schema, model="fake"))
+)
+print(result.value)
+```
+
+Do not call `run_sync` from code that already runs inside an event loop; use
+`await` there instead.
 
 Deep imports such as `typevet.adapters.outbound.fake` or
 `typevet.domain.models` are for typevet’s own tests and docs snippets. Prefer
