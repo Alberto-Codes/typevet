@@ -6,11 +6,11 @@ degraded ChatML and media fails closed (#157).
 
 Examples:
     ```python
-    from typevet.judge import ScoringJudgmentAdapter
     from typevet.domain.judgment_questions import Noul
-    from tests.fixtures.scoring_contract import ContractScoringFake
+    from typevet.judge import ScoringJudgmentAdapter
+    from typevet.testing import ScriptedScoringFake
 
-    fake = ContractScoringFake(logprobs={"True": -0.2, "False": -1.0})
+    fake = ScriptedScoringFake(logprobs={"True": -0.2, "False": -1.0})
     port = ScoringJudgmentAdapter(fake, tokenize_content=lambda s: (ord(s[0]),))
     port.judge("text", {"q": Noul()}, "fake")
     ```

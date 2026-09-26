@@ -72,7 +72,9 @@ Suite: [tests/contract/test_judgment_scoring_adapter.py](../../tests/contract/te
 
 Offline scoring contract fixtures live in
 [tests/fixtures/scoring_contract.py](../../tests/fixtures/scoring_contract.py).
-They exercise `ContractScoringFake` against labeled success and fail-closed
+`ContractScoringFake` there aliases public
+[typevet.testing.ScriptedScoringFake](../../src/typevet/testing/__init__.py).
+They exercise that fake against labeled success and fail-closed
 error cases (missing candidates, non-finite logprobs, unsupported stage).
 There is no live llama.cpp scoring adapter in the default suite yet.
 

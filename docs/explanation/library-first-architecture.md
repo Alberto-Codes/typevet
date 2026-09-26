@@ -117,9 +117,9 @@ automarket and keeps contract tests deterministic.
 
 Choose `StaticGenerationFake` when the test only needs a fixed mapping back
 from `generate`. Choose `FakeGenerationAdapter` when the test must prove
-schema validation behavior shared with llama.cpp. Judgment tests use a
-scoring fake behind `ScoringJudgmentAdapter`; see
-[first typed judgment offline](../tutorials/first-typed-judgment-offline.md).
+schema validation behavior shared with llama.cpp. Offline judgment uses
+`ScriptedScoringFake` from `typevet.testing` behind `ScoringJudgmentAdapter`;
+see [first typed judgment offline](../tutorials/first-typed-judgment-offline.md).
 
 ## judgevet compatibility is a consumer story
 

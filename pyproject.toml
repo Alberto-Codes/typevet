@@ -146,6 +146,12 @@ layers = [
 ]
 
 [[tool.importlinter.contracts]]
+name = "runtime_must_not_import_evaluation"
+type = "forbidden"
+source_modules = ["typevet.runtime"]
+forbidden_modules = ["typevet.evaluation"]
+
+[[tool.importlinter.contracts]]
 name = "Fakes stay off the adapters"
 type = "forbidden"
 source_modules = ["typevet.testing"]

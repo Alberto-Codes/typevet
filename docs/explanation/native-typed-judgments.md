@@ -26,7 +26,7 @@ judgment is the spine judgevet-shaped callers need later. See
 ## Where to start
 
 1. [First typed judgment offline](../tutorials/first-typed-judgment-offline.md)
-   — wire `ContractScoringFake` and `ScoringJudgmentAdapter` with no model.
+   — wire `ScriptedScoringFake` and `ScoringJudgmentAdapter` with no model.
 2. [Run a small live judgment eval](../how-to/run-a-small-live-judgment-eval.md)
    — TPJEP eight or read the frozen finvet-6 receipt.
 3. [Judgment live receipts](../reference/judgment-live-receipts.md) — measured

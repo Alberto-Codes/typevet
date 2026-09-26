@@ -1,13 +1,12 @@
 """Shared CandidateScoringPort contract fixtures.
 
 Each fixture is **synthetic**: the author defines the request, scripted scores
-or failures, and expected outcomes. Contract tests exercise offline fakes that
-implement [typevet.ports.scoring.CandidateScoringPort][].
+or failures, and expected outcomes. ``ContractScoringFake`` aliases
+[typevet.testing.ScriptedScoringFake][] for contract tests.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import Any
 
 from typevet.domain.candidate_scoring_request import (
@@ -18,59 +17,15 @@ from typevet.domain.candidate_scoring_response import (
     CandidateScoringResult,
     ScoredCandidate,
 )
-from typevet.domain.candidate_scoring_validate import build_and_validate_result
 from typevet.domain.errors import (
     ScoringError,
     ScoringUnsupportedCapabilityError,
     ScoringValidationError,
 )
-from typevet.domain.judgment_response import TokenUsage
 from typevet.domain.scoring_stage import ScoreStage
+from typevet.testing import ScriptedScoringFake
 
-
-class ContractScoringFake:
-    """Offline fake that implements ``CandidateScoringPort`` for contract tests."""
-
-    def __init__(
-        self,
-        *,
-        logprobs: Mapping[str, float] | None = None,
-        fail: ScoringError | None = None,
-        supported_stages: frozenset[ScoreStage] | None = None,
-    ) -> None:
-        """Configure scripted logprobs, optional failure, and supported stages.
-
-        Args:
-            logprobs: Per-label logprobs returned for requested candidates.
-            fail: When set, ``score_candidates`` raises instead of succeeding.
-            supported_stages: Stages this fake accepts; defaults to pre-sampling.
-        """
-        self._scripted = dict(logprobs or {})
-        self._fail = fail
-        self._supported = supported_stages or frozenset({ScoreStage.PRE_SAMPLING})
-        self.calls: list[CandidateScoringRequest] = []
-
-    def score_candidates(
-        self, request: CandidateScoringRequest
-    ) -> CandidateScoringResult:
-        self.calls.append(request)
-        if self._fail is not None:
-            raise self._fail
-        if request.stage not in self._supported:
-            msg = f"unsupported score stage {request.stage!r}"
-            raise ScoringUnsupportedCapabilityError(msg)
-        raw: dict[str, float] = {}
-        for spec in request.candidates:
-            if spec.label not in self._scripted:
-                msg = f"missing scripted logprob for candidate {spec.label!r}"
-                raise ScoringValidationError(msg)
-            raw[spec.label] = self._scripted[spec.label]
-        return build_and_validate_result(
-            request,
-            raw_logprobs=raw,
-            model=request.model,
-            usage=TokenUsage(),
-        )
+ContractScoringFake = ScriptedScoringFake
 
 
 class RogueScoringPort:

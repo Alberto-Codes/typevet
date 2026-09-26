@@ -181,6 +181,7 @@ the exports above in downstream libraries.
 |---|---|---|---|
 | `FakeGenerationAdapter` | `typevet.adapters.outbound` | Yes | Contract tests, offline demos, asserting validation failures. |
 | `StaticGenerationFake` | `typevet.testing` | No | Inbound unit tests that only need a fixed port double. |
+| `ScriptedScoringFake` | `typevet.testing` | No | Offline typed judgment; ships in the wheel (see first typed judgment tutorial). |
 
 `FakeGenerationAdapter` also accepts `responder=` (callable from request to
 mapping) or `fail=` (raise a configured exception) for richer test scenarios.

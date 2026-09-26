@@ -1,13 +1,72 @@
-"""Build the typevet wheel into a directory (packaging tests only)."""
+"""Build the typevet wheel into a directory (packaging tests only).
+
+Examples:
+    Build into a temp directory from the repo root:
+
+    ```console
+    $ uv run python scripts/build_wheel_for_tests.py /tmp/typevet-dist
+    ```
+
+See Also:
+    - [tests.unit.test_package_wheel][]: Wheel content checks
+"""
 
 from __future__ import annotations
 
 import shutil
 import subprocess
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
+
+_UV_RUN_ISOLATED_TAIL: tuple[str, ...] = (
+    "run",
+    "--isolated",
+    "--no-project",
+    "--with",
+)
+_MIN_UV_HEAD_LEN = 2
+_MIN_ISOLATED_WHEEL_ARGV_LEN = 9
+
+
+def _uv_executable() -> str:
+    """Return the ``uv`` binary path.
+
+    Returns:
+        Absolute path to the ``uv`` executable on ``PATH``.
+
+    Raises:
+        RuntimeError: When ``uv`` is not on ``PATH``.
+    """
+    uv_bin = shutil.which("uv")
+    if uv_bin is None:
+        msg = "uv not on PATH"
+        raise RuntimeError(msg)
+    return uv_bin
+
+
+def _assert_uv_argv(argv: Sequence[str]) -> None:
+    """Reject subprocess argv that does not start with the resolved ``uv`` binary.
+
+    Raises:
+        ValueError: When ``argv`` is not a validated isolated ``uv run --with`` invoke.
+    """
+    if len(argv) < _MIN_UV_HEAD_LEN:
+        msg = "uv argv too short"
+        raise ValueError(msg)
+    expected_uv = _uv_executable()
+    if argv[0] != expected_uv:
+        msg = f"unexpected executable {argv[0]!r}; expected {expected_uv!r}"
+        raise ValueError(msg)
+    tail = tuple(argv[1 : 1 + len(_UV_RUN_ISOLATED_TAIL)])
+    if tail != _UV_RUN_ISOLATED_TAIL:
+        msg = f"unexpected uv tail {tail!r}"
+        raise ValueError(msg)
+    if len(argv) < _MIN_ISOLATED_WHEEL_ARGV_LEN:
+        msg = "isolated wheel argv missing wheel path or python -c body"
+        raise ValueError(msg)
 
 
 def build_wheel_to_directory(out_dir: Path) -> None:
@@ -15,11 +74,12 @@ def build_wheel_to_directory(out_dir: Path) -> None:
 
     Args:
         out_dir: Absolute directory for ``typevet-*.whl`` artifacts.
+
+    Raises:
+        RuntimeError: When ``uv`` is not on ``PATH``.
+        subprocess.CalledProcessError: When ``uv build`` fails.
     """
-    uv_bin = shutil.which("uv")
-    if uv_bin is None:
-        msg = "uv not on PATH"
-        raise RuntimeError(msg)
+    uv_bin = _uv_executable()
     resolved = out_dir.resolve()
     resolved.mkdir(parents=True, exist_ok=True)
     subprocess.run(
@@ -29,8 +89,50 @@ def build_wheel_to_directory(out_dir: Path) -> None:
     )
 
 
+def run_isolated_wheel_python(
+    *,
+    wheel: Path,
+    source: str,
+    cwd: Path,
+) -> subprocess.CompletedProcess[str]:
+    """Run ``python -c`` in an isolated env with only the given wheel installed.
+
+    Args:
+        wheel: Built ``typevet`` wheel path passed to ``uv run --with``.
+        source: Python statements for ``python -c``.
+        cwd: Working directory; use a non-checkout path so ``tests.*`` is not importable.
+
+    Returns:
+        Completed process with captured stdout and stderr.
+
+    Raises:
+        RuntimeError: When ``uv`` is not on ``PATH``.
+        ValueError: When the constructed argv fails the allowlist check.
+    """
+    argv = [
+        _uv_executable(),
+        *_UV_RUN_ISOLATED_TAIL,
+        str(wheel.resolve()),
+        "python",
+        "-c",
+        source,
+    ]
+    _assert_uv_argv(argv)
+    return subprocess.run(
+        argv,
+        check=False,
+        capture_output=True,
+        text=True,
+        cwd=cwd,
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
-    """CLI entry for pre-commit or manual wheel builds into one directory."""
+    """CLI entry for pre-commit or manual wheel builds into one directory.
+
+    Returns:
+        Exit code ``0`` on success, ``2`` when usage is wrong.
+    """
     args = list(argv if argv is not None else sys.argv[1:])
     if len(args) != 1:
         print("usage: build_wheel_for_tests.py OUT_DIR", file=sys.stderr)

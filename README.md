@@ -27,14 +27,15 @@ It shares the supervised-worker pattern with
 uv sync
 ```
 
-Obtain one offline typed judgment (no model):
+Obtain one offline typed judgment (no model). Works from a checkout or from an
+installed wheel (`uv pip install` / `uv build` wheel) with no `tests.*` imports:
 
 ```bash
 uv run python -c "
-from tests.fixtures.scoring_contract import ContractScoringFake
 from typevet.domain import Noul
 from typevet.runtime import ScoringJudgmentAdapter
-fake = ContractScoringFake(logprobs={'True': -0.2, 'False': -1.0})
+from typevet.testing import ScriptedScoringFake
+fake = ScriptedScoringFake(logprobs={'True': -0.2, 'False': -1.0})
 port = ScoringJudgmentAdapter(fake, tokenize_content=lambda t: (ord(t[0]),))
 r = port.judge('text', {'q': Noul(instructions='Ok?', criteria={'true': 'Y', 'false': 'N'})}, 'fake')
 print('noul', r.nouls['q'].noul)

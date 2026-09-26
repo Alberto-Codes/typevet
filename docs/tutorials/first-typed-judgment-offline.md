@@ -7,32 +7,38 @@ an offline fake only. You will not start llama.cpp in this tutorial.
 
 ## Prerequisites
 
-From the typevet checkout:
+Install typevet into a virtual environment. From a checkout:
 
 ```bash
 cd /path/to/typevet
 uv sync
 ```
 
+From a built wheel outside the tree:
+
+```bash
+uv build --wheel --out-dir /tmp/typevet-wheel
+uv pip install /tmp/typevet-wheel/typevet-*.whl
+```
+
 ## Step 1 — Import the public surface
 
-typevet exposes judgment types on the domain package and the scoring adapter on
-`typevet.judge`. The offline fake lives under `tests.fixtures` for checkout
-demos and contract tests.
+typevet exposes judgment types on the domain package, the scoring adapter on
+`typevet.judge`, and the offline scoring fake on `typevet.testing`.
 
 ```python
-from tests.fixtures.scoring_contract import ContractScoringFake
 from typevet.domain.judgment_questions import Noul
 from typevet.judge import ScoringJudgmentAdapter
+from typevet.testing import ScriptedScoringFake
 ```
 
 ## Step 2 — Script logprobs on the fake
 
-`ContractScoringFake` implements `CandidateScoringPort`. It returns the logprobs
+`ScriptedScoringFake` implements `CandidateScoringPort`. It returns the logprobs
 you configure for each candidate label.
 
 ```python
-fake = ContractScoringFake(logprobs={"True": -0.2, "False": -1.0})
+fake = ScriptedScoringFake(logprobs={"True": -0.2, "False": -1.0})
 ```
 
 ## Step 3 — Build `ScoringJudgmentAdapter`
@@ -72,11 +78,11 @@ maps.
 
 ```bash
 uv run python -c "
-from tests.fixtures.scoring_contract import ContractScoringFake
 from typevet.domain.judgment_questions import Noul
 from typevet.judge import ScoringJudgmentAdapter
+from typevet.testing import ScriptedScoringFake
 
-fake = ContractScoringFake(logprobs={'True': -0.2, 'False': -1.0})
+fake = ScriptedScoringFake(logprobs={'True': -0.2, 'False': -1.0})
 port = ScoringJudgmentAdapter(fake, tokenize_content=lambda t: (ord(t[0]),))
 response = port.judge(
     'I did not authorize this charge.',
