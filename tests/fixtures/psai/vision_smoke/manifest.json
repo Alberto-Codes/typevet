@@ -1,0 +1,127 @@
+{
+  "manifest_version": 1,
+  "issue": 154,
+  "dataset_id": "anaisleila/computer-use-data-psai",
+  "license": "MIT",
+  "split": "train",
+  "source": "psai",
+  "screenshot_index": 0,
+  "visual_question": "shows_fox_news_chrome",
+  "gold_provenance": {
+    "category": "annotation",
+    "requires_login": "annotation",
+    "shows_fox_news_chrome": "manual_visual"
+  },
+  "notes": [
+    "Screenshot bytes are the unmodified first screenshot of each row.",
+    "requires_login maps the Hub string through noul_requires_login.",
+    "shows_fox_news_chrome is manual visual labelling, not a Hub field."
+  ],
+  "rows": [
+    {
+      "unique_data_id": "cmcc8u6yc00va1p1ydsdu52zy",
+      "stream_order": 0,
+      "task_name": "Use the top-right search bar to look up the term \u201cprivacy policy,\u201d open the official Privacy Policy page, and note three categories of personal information the site says it collects from visitors. Only use http://foxnews.com to achieve this task.",
+      "visual_family": "fox_news",
+      "screenshot": {
+        "file_name": "cmcc8u6yc00va1p1ydsdu52zy.png",
+        "index": 0,
+        "source_path": "tmpkprrtx26.png",
+        "mime_type": "image/png",
+        "sha256": "4e47c7bf25d49c171106a0c57047432abb25465aa6412c85646282bd6c984d9f",
+        "byte_count": 331403,
+        "width": 1280,
+        "height": 720
+      },
+      "expected": {
+        "category": "BROWSER_TASK",
+        "requires_login": false,
+        "shows_fox_news_chrome": true
+      }
+    },
+    {
+      "unique_data_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "stream_order": 1,
+      "task_name": "From the FoxNews.com homepage, navigate to the \u201cAbout\u201d or \u201cCorporate Information\u201d page and list the year Fox News Channel was launched, the name of its founder, and the city in which its headquarters is located. Only use http://foxnews.com to achieve this task.",
+      "visual_family": "fox_news",
+      "screenshot": {
+        "file_name": "cmcc8u6yc00v91p1yw2eruz95.png",
+        "index": 0,
+        "source_path": "tmpjmcbtc6a.png",
+        "mime_type": "image/png",
+        "sha256": "8adc6a49d46b50ada50ed23a40ea88d5560634cbe2c164b48b88085bb90b3101",
+        "byte_count": 367515,
+        "width": 1280,
+        "height": 720
+      },
+      "expected": {
+        "category": "BROWSER_TASK",
+        "requires_login": false,
+        "shows_fox_news_chrome": true
+      }
+    },
+    {
+      "unique_data_id": "cmcc8u6yc00vm1p1yhjl1u0bf",
+      "stream_order": 2,
+      "task_name": "In the site footer, locate the \u201cContact Us\u201d or \u201cFox News Careers\u201d link. Open it and note two different job categories or departments that the careers page lists as hiring (e.g., Production, Technology). Only use http://foxnews.com to achieve this task.",
+      "visual_family": "fox_news",
+      "screenshot": {
+        "file_name": "cmcc8u6yc00vm1p1yhjl1u0bf.png",
+        "index": 0,
+        "source_path": "tmp200am38u.png",
+        "mime_type": "image/png",
+        "sha256": "6451be512b6f698ec993519540241c13be270a99c6f54e68901856b30bbd408b",
+        "byte_count": 421138,
+        "width": 1280,
+        "height": 720
+      },
+      "expected": {
+        "category": "BROWSER_TASK",
+        "requires_login": false,
+        "shows_fox_news_chrome": true
+      }
+    },
+    {
+      "unique_data_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "stream_order": 6,
+      "task_name": "In the Lighting department, filter for Pendant Lights that are \u201cBlack\u201d in finish and \u201cIndustrial\u201d in style; provide the height (in inches) of the shortest fixture that appears on the first results page. Only use http://homedepot.com to achieve this task.",
+      "visual_family": "non_fox",
+      "screenshot": {
+        "file_name": "cmcc8u6yd00wv1p1yy8guorre.png",
+        "index": 0,
+        "source_path": "tmpal02g__l.png",
+        "mime_type": "image/png",
+        "sha256": "426fd1f1827ccd7c94b694a6b3fa83a98225d1708a30a8458288b51a1486b703",
+        "byte_count": 539964,
+        "width": 1280,
+        "height": 720
+      },
+      "expected": {
+        "category": "BROWSER_TASK",
+        "requires_login": false,
+        "shows_fox_news_chrome": false
+      }
+    },
+    {
+      "unique_data_id": "cmcc8u6yd00wr1p1yj7aot3ae",
+      "stream_order": 7,
+      "task_name": "Use the Store Finder, enter ZIP code 10001, and note the distance (in miles) to the nearest Home Depot location as displayed. Only use http://homedepot.com to achieve this task.",
+      "visual_family": "non_fox",
+      "screenshot": {
+        "file_name": "cmcc8u6yd00wr1p1yj7aot3ae.png",
+        "index": 0,
+        "source_path": "tmphfashaaw.png",
+        "mime_type": "image/png",
+        "sha256": "593733c1ef25d41da52297243a3851b16e22c7aa6c179e994f81b73c2b9da103",
+        "byte_count": 624821,
+        "width": 1280,
+        "height": 720
+      },
+      "expected": {
+        "category": "BROWSER_TASK",
+        "requires_login": false,
+        "shows_fox_news_chrome": false
+      }
+    }
+  ]
+}

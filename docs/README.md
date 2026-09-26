@@ -44,6 +44,10 @@ answers a question, and a reference gives facts.
 - [Run the image-conditioned live smoke](how-to/run-a-multimodal-live-smoke.md):
   opt-in vision check, `media=` calls, and the llama.cpp nested prompt shape.
 
+- [Run the PSAI vision smoke](how-to/run-the-psai-vision-smoke.md): five
+  vendored computer-use screenshots, annotation-backed and manual visual
+  questions, and matched present / omitted / swapped image controls (#154).
+
 ## Architecture decisions (planned)
 
 `docs/adr/` is not present yet. When hex and related judgments lock, add an

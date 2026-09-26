@@ -18,6 +18,8 @@ See Also:
     - [typevet.evaluation.datasets.go_emotions][]: GoEmotions single-label subset
     - [typevet.evaluation.datasets.hyperpartisan][]: Hyperpartisan holdout split
     - [typevet.evaluation.datasets.psai][]: PSAI metadata decisions
+    - [typevet.evaluation.datasets.psai_vision][]: PSAI screenshot fixtures
+    - [typevet.evaluation.datasets.psai_vision_controls][]: image control matrix
     - [typevet.evaluation.datasets.pubmedqa][]: PubMedQA labeled subset
     - [typevet.evaluation.datasets.partner_guard][]: Partner data path guard
 
