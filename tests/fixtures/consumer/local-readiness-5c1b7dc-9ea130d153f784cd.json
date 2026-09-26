@@ -1,0 +1,638 @@
+{
+  "answers": [
+    {
+      "actual": true,
+      "case": "text",
+      "distribution": {
+        "false": 4.178192067438857e-06,
+        "true": 0.9999958218079326
+      },
+      "expected": true,
+      "question": "noul",
+      "semantic_pass": true,
+      "type": "NoulAnswer",
+      "typed_value": {
+        "noul": 0.9999958218079326
+      },
+      "usage": {
+        "input_tokens": 240,
+        "output_tokens": 3
+      }
+    },
+    {
+      "actual": "forty_two",
+      "case": "text",
+      "distribution": {
+        "forty_two": 0.9999986923066014,
+        "twenty_four": 1.3076933985670464e-06
+      },
+      "expected": "forty_two",
+      "question": "choice",
+      "semantic_pass": true,
+      "type": "ChoiceAnswer",
+      "typed_value": {
+        "choice": "forty_two",
+        "confidence": 0.9999986923066014,
+        "probabilities": {
+          "forty_two": 0.9999986923066014,
+          "twenty_four": 1.3076933985670464e-06
+        }
+      },
+      "usage": {
+        "input_tokens": 240,
+        "output_tokens": 3
+      }
+    },
+    {
+      "actual": 1,
+      "case": "text",
+      "distribution": {
+        "0": 3.6043844081631156e-07,
+        "1": 0.9999996395615591
+      },
+      "expected": 1,
+      "expected_value": 0.9999996395615591,
+      "question": "score",
+      "semantic_pass": true,
+      "type": "ScoreAnswer",
+      "typed_value": {
+        "confidence": 0.9999996395615591,
+        "legend": {
+          "0": "No invoice total is stated.",
+          "1": "An invoice total is explicitly stated."
+        },
+        "probabilities": {
+          "0": 3.6043844081631156e-07,
+          "1": 0.9999996395615591
+        },
+        "score": 0.9999996395615591
+      },
+      "usage": {
+        "input_tokens": 240,
+        "output_tokens": 3
+      }
+    },
+    {
+      "actual": true,
+      "case": "C01",
+      "distribution": {
+        "false": 4.28894145199088e-06,
+        "true": 0.999995711058548
+      },
+      "expected": true,
+      "question": "fox",
+      "semantic_pass": true,
+      "type": "NoulAnswer",
+      "typed_value": {
+        "noul": 0.999995711058548
+      },
+      "usage": {
+        "input_tokens": 482,
+        "output_tokens": 1
+      }
+    },
+    {
+      "actual": false,
+      "case": "C03",
+      "distribution": {
+        "false": 0.9999997727301234,
+        "true": 2.2726987663693087e-07
+      },
+      "expected": false,
+      "question": "fox",
+      "semantic_pass": true,
+      "type": "NoulAnswer",
+      "typed_value": {
+        "noul": 2.2726987663693087e-07
+      },
+      "usage": {
+        "input_tokens": 482,
+        "output_tokens": 1
+      }
+    }
+  ],
+  "attempts": {
+    "completion_http": 5,
+    "judgment": 4,
+    "metadata_http": 3,
+    "scoring": 5,
+    "tokenizer_http": 10
+  },
+  "capability": {
+    "marker": "<__media_Ud8WfnPW7zSvZofdkGJwv4n36nYLWGzP__>",
+    "vision": true
+  },
+  "ceilings": {
+    "completion_http": 5,
+    "judgment": 4,
+    "metadata_http": 3,
+    "scoring": 5,
+    "tokenizer_http": 10
+  },
+  "dispatch_accounting": {
+    "attempts": {
+      "completion_http": 5,
+      "judgment": 4,
+      "metadata_http": 3,
+      "scoring": 5,
+      "tokenizer_http": 10
+    },
+    "successes": {
+      "judgment": 3,
+      "scoring": 5
+    }
+  },
+  "dispatch_accounting_version": 1,
+  "endpoint": "http://127.0.0.1:8090",
+  "factory_source": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/gemma_native_vision_factory.py",
+  "finished_unix": 1790457486.343764,
+  "health": {
+    "status": "ok"
+  },
+  "http_attempts": [
+    {
+      "method": "GET",
+      "path": "/health",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/props",
+      "query": "model=gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "method": "POST",
+      "path": "/apply-template",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/tokenize",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/tokenize",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/tokenize",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/tokenize",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/tokenize",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/tokenize",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/completion",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/completion",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/completion",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/tokenize",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/tokenize",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/completion",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/tokenize",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/tokenize",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/completion",
+      "query": ""
+    }
+  ],
+  "http_responses": [
+    {
+      "path": "/health",
+      "status": 200
+    },
+    {
+      "path": "/props",
+      "status": 200
+    },
+    {
+      "path": "/apply-template",
+      "status": 200
+    },
+    {
+      "path": "/tokenize",
+      "status": 200
+    },
+    {
+      "path": "/tokenize",
+      "status": 200
+    },
+    {
+      "path": "/tokenize",
+      "status": 200
+    },
+    {
+      "path": "/tokenize",
+      "status": 200
+    },
+    {
+      "path": "/tokenize",
+      "status": 200
+    },
+    {
+      "path": "/tokenize",
+      "status": 200
+    },
+    {
+      "path": "/completion",
+      "status": 200
+    },
+    {
+      "path": "/completion",
+      "status": 200
+    },
+    {
+      "path": "/completion",
+      "status": 200
+    },
+    {
+      "path": "/tokenize",
+      "status": 200
+    },
+    {
+      "path": "/tokenize",
+      "status": 200
+    },
+    {
+      "path": "/completion",
+      "status": 200
+    },
+    {
+      "path": "/tokenize",
+      "status": 200
+    },
+    {
+      "path": "/tokenize",
+      "status": 200
+    },
+    {
+      "path": "/completion",
+      "status": 200
+    }
+  ],
+  "input_matrix": {
+    "images": [
+      {
+        "bytes": 367515,
+        "case": "C01",
+        "expected": true,
+        "filename": "cmcc8u6yc00v91p1yw2eruz95.png",
+        "instructions": "Does the attached screenshot show the Fox News website chrome (logo and header)?",
+        "sha256": "8adc6a49d46b50ada50ed23a40ea88d5560634cbe2c164b48b88085bb90b3101",
+        "state": "Inspect the attached screenshot."
+      },
+      {
+        "bytes": 539964,
+        "case": "C03",
+        "expected": false,
+        "filename": "cmcc8u6yd00wv1p1yy8guorre.png",
+        "instructions": "Does the attached screenshot show the Fox News website chrome (logo and header)?",
+        "sha256": "426fd1f1827ccd7c94b694a6b3fa83a98225d1708a30a8458288b51a1486b703",
+        "state": "Inspect the attached screenshot."
+      }
+    ],
+    "manifest_sha256": "312d954ea3f59834caaafbd13b2217effea7e92040d7dfe42e72883f81f8f649",
+    "model": "gemma-4-31b-kv9-q4km-mm",
+    "text": {
+      "questions": {
+        "choice": {
+          "criteria": {
+            "forty_two": "42 dollars",
+            "twenty_four": "24 dollars"
+          },
+          "instructions": "Select the invoice total explicitly stated in the state."
+        },
+        "noul": {
+          "instructions": "Does the state explicitly say the invoice total is 42 dollars?"
+        },
+        "score": {
+          "criteria": [
+            "No invoice total is stated.",
+            "An invoice total is explicitly stated."
+          ],
+          "instructions": "Score whether the state explicitly states an invoice total."
+        }
+      },
+      "state": "The invoice total is 42 dollars."
+    }
+  },
+  "input_matrix_sha256": "51c4b21b8e30f184769ed2a2c85dbdc2510ae119bbfc096f3e052618b423aed8",
+  "installed_imports": {
+    "typevet": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/__init__.py",
+    "typevet._version": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/_version.py",
+    "typevet.adapters": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/__init__.py",
+    "typevet.adapters.outbound": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/__init__.py",
+    "typevet.adapters.outbound.async_fake": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/async_fake.py",
+    "typevet.adapters.outbound.async_llama_cpp": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/async_llama_cpp.py",
+    "typevet.adapters.outbound.fake": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/fake.py",
+    "typevet.adapters.outbound.gemma": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/gemma/__init__.py",
+    "typevet.adapters.outbound.gemma.answer_binding": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/gemma/answer_binding.py",
+    "typevet.adapters.outbound.gemma.scoring_prefix": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/gemma/scoring_prefix.py",
+    "typevet.adapters.outbound.gemma.served_template": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/gemma/served_template.py",
+    "typevet.adapters.outbound.gemma_native_vision_factory": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/gemma_native_vision_factory.py",
+    "typevet.adapters.outbound.generation_finite": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/generation_finite.py",
+    "typevet.adapters.outbound.judgment_scoring": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/judgment_scoring.py",
+    "typevet.adapters.outbound.llama_cpp": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/llama_cpp.py",
+    "typevet.adapters.outbound.llama_cpp_http": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/llama_cpp_http.py",
+    "typevet.adapters.outbound.llama_cpp_multimodal": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/llama_cpp_multimodal.py",
+    "typevet.adapters.outbound.llama_cpp_scoring": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/adapters/outbound/llama_cpp_scoring.py",
+    "typevet.decide_categorical": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/decide_categorical.py",
+    "typevet.domain": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/__init__.py",
+    "typevet.domain.candidate_scoring_request": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/candidate_scoring_request.py",
+    "typevet.domain.candidate_scoring_response": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/candidate_scoring_response.py",
+    "typevet.domain.candidate_scoring_validate": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/candidate_scoring_validate.py",
+    "typevet.domain.decision_compile": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/decision_compile.py",
+    "typevet.domain.decision_execute": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/decision_execute.py",
+    "typevet.domain.decisions": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/decisions.py",
+    "typevet.domain.errors": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/errors.py",
+    "typevet.domain.field_instructions": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/field_instructions.py",
+    "typevet.domain.judgment_answers": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/judgment_answers.py",
+    "typevet.domain.judgment_normalize": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/judgment_normalize.py",
+    "typevet.domain.judgment_questions": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/judgment_questions.py",
+    "typevet.domain.judgment_response": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/judgment_response.py",
+    "typevet.domain.media": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/media.py",
+    "typevet.domain.models": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/models.py",
+    "typevet.domain.scoring_stage": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/domain/scoring_stage.py",
+    "typevet.evaluation": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/evaluation/__init__.py",
+    "typevet.evaluation.consumer_http_accounting": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/evaluation/consumer_http_accounting.py",
+    "typevet.evaluation.datasets": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/evaluation/datasets/__init__.py",
+    "typevet.evaluation.datasets.psai": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/evaluation/datasets/psai.py",
+    "typevet.evaluation.datasets.psai_download": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/evaluation/datasets/psai_download.py",
+    "typevet.evaluation.datasets.psai_schema": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/evaluation/datasets/psai_schema.py",
+    "typevet.evaluation.datasets.psai_stream": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/evaluation/datasets/psai_stream.py",
+    "typevet.evaluation.datasets.psai_vision": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/evaluation/datasets/psai_vision.py",
+    "typevet.evaluation.datasets.psai_vision_controls": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/evaluation/datasets/psai_vision_controls.py",
+    "typevet.evaluation.psai_vision_consumer_accounting": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/evaluation/psai_vision_consumer_accounting.py",
+    "typevet.evaluation.psai_vision_consumer_dispatch": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/evaluation/psai_vision_consumer_dispatch.py",
+    "typevet.field_prompt": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/field_prompt.py",
+    "typevet.ports": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/ports/__init__.py",
+    "typevet.ports.async_generation": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/ports/async_generation.py",
+    "typevet.ports.generation": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/ports/generation.py",
+    "typevet.ports.judgment": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/ports/judgment.py",
+    "typevet.ports.scoring": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/ports/scoring.py",
+    "typevet.runtime": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/runtime/__init__.py",
+    "typevet.runtime.categorical": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/runtime/categorical.py",
+    "typevet.runtime.judgment": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/runtime/judgment.py",
+    "typevet.runtime.llama_cpp_gemma_vision": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/runtime/llama_cpp_gemma_vision.py",
+    "typevet.runtime.scoring_prefix": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/runtime/scoring_prefix.py"
+  },
+  "installed_wheel_verification": {
+    "installed_file_hashes_sha256": "8d79b714df1a4f151c16d52a3754b81e2057664aac92275871fd314297e25e7b",
+    "method": "wheel RECORD sha256 versus archive and installed package bytes",
+    "verified_package_files": 162,
+    "wheel_sha256": "9ea130d153f784cdaf5973f7f20ddc4883c86d381829a4857811a2c386b2b750"
+  },
+  "limitations": "Five answers on fixed inputs do not establish calibration, general accuracy, or prompt improvement.",
+  "model": "gemma-4-31b-kv9-q4km-mm",
+  "model_artifact_identity": "unknown",
+  "observed_model_metadata": {
+    "/health": {
+      "generation_model": "unknown"
+    },
+    "/props": {
+      "build_info": "b11176-f805c57a2",
+      "generation_model": "unknown",
+      "model_alias": "gemma-4-31b-kv9-q4km-mm",
+      "model_path": "/models/gemma-4-31b-kv9-q4km-mm/gemma-4-31b-24gib-kv9-decoder.gguf"
+    }
+  },
+  "package_file": "/var/home/Alberto-Codes/.cache/uv/archive-v0/yV7JfE8Sy85vJNhe/lib/python3.13/site-packages/typevet/__init__.py",
+  "protocol": "issue-177-local-consumer-2026-09-26",
+  "runtime_correct": true,
+  "scoring_results": [
+    {
+      "candidates": [
+        {
+          "label": "False",
+          "logprob": -12.38563346862793,
+          "token_ids": [
+            236771
+          ]
+        },
+        {
+          "label": "True",
+          "logprob": -5.722062269342132e-06,
+          "token_ids": [
+            236770
+          ]
+        }
+      ],
+      "model": "gemma-4-31b-kv9-q4km-mm",
+      "stage": "pre_sampling",
+      "termination": null,
+      "usage": {
+        "input_tokens": 73,
+        "output_tokens": 1
+      }
+    },
+    {
+      "candidates": [
+        {
+          "label": "forty_two",
+          "logprob": -1.4901272152201273e-05,
+          "token_ids": [
+            236771
+          ]
+        },
+        {
+          "label": "twenty_four",
+          "logprob": -13.547259330749512,
+          "token_ids": [
+            236770
+          ]
+        }
+      ],
+      "model": "gemma-4-31b-kv9-q4km-mm",
+      "stage": "pre_sampling",
+      "termination": null,
+      "usage": {
+        "input_tokens": 82,
+        "output_tokens": 1
+      }
+    },
+    {
+      "candidates": [
+        {
+          "label": "0",
+          "logprob": -14.835945129394531,
+          "token_ids": [
+            236771
+          ]
+        },
+        {
+          "label": "1",
+          "logprob": -8.344653679159819e-07,
+          "token_ids": [
+            236770
+          ]
+        }
+      ],
+      "model": "gemma-4-31b-kv9-q4km-mm",
+      "stage": "pre_sampling",
+      "termination": null,
+      "usage": {
+        "input_tokens": 85,
+        "output_tokens": 1
+      }
+    },
+    {
+      "candidates": [
+        {
+          "label": "False",
+          "logprob": -14.95427417755127,
+          "token_ids": [
+            236771
+          ]
+        },
+        {
+          "label": "True",
+          "logprob": -2.5948078632354736,
+          "token_ids": [
+            236770
+          ]
+        }
+      ],
+      "model": "gemma-4-31b-kv9-q4km-mm",
+      "stage": "pre_sampling",
+      "termination": null,
+      "usage": {
+        "input_tokens": 482,
+        "output_tokens": 1
+      }
+    },
+    {
+      "candidates": [
+        {
+          "label": "False",
+          "logprob": -0.016153644770383835,
+          "token_ids": [
+            236771
+          ]
+        },
+        {
+          "label": "True",
+          "logprob": -15.313281059265137,
+          "token_ids": [
+            236770
+          ]
+        }
+      ],
+      "model": "gemma-4-31b-kv9-q4km-mm",
+      "stage": "pre_sampling",
+      "termination": null,
+      "usage": {
+        "input_tokens": 482,
+        "output_tokens": 1
+      }
+    }
+  ],
+  "script_sha256": "c68807a907ad727fa48a18c29f533a9104af71edb0fecf7653796f67876e984b",
+  "semantic_pass_count": 5,
+  "served": "native_gemma4_turn",
+  "source_revision": "5c1b7dc2672ce56384df0f692149d4f6bc8eab5e",
+  "started_unix": 1790457478.4719687,
+  "status": "live-verified",
+  "successes": {
+    "completion_http": 5,
+    "judgment": 3,
+    "metadata_http": 3,
+    "scoring": 5,
+    "tokenizer_http": 10
+  },
+  "wheel_sha256": "9ea130d153f784cdaf5973f7f20ddc4883c86d381829a4857811a2c386b2b750",
+  "wire_completions": [
+    {
+      "body_sha256": "398a8ae332f8b7e0007d6cd12ae65b0c95260d3cc73382f8f6a8003e6c239812",
+      "cache_prompt": false,
+      "image_sha256": [],
+      "instruction": "Does the state explicitly say the invoice total is 42 dollars?",
+      "model": "gemma-4-31b-kv9-q4km-mm",
+      "prompt_text": "<|turn>user\nThe invoice total is 42 dollars.\n\nnoul: Does the state explicitly say the invoice total is 42 dollars?\n\nOptions:\nControl 0 \u2192 false\nControl 1 \u2192 true\n\nAnswer with exactly one control string (the digit shown), not the original label text.<turn|>\n<|turn>model\n<|channel>thought\n<channel|>"
+    },
+    {
+      "body_sha256": "2684aafdcb04a6be70a31c5d8c4c3a2c60187a69fdb0556df2e8f18dc9d86544",
+      "cache_prompt": false,
+      "image_sha256": [],
+      "instruction": "Select the invoice total explicitly stated in the state.",
+      "model": "gemma-4-31b-kv9-q4km-mm",
+      "prompt_text": "<|turn>user\nThe invoice total is 42 dollars.\n\nchoice: Select the invoice total explicitly stated in the state.\n\nOptions:\nControl 0 \u2192 forty_two: 42 dollars\nControl 1 \u2192 twenty_four: 24 dollars\n\nAnswer with exactly one control string (the digit shown), not the original label text.<turn|>\n<|turn>model\n<|channel>thought\n<channel|>"
+    },
+    {
+      "body_sha256": "7002ecf52b508bd059426a9843f57dc6b0adf36d724de1707401399a3d6fd1e1",
+      "cache_prompt": false,
+      "image_sha256": [],
+      "instruction": "Score whether the state explicitly states an invoice total.",
+      "model": "gemma-4-31b-kv9-q4km-mm",
+      "prompt_text": "<|turn>user\nThe invoice total is 42 dollars.\n\nscore: Score whether the state explicitly states an invoice total.\n\nOptions:\nControl 0 \u2192 0: No invoice total is stated.\nControl 1 \u2192 1: An invoice total is explicitly stated.\n\nAnswer with exactly one control string (the digit shown), not the original label text.<turn|>\n<|turn>model\n<|channel>thought\n<channel|>"
+    },
+    {
+      "body_sha256": "70ec78da1e7e9223130c37913f6e4f923a7f54901500ccc294c5931f8a89f96c",
+      "cache_prompt": false,
+      "image_sha256": [
+        "8adc6a49d46b50ada50ed23a40ea88d5560634cbe2c164b48b88085bb90b3101"
+      ],
+      "instruction": "Does the attached screenshot show the Fox News website chrome (logo and header)?",
+      "model": "gemma-4-31b-kv9-q4km-mm",
+      "prompt_text": "<|turn>user\n<__media_Ud8WfnPW7zSvZofdkGJwv4n36nYLWGzP__>\nInspect the attached screenshot.\n\nfox: Does the attached screenshot show the Fox News website chrome (logo and header)?\n\nOptions:\nControl 0 \u2192 false\nControl 1 \u2192 true\n\nAnswer with exactly one control string (the digit shown), not the original label text.<turn|>\n<|turn>model\n<|channel>thought\n<channel|>"
+    },
+    {
+      "body_sha256": "26870b8890ac310b3df304b12c66718a983b41fc61e2be3384a657bc9095f2ab",
+      "cache_prompt": false,
+      "image_sha256": [
+        "426fd1f1827ccd7c94b694a6b3fa83a98225d1708a30a8458288b51a1486b703"
+      ],
+      "instruction": "Does the attached screenshot show the Fox News website chrome (logo and header)?",
+      "model": "gemma-4-31b-kv9-q4km-mm",
+      "prompt_text": "<|turn>user\n<__media_Ud8WfnPW7zSvZofdkGJwv4n36nYLWGzP__>\nInspect the attached screenshot.\n\nfox: Does the attached screenshot show the Fox News website chrome (logo and header)?\n\nOptions:\nControl 0 \u2192 false\nControl 1 \u2192 true\n\nAnswer with exactly one control string (the digit shown), not the original label text.<turn|>\n<|turn>model\n<|channel>thought\n<channel|>"
+    }
+  ],
+  "wrong_model_negative": {
+    "message": "model 'gemma-4-31b-kv9-q4km-mm-wrong-model' does not match pinned model 'gemma-4-31b-kv9-q4km-mm'",
+    "type": "JudgmentValidationError"
+  }
+}
