@@ -16,6 +16,9 @@ answers a question, and a reference gives facts.
 - [TypeLLM, Jev and judgevet](explanation/typellm-and-judgevet.md): why the
   grammar-JSON MVP is a floor, what TypeLLM’s decision runtime preserves, and
   how judgevet could consume typevet later.
+- [Verified evidence and inferred claims](explanation/verification.md): what
+  unit, contract and live each prove; fixture labeling; link to the testing
+  pyramid law.
 
 ## How-to
 
@@ -30,6 +33,8 @@ log” epic. Until then, accepted judgment comments on issues are the record.
 
 ## Reference
 
+- [Eval partner data policy](reference/eval-partner-data-policy.md) (reference):
+  public eval datasets vs collections NBA partner exclusion and CI markers.
 - [Glossary](reference/glossary.md) (reference): the one meaning of each term.
 - [Worker runs](reference/worker-runs.md) (reference): the launch evidence and
   commit trailers for each worker.
