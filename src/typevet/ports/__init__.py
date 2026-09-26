@@ -17,10 +17,19 @@ Attributes:
     AsyncGenerationPort (type): Structural protocol for async typed generation.
     GenerationPort (type): Structural protocol for typed generation.
     JudgmentPort (type): Structural protocol for System One-shaped judgment.
+    CandidateScoringPort (type): Structural protocol for candidate logprobs.
+    ScoringPort (type): Alias for ``CandidateScoringPort``.
 """
 
 from typevet.ports.async_generation import AsyncGenerationPort
 from typevet.ports.generation import GenerationPort
 from typevet.ports.judgment import JudgmentPort
+from typevet.ports.scoring import CandidateScoringPort, ScoringPort
 
-__all__ = ["AsyncGenerationPort", "GenerationPort", "JudgmentPort"]
+__all__ = [
+    "AsyncGenerationPort",
+    "CandidateScoringPort",
+    "GenerationPort",
+    "JudgmentPort",
+    "ScoringPort",
+]

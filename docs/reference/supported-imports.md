@@ -66,6 +66,11 @@ and decision helpers, import from `typevet.domain` instead of the root.
 | `JudgmentResponse`, `TokenUsage` | Judgment call result and token metadata |
 | `JudgmentError`, `JudgmentValidationError` | Judgment failure types |
 | `question_types` | Map question ids to wire type names |
+| `CandidateScoringRequest`, `CandidateTokenSpec` | Candidate logprob scoring ask |
+| `CandidateScoringResult`, `ScoredCandidate`, `ScoringTermination` | Scoring result and metadata |
+| `ScoreStage` | Pre- vs post-sampling stage enum |
+| `ScoringError`, `ScoringValidationError`, `ScoringUnsupportedCapabilityError` | Scoring failure types |
+| `build_and_validate_result` | Fail-closed result assembly for scoring |
 
 ## `typevet.ports`
 
@@ -74,6 +79,7 @@ and decision helpers, import from `typevet.domain` instead of the root.
 | `GenerationPort` | Structural protocol for typed generation |
 | `AsyncGenerationPort` | Structural protocol for async typed generation |
 | `JudgmentPort` | Structural protocol for System One-shaped judgment |
+| `CandidateScoringPort`, `ScoringPort` | Structural protocol for candidate logprobs |
 
 Root `typevet` also re-exports `AsyncGenerationPort` alongside the table above.
 

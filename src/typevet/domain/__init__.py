@@ -1,4 +1,4 @@
-"""Pure domain types for typed generation.
+"""Pure domain types for typed generation and candidate scoring.
 
 Examples:
     ```python
@@ -41,6 +41,16 @@ Attributes:
     dependency_layers (callable): Topological layers for decision dependencies.
 """
 
+from typevet.domain.candidate_scoring_request import (
+    CandidateScoringRequest,
+    CandidateTokenSpec,
+)
+from typevet.domain.candidate_scoring_response import (
+    CandidateScoringResult,
+    ScoredCandidate,
+    ScoringTermination,
+)
+from typevet.domain.candidate_scoring_validate import build_and_validate_result
 from typevet.domain.decision_compile import compile_json_schema
 from typevet.domain.decisions import (
     MAX_ENUM_CHOICES,
@@ -55,6 +65,9 @@ from typevet.domain.errors import (
     JudgmentError,
     JudgmentValidationError,
     SchemaValidationError,
+    ScoringError,
+    ScoringUnsupportedCapabilityError,
+    ScoringValidationError,
     TransportError,
 )
 from typevet.domain.judgment_answers import (
@@ -72,12 +85,16 @@ from typevet.domain.judgment_questions import (
 )
 from typevet.domain.judgment_response import JudgmentResponse, TokenUsage
 from typevet.domain.models import GenerationRequest, GenerationResult
+from typevet.domain.scoring_stage import ScoreStage
 
 __all__ = [
     "MAX_ENUM_CHOICES",
     "MAX_PERMUTATIONS",
     "Answer",
     "BackendHttpError",
+    "CandidateScoringRequest",
+    "CandidateScoringResult",
+    "CandidateTokenSpec",
     "Choice",
     "ChoiceAnswer",
     "Decision",
@@ -94,8 +111,15 @@ __all__ = [
     "SchemaValidationError",
     "Score",
     "ScoreAnswer",
+    "ScoreStage",
+    "ScoredCandidate",
+    "ScoringError",
+    "ScoringTermination",
+    "ScoringUnsupportedCapabilityError",
+    "ScoringValidationError",
     "TokenUsage",
     "TransportError",
+    "build_and_validate_result",
     "compile_json_schema",
     "dependency_layers",
     "question_types",

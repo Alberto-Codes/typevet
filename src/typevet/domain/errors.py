@@ -17,6 +17,10 @@ Attributes:
     GenerationError (type): Base failure for a generation call.
     JudgmentError (type): Base failure for a judgment call.
     JudgmentValidationError (type): Answer failed judgment shape rules.
+    GemmaTemplateError (type): Gemma served-template or answer-prefix violation.
+    ScoringError (type): Base failure for a candidate scoring call.
+    ScoringValidationError (type): Score coverage or value failed validation.
+    ScoringUnsupportedCapabilityError (type): Backend cannot honor the stage.
     SchemaValidationError (type): Output failed the requested schema.
     TransportError (type): HTTP client failure before a response.
 """
@@ -123,6 +127,54 @@ class JudgmentValidationError(JudgmentError):
         from typevet.domain.errors import JudgmentValidationError
 
         raise JudgmentValidationError("choice not in criteria")
+        ```
+    """
+
+
+class GemmaTemplateError(JudgmentError):
+    """Gemma served-template or answer-prefix rules were violated.
+
+    Examples:
+        ```python
+        from typevet.domain.errors import GemmaTemplateError
+
+        raise GemmaTemplateError("unsupported served template family")
+        ```
+    """
+
+
+class ScoringError(GenerationError):
+    """A candidate scoring call failed before a valid result existed.
+
+    Examples:
+        ```python
+        from typevet.domain.errors import ScoringError
+
+        raise ScoringError("scoring failed")
+        ```
+    """
+
+
+class ScoringValidationError(ScoringError):
+    """Scores failed fail-closed coverage or finiteness rules.
+
+    Examples:
+        ```python
+        from typevet.domain.errors import ScoringValidationError
+
+        raise ScoringValidationError("missing scores for requested candidates")
+        ```
+    """
+
+
+class ScoringUnsupportedCapabilityError(ScoringError):
+    """The backend cannot honor the requested score stage or capability.
+
+    Examples:
+        ```python
+        from typevet.domain.errors import ScoringUnsupportedCapabilityError
+
+        raise ScoringUnsupportedCapabilityError("unsupported score stage")
         ```
     """
 

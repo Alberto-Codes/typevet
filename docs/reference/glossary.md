@@ -39,6 +39,13 @@ model → validated object. The transport floor on llama.cpp.
 `JudgmentResponse`. Vocabulary aligns with judgevet `SystemOnePort`; no
 judgevet import. Logprob scoring adapters remain separate work ([#26](https://github.com/Alberto-Codes/typevet/issues/26)).
 
+**scoring port.** typevet’s IO-free `CandidateScoringPort` (`ScoringPort`):
+model + rendered prefix + ordered candidate token-id sequences + score stage
+→ identity-preserving raw logprobs per label in a `CandidateScoringResult`.
+Missing, duplicate, or unexpected candidate ids and non-finite scores fail
+closed ([#117](https://github.com/Alberto-Codes/typevet/issues/117)); stock
+HTTP pre-sampling adapters are ([#27](https://github.com/Alberto-Codes/typevet/issues/27)).
+
 **Jev.** TypeSafe’s hosted System One model. judgevet calls it over HTTP.
 TypeLLM and typevet target open-weight typed decisions in the same family.
 
