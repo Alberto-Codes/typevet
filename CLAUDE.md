@@ -17,6 +17,8 @@ Kind: reference and how-to, for agents. Guidance for coding agents. `AGENTS.md` 
    select → classify → split → contract path. Use
    [delegate a bounded change](docs/maintainers/delegate-work.md) only after a
    contract exists on the issue.
+6. Write under [the writing system](docs/reference/writing-system.md): Diátaxis
+   page kinds, Conventional Commits and the ASD-STE100 local prose profile.
 
 ## What this repo is
 
@@ -104,6 +106,15 @@ repeated context. Explicit user scope and required gates still govern.
 
 ## Non-negotiables
 
+- **Diátaxis is law.** Every docs page is one kind: tutorial, how-to,
+  explanation or reference. See
+  [the writing system](docs/reference/writing-system.md).
+- **Conventional Commits 1.0.0 is law.** Closed type vocabulary only. See
+  [commits](docs/reference/commits.md).
+- **ASD-STE100 Issue 9 informs prose; the local profile is law.** Strict and
+  flavored modes, glossary one-term-per-concept, no marketing adjectives. The
+  repo does not claim full ASD-STE100 compliance. See
+  [the writing system](docs/reference/writing-system.md).
 - **Never silence a gate.** Fix the cause. Do not add `per-file-ignores`,
   `# noqa`, `# type: ignore`, `--no-verify`, or a narrowed scope.
 - **Fixing one gate must not break another.** Run the whole table before you
@@ -145,8 +156,10 @@ and show the test go red. A test that cannot fail is not evidence.
 
 ## Commits
 
-Conventional Commits 1.0.0. The type comes from the closed vocabulary (`feat`,
-`fix`, `docs`, `refactor`, `test`, `chore`, `perf`, `build`, `ci`).
+Conventional Commits 1.0.0 is law. Details live in
+[docs/reference/commits.md](docs/reference/commits.md). The type comes from the
+closed vocabulary (`feat`, `fix`, `docs`, `refactor`, `test`, `chore`,
+`perf`, `build`, `ci`, `style`, `revert`).
 
 **A commit that finishes an issue closes it from the footer.** Write
 `Closes #N`. Do not close issues by hand with `gh issue close`. Use `Refs #N`

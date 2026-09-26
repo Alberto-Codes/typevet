@@ -23,6 +23,10 @@ Read [CLAUDE.md](CLAUDE.md) first in every agent session.
 Then [groom worker issues](docs/maintainers/groom-worker-issues.md) and
 [delegate a bounded change](docs/maintainers/delegate-work.md).
 
+**Diátaxis**, **Conventional Commits 1.0.0** and the **ASD-STE100 local writing
+profile** are law. See [the writing system](docs/reference/writing-system.md)
+and [commits](docs/reference/commits.md).
+
 ## Supervised workers
 
 Role, harness and model weight are three separate choices. Supervisor and

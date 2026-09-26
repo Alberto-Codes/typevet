@@ -14,6 +14,13 @@ accepted issue contract. The reviewer changes no file.
 **builder.** The worker role that implements one accepted contract inside named
 paths and returns evidence. The builder never commits.
 
+**Diátaxis.** Documentation standard at [diataxis.fr](https://diataxis.fr/).
+Every page is one kind: tutorial, how-to, explanation or reference. Law in
+this repo.
+
+**glossary.** The one allowed meaning of each domain term. One term per
+concept. The writing system binds prose to it.
+
 **harness.** The program that runs a model and gives it tools. Orthogonal to
 role and to model weight. typevet verifies three worker harnesses: pi, the
 Claude Code Agent tool and the Cursor CLI. Supervisors may also use Codex,
@@ -55,3 +62,8 @@ model weight.
 **worker trailer.** A `Generated-By` or `Specified-By` commit trailer that
 records which worker model produced code or a specification. It is evaluation
 evidence, not authorship. Never use `Co-Authored-By` for a model.
+
+**writing system.** The local prose profile informed by ASD-STE100 Issue 9,
+plus Diátaxis page kinds and Conventional Commits. See
+[writing-system.md](writing-system.md). Not a claim of full ASD-STE100
+compliance.

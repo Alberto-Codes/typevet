@@ -16,6 +16,10 @@ answers a question, and a reference gives facts.
 - [Glossary](reference/glossary.md) (reference): the one meaning of each term.
 - [Worker runs](reference/worker-runs.md) (reference): the launch evidence and
   commit trailers for each worker.
+- [Writing system](reference/writing-system.md) (reference): Diátaxis,
+  ASD-STE100 local profile and prose modes.
+- [Commit messages](reference/commits.md) (reference): Conventional Commits
+  1.0.0 vocabulary for this repo.
 
 ## For maintainers and agents
 
