@@ -11,6 +11,16 @@ in alphabetical order.
 **acceptance review.** An independent check of a builder's diff against the
 accepted issue contract. The reviewer changes no file.
 
+**Banking77 proxy label.** In typevet/finvet evals, PolyAI Banking77 intents
+collapsed via finvet’s six `FRAUD_INTENTS` into binary fraud / not_fraud for
+Noul-primary metrics. See
+[Banking77 proxy and metrics](banking77-proxy-and-metrics.md).
+
+**composition root.** The process or module that reads configuration,
+constructs adapters, runs work, and closes adapters when work ends. A future
+typevet CLI or MCP inbound adapter owns this role. Direct library callers
+own it in application code.
+
 **Decision.** A TypeLLM-compiled field from JSON Schema (enum, boolean,
 bounded number or open string). The portable core executes Decisions; it is
 not the same as dumping a whole object through a grammar.

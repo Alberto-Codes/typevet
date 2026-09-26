@@ -1,0 +1,192 @@
+# JevBench-complementary eval manifest for typevet.
+# Baseline: #54 accepted ranks (revision 1). Parent epic: #51.
+# Issue: https://github.com/Alberto-Codes/typevet/issues/63
+# Do not download corpora from this file; loaders are out of scope here.
+
+manifest_version: 1
+manifest_issue: 63
+research_baseline:
+  issue: 54
+  accepted_comment: "https://github.com/Alberto-Codes/typevet/issues/54#issuecomment-5841932801"
+
+primary_bench:
+  name: JevBench
+  role: primary_typed_decision_bench
+  typevet_law_issue: 24
+  upstream:
+    repository: "https://github.com/TypeLLM/TypeLLM"
+    protocol_note: "Published JevBench protocol (no permutation averaging)."
+    local_law: "docs/explanation/typellm-and-judgevet.md"
+  task_mix:
+    total: 231
+    choice: 139
+    noul: 74
+    score: 18
+  score_gap_policy: >
+    Permissive open ordinal/Score text benchmarks are scarce; v1 Score stress
+    relies on JevBench Score tasks until post-v1 ordinal research (#54 follow-up 7).
+
+policy_defaults:
+  source_issue: 54
+  prefer_permissive_licenses: true
+  large_corpus_sampling: true
+  primitive_priority: "Fill Noul/Choice/Score gaps over mirroring JevBench topics."
+  pair_state_schema_required_before_loaders:
+    - google/boolq
+    - stanfordnlp/snli
+    - qiaojin/PubMedQA
+  clinc_banking77_coordination_issue: 58
+  share_alike_derivatives: >
+    CC BY-SA sets need a judgment on first share-alike artifact (#56-style)
+    before bulk fixtures.
+
+ranked_complementary:
+  - rank: 1
+    dataset_id: google/boolq
+    license: "CC BY-SA 3.0"
+    decision:
+      primitive: Noul
+      notes: "Passage + question yes/no; Noul stress beyond JevBench mix."
+    splits:
+      use: "dataset default (confirm on Hub card at loader time)"
+    sample_size: TBD
+    loader: not_implemented
+    blockers:
+      - "Pair/multi-field state JSON convention (#54 open question 3)"
+
+  - rank: 2
+    dataset_id: google/civil_comments
+    license: "CC0 1.0"
+    decision:
+      primitive: Noul
+      notes: "Toxicity threshold Noul; sample — do not exhaust full test."
+    splits:
+      use: "dataset default; subsample for eval cards"
+    sample_size: TBD
+    loader: not_implemented
+    blockers:
+      - "Toxicity threshold policy (#54 follow-up 2)"
+
+  - rank: 3
+    dataset_id: qiaojin/PubMedQA
+    license: MIT
+    subset: pqa_labeled
+    decision:
+      primitive: Choice
+      labels: [yes, no, maybe]
+      notes: "Small gold; prefer explicit 3-way Choice, not collapsed Noul."
+    splits:
+      use: "pqa_labeled gold only"
+    sample_size: TBD
+    loader: not_implemented
+    blockers:
+      - "state schema for context + question (#54 open question 3)"
+
+  - rank: 4
+    dataset_id: SemEval-2019/Task4-hyperpartisan-news-detection
+    license: "CC BY 4.0"
+    display_name: "SemEval hyperpartisan"
+    decision:
+      primitive: Noul
+      notes: "Manual split only; expect cleanup before fixtures."
+    splits:
+      use: official manual split only
+    sample_size: TBD
+    loader: not_implemented
+    blockers:
+      - "Eval card + split hygiene (#54 follow-up 5)"
+
+  - rank: 5
+    dataset_id: clinc/clinc_oos
+    license: "CC BY 3.0"
+    decision:
+      primitive: Choice
+      notes: ">24 intents → domain-sharded Choice (≤24 labels per shard)."
+    splits:
+      use: "domain shards; confirm license tag vs upstream (#54 limits)"
+    sample_size: TBD
+    loader: not_implemented
+    coordinate_with:
+      issue: 58
+      reason: "Shared intent Choice spec with Banking77 (#53); no duplicate mapping."
+
+  - rank: 6
+    dataset_id: go_emotions
+    license: "Apache 2.0"
+    decision:
+      primitive: Choice
+      notes: "Multi-label → single-label conversion policy; prune to ≤24 labels."
+    splits:
+      use: "dataset default after label policy"
+    sample_size: TBD
+    loader: not_implemented
+    blockers:
+      - "Single-label conversion (#54 follow-up 4)"
+
+  - rank: 7
+    dataset_id: stanfordnlp/snli
+    license: "CC BY-SA 4.0"
+    decision:
+      primitive: Choice
+      labels: [entailment, neutral, contradiction]
+      notes: "Regression canary; pair state (premise + hypothesis)."
+    splits:
+      use: "standard test; subsample for cost"
+    sample_size: TBD
+    loader: not_implemented
+    blockers:
+      - "Pair state JSON convention (#54 open question 3)"
+
+out_of_manifest:
+  - scope: finvet_public_eval_sets
+    issue: 53
+    policy: >
+      Not re-ranked in #54; adoption and mapping live under finvet research.
+      Cross-link public sets (Banking77, DIFrauD, …) via partner-safe policy.
+    cross_reference: docs/reference/eval-partner-data-policy.md
+    examples_not_in_complementary_rank:
+      - Banking77
+      - DIFrauD
+      - CFPB
+      - ABCD
+      - "UCI SMS"
+
+  - scope: psai_computer_use
+    issue: 52
+    policy: >
+      MIT-usable but not native System One gold; multimodal (screenshot/video/DOM)
+      deferred from v1 text Decision path. Metadata-only derived text Decisions
+      are a separate child track, not entries in ranked_complementary.
+
+  - scope: partner_nba_outcome_set
+    issue: 61
+    policy: never_in_public_typevet
+    cross_reference: docs/reference/eval-partner-data-policy.md
+
+  - scope: deferred_multimodal_gui
+    examples: ["OSWorld-class GUI benchmarks"]
+    policy: "Defer with PSAI (#52); not ranked in #54."
+
+excluded_from_rank_not_listed:
+  note: "NC/AGPL/unknown licenses and unbounded intent sets without shard plan."
+
+open_questions:
+  - id: sample_sizes
+    text: "Fixed sample sizes vs full-test for large sets (civil_comments, snli)?"
+  - id: topic_vs_primitive
+    text: "Mirror JevBench topics vs fill primitive gaps?"
+  - id: state_json
+    text: "Pair/multi-field state JSON for BoolQ, SNLI, PubMedQA."
+  - id: share_alike
+    text: "CC BY-SA derivatives in typevet artifacts?"
+  - id: clinc_banking77
+    text: "One shared intent Choice spec or separate loaders?"
+
+recommended_followups_from_54:
+  - issue_title: "research: boolq + pubmedqa state schema for System One Noul/Choice fixtures"
+  - issue_title: "research: civil_comments sampling + toxicity Noul threshold policy"
+  - issue_title: "research: clinc150 domain-sharded Choice (≤24) — coordinate with #53 Banking77"
+  - issue_title: "research: go_emotions single-label conversion for TypeLLM Choice"
+  - issue_title: "research: hyperpartisan manual split → Noul eval card"
+  - issue_title: "feat: JevBench-complementary eval manifest (ranked sets, licenses, splits, exclude #53)"
+  - issue_title: "research: permissive Score/ordinal text benchmark (post-v1)"

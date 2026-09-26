@@ -17,8 +17,8 @@ accepts them. Examples from the #53 research return:
 | Banking77 | CC BY 4.0 | Proxy binary Noul / optional Choice |
 | DIFrauD | MIT | Natural binary Noul (`is_scam`) |
 
-CFPB and synth collections are **seed-only** until a regen or publish spec
-exists ([#62](https://github.com/Alberto-Codes/typevet/issues/62)). ABCD and
+CFPB and synth collections are **seed-only**; see
+[CFPB and synth seed-only](eval-cfpb-synth-seed-only.md). ABCD and
 UCI SMS stay parked until a later scan adopts them.
 
 ## Collections NBA — never in public typevet

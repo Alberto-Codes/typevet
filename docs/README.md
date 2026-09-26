@@ -19,11 +19,16 @@ answers a question, and a reference gives facts.
 - [Verified evidence and inferred claims](explanation/verification.md): what
   unit, contract and live each prove; fixture labeling; link to the testing
   pyramid law.
+- [Library-first architecture](explanation/library-first-architecture.md): why
+  the importable library is the artifact; composition root vs explicit adapter
+  args; hex layers and judgevet alignment.
 
 ## How-to
 
 - [Run Gemma 4 on llama.cpp](how-to/run-gemma4-llamacpp.md): local router,
   preset, and live pytest for the MVP path.
+- [Call typevet from Python](how-to/call-typevet-from-python.md): Fake and
+  llama.cpp adapters, `generate()` vs port injection; link to Gemma howto.
 
 ## Architecture decisions (planned)
 
@@ -35,7 +40,14 @@ log” epic. Until then, accepted judgment comments on issues are the record.
 
 - [Eval partner data policy](reference/eval-partner-data-policy.md) (reference):
   public eval datasets vs collections NBA partner exclusion and CI markers.
+- [Errors](reference/errors.md) (reference): domain vs adapter generation errors and llama.cpp mapping.
+- [CFPB and synth seed-only](reference/eval-cfpb-synth-seed-only.md)
+  (reference): no public gold intent; synthetic contract fixture labeling.
+- [Banking77 proxy and metrics](reference/banking77-proxy-and-metrics.md) (reference): six-intent proxy; Noul vs Choice metric claims.
+- [Complementary eval manifest](reference/eval-complementary-manifest.md) (reference): JevBench-primary ranked open sets; see also `evals/`.
 - [Glossary](reference/glossary.md) (reference): the one meaning of each term.
+- [Supported imports](reference/supported-imports.md) (reference): package
+  `__all__` surfaces and `from typevet…` paths for library callers.
 - [Worker runs](reference/worker-runs.md) (reference): the launch evidence and
   commit trailers for each worker.
 - [Writing system](reference/writing-system.md) (reference): Diátaxis,
