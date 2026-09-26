@@ -73,7 +73,7 @@ compiler types, judgment types, and scoring types, import from
 | `compile_json_schema` | Compile object schema to decisions |
 | `dependency_layers` | Topological layers for decision dependencies |
 | `Noul`, `Choice`, `Score`, `Question` | System One-shaped judgment questions |
-| `NoulAnswer`, `ChoiceAnswer`, `ScoreAnswer`, `Answer` | Typed judgment answers |
+| `NoulAnswer`, `ChoiceAnswer`, `ScoreAnswer`, `Answer` | Typed judgment answers; `ScoreAnswer.score` is the probability-weighted expected rubric level (float), not the modal level |
 | `JudgmentResponse`, `TokenUsage` | Judgment call result and token metadata |
 | `JudgmentError`, `JudgmentValidationError` | Judgment failure types |
 | `question_types` | Map question ids to wire type names |

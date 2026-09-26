@@ -72,7 +72,8 @@ print(answer.noul)
 
 You should see a finite `noul` near **0.69**. A `NoulAnswer` stores only
 that yes-probability. `ChoiceAnswer` and `ScoreAnswer` carry full probability
-maps.
+maps. For `ScoreAnswer`, the public `score` field is the probability-weighted
+expected rubric level (a float), not the winning level index.
 
 ## Step 5 — Run the same script from the shell
 

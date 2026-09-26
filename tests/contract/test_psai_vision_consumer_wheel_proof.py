@@ -1,0 +1,57 @@
+"""Contract: wheel-isolated PSAI consumer proof ([#177][i177] r1).
+
+Examples:
+    ```bash
+    uv run pytest -q tests/contract/test_psai_vision_consumer_wheel_proof.py
+    ```
+
+See Also:
+    - [scripts.psai_vision_consumer_wheel_proof][]: durable harness entry
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from scripts.build_wheel_for_tests import build_wheel_to_directory
+from scripts.psai_vision_consumer_wheel_proof import (
+    _EXIT_INVALID,
+    TYPEVET_WHEEL_SHA256_ENV,
+    run_offline_wheel_proof,
+    sha256_hex,
+    verify_wheel_sha256,
+)
+
+FIXTURE_ROOT = (
+    Path(__file__).resolve().parents[1] / "fixtures" / "psai" / "vision_smoke"
+)
+
+
+@pytest.mark.contract
+def test_offline_wheel_consumer_proof_exits_zero(tmp_path: Path) -> None:
+    """Built wheel runs consumer proof from site-packages with public imports only."""
+    code, _wheel, _digest = run_offline_wheel_proof(
+        fixture_root=FIXTURE_ROOT, work_dir=tmp_path
+    )
+    assert code == 0
+
+
+@pytest.mark.contract
+def test_wheel_sha256_env_mismatch_fails_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """``TYPEVET_WHEEL_SHA256`` mismatch aborts before isolated dispatch."""
+    dist = tmp_path / "dist"
+    build_wheel_to_directory(dist)
+    wheel = next(dist.glob("typevet-*.whl"))
+    measured = sha256_hex(wheel)
+    with pytest.raises(ValueError, match="mismatch"):
+        verify_wheel_sha256(measured, "0" * len(measured))
+    monkeypatch.setenv(TYPEVET_WHEEL_SHA256_ENV, "0" * len(measured))
+    code, _wheel, _digest = run_offline_wheel_proof(
+        fixture_root=FIXTURE_ROOT, work_dir=tmp_path
+    )
+    assert code == _EXIT_INVALID

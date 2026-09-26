@@ -1,0 +1,214 @@
+{
+  "consumer_live_protocol_revision": 1,
+  "git_head": "571bbc0dba690d27161f06001cb878692abfa2e7",
+  "wheel_sha256": "f3eedeae00e78c680e1a26e73740ceefe5e56af7de61cf74bb9ff1437b3911f2",
+  "model": "gemma-4-31b-kv9-q4km-mm",
+  "require_live": true,
+  "scoring_call_budget": 14,
+  "calls": [
+    {
+      "latency_s": 2.01,
+      "unique_data_id": "cmcc8u6yc00va1p1ydsdu52zy",
+      "condition": "present",
+      "question": "shows_fox_news_chrome",
+      "kind": "Noul",
+      "noul": 0.9999997955032472,
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      }
+    },
+    {
+      "latency_s": 1.537,
+      "unique_data_id": "cmcc8u6yc00va1p1ydsdu52zy",
+      "condition": "omitted",
+      "question": "shows_fox_news_chrome",
+      "kind": "Noul",
+      "noul": 0.27196006242966697,
+      "usage": {
+        "input_tokens": 94,
+        "output_tokens": 1
+      }
+    },
+    {
+      "latency_s": 1.909,
+      "unique_data_id": "cmcc8u6yc00va1p1ydsdu52zy",
+      "condition": "swapped",
+      "question": "shows_fox_news_chrome",
+      "kind": "Noul",
+      "noul": 9.747176713457239e-08,
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      }
+    },
+    {
+      "latency_s": 2.05,
+      "unique_data_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "condition": "present",
+      "question": "shows_fox_news_chrome",
+      "kind": "Noul",
+      "noul": 0.9999995543505439,
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      }
+    },
+    {
+      "latency_s": 1.547,
+      "unique_data_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "condition": "omitted",
+      "question": "shows_fox_news_chrome",
+      "kind": "Noul",
+      "noul": 0.27196006242966697,
+      "usage": {
+        "input_tokens": 94,
+        "output_tokens": 1
+      }
+    },
+    {
+      "latency_s": 1.727,
+      "unique_data_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "condition": "swapped",
+      "question": "shows_fox_news_chrome",
+      "kind": "Noul",
+      "noul": 7.352813310608816e-08,
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      }
+    },
+    {
+      "latency_s": 1.941,
+      "unique_data_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "condition": "present",
+      "question": "shows_fox_news_chrome",
+      "kind": "Noul",
+      "noul": 9.747176713457239e-08,
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      }
+    },
+    {
+      "latency_s": 1.335,
+      "unique_data_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "condition": "omitted",
+      "question": "shows_fox_news_chrome",
+      "kind": "Noul",
+      "noul": 0.27196006242966697,
+      "usage": {
+        "input_tokens": 94,
+        "output_tokens": 1
+      }
+    },
+    {
+      "latency_s": 1.745,
+      "unique_data_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "condition": "swapped",
+      "question": "shows_fox_news_chrome",
+      "kind": "Noul",
+      "noul": 0.9999997955032472,
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      }
+    },
+    {
+      "latency_s": 1.917,
+      "unique_data_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "condition": "present",
+      "question": "shows_fox_news_chrome",
+      "kind": "Noul",
+      "noul": 7.352813310608816e-08,
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      }
+    },
+    {
+      "latency_s": 1.32,
+      "unique_data_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "condition": "omitted",
+      "question": "shows_fox_news_chrome",
+      "kind": "Noul",
+      "noul": 0.27196006242966697,
+      "usage": {
+        "input_tokens": 94,
+        "output_tokens": 1
+      }
+    },
+    {
+      "latency_s": 1.75,
+      "unique_data_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "condition": "swapped",
+      "question": "shows_fox_news_chrome",
+      "kind": "Noul",
+      "noul": 0.9999995543505439,
+      "usage": {
+        "input_tokens": 507,
+        "output_tokens": 1
+      }
+    },
+    {
+      "latency_s": 2.509,
+      "unique_data_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "condition": "text_noul",
+      "question": "requires_login",
+      "kind": "Noul",
+      "noul": 3.884659509094842e-07,
+      "usage": {
+        "input_tokens": 262,
+        "output_tokens": 2
+      }
+    },
+    {
+      "latency_s": 2.483,
+      "unique_data_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "condition": "text_noul",
+      "question": "requires_login",
+      "kind": "Noul",
+      "noul": 6.433855978669495e-06,
+      "usage": {
+        "input_tokens": 282,
+        "output_tokens": 2
+      }
+    }
+  ],
+  "health": {
+    "status": "ok"
+  },
+  "capability": {
+    "vision": true,
+    "marker": "<__media_Ud8WfnPW7zSvZofdkGJwv4n36nYLWGzP__>"
+  },
+  "served_template": "NATIVE_GEMMA4_TURN",
+  "unsupported_capability_negative": {
+    "ok": true,
+    "exception": "JudgmentValidationError",
+    "message": "media scoring needs a native Gemma 3 or Gemma 4 served template (served template=unknown)"
+  },
+  "paired_ordering": [
+    {
+      "unique_data_id": "cmcc8u6yc00va1p1ydsdu52zy",
+      "ordered": true,
+      "margin": 0.9999996980314801
+    },
+    {
+      "unique_data_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "ordered": true,
+      "margin": 0.9999994808224107
+    },
+    {
+      "unique_data_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "ordered": true,
+      "margin": 0.9999996980314801
+    },
+    {
+      "unique_data_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "ordered": true,
+      "margin": 0.9999994808224107
+    }
+  ],
+  "scoring_calls_used": 14
+}

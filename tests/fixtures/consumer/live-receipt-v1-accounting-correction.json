@@ -1,0 +1,16 @@
+{
+  "historical_receipt_copy": "tests/fixtures/consumer/live-receipt-v1-checkout.json",
+  "scratchpad_original_path": "scratchpad/consumer-integration/live-receipt.json",
+  "scratchpad_original_sha256": "134198f922fa64d5f6513fc3a9b9f6a04c27a04d9b569d57a186caac3f7a70f3",
+  "consumer_live_protocol_revision": 1,
+  "judgment_call_count": 14,
+  "scoring_request_count": 16,
+  "questions_per_judge_call_annotation": 2,
+  "legacy_field_scoring_calls_used": 14,
+  "correction_note": "The v1 receipt labeled 14 scoring calls but counted adapter judge rows. Twelve visual judge calls (one Score question each) plus two annotation judge calls with annotation_questions() (category Choice + requires_login Noul) schedule 12 + 4 = 16 score_candidates requests. Choice answers were omitted from the legacy call log; matrix_rows must retain every JudgmentResponse.answers entry going forward.",
+  "breakdown": {
+    "visual_scoring_requests": 12,
+    "annotation_scoring_requests": 4,
+    "annotation_judge_calls": 2
+  }
+}
