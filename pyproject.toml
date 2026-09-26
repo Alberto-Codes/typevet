@@ -8,6 +8,7 @@ authors = [{ name = "Alberto-Codes", email = "alberto.codes.dev@gmail.com" }]
 dependencies = [
     "httpx>=0.28",
     "jsonschema>=4.26.0",
+    "structlog>=24.1",
 ]
 
 [project.optional-dependencies]
@@ -128,6 +129,7 @@ type = "layers"
 layers = [
     "typevet.adapters.inbound",
     "typevet.adapters.outbound",
+    "typevet.adapters.diagnostics",
     "typevet.testing",
     "typevet.ports",
     "typevet.domain",
@@ -152,6 +154,7 @@ forbidden_modules = [
     "httpx",
     "typer",
     "jsonschema",
+    "structlog",
 ]
 
 [tool.docvet]
