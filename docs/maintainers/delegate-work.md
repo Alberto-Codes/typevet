@@ -28,8 +28,8 @@ Research and docs-only slices follow the same issue and contract rules.
 The contract may omit the builder for research and documentation.
 It names whether independent review runs. Named supervisor implementation exceptions still require that review.
 
-Repairs after a **repair** verdict reuse the builder (or a narrow follow-up
-brief), then independent review of the integrated repair before commit.
+After a **repair** verdict, reuse the builder or assign a narrow follow-up brief.
+Independently review the integrated repair before commit.
 The existing independent reviewer may resume under the shared completion rules.
 
 ## Worker harnesses and model weight
