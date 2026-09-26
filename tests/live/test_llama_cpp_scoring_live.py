@@ -6,22 +6,20 @@ from dataclasses import replace
 
 import pytest
 
+from tests.live.gate import gate_live
 from typevet.adapters.inbound.settings import load_llama_settings
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.candidate_scoring_request import (
     CandidateScoringRequest,
     CandidateTokenSpec,
 )
-from typevet.evaluation.runner.live_gate import live_skip_reason
 
 _LLAMA = load_llama_settings()
 
 
 @pytest.fixture
 def llama_scoring_model() -> str:
-    reason = live_skip_reason(_LLAMA)
-    if reason is not None:
-        pytest.skip(reason)
+    gate_live(_LLAMA)
     assert _LLAMA.default_model is not None
     return _LLAMA.default_model
 

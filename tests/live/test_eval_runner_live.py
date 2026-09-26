@@ -7,10 +7,10 @@ from pathlib import Path
 
 import pytest
 
+from tests.live.gate import gate_live
 from typevet.adapters.inbound.settings import llama_cpp_adapter, load_llama_settings
 from typevet.evaluation.runner.core import run_eval_tasks
 from typevet.evaluation.runner.datasets import load_eval_tasks
-from typevet.evaluation.runner.live_gate import live_skip_reason
 
 _LLAMA = load_llama_settings()
 BOOLQ_FIXTURE = (
@@ -23,13 +23,10 @@ BOOLQ_FIXTURE = (
 
 @pytest.fixture
 def live_llama_router() -> str:
-    """Skip when the stock live path is not configured."""
-    reason = live_skip_reason(_LLAMA)
-    if reason is not None:
-        pytest.skip(reason)
+    """Skip or fail when the stock live path is not configured."""
+    gate_live(_LLAMA)
     model = _LLAMA.default_model
-    if model is None:
-        pytest.skip("TYPEVET_LLAMA__DEFAULT_MODEL (or TYPEVET_GEMMA_MODEL) not set")
+    assert model is not None
     return model
 
 

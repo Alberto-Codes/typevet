@@ -8,7 +8,12 @@ import httpx
 import pytest
 
 from typevet.adapters.inbound.settings import LlamaSettings
-from typevet.evaluation.runner.live_gate import live_skip_reason
+from typevet.evaluation.runner.live_gate import (
+    LiveGateAction,
+    live_gate_action,
+    live_skip_reason,
+    require_live_enabled,
+)
 
 _SETTINGS = LlamaSettings(base_url="http://127.0.0.1:8090", default_model="gemma")
 
@@ -90,6 +95,26 @@ def test_live_skip_fetches_models_once() -> None:
     ) as mock_get:
         assert live_skip_reason(_SETTINGS) is None
     assert mock_get.call_count == 1
+
+
+@pytest.mark.unit
+def test_live_gate_action_skips_when_reason_and_flag_unset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("TYPEVET_REQUIRE_LIVE", raising=False)
+    assert not require_live_enabled()
+    assert live_gate_action("llama.cpp router not reachable") is LiveGateAction.SKIP
+    assert live_gate_action(None) is LiveGateAction.RUN
+
+
+@pytest.mark.unit
+def test_live_gate_action_fails_when_require_live_set(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("TYPEVET_REQUIRE_LIVE", "1")
+    assert require_live_enabled()
+    reason = "TYPEVET_LLAMA__DEFAULT_MODEL (or TYPEVET_GEMMA_MODEL) not set"
+    assert live_gate_action(reason) is LiveGateAction.FAIL
 
 
 @pytest.mark.unit

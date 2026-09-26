@@ -46,6 +46,7 @@ from pathlib import Path
 import httpx
 import pytest
 
+from tests.live.gate import gate_live
 from typevet.adapters.inbound.settings import load_llama_settings
 from typevet.adapters.outbound.gemma import (
     ServedTemplateClass,
@@ -88,7 +89,6 @@ from typevet.evaluation.experiment_identity import (
     snapshot_evaluated_inputs,
     write_receipt_exclusive,
 )
-from typevet.evaluation.runner.live_gate import live_skip_reason
 
 _LLAMA = load_llama_settings()
 _N_VOCAB = 262144
@@ -140,9 +140,8 @@ def live_multimodal_model() -> str:
         The multimodal model id from settings.
     """
     model = _LLAMA.multimodal_model
-    reason = live_skip_reason(replace(_LLAMA, default_model=model))
-    if reason is not None:
-        pytest.skip(reason)
+    gate_live(replace(_LLAMA, default_model=model))
+    assert model is not None
     return model
 
 

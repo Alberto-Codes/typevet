@@ -8,11 +8,11 @@ from dataclasses import replace
 import httpx
 import pytest
 
+from tests.live.gate import gate_live
 from typevet import decide_categorical
 from typevet.adapters.inbound.settings import load_llama_settings
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.candidate_scoring_request import CandidateTokenSpec
-from typevet.evaluation.runner.live_gate import live_skip_reason
 from typevet.gemma_answer_binding import resolve_answer_anchor
 
 _LLAMA = load_llama_settings()
@@ -36,9 +36,7 @@ _ENUM_SCHEMA = {
 def gemma4_decide_ready() -> str:
     """Require router + pinned Gemma id; override env model to the pin."""
     pinned = replace(_LLAMA, default_model=_PINNED_MODEL)
-    reason = live_skip_reason(pinned)
-    if reason is not None:
-        pytest.skip(reason)
+    gate_live(pinned)
     return _PINNED_MODEL
 
 

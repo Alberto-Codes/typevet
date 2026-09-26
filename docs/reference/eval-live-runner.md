@@ -71,6 +71,18 @@ uv run pytest tests/live/test_eval_runner_live.py -m live -q
 When ``TYPEVET_LLAMA__DEFAULT_MODEL`` is unset or the router is down, the CLI
 prints ``skip: …`` to stderr and exits ``0``; live pytest tests **skip**.
 
+Release evidence runs that must not silently skip live collection:
+
+```bash
+export TYPEVET_REQUIRE_LIVE=1
+uv run pytest tests/live/test_eval_runner_live.py -m live -q
+```
+
+With ``TYPEVET_REQUIRE_LIVE`` set to a truthy value (``1``, ``true``, ``yes``,
+``on``), the same missing router or model conditions **fail** the test instead
+of skipping. Default behaviour is unchanged. The eval CLI equivalent remains
+``--require-live``.
+
 ## Library API
 
 ```python

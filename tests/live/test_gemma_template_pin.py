@@ -5,8 +5,8 @@ from __future__ import annotations
 import httpx
 import pytest
 
+from tests.live.gate import gate_live
 from typevet.adapters.inbound.settings import load_llama_settings
-from typevet.evaluation.runner.live_gate import live_skip_reason
 from typevet.gemma_answer_binding import resolve_answer_anchor
 from typevet.gemma_served_template import ServedTemplateClass
 
@@ -16,9 +16,7 @@ _PINNED_MODEL = "gemma-4-31b-24gib-kv11-decoder"
 
 @pytest.mark.live
 def test_gemma4_served_template_class_pin() -> None:
-    reason = live_skip_reason(_SETTINGS)
-    if reason is not None:
-        pytest.skip(reason)
+    gate_live(_SETTINGS)
     base = _SETTINGS.base_url.rstrip("/")
     with httpx.Client(base_url=base, timeout=30.0) as client:
         rendered = (

@@ -6,9 +6,9 @@ from dataclasses import replace
 
 import pytest
 
+from tests.live.gate import gate_live
 from typevet.adapters.inbound.settings import llama_cpp_adapter, load_llama_settings
 from typevet.domain.models import GenerationRequest
-from typevet.evaluation.runner.live_gate import live_skip_reason
 
 _LLAMA = load_llama_settings()
 BASE = _LLAMA.base_url
@@ -28,9 +28,7 @@ SCHEMA = {
 @pytest.fixture
 def gemma4_llama_router() -> str:
     """Probe local llama.cpp only when a live test is selected to run."""
-    reason = live_skip_reason(_LLAMA)
-    if reason is not None:
-        pytest.skip(reason)
+    gate_live(_LLAMA)
     assert MODEL is not None
     return MODEL
 

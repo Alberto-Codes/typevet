@@ -10,10 +10,10 @@ import httpx
 import pytest
 
 from tests.fixtures.tpjep.live_acceptance import assert_tpjep_live_smoke_receipt
+from tests.live.gate import gate_live
 from typevet.adapters.inbound.settings import load_llama_settings
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
-from typevet.evaluation.runner.live_gate import live_skip_reason
 from typevet.evaluation.tpjep.loader import load_eight_task_fixture
 from typevet.evaluation.tpjep.records import records_to_jsonl
 from typevet.evaluation.tpjep.runner import TpjepRunConfig, run_tpjep_with_receipt
@@ -31,9 +31,7 @@ _OUTPUT_DIR = Path(__file__).resolve().parents[2] / "scratchpad" / "tpjep"
 
 @pytest.fixture
 def live_tpjep_model() -> str:
-    reason = live_skip_reason(_LLAMA)
-    if reason is not None:
-        pytest.skip(reason)
+    gate_live(_LLAMA)
     model = _LLAMA.default_model or _PINNED_MODEL
     return model
 

@@ -15,6 +15,7 @@ import httpx
 import pytest
 
 from tests.fixtures.synthetic_images import solid_image
+from tests.live.gate import gate_live
 from typevet.adapters.inbound.settings import load_llama_settings
 from typevet.adapters.outbound.gemma import (
     ServedTemplateClass,
@@ -25,7 +26,6 @@ from typevet.adapters.outbound.llama_cpp_multimodal import fetch_media_capabilit
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.judgment_questions import Choice
 from typevet.domain.judgment_response import JudgmentResponse
-from typevet.evaluation.runner.live_gate import live_skip_reason
 
 _LLAMA = load_llama_settings()
 _N_VOCAB = 262144
@@ -50,9 +50,8 @@ _MIN_IMAGE_TOKENS = 200
 def live_multimodal_model() -> str:
     """Skip unless the router catalog serves the multimodal model id."""
     model = _LLAMA.multimodal_model
-    reason = live_skip_reason(replace(_LLAMA, default_model=model))
-    if reason is not None:
-        pytest.skip(reason)
+    gate_live(replace(_LLAMA, default_model=model))
+    assert model is not None
     return model
 
 

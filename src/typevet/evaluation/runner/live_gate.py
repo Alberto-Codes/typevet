@@ -3,10 +3,10 @@
 Examples:
     ```python
     from typevet.adapters.inbound.settings import load_llama_settings
-    from typevet.evaluation.runner.live_gate import live_skip_reason
+    from typevet.evaluation.runner.live_gate import live_gate_action, live_skip_reason
 
     reason = live_skip_reason(load_llama_settings())
-    assert reason is None or isinstance(reason, str)
+    assert live_gate_action(reason).name in {"RUN", "SKIP", "FAIL"}
     ```
 
 See Also:
@@ -15,11 +15,61 @@ See Also:
 
 from __future__ import annotations
 
+import os
+from enum import Enum
+
 import httpx
 
 from typevet.adapters.inbound.settings import LlamaSettings
 
+TYPEVET_REQUIRE_LIVE_ENV = "TYPEVET_REQUIRE_LIVE"
+_TRUTHY = frozenset({"1", "true", "yes", "on"})
 _HTTP_OK: int = 200
+
+
+class LiveGateAction(Enum):
+    """Outcome when the router or model is not ready for live work.
+
+    Examples:
+        ```python
+        from typevet.evaluation.runner.live_gate import LiveGateAction, live_gate_action
+
+        assert live_gate_action("router down") is LiveGateAction.SKIP
+        ```
+    """
+
+    RUN = "run"
+    SKIP = "skip"
+    FAIL = "fail"
+
+
+def require_live_enabled() -> bool:
+    """Return whether live collection must fail instead of skip (#191).
+
+    Returns:
+        ``True`` when ``TYPEVET_REQUIRE_LIVE`` is truthy (``1``, ``true``, ``yes``,
+        ``on``).
+    """
+    raw = os.environ.get(TYPEVET_REQUIRE_LIVE_ENV, "")
+    return raw.strip().lower() in _TRUTHY
+
+
+def live_gate_action(skip_reason: str | None) -> LiveGateAction:
+    """Map ``live_skip_reason`` output to skip, fail, or run.
+
+    When ``TYPEVET_REQUIRE_LIVE`` is truthy and ``skip_reason`` is set, return
+    ``FAIL`` so pytest callers can ``pytest.fail``. Default remains ``SKIP``.
+
+    Returns:
+        ``RUN`` when ``skip_reason`` is ``None``; otherwise ``SKIP`` or ``FAIL``.
+    """
+    if skip_reason is None:
+        return LiveGateAction.RUN
+    if require_live_enabled():
+        return LiveGateAction.FAIL
+    return LiveGateAction.SKIP
+
+
 _CATALOG_INVALID = "llama.cpp router catalog invalid"
 _CATALOG_EMPTY = "llama.cpp router catalog empty"
 

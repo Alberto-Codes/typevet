@@ -34,6 +34,10 @@ compatibility for those labeled cases only.
 **Live.** One exercised call against the configured router and model. Opt in
 with ``pytest -m live``. See [Run Gemma 4 on llama.cpp](../how-to/run-gemma4-llamacpp.md).
 
+For release evidence, set ``TYPEVET_REQUIRE_LIVE=1`` so missing router or model
+configuration **fails** live tests instead of skipping. See
+[live eval runner](eval-live-runner.md).
+
 The [live eval runner](eval-live-runner.md) adds an optional BoolQ/Banking77
 slice with attempted / schema-valid / gold-match counters over
 ``GenerationPort``. That is task accuracy on gold for a tiny limit, not ECE.
