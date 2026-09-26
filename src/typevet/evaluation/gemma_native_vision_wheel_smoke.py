@@ -1,4 +1,4 @@
-"""Offline wheel smoke for ``open_gemma_native_vision_judgment`` ([#177][i177], [#196][i196]).
+"""Validate public factory wheel requests on the wire ([#177][i177], [#196][i196]).
 
 Examples:
     ```python
@@ -16,11 +16,15 @@ See Also:
 
 from __future__ import annotations
 
+import base64
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
 
 import httpx
 
+import typevet.adapters.outbound.gemma_native_vision_factory
 from typevet.adapters.inbound.settings import LlamaSettings
 from typevet.adapters.outbound.gemma_native_vision_factory import (
     open_gemma_native_vision_judgment,
@@ -34,6 +38,8 @@ _GEMMA4_RENDERED = "<|turn>user\nhello<turn|>\n<|turn>model\n"
 _ROUTER_MARKER = "<__wheel_smoke_media__>"
 _PINNED = "wheel-smoke-model"
 _OTHER = "other-model"
+_EXPECTED_COMPLETIONS = 2
+_PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 32
 
 
 @dataclass
@@ -43,6 +49,7 @@ class _Router:
     Attributes:
         paths (list[str]): Request paths observed in order.
         completion_calls (int): Count of ``/completion`` responses served.
+        completions (list[dict]): Actual completion request payloads.
 
     Examples:
         ```python
@@ -53,9 +60,10 @@ class _Router:
 
     paths: list[str]
     completion_calls: int = 0
+    completions: list[dict[str, Any]] = field(default_factory=list)
 
     def handle(self, request: httpx.Request) -> httpx.Response:
-        """Return canned router responses.
+        """Capture completion payloads and return canned router responses.
 
         Returns:
             Synthetic response for supported routes.
@@ -78,6 +86,7 @@ class _Router:
             return httpx.Response(200, json={"tokens": [token_id]})
         if path == "/completion":
             self.completion_calls += 1
+            self.completions.append(json.loads(request.content))
             top = [
                 {"id": token_id, "logprob": -0.2 - (token_id % 5) * 0.15}
                 for token_id in range(100, 180)
@@ -93,7 +102,9 @@ class _Router:
 
 
 def run_wheel_smoke() -> int:
-    """Exercise the public factory from an installed wheel without checkout imports.
+    """Exercise the public factory and verify caller inputs on the wire.
+
+    Print module paths so isolated consumers can verify their installed imports.
 
     Returns:
         ``0`` when text, image, and negative model checks pass; ``1`` otherwise.
@@ -117,8 +128,7 @@ def run_wheel_smoke() -> int:
         answer = text_resp.answers["q"]
         if not isinstance(answer, NoulAnswer):
             return 1
-        png = b"\x89PNG\r\n\x1a\n" + b"\x00" * 32
-        media = (ImageInput(data=png, mime_type="image/png"),)
+        media = (ImageInput(data=_PNG, mime_type="image/png"),)
         image_resp = session.port.judge(
             "image state",
             {"q": Noul(instructions="Image question?")},
@@ -136,7 +146,56 @@ def run_wheel_smoke() -> int:
             return 1
         if "/tokenize" in router.paths[before:]:
             return 1
-    print(
-        json.dumps({"factory_smoke": "ok", "completion_calls": router.completion_calls})
-    )
+    if not _wire_matches(router.completions):
+        return 1
+    _print_receipt(router)
     return 0
+
+
+def _print_receipt(router: _Router) -> None:
+    """Print wire success and installed smoke and factory module locations."""
+    print(
+        json.dumps(
+            {
+                "factory_smoke": "ok",
+                "completion_calls": router.completion_calls,
+                "module_paths": {
+                    "smoke": str(Path(__file__).resolve()),
+                    "factory": str(
+                        Path(
+                            typevet.adapters.outbound.gemma_native_vision_factory.__file__
+                        ).resolve()
+                    ),
+                },
+            }
+        )
+    )
+
+
+def _wire_matches(completions: list[dict[str, Any]]) -> bool:
+    """Check caller inputs in the actual completion wire bodies.
+
+    Returns:
+        Whether both requests preserve text, instructions, model, and media.
+    """
+    if len(completions) != _EXPECTED_COMPLETIONS:
+        return False
+    text, image = completions
+    text_prompt = text.get("prompt")
+    image_prompt = image.get("prompt")
+    if not isinstance(text_prompt, str) or not isinstance(image_prompt, dict):
+        return False
+    image_text = image_prompt.get("prompt_string", "")
+    return (
+        text.get("model") == image.get("model") == _PINNED
+        and "text state" in text_prompt
+        and "Question?" in text_prompt
+        and _ROUTER_MARKER not in text_prompt
+        and "multimodal_data" not in text
+        and "image_data" not in text
+        and "image state" in image_text
+        and "Image question?" in image_text
+        and image_text.count(_ROUTER_MARKER) == 1
+        and image_prompt.get("multimodal_data")
+        == [base64.b64encode(_PNG).decode("ascii")]
+    )
