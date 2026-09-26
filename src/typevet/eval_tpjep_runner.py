@@ -182,7 +182,7 @@ def _answered_record(
 ) -> TpjepAttemptRecord:
     answer = response.answers[task.question_name]
     predicted, probs, correct = outcome_from_answer(task, answer)
-    valid = prob_valid(probs)
+    valid = prob_valid(probs, labels=task.labels)
     usage = None
     if (
         response.usage.input_tokens is not None
