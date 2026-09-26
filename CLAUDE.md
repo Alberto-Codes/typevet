@@ -118,6 +118,9 @@ repeated context. Explicit user scope and required gates still govern.
   skip or delete a test to obtain green. A test that cannot fail is not
   evidence. Research-only slices may omit a code test; their accept-when is
   still named first.
+- **Static analysis is ruff and ty in `pyproject.toml`.** No SonarQube,
+  SonarCloud or other Sonar product. Strict rule sets live in toml (judgevet
+  ruff profile is the reference; see #7).
 - **Diátaxis is law.** Every docs page is one kind: tutorial, how-to,
   explanation or reference. See
   [the writing system](docs/reference/writing-system.md).
