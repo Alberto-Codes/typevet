@@ -64,9 +64,10 @@ findings. A model name alone does not make a review independent.
 **specifier.** The role that writes a definition of ready and done for one
 issue. The specifier never edits code.
 
-**TDD.** Test-driven development. For behavioural work: accept-when and red
-test first, then implementation, then green. Law in this repo. Research-only
-slices use a named accept-when instead of a code test.
+**testing pyramid.** Three layers: `unit` (fast, no network), `contract`
+(fake and real adapter share fixtures), `live` (opt-in exercised call).
+Default pytest excludes `live`. Coverage ≥ 90 on the default suite. Law in
+`CLAUDE.md`. Sisters: judgevet markers; gepa-adk ADR-005.
 
 **uv.** Astral’s package and tool runner. Ground floor for typevet: sync,
 locks, `uv run` for every gate and script. No parallel pip/poetry install path.

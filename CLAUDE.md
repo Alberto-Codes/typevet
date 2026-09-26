@@ -135,6 +135,19 @@ repeated context. Explicit user scope and required gates still govern.
   skip or delete a test to obtain green. A test that cannot fail is not
   evidence. Research-only slices may omit a code test; their accept-when is
   still named first.
+- **Testing pyramid is law** (sisters: judgevet markers; gepa-adk ADR-005).
+  Three layers only:
+
+  | Layer | Marker / path | Proves | Default run |
+  |---|---|---|---|
+  | Unit | `unit` / `tests/unit/` | Pure domain and inbound with fakes; no network | yes |
+  | Contract | `contract` / `tests/contract/` | Fake port and real adapter agree on shared fixtures | yes |
+  | Live | `live` / `tests/live/` | One exercised local (or remote) call | no (`-m "not live"`) |
+
+  Coverage floor **90** on the default (non-live) suite. A live pass does not
+  replace unit or contract. Valid structure ≠ model quality. New behaviour
+  names which layer owns the proof. Prefer shared fixtures under
+  `tests/fixtures/` when contract suites grow (judgevet shape).
 - **Static analysis is ruff and ty in `pyproject.toml`.** No SonarQube,
   SonarCloud or other Sonar product. Strict rule sets live in toml (judgevet
   ruff profile is the reference; see #7).
