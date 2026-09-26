@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+    "answer": {
+      "type": "string",
+      "enum": ["no", "yes"],
+      "instructions": "Based on the passage, is the answer to the question yes?",
+      "return_probabilities": true
+    }
+  },
+  "required": ["answer"],
+  "additionalProperties": false
+}

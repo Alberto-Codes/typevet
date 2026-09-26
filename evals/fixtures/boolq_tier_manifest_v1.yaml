@@ -1,0 +1,24 @@
+# Seeded BoolQ eval tiers (#64/#75 accepted, loader #77, SA #76).
+manifest_version: 1
+loader_issue: 77
+research_issue: 64
+design_issue: 75
+judgment_issue: 76
+dataset_id: google/boolq
+split: validation
+license: CC BY-SA 3.0
+default_seed: 0
+contract_row_bounds:
+  min: 12
+  max: 24
+tiers:
+  A:
+    total_limit: 24
+    balanced: true
+    per_class: 12
+    role: smoke_contract
+  B:
+    total_limit: 256
+    balanced: true
+    per_class: 128
+    role: regression

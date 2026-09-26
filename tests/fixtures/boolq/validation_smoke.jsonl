@@ -1,0 +1,12 @@
+{"idx": 0, "passage": "Typevet ships offline eval loaders without vendoring full corpora.", "question": "Does typevet always commit full validation splits to git?", "answer": false}
+{"idx": 1, "passage": "BoolQ examples pair a passage with a yes or no question.", "question": "Is each BoolQ row a passage and a question?", "answer": true}
+{"idx": 2, "passage": "The validation split is used for complementary regression cards.", "question": "Is the BoolQ train split the primary v1 eval split?", "answer": false}
+{"idx": 3, "passage": "Noul labels for BoolQ use the strings no and yes.", "question": "Should BoolQ expected answers use Python True and False strings?", "answer": false}
+{"idx": 4, "passage": "Smoke fixtures may include at most twenty-four rows in the public repo.", "question": "May in-repo BoolQ smoke bundles exceed twenty-four rows?", "answer": false}
+{"idx": 5, "passage": "ShareAlike applies when embedding BoolQ passage text in committed fixtures.", "question": "Does ShareAlike apply to embedded BoolQ passage text in fixtures?", "answer": true}
+{"idx": 6, "passage": "Bulk BoolQ passages stream from Hugging Face at eval time.", "question": "Should bulk BoolQ JSONL be committed to the typevet repository?", "answer": false}
+{"idx": 7, "passage": "Task state holds passage and question without the gold answer.", "question": "May exported BoolQ state include the answer field?", "answer": false}
+{"idx": 8, "passage": "Seeded hash ordering keeps CI free of random module suppression.", "question": "Does the loader avoid the random module for tier sampling?", "answer": true}
+{"idx": 9, "passage": "Tier B targets two hundred fifty-six balanced validation rows.", "question": "Is tier B capped at two hundred fifty-six rows?", "answer": true}
+{"idx": 10, "passage": "Tier A targets twenty-four balanced rows for contract smoke.", "question": "Is tier A limited to twenty-four total rows?", "answer": true}
+{"idx": 11, "passage": "The canonical serializer uses fixed passage and question markers.", "question": "Does serialize_boolq_state emit section markers?", "answer": true}

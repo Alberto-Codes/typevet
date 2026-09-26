@@ -15,9 +15,17 @@ re-litigate dataset research.
 | [fixtures/civil_comments_is_toxic_noul_schema_v1.json](fixtures/civil_comments_is_toxic_noul_schema_v1.json) | Versioned `is_toxic` Noul JSON Schema for Civil Comments (#72) |
 | [fixtures/civil_comments_tier_manifest_v1.yaml](fixtures/civil_comments_tier_manifest_v1.yaml) | Seeded tier A/B limits and τ=0.5 policy (#72) |
 | [fixtures/pubmedqa_answer_choice_schema_v1.json](fixtures/pubmedqa_answer_choice_schema_v1.json) | Versioned yes/no/maybe Choice schema for PubMedQA (#78) |
+| [fixtures/boolq_answer_noul_schema_v1.json](fixtures/boolq_answer_noul_schema_v1.json) | Versioned `answer` Noul JSON Schema for BoolQ (#77) |
+| [fixtures/boolq_tier_manifest_v1.yaml](fixtures/boolq_tier_manifest_v1.yaml) | Seeded tier A/B limits and CC BY-SA smoke policy (#77) |
 
 Human-readable commentary and epic links:
 [Eval complementary manifest](../docs/reference/eval-complementary-manifest.md).
+
+Loader reference pages (Python modules under ``src/typevet/``):
+
+| Corpus | Doc |
+|---|---|
+| BoolQ | [BoolQ loader and answer Noul](../docs/reference/eval-boolq-loader.md) |
 
 ## Rules
 

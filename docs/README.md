@@ -52,6 +52,7 @@ log” epic. Until then, accepted judgment comments on issues are the record.
 - [DIFrauD loader and is_scam fixture](reference/eval-difraud-loader.md) (reference): SMS-default domain flag, natural binary Noul, class imbalance notes.
 - [Civil Comments loader and is_toxic fixture](reference/eval-civil-comments-loader.md) (reference): τ=0.5 toxicity Noul, balanced tiers A/B, sensitive-text policy.
 - [PubMedQA loader and answer Choice fixture](reference/eval-pubmedqa-loader.md) (reference): pqa_labeled yes/no/maybe; contexts state; MIT.
+- [BoolQ loader and answer Noul fixture](reference/eval-boolq-loader.md) (reference): validation split, no/yes Noul, CC BY-SA smoke cap, HF bulk stream.
 - [Complementary eval manifest](reference/eval-complementary-manifest.md) (reference): JevBench-primary ranked open sets; see also `evals/`.
 - [Glossary](reference/glossary.md) (reference): the one meaning of each term.
 - [Supported imports](reference/supported-imports.md) (reference): package
