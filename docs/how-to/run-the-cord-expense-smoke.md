@@ -13,10 +13,11 @@ quality beyond these 18 claims.
 
 ## Before you start
 
-- The llama.cpp router serves `gemma-3-4b-it-q4km-mm` with its vision
-  projector. See
+- The llama.cpp router serves a Gemma 3 or Gemma 4 multimodal id with its
+  vision projector. Common ids are `gemma-3-4b-it-q4km-mm` and
+  `gemma-4-31b-kv9-q4km-mm`. See
   [Run the image-conditioned live smoke](run-a-multimodal-live-smoke.md).
-- `/apply-template` for that id renders the native Gemma 3 turn. The test
+- `/apply-template` for that id renders the native Gemma 3 or Gemma 4 turn. The test
   fails on any other template family.
 - The fixture is `tests/fixtures/cord/expense_smoke/` (CC-BY-4.0). Each receipt
   has one `supported`, one `contradicted` and one `insufficient` claim.
@@ -24,12 +25,15 @@ quality beyond these 18 claims.
 ## Run the live smoke
 
 ```bash
-TYPEVET_LLAMA__MULTIMODAL_MODEL=gemma-3-4b-it-q4km-mm \
+TYPEVET_LLAMA__MULTIMODAL_MODEL=gemma-4-31b-kv9-q4km-mm \
   TYPEVET_LLAMA__TIMEOUT=900 \
   uv run pytest tests/live/test_cord_expense_smoke_live.py -m live -q
 ```
 
-The smoke writes `scratchpad/cord-expense/receipt.json`.
+Each pass writes an immutable receipt under
+`scratchpad/cord-expense/receipt-<run_id>.json` (the prior
+`receipt.json` name is not overwritten). The JSON includes
+`experiment_identity` captured before scoring starts.
 
 | Result | Cause |
 |---|---|
@@ -69,31 +73,61 @@ less.
 ## Check the attachment yourself
 
 Compare `tokens_evaluated` for the same claim in `text_only` and `combined`.
-One Gemma 3 image costs 256 prompt tokens. The test asserts a gap of at least
-200. The test passes the served family to `ScoringJudgmentAdapter` as
-`served_template`, so `text_only` and `combined` both use the native Gemma 3
-turn. The gap holds the image and its marker, with no template difference.
-Every `/completion` request sends `"cache_prompt": false`.
+One Gemma 3 image costs 256 prompt tokens on the CORD smoke router; one Gemma 4
+image costs 245. A silently dropped image grows the count by about 30 tokens,
+the marker as plain text. The live test uses
+`typevet.evaluation.cord_expense_smoke` model-specific floors derived from those
+measured costs. The test passes the served family to `ScoringJudgmentAdapter` as
+`served_template`, so `text_only` and `combined` share one native turn family
+and the gap holds the image and its marker only. Every `/completion` request
+sends `"cache_prompt": false`.
 
-## Historical run
+## Historical run (Gemma 3)
 
 On 2026-09-26 against `gemma-3-4b-it-q4km-mm`, recorded with the smoke from
-revision `387285e`, before `aa1ad37`. At that revision the `text_only` prefix was ChatML and the imaged
-prefix was the native Gemma 3 turn, so the token gap below also holds a small
-template difference. Run the smoke again before you quote a value for the
-current revision.
+revision `387285e`, before `aa1ad37`. At that revision the `text_only` prefix was
+ChatML and the imaged prefix was the native Gemma 3 turn, so the token gap below
+also holds a small template difference. Run the smoke again before you quote a
+value for the current revision.
 
 | Metric | `combined` | `text_only` |
 |---|---|---|
-| Accuracy | 0.333 | 0.333 |
-| `supported` recall | 0.5 | 1.0 |
-| `contradicted` recall | 0.5 | 0.0 |
+| Accuracy | 0.333 | 0.278 |
+| `supported` recall | 0.5 | 0.0 |
+| `contradicted` recall | 0.5 | 0.833 |
 | `insufficient` recall | 0.0 | 0.0 |
-| `false_supported` | 4 | 10 |
+| `false_supported` | 4 | 1 |
 
 The model did not choose `insufficient_evidence` in any modality, including
-`image_only`. The image changed the label on 9 of 18 claims. Each attached
-receipt added 245 prompt tokens.
+`image_only`. The image changed the label on 8 of 18 claims. Each attached
+receipt added 256 prompt tokens once both arms used the native Gemma 3 turn at
+`aa1ad37`.
+
+## Historical run (Gemma 4, direct arm)
+
+On 2026-09-26 against `gemma-4-31b-kv9-q4km-mm`, recorded with the smoke from
+revision `25c5195`. The vendored receipt is
+`tests/fixtures/cord/expense_smoke/gemma4_kv9_direct_receipt.json`. The router
+declared vision and `/apply-template` rendered `native_gemma4_turn`.
+
+The direct combined arm **passes** attachment and typed-label gates. It **fails**
+two [#161](https://github.com/Alberto-Codes/typevet/issues/161) revision 1
+semantic floors on the combined arm (recorded, not live-gated):
+
+The vendored receipt’s `experiment_identity` block is flawed on this historical
+run: `working_tree.dirty` was falsely `false`, identity was captured after
+scoring, the live harness path is missing from `code_path_digests`, and
+`runtime.server_build` is `unknown`. See the sibling annotation
+[`gemma4_kv9_direct_receipt.note.md`](../../tests/fixtures/cord/expense_smoke/gemma4_kv9_direct_receipt.note.md).
+Semantic FAIL rows below are unchanged; only identity metadata is annotated.
+
+| #161 check | Limit | Measured | Status |
+|---|---|---|---|
+| Answerable accuracy | floor 0.67 | 0.25 | FAIL |
+| Contradicted recall | floor 0.5 | 0.333 | FAIL |
+
+Combined accuracy was 0.444. The model abstained on most imaged rows; that is a
+quality read, not proof the receipt was unread.
 
 ## Known limits
 

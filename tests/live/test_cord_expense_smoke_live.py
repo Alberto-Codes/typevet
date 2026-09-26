@@ -1,8 +1,9 @@
-"""Opt-in live CORD expense triage smoke with semantic metrics (#165).
+"""Opt-in live CORD expense smoke with semantic metrics (#165, #185, #186).
 
 Skips when the router or the multimodal model id is unavailable. **Fails** when
 the router serves that id text-only or silently drops a receipt image, because
-a text-only pass says nothing about reading a receipt.
+a text-only pass says nothing about reading a receipt. Native Gemma 3 or
+Gemma 4 turns are accepted (#185). Receipts carry experiment identity (#186).
 
 Three modalities per receipt:
 
@@ -28,6 +29,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import time
 from collections import Counter
 from dataclasses import replace
@@ -45,6 +47,7 @@ from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.adapters.outbound.llama_cpp_multimodal import fetch_media_capability
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.media import ImageInput
+from typevet.evaluation.cord_expense_smoke import assert_cord_expense_attachment
 from typevet.evaluation.datasets.cord_expense import (
     INSUFFICIENT,
     INSUFFICIENT_EVIDENCE,
@@ -56,6 +59,18 @@ from typevet.evaluation.datasets.cord_expense import (
     load_expense_cases,
     route,
 )
+from typevet.evaluation.experiment_identity import (
+    ExperimentIdentityRequest,
+    PromptSpec,
+    RunIdentityStart,
+    RuntimeBuild,
+    WorkingTreeState,
+    begin_run_identity,
+    capture_experiment_identity,
+    capture_working_tree_at_run_start,
+    cord_expense_receipt_path,
+    read_baseline_commit,
+)
 from typevet.evaluation.runner.live_gate import live_skip_reason
 
 _LLAMA = load_llama_settings()
@@ -63,18 +78,41 @@ _N_VOCAB = 262144
 FIXTURE_DIR = (
     Path(__file__).resolve().parents[1] / "fixtures" / "cord" / "expense_smoke"
 )
-_OUTPUT_DIR = Path(__file__).resolve().parents[2] / "scratchpad" / "cord-expense"
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_OUTPUT_DIR = _REPO_ROOT / "scratchpad" / "cord-expense"
 _QUESTION = "expense"
 _IMAGE_ONLY_STATE = (
     "Expense claim for this receipt: the claimed total is not stated. "
     "Decide whether the claim can be checked against the receipt."
 )
 _MAX_REQUESTS = 54
-# One Gemma 3 image costs 256 prompt tokens. A silently dropped image grows the
-# prompt by the marker text only, tens of tokens rather than hundreds (#155).
-_MIN_IMAGE_TOKENS = 200
 _CHANCE = 1 / len(LABEL_ORDER)
 _ABSTAIN_FLOOR = 0.5
+
+
+def _working_tree_at_run_start(repo_root: Path) -> WorkingTreeState:
+    """Fingerprint the tree at run start without spawning git in library code.
+
+    When ``TYPEVET_GIT_STATUS_PORCELAIN`` is set, fingerprint that text.
+    Otherwise mark dirty with an explicit unknown path so receipts never claim
+    a false-clean checkout.
+
+    Args:
+        repo_root: Repository root for this checkout.
+
+    Returns:
+        Working-tree fingerprint for experiment identity.
+    """
+    porcelain = os.environ.get("TYPEVET_GIT_STATUS_PORCELAIN")
+    if porcelain is None:
+        baseline = read_baseline_commit(repo_root)
+        return WorkingTreeState(
+            baseline,
+            True,
+            ("dirty-unknown-without-porcelain",),
+            "unknown",
+        )
+    return capture_working_tree_at_run_start(repo_root, porcelain=porcelain)
 
 
 @pytest.fixture
@@ -236,7 +274,11 @@ def _soft_warnings(metrics: dict[str, object]) -> list[str]:
 def test_cord_expense_triage_reads_the_receipt(
     live_multimodal_model: str, cases: tuple[ExpenseCase, ...]
 ) -> None:
-    """Run three modalities on 18 claims and record combined semantic metrics."""
+    """Run three modalities on 18 claims and record combined semantic metrics.
+
+    Accepts native Gemma 3 or Gemma 4 served templates (#185) and attaches
+    experiment identity on the receipt (#186).
+    """
     assert len(cases) == 18
     settings = replace(_LLAMA, timeout=max(_LLAMA.timeout, 900.0))
     base = settings.base_url.rstrip("/")
@@ -248,7 +290,16 @@ def test_cord_expense_triage_reads_the_receipt(
             "a text-only router cannot prove receipt reading"
         )
         served = _served_template(client, live_multimodal_model)
-        assert served is ServedTemplateClass.NATIVE_GEMMA3_TURN, served
+        # #185: CORD may exercise Gemma 3 or Gemma 4 native turns.
+        assert served in (
+            ServedTemplateClass.NATIVE_GEMMA3_TURN,
+            ServedTemplateClass.NATIVE_GEMMA4_TURN,
+        ), served
+        run_start = begin_run_identity(
+            repo_root=_REPO_ROOT,
+            runtime=_runtime_build(client, live_multimodal_model, served),
+            working_tree=_working_tree_at_run_start(_REPO_ROOT),
+        )
         with LlamaCppCandidateScoringAdapter(
             base_url=base,
             timeout=settings.timeout,
@@ -278,8 +329,18 @@ def test_cord_expense_triage_reads_the_receipt(
         combined[cid]["label"] != text_only[cid]["label"] for cid in combined
     )
     _write_receipt(
+        run_start,
         {
             "issue": 165,
+            **_experiment_identity_receipt(
+                run_start=run_start,
+                prompts=(_prompt_spec_from_expense_question(),),
+                arm_call_counts={
+                    "text_only": len(text_only),
+                    "image_only": len(image_only),
+                    "combined": len(combined),
+                },
+            ),
             "model": live_multimodal_model,
             "media_marker": capability.marker,
             "vision": capability.vision,
@@ -308,11 +369,11 @@ def test_cord_expense_triage_reads_the_receipt(
                 "One model, one router build, six receipts, eighteen claims.",
                 "Semantic metrics are recorded and soft-warned, not gated.",
                 (
-                    "Every row uses the native Gemma 3 turn, so the token delta "
-                    "is the media marker and image payload only."
+                    "Every row uses one native Gemma 3 or Gemma 4 turn, so the "
+                    "token delta is the media marker and image payload only."
                 ),
             ],
-        }
+        },
     )
 
     assert requests <= _MAX_REQUESTS
@@ -322,32 +383,91 @@ def test_cord_expense_triage_reads_the_receipt(
             probabilities = row["probabilities"]
             assert isinstance(probabilities, dict)
             assert set(probabilities) == set(LABEL_ORDER)
-    _assert_attachment(text_only, image_only, combined, cases)
+    _assert_attachment(live_multimodal_model, text_only, image_only, combined, cases)
 
 
-def _assert_attachment(text_only, image_only, combined, cases) -> None:
-    """Fail loud on a silently dropped receipt image (#155)."""
-    for case in cases:
-        text_tokens = text_only[case.claim_id]["tokens_evaluated"]
-        image_tokens = combined[case.claim_id]["tokens_evaluated"]
-        assert isinstance(text_tokens, int), "router did not report tokens"
-        assert isinstance(image_tokens, int), "router did not report tokens"
-        assert image_tokens - text_tokens >= _MIN_IMAGE_TOKENS, (
-            f"{case.claim_id} combined evaluated {image_tokens} prompt tokens "
-            f"against a {text_tokens}-token text baseline; the image was not attached"
+def _assert_attachment(model_id, text_only, image_only, combined, cases) -> None:
+    """Fail loud on a silently dropped receipt image (#155, #185).
+
+    Raises:
+        AssertionError: When token growth falls below the model-specific floor.
+    """
+    claim_ids = tuple(case.claim_id for case in cases)
+    receipt_ids = tuple(dict.fromkeys(case.receipt_id for case in cases))
+    try:
+        assert_cord_expense_attachment(
+            model_id=model_id,
+            text_only=text_only,
+            image_only=image_only,
+            combined=combined,
+            claim_ids=claim_ids,
+            receipt_ids=receipt_ids,
         )
-    for receipt_id, row in image_only.items():
-        tokens = row["tokens_evaluated"]
-        assert isinstance(tokens, int), "router did not report tokens"
-        assert tokens >= _MIN_IMAGE_TOKENS, (
-            f"{receipt_id} image_only evaluated {tokens} prompt tokens; "
-            "the image was not attached"
-        )
+    except ValueError as exc:
+        raise AssertionError(str(exc)) from exc
 
 
-def _write_receipt(receipt: dict[str, object]) -> None:
-    """Write the live receipt JSON under the gitignored scratchpad."""
+def _write_receipt(run_start: RunIdentityStart, receipt: dict[str, object]) -> None:
+    """Write one immutable receipt JSON under the gitignored scratchpad."""
     _OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    (_OUTPUT_DIR / "receipt.json").write_text(
-        json.dumps(receipt, indent=2) + "\n", encoding="utf-8"
+    path = cord_expense_receipt_path(_OUTPUT_DIR, run_start.run_id)
+    path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+
+
+def _prompt_spec_from_expense_question() -> PromptSpec:
+    question = expense_question()
+    criteria = question.criteria or {}
+    return PromptSpec(
+        name="expense",
+        label_order=LABEL_ORDER,
+        instructions=str(question.instructions or ""),
+        criteria={label: str(criteria[label]) for label in LABEL_ORDER},
     )
+
+
+def _runtime_build(
+    client: httpx.Client, model: str, served: ServedTemplateClass
+) -> RuntimeBuild:
+    build_info = "unknown"
+    try:
+        payload = client.get("/props").raise_for_status().json()
+        if isinstance(payload.get("build_info"), str):
+            build_info = payload["build_info"]
+    except httpx.HTTPError:
+        pass
+    return RuntimeBuild(model, served.value, build_info)
+
+
+def _experiment_identity_receipt(
+    *,
+    run_start: RunIdentityStart,
+    prompts: tuple[PromptSpec, ...],
+    arm_call_counts: dict[str, int],
+) -> dict[str, object]:
+    """Attach #186 experiment identity for the direct judgment path (no triage).
+
+    Args:
+        run_start: Identity captured before any scoring calls.
+        prompts: Prompt specs included in the identity digest.
+        arm_call_counts: Per-arm request counts for the receipt.
+
+    Returns:
+        Mapping with a single ``experiment_identity`` receipt field.
+    """
+    identity = capture_experiment_identity(
+        ExperimentIdentityRequest(
+            repo_root=_REPO_ROOT,
+            prompts=prompts,
+            code_paths={
+                "cord_expense": _REPO_ROOT
+                / "src/typevet/evaluation/datasets/cord_expense.py",
+                "cord_expense_smoke_live": Path(__file__).resolve(),
+            },
+            fixture_paths={"expense_smoke_manifest": FIXTURE_DIR / "manifest.json"},
+            runtime=run_start.runtime,
+            arm_call_counts=arm_call_counts,
+            working_tree=run_start.working_tree,
+        ),
+        run_id=run_start.run_id,
+    )
+    return {"experiment_identity": identity.to_receipt_mapping()}
