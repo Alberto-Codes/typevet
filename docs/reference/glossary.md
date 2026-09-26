@@ -32,8 +32,12 @@ bounded number or open string). The portable core executes Decisions; it is
 not the same as dumping a whole object through a grammar.
 
 **generation port.** typevet’s MVP `GenerationPort`: prompt + JSON Schema +
-model → validated object. The transport floor on llama.cpp. Not yet a
-System One judgment port.
+model → validated object. The transport floor on llama.cpp.
+
+**judgment port.** typevet’s IO-free `JudgmentPort`: `state` + named
+`Noul` / `Choice` / `Score` questions + model → typed answers in a
+`JudgmentResponse`. Vocabulary aligns with judgevet `SystemOnePort`; no
+judgevet import. Logprob scoring adapters remain separate work ([#26](https://github.com/Alberto-Codes/typevet/issues/26)).
 
 **Jev.** TypeSafe’s hosted System One model. judgevet calls it over HTTP.
 TypeLLM and typevet target open-weight typed decisions in the same family.

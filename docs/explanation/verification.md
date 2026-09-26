@@ -62,8 +62,9 @@ enum membership for that run. It does not verify that the model chose the
 right sentiment.
 
 The MVP path is documented in [TypeLLM, Jev and judgevet](typellm-and-judgevet.md).
-Probabilities, logprob scoring and a System One judgment port remain design
-targets until dedicated tests and live evidence name them verified.
+Logprob scoring and live judgment adapters remain design targets until
+dedicated tests and live evidence name them verified. The judgment port
+surface and answer validators are contract-tested offline ([#101](https://github.com/Alberto-Codes/typevet/issues/101)).
 
 Do not claim expected calibration error (ECE) or other statistical quality
 from passing unit, contract or live tests. Those require labeled task

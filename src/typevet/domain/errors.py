@@ -15,6 +15,8 @@ See Also:
 Attributes:
     BackendHttpError (type): llama.cpp HTTP status 400 or above.
     GenerationError (type): Base failure for a generation call.
+    JudgmentError (type): Base failure for a judgment call.
+    JudgmentValidationError (type): Answer failed judgment shape rules.
     SchemaValidationError (type): Output failed the requested schema.
     TransportError (type): HTTP client failure before a response.
 """
@@ -99,6 +101,30 @@ class BackendHttpError(GenerationError):
         super().__init__(message)
         self.status_code = status_code
         self.body_snippet = body_snippet
+
+
+class JudgmentError(GenerationError):
+    """A typed judgment call failed before a valid response existed.
+
+    Examples:
+        ```python
+        from typevet.domain.errors import JudgmentError
+
+        raise JudgmentError("judgment failed")
+        ```
+    """
+
+
+class JudgmentValidationError(JudgmentError):
+    """An answer or option list failed judgment validation rules.
+
+    Examples:
+        ```python
+        from typevet.domain.errors import JudgmentValidationError
+
+        raise JudgmentValidationError("choice not in criteria")
+        ```
+    """
 
 
 class SchemaValidationError(GenerationError):

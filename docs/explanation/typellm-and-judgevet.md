@@ -77,13 +77,16 @@ Approximate mapping (design target, not shipped):
   llama.cpp `response_format` / `json_schema`.
 - Fail-fast schema validation after parse.
 - Offline fake + live Gemma 4 proof on the local router.
+- IO-free `JudgmentPort` plus domain question and answer types (judgevet-aligned
+  vocabulary; contract-tested offline fakes; no judgevet dependency). See
+  [supported imports](../reference/supported-imports.md).
 
-That proves **constrained JSON on llama.cpp**. It does **not** yet prove:
+That proves **constrained JSON on llama.cpp** and **offline judgment port
+structure**. It does **not** yet prove:
 
 - single-token logprob scoring ([#11](https://github.com/Alberto-Codes/typevet/issues/11))
 - TypeLLM numeric FSM vs grammar-only numbers ([#12](https://github.com/Alberto-Codes/typevet/issues/12))
-- probability-bearing answers judgevet can consume
-- a `SystemOne`-shaped port (state + named questions → typed answers)
+- probability-bearing answers from a live local backend ([#26](https://github.com/Alberto-Codes/typevet/issues/26))
 
 Treat grammar-JSON as the **transport floor**. The **product spine** is the
 decision runtime + a consumer-facing judgment port.

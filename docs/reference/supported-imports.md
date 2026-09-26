@@ -61,6 +61,11 @@ and decision helpers, import from `typevet.domain` instead of the root.
 | `SchemaValidationError` | Output failed the requested schema |
 | `compile_json_schema` | Compile object schema to decisions |
 | `dependency_layers` | Topological layers for decision dependencies |
+| `Noul`, `Choice`, `Score`, `Question` | System One-shaped judgment questions |
+| `NoulAnswer`, `ChoiceAnswer`, `ScoreAnswer`, `Answer` | Typed judgment answers |
+| `JudgmentResponse`, `TokenUsage` | Judgment call result and token metadata |
+| `JudgmentError`, `JudgmentValidationError` | Judgment failure types |
+| `question_types` | Map question ids to wire type names |
 
 ## `typevet.ports`
 
@@ -68,6 +73,7 @@ and decision helpers, import from `typevet.domain` instead of the root.
 |---|---|
 | `GenerationPort` | Structural protocol for typed generation |
 | `AsyncGenerationPort` | Structural protocol for async typed generation |
+| `JudgmentPort` | Structural protocol for System One-shaped judgment |
 
 Root `typevet` also re-exports `AsyncGenerationPort` alongside the table above.
 

@@ -55,6 +55,15 @@ Add new port behaviour to the fixture list first, then extend fakes and the
 llama.cpp adapter until both sides agree. Do not weaken the default coverage
 floor or add a fourth pyramid layer to do it.
 
+## Shared JudgmentPort fixtures (judgevet shape)
+
+Offline judgment contract fixtures live in
+[tests/fixtures/judgment_contract.py](../../tests/fixtures/judgment_contract.py).
+They exercise `ContractJudgmentFake` against labeled success and error cases.
+There is no live llama.cpp judgment adapter in the default suite yet.
+
+Suite: [tests/contract/test_judgment_port.py](../../tests/contract/test_judgment_port.py).
+
 ## Commands
 
 ```bash

@@ -30,7 +30,10 @@ Attributes:
     TransportError (type): HTTP client failure before a response.
     GenerationRequest (type): Prompt, schema and model ask.
     GenerationResult (type): Validated structured value.
+    JudgmentResponse (type): Typed answers from a judgment call.
     MAX_ENUM_CHOICES (int): Upper bound on enum size when compiling.
+    Noul (type): Yes/no judgment question.
+    Question (type): Union of judgment question types.
     MAX_PERMUTATIONS (int): Upper bound on enum permutation budget.
     SchemaError (type): Invalid or unsupported schema for compilation.
     SchemaValidationError (type): Output failed the requested schema.
@@ -49,22 +52,51 @@ from typevet.domain.decisions import (
 from typevet.domain.errors import (
     BackendHttpError,
     GenerationError,
+    JudgmentError,
+    JudgmentValidationError,
     SchemaValidationError,
     TransportError,
 )
+from typevet.domain.judgment_answers import (
+    Answer,
+    ChoiceAnswer,
+    NoulAnswer,
+    ScoreAnswer,
+)
+from typevet.domain.judgment_questions import (
+    Choice,
+    Noul,
+    Question,
+    Score,
+    question_types,
+)
+from typevet.domain.judgment_response import JudgmentResponse, TokenUsage
 from typevet.domain.models import GenerationRequest, GenerationResult
 
 __all__ = [
     "MAX_ENUM_CHOICES",
     "MAX_PERMUTATIONS",
+    "Answer",
     "BackendHttpError",
+    "Choice",
+    "ChoiceAnswer",
     "Decision",
     "GenerationError",
     "GenerationRequest",
     "GenerationResult",
+    "JudgmentError",
+    "JudgmentResponse",
+    "JudgmentValidationError",
+    "Noul",
+    "NoulAnswer",
+    "Question",
     "SchemaError",
     "SchemaValidationError",
+    "Score",
+    "ScoreAnswer",
+    "TokenUsage",
     "TransportError",
     "compile_json_schema",
     "dependency_layers",
+    "question_types",
 ]
