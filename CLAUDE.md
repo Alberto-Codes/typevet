@@ -228,6 +228,7 @@ Record lasting decisions in docs, ADRs or issue contracts, not only in chat.
 | loc | `uv run python scripts/check_loc.py src` |
 | suppressions | `uv run python scripts/check_suppressions.py` |
 | owned prose | `uv run python scripts/check_plain_english.py` |
+| terminology | `uv run python scripts/check_terminology.py` |
 | docvet | `uv run docvet check --all` |
 | pytest | `uv run pytest -q` |
 | coverage (push) | `uv run pytest -q --cov=typevet --cov-report=term-missing` |

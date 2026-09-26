@@ -1,0 +1,4 @@
+# Conservative spelling replacements, validated against the glossary.
+[[terms]]
+forbidden = "issue-bus"
+preferred = "issue bus"

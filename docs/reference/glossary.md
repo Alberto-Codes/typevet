@@ -76,6 +76,9 @@ role and to model weight. The [worker run contract](worker-runs.md#harness-bound
 contracts, handoffs and acceptance across sessions and harnesses. Chat is not
 the bus.
 
+Use `issue bus`, not `issue-bus`, in owned prose.
+The terminology gate enforces this spelling.
+
 **judgment.** An issue label: a decision remains; the supervising or
 orchestrating model must settle it before `worker-fit` implementation.
 

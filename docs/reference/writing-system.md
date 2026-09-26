@@ -108,6 +108,7 @@ until that change owns it.
 | Owned prose | `uv run python scripts/check_plain_english.py` |
 | Named files | `uv run python scripts/check_plain_english.py PATH ...` |
 | Saved patch | `uv run python scripts/check_plain_english.py --diff PATCH` |
+| Terminology | `uv run python scripts/check_terminology.py` |
 
 The prose gate enforces the 20-word sentence limit and five banned adjectives.
 The banned words are `seamless`, `robust`, `powerful`, `blazing` and `cutting-edge`.
@@ -171,5 +172,40 @@ Nested Markdown, multiline inline literals and complex link destinations need ma
 File-path detection covers slash paths and common source or configuration suffixes.
 
 Tutorial steps, code comments, docstrings, commit prose and flavored pages remain manual for this checker.
-Terminology checks remain manual until their separate gate exists.
+Other terminology rules remain manual outside the configured replacements.
 The commit-message hook enforces Conventional Commits.
+
+### Terminology gate
+
+The terminology gate checks `README.md`, `CLAUDE.md` and all Markdown under `docs/` by default.
+This includes flavored pages, tutorials and ADRs.
+`AGENTS.md` remains an alias; `scratchpad/` remains outside default scope.
+It uses the same sentence ownership, exclusions, line diagnostics and exit statuses as the prose gate.
+It does not enforce sentence length on flavored pages.
+Neither prose gate is installed as a hook yet.
+
+The map in `scripts/terminology.toml` currently replaces only `issue-bus` with `issue bus`.
+This narrow map does not infer synonyms or validate every glossary concept.
+Matching ignores case and checks literal phrases within each visible sentence.
+Letters, digits and underscores cannot touch a phrase boundary.
+Punctuation can touch that boundary; inflected spellings are separate terms.
+The shared scanner limits also apply here.
+
+Each `[[terms]]` entry requires exactly two strings: `forbidden` and `preferred`.
+Use single spaces without leading, trailing or control characters.
+Preferred terms must match glossary headings or bold entries, ignoring case.
+Empty maps, unknown fields, duplicate phrases and overlapping forbidden phrases are invalid.
+A forbidden phrase cannot occur within a canonical glossary term.
+Several distinct spellings can share one preferred term.
+
+Named files and saved patches use the same CLI forms:
+
+```bash
+uv run python scripts/check_terminology.py PATH ...
+uv run python scripts/check_terminology.py --diff /tmp/typevet-owned.diff
+uv run python scripts/check_terminology.py --config PATH_TO_MAP PATH ...
+```
+
+The default map and glossary resolve relative to the script, independently of the current directory.
+`--config` selects another map; its targets still require entries in this repository's glossary.
+Invalid configuration returns status `2`, even when no prose is selected.
