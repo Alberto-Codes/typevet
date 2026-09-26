@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "is_scam": {
+      "type": "boolean",
+      "instructions": "Is this message a scam, phishing or social-engineering attempt?",
+      "return_probabilities": true
+    }
+  },
+  "required": ["is_scam"],
+  "additionalProperties": false
+}

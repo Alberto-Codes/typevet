@@ -15,7 +15,7 @@ accepts them. Examples from the #53 research return:
 | Dataset | License | typevet role |
 |---|---|---|
 | Banking77 | CC BY 4.0 | Proxy binary Noul / optional Choice |
-| DIFrauD | MIT | Natural binary Noul (`is_scam`) |
+| DIFrauD | MIT | Natural binary Noul (`is_scam`); see [DIFrauD loader](eval-difraud-loader.md) |
 
 CFPB and synth collections are **seed-only**; see
 [CFPB and synth seed-only](eval-cfpb-synth-seed-only.md). ABCD and

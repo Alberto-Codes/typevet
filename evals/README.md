@@ -11,6 +11,7 @@ re-litigate dataset research.
 | File | Purpose |
 |---|---|
 | [complementary-manifest.yaml](complementary-manifest.yaml) | JevBench pointer + #54 ranked complementary text sets (#63) |
+| [fixtures/difraud_is_scam_noul_schema_v1.json](fixtures/difraud_is_scam_noul_schema_v1.json) | Versioned `is_scam` Noul JSON Schema for DIFrauD (#59) |
 
 Human-readable commentary and epic links:
 [Eval complementary manifest](../docs/reference/eval-complementary-manifest.md).
