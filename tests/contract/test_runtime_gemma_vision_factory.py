@@ -1,5 +1,7 @@
 """Contract tests: runtime Gemma native vision factory ([#174][i174], [#196][i196]).
 
+The factory preserves client ownership on normal exit, judgment errors, and probe failures.
+
 Examples:
     ```bash
     uv run pytest -q tests/contract/test_runtime_gemma_vision_factory.py
@@ -43,6 +45,12 @@ class _Router:
     Attributes:
         paths (list[str]): Request paths observed in call order.
         completion_calls (int): Count of ``/completion`` requests served.
+
+    Examples:
+        ```python
+        router = _Router()
+        assert router.completion_calls == 0
+        ```
     """
 
     def __init__(self) -> None:
@@ -256,3 +264,79 @@ def test_factory_closes_scoring_on_success_and_validation_error() -> None:
                 OTHER_MODEL,
             )
     assert close_calls == ["close"]
+
+
+@pytest.mark.parametrize("caller_owned", [False, True], ids=["owned", "caller-owned"])
+@pytest.mark.parametrize(
+    "outcome", ["success", "judgment-error", "props-error", "template-error"]
+)
+def test_factory_http_client_ownership(caller_owned: bool, outcome: str) -> None:
+    """Factory closes owned clients and preserves caller clients across exit paths."""
+    router = _Router()
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        """Return router responses or fail the selected setup probe.
+
+        Returns:
+            A response that exercises the selected factory exit path.
+        """
+        if outcome == "props-error" and request.url.path == "/props":
+            return httpx.Response(200, json={"modalities": {"vision": False}})
+        if outcome == "template-error" and request.url.path == "/apply-template":
+            return httpx.Response(200, json={"prompt": "<|im_start|>user\\nhello"})
+        return router.handle(request)
+
+    client = httpx.Client(
+        transport=httpx.MockTransport(handle), base_url="http://offline-router"
+    )
+
+    def exercise() -> None:
+        """Run a real factory judgment and let errors escape its context."""
+        with open_gemma_native_vision_judgment(
+            settings=_settings(),
+            model=PINNED_MODEL,
+            http_client=client if caller_owned else None,
+        ) as session:
+            assert session.client is client
+            assert not client.is_closed
+            response = session.port.judge(
+                "Charged twice.",
+                {"billing": Noul(instructions="Billing?")},
+                OTHER_MODEL if outcome == "judgment-error" else PINNED_MODEL,
+            )
+            assert isinstance(response.answers["billing"], NoulAnswer)
+
+    try:
+        with patch(
+            "typevet.adapters.outbound.gemma_native_vision_factory.httpx.Client",
+            return_value=client,
+        ) as constructor:
+            if outcome == "success":
+                exercise()
+                assert router.completion_calls == 1
+            elif outcome == "judgment-error":
+                with pytest.raises(
+                    JudgmentValidationError, match="does not match pinned"
+                ):
+                    exercise()
+            else:
+                expected = (
+                    "text-only input modalities"
+                    if outcome == "props-error"
+                    else "NATIVE_GEMMA4_TURN"
+                )
+                with pytest.raises(ValueError, match=expected):
+                    exercise()
+            if caller_owned:
+                constructor.assert_not_called()
+            else:
+                constructor.assert_called_once_with(
+                    base_url="http://offline-router", timeout=30.0
+                )
+        assert client.is_closed is not caller_owned
+        if caller_owned:
+            assert client.get("/still-usable").status_code == 404
+        if outcome != "success":
+            assert router.completion_calls == 0
+    finally:
+        client.close()
