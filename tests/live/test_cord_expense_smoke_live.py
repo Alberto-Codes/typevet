@@ -308,8 +308,8 @@ def test_cord_expense_triage_reads_the_receipt(
                 "One model, one router build, six receipts, eighteen claims.",
                 "Semantic metrics are recorded and soft-warned, not gated.",
                 (
-                    "text_only uses the ChatML prefix and imaged rows use the "
-                    "native Gemma 3 turn, so the token delta includes template text."
+                    "Every row uses the native Gemma 3 turn, so the token delta "
+                    "is the media marker and image payload only."
                 ),
             ],
         }

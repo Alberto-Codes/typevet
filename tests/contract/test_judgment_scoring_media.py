@@ -8,14 +8,21 @@ from inspect import Parameter, signature
 
 import pytest
 
-from tests.fixtures.judgment_scoring_contract import adapter_for
+from tests.fixtures.judgment_scoring_contract import (
+    SequentialScoringFake,
+    adapter_for,
+)
 from typevet.adapters.outbound.gemma import (
     CHATML_IM_START,
     GEMMA3_MODEL_TURN_HEADER,
     GEMMA3_START_OF_TURN,
     ServedTemplateClass,
 )
-from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
+from typevet.adapters.outbound.judgment_scoring import (
+    ScoringJudgmentAdapter,
+    judge_with_scoring,
+)
+from typevet.domain.errors import JudgmentValidationError
 from typevet.domain.judgment_questions import Choice, Noul
 from typevet.domain.media import MEDIA_MARKER, ImageInput
 from typevet.ports.judgment import JudgmentPort
@@ -134,3 +141,89 @@ def test_media_aware_adapter_still_satisfies_judgment_port() -> None:
 
     _accept(adapter)
     assert fake.calls[0].media == (_image(),)
+
+
+def _helper_tokenize(text: str) -> tuple[int, ...]:
+    return (ord(text[0]),) if text else ()
+
+
+@pytest.mark.contract
+def test_helper_media_matches_direct_adapter_with_served_template() -> None:
+    media = (_image(),)
+    adapter, direct_fake = adapter_for(
+        logprobs_by_call=_two_field_logprobs(),
+        tokenize=_helper_tokenize,
+        served_template=_GEMMA3,
+    )
+    direct = adapter.judge("Attached receipt.", _questions(), "gemma-mm", media=media)
+
+    helper_fake = SequentialScoringFake(_two_field_logprobs())
+    helper = judge_with_scoring(
+        "Attached receipt.",
+        _questions(),
+        "gemma-mm",
+        scoring_port=helper_fake,
+        tokenize_content=_helper_tokenize,
+        media=media,
+        served_template=_GEMMA3,
+    )
+
+    assert helper_fake.calls == direct_fake.calls
+    assert helper == direct
+
+
+@pytest.mark.contract
+def test_helper_text_call_without_served_template_is_unchanged() -> None:
+    adapter, direct_fake = adapter_for(
+        logprobs_by_call=_two_field_logprobs(), tokenize=_helper_tokenize
+    )
+    direct = adapter.judge("Charged twice.", _questions(), "gemma-mm")
+
+    helper_fake = SequentialScoringFake(_two_field_logprobs())
+    helper = judge_with_scoring(
+        "Charged twice.",
+        _questions(),
+        "gemma-mm",
+        scoring_port=helper_fake,
+        tokenize_content=_helper_tokenize,
+    )
+
+    assert helper_fake.calls == direct_fake.calls
+    assert helper == direct
+
+
+@pytest.mark.contract
+@pytest.mark.parametrize(
+    ("served_template", "family"),
+    [
+        (None, "unknown"),
+        (ServedTemplateClass.UNSUPPORTED, "unsupported"),
+        (ServedTemplateClass.DEGRADED_CHATML, "degraded_chatml"),
+    ],
+    ids=["unknown", "unsupported", "degraded"],
+)
+def test_helper_media_rejects_non_native_family_before_scoring(
+    served_template: ServedTemplateClass | None, family: str
+) -> None:
+    fake = SequentialScoringFake(_two_field_logprobs())
+    with pytest.raises(JudgmentValidationError, match=f"served template={family}"):
+        judge_with_scoring(
+            "Attached receipt.",
+            _questions(),
+            "gemma-mm",
+            scoring_port=fake,
+            tokenize_content=_helper_tokenize,
+            media=(_image(),),
+            served_template=served_template,
+        )
+    assert fake.calls == []
+
+
+@pytest.mark.contract
+def test_helper_served_template_is_keyword_only() -> None:
+    params = signature(judge_with_scoring).parameters
+    assert all(
+        p.kind in {Parameter.KEYWORD_ONLY, Parameter.VAR_KEYWORD}
+        for name, p in params.items()
+        if name not in {"state", "questions", "model"}
+    )

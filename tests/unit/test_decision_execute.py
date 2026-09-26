@@ -6,8 +6,15 @@ import math
 
 import pytest
 
-from tests.fixtures.scoring_contract import ContractScoringFake
+from tests.fixtures.scoring_contract import (
+    MISMATCH_CANDIDATES,
+    ContractScoringFake,
+    RogueScoringPort,
+    get_result_mismatch_fixtures,
+    rogue_port_for,
+)
 from typevet.domain.candidate_scoring_request import CandidateTokenSpec
+from typevet.domain.candidate_scoring_response import ScoredCandidate
 from typevet.domain.decision_execute import execute_categorical_decision
 from typevet.domain.decisions import MAX_ENUM_CHOICES, Decision
 from typevet.domain.errors import DecisionExecutionError, ScoringValidationError
@@ -103,6 +110,42 @@ def test_non_finite_logprob_raises() -> None:
             prefix="Answer:",
             candidates=_specs("billing", "technical"),
             port=fake,
+            model="fake",
+        )
+
+
+@pytest.mark.unit
+def test_reversed_response_does_not_assign_technical_score_to_billing() -> None:
+    decision = _choice_decision("billing", "technical")
+    port = RogueScoringPort(
+        rows=(
+            ScoredCandidate("technical", (202,), -0.1),
+            ScoredCandidate("billing", (101,), -3.0),
+        ),
+    )
+    with pytest.raises(ScoringValidationError, match="order"):
+        execute_categorical_decision(
+            decision,
+            prefix="Answer:",
+            candidates=MISMATCH_CANDIDATES,
+            port=port,
+            model="fake",
+        )
+    assert len(port.calls) == 1
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "fixture", get_result_mismatch_fixtures(), ids=lambda f: f["name"]
+)
+def test_mismatched_port_result_rejected_before_softmax(fixture: dict) -> None:
+    decision = _choice_decision("billing", "technical")
+    with pytest.raises(ScoringValidationError, match=fixture["match"]):
+        execute_categorical_decision(
+            decision,
+            prefix="Answer:",
+            candidates=MISMATCH_CANDIDATES,
+            port=rogue_port_for(fixture),
             model="fake",
         )
 

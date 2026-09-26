@@ -1,7 +1,8 @@
 """Sync JudgmentPort adapter over CandidateScoringPort (#125).
 
-Text-only prefixes use degraded ChatML. Media prefixes use the served native
-turn family and fail closed when that family is unknown (#157).
+A native served family wraps every prefix, with or without media (#171).
+Without one, text-only prefixes use degraded ChatML and media fails closed
+(#157).
 
 Examples:
     ```python
@@ -24,7 +25,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable, Mapping, Sequence
-from typing import Any
+from typing import Any, TypedDict, Unpack
 
 from typevet.adapters.outbound.gemma import (
     ServedTemplateClass,
@@ -174,7 +175,10 @@ def _compose_prefix(
     media: tuple[ImageInput, ...],
     served_template: ServedTemplateClass | None,
 ) -> str:
-    """Pick ChatML for text and the served native turn family for media.
+    """Pick the served native turn family when set, else ChatML for text.
+
+    A native family keeps one wrapper whether or not ``media`` is empty, so
+    image-present and image-omitted prefixes differ only in media markers.
 
     Args:
         context: Rendered state context, media markers included.
@@ -186,16 +190,20 @@ def _compose_prefix(
         Scoring prefix ending at the answer boundary.
 
     Raises:
-        JudgmentValidationError: Media with an unknown or unsupported family.
+        JudgmentValidationError: An unsupported served family, or media with
+            an unknown or ChatML family.
     """
-    if not media:
+    text_default = served_template in {None, ServedTemplateClass.DEGRADED_CHATML}
+    if text_default and not media:
         return compose_scoring_prefix(context=context, field_block=field_block)
     if served_template is not ServedTemplateClass.NATIVE_GEMMA3_TURN:
         family = "unknown" if served_template is None else served_template.value
-        msg = (
-            "media scoring needs a native Gemma 3 served template "
-            f"(served template={family})"
+        reason = (
+            "media scoring needs a native Gemma 3 served template"
+            if text_default
+            else "scoring does not support this served template"
         )
+        msg = f"{reason} (served template={family})"
         raise JudgmentValidationError(msg)
     return compose_media_scoring_prefix(
         context=context,
@@ -217,8 +225,8 @@ class ScoringJudgmentAdapter:
         _port (CandidateScoringPort): Injected scorer; not closed by this adapter.
         _tokenize (Callable[[str], Sequence[int]]): Control-string tokenizer hook.
         _temperature (float): Softmax temperature forwarded to execute.
-        _served_template (ServedTemplateClass | None): Served family for media
-            prefixes; ``None`` when unknown.
+        _served_template (ServedTemplateClass | None): Served family for
+            every prefix; ``None`` when unknown.
     """
 
     def __init__(
@@ -246,10 +254,11 @@ class ScoringJudgmentAdapter:
         """Validate all questions, score sequentially, return typed answers.
 
         Builds a scoring prefix whose field block maps each ordinal control
-        string to the public answer label before calling the scorer. When
-        ``media`` is non-empty, every field prefix uses the served native turn
-        family, carries one ``MEDIA_MARKER`` per image, and every scoring
-        request carries the same image tuple. Text-only prefixes use ChatML.
+        string to the public answer label before calling the scorer. A native
+        served family wraps every field prefix whether or not ``media`` is
+        empty. When ``media`` is non-empty, every prefix carries one
+        ``MEDIA_MARKER`` per image and every scoring request carries the same
+        image tuple. Without a native family, text-only prefixes use ChatML.
 
         Args:
             state: Content under evaluation (text or JSON-serializable value).
@@ -262,8 +271,8 @@ class ScoringJudgmentAdapter:
 
         Raises:
             JudgmentValidationError: Invalid model, wire shape, question payload,
-                or media without a native Gemma 3 served template, before any
-                scoring IO.
+                unsupported served template, or media without a native Gemma 3
+                served template, before any scoring IO.
         """
         if not model.strip():
             raise JudgmentValidationError("model must be non-empty")
@@ -333,6 +342,19 @@ def _merge_usage(left: TokenUsage, right: TokenUsage) -> TokenUsage:
     return TokenUsage(input_tokens=input_tokens, output_tokens=output_tokens)
 
 
+class ScoringAdapterSettings(TypedDict, total=False):
+    """Optional ``ScoringJudgmentAdapter`` keywords ``judge_with_scoring`` forwards.
+
+    Attributes:
+        temperature (float): Softmax temperature for execute; default ``1.0``.
+        served_template (ServedTemplateClass | None): Served family for media
+            prefixes; default ``None`` (unknown).
+    """
+
+    temperature: float
+    served_template: ServedTemplateClass | None
+
+
 def judge_with_scoring(
     state: str | dict[str, Any] | list[Any],
     questions: Mapping[str, Question | Mapping[str, Any]],
@@ -340,13 +362,13 @@ def judge_with_scoring(
     *,
     scoring_port: CandidateScoringPort,
     tokenize_content: Callable[[str], Sequence[int]],
-    temperature: float = 1.0,
     media: tuple[ImageInput, ...] | None = None,
+    **settings: Unpack[ScoringAdapterSettings],
 ) -> JudgmentResponse:
     """One-shot judgment via ``ScoringJudgmentAdapter``.
 
-    The served template is unknown here, so non-empty ``media`` fails closed;
-    construct ``ScoringJudgmentAdapter`` with ``served_template`` instead.
+    Non-empty ``media`` needs ``served_template=NATIVE_GEMMA3_TURN``; an
+    omitted, unknown or unsupported family fails closed before any scoring IO.
 
     Args:
         state: Content under evaluation.
@@ -354,8 +376,12 @@ def judge_with_scoring(
         model: Backend model id.
         scoring_port: Injected candidate scorer.
         tokenize_content: Control-string tokenizer hook.
-        temperature: Softmax temperature for execute.
         media: Images to condition every scored field on, in order.
+
+    Other Parameters:
+        temperature (float): Softmax temperature for execute.
+        served_template (ServedTemplateClass | None): Served family for media
+            prefixes; ``None`` means unknown.
 
     Returns:
         ``JudgmentResponse`` from a fresh adapter instance.
@@ -363,5 +389,5 @@ def judge_with_scoring(
     return ScoringJudgmentAdapter(
         scoring_port,
         tokenize_content=tokenize_content,
-        temperature=temperature,
+        **settings,
     ).judge(state, questions, model, media=media)

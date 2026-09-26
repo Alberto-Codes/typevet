@@ -1,7 +1,9 @@
 """IO-free categorical execution for closed Choice and Bool decisions.
 
 M1 execute rejects compiled ``permutations`` other than ``1`` before any
-scoring IO (permutation averaging is out of scope).
+scoring IO (permutation averaging is out of scope). The port result is checked
+against the exact scoring request before softmax, so a reordered or partial
+result cannot assign one choice's score to another.
 
 Examples:
     ```python
@@ -30,8 +32,9 @@ from typevet.domain.candidate_scoring_request import (
     CandidateScoringRequest,
     CandidateTokenSpec,
 )
+from typevet.domain.candidate_scoring_validate import validate_result_against_request
 from typevet.domain.decisions import MAX_ENUM_CHOICES, Decision
-from typevet.domain.errors import DecisionExecutionError, ScoringValidationError
+from typevet.domain.errors import DecisionExecutionError
 from typevet.domain.judgment_response import TokenUsage
 from typevet.domain.media import ImageInput
 from typevet.domain.scoring_stage import ScoreStage
@@ -191,8 +194,10 @@ def execute_categorical_decision(
     Raises:
         DecisionExecutionError: Unsupported syntax, nullable field, permutations
             other than ``1``, alignment, candidate shape, or invalid temperature.
-        ScoringValidationError: Propagated when the port returns invalid scores,
-            or when ``prefix`` markers do not match ``media``.
+        ScoringValidationError: Propagated when the port result does not match
+            the exact request (stage, count, label order, token ids) or holds
+            a non-finite logprob, or when ``prefix`` markers do not match
+            ``media``. The check runs before softmax normalization.
     """
     _validate_inputs(decision, candidates, temperature=temperature)
     request = CandidateScoringRequest(
@@ -203,10 +208,8 @@ def execute_categorical_decision(
         media=media,
     )
     scored = port.score_candidates(request)
+    validate_result_against_request(request, scored)
     logprobs = tuple(row.logprob for row in scored.candidates)
-    if not all(math.isfinite(lp) for lp in logprobs):
-        msg = "non-finite logprobs after scoring"
-        raise ScoringValidationError(msg)
     probabilities = _softmax(logprobs, temperature=temperature)
     index = _greedy_index(probabilities)
     value = decision.choices[index]

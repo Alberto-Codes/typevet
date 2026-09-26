@@ -1,4 +1,4 @@
-"""Unit tests for native Gemma 3 media scoring prefixes (#157)."""
+"""Unit tests for native Gemma 3 media scoring prefixes (#157, #171)."""
 
 from __future__ import annotations
 
@@ -119,17 +119,55 @@ def test_adapter_media_uses_native_prefix_and_keeps_bindings() -> None:
     assert response.nouls["flagged"].noul == pytest.approx(0.6)
 
 
-def test_adapter_text_only_keeps_chatml_under_gemma3() -> None:
-    adapter, fake = _adapter(ServedTemplateClass.NATIVE_GEMMA3_TURN)
-    baseline, baseline_fake = _adapter(None)
+@pytest.mark.parametrize("omitted", [None, ()])
+def test_adapter_omitted_media_keeps_native_gemma3_prefix(
+    omitted: tuple[ImageInput, ...] | None,
+) -> None:
+    present, present_fake = _adapter(ServedTemplateClass.NATIVE_GEMMA3_TURN)
+    absent, absent_fake = _adapter(ServedTemplateClass.NATIVE_GEMMA3_TURN)
+    present.judge("Charged twice.", _questions(), "gemma-mm", media=(_IMAGE,))
+    absent.judge("Charged twice.", _questions(), "gemma-mm", media=omitted)
+    pairs = list(zip(present_fake.calls, absent_fake.calls, strict=True))
+    assert len(pairs) == 2
+    for with_image, without_image in pairs:
+        assert without_image.prefix.startswith(f"{GEMMA3_START_OF_TURN}user\n")
+        assert without_image.prefix.endswith(
+            f"{GEMMA3_END_OF_TURN}\n{GEMMA3_MODEL_TURN_HEADER}"
+        )
+        assert CHATML_IM_START not in without_image.prefix
+        assert MEDIA_MARKER not in without_image.prefix
+        assert with_image.prefix.replace(f"{MEDIA_MARKER}\n", "", 1) == (
+            without_image.prefix
+        )
+        assert with_image.candidates == without_image.candidates
+        assert with_image.media == (_IMAGE,)
+        assert without_image.media == ()
+
+
+@pytest.mark.parametrize("served_template", [None, ServedTemplateClass.DEGRADED_CHATML])
+def test_adapter_text_only_keeps_chatml_without_native_family(
+    served_template: ServedTemplateClass | None,
+) -> None:
+    adapter, fake = _adapter(served_template)
     adapter.judge("Charged twice.", _questions(), "gemma-mm")
-    baseline.judge("Charged twice.", _questions(), "gemma-mm", media=())
-    prefixes = [call.prefix for call in fake.calls]
-    assert prefixes == [call.prefix for call in baseline_fake.calls]
-    for prefix in prefixes:
-        assert prefix.startswith(f"{CHATML_IM_START}user\nCharged twice.\n\n")
-        assert prefix.endswith(CHATML_ASSISTANT_HEADER)
-        assert GEMMA3_START_OF_TURN not in prefix
+    assert len(fake.calls) == 2
+    for call in fake.calls:
+        assert call.prefix.startswith(f"{CHATML_IM_START}user\nCharged twice.\n\n")
+        assert call.prefix.endswith(CHATML_ASSISTANT_HEADER)
+        assert GEMMA3_START_OF_TURN not in call.prefix
+
+
+@pytest.mark.parametrize(
+    "served_template",
+    [ServedTemplateClass.NATIVE_GEMMA4_TURN, ServedTemplateClass.UNSUPPORTED],
+)
+def test_adapter_text_only_rejects_unsupported_family_before_scoring(
+    served_template: ServedTemplateClass,
+) -> None:
+    adapter, fake = _adapter(served_template)
+    with pytest.raises(JudgmentValidationError, match="served template"):
+        adapter.judge("x", _questions(), "gemma-mm")
+    assert fake.calls == []
 
 
 @pytest.mark.parametrize(

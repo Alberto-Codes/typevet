@@ -14,7 +14,10 @@ from typevet.domain.candidate_scoring_request import (
     CandidateScoringRequest,
     CandidateTokenSpec,
 )
-from typevet.domain.candidate_scoring_response import CandidateScoringResult
+from typevet.domain.candidate_scoring_response import (
+    CandidateScoringResult,
+    ScoredCandidate,
+)
 from typevet.domain.candidate_scoring_validate import build_and_validate_result
 from typevet.domain.errors import (
     ScoringError,
@@ -68,6 +71,103 @@ class ContractScoringFake:
             model=request.model,
             usage=TokenUsage(),
         )
+
+
+class RogueScoringPort:
+    """Offline port that returns author-built rows without request checks."""
+
+    def __init__(
+        self,
+        *,
+        rows: tuple[ScoredCandidate, ...],
+        stage: ScoreStage = ScoreStage.PRE_SAMPLING,
+    ) -> None:
+        """Configure the rows and stage returned for every request.
+
+        Args:
+            rows: Scored rows returned as is, in this order.
+            stage: Stage recorded on the returned result.
+        """
+        self._rows = rows
+        self._stage = stage
+        self.calls: list[CandidateScoringRequest] = []
+
+    def score_candidates(
+        self, request: CandidateScoringRequest
+    ) -> CandidateScoringResult:
+        self.calls.append(request)
+        return CandidateScoringResult(
+            model=request.model,
+            stage=self._stage,
+            candidates=self._rows,
+        )
+
+
+MISMATCH_CANDIDATES = (
+    CandidateTokenSpec("billing", (101,)),
+    CandidateTokenSpec("technical", (202,)),
+)
+
+
+def get_result_mismatch_fixtures() -> list[dict[str, Any]]:
+    """Return results that disagree with ``MISMATCH_CANDIDATES``.
+
+    Each fixture names the rows and stage a rogue port returns and a regex
+    that the ``ScoringValidationError`` message matches.
+    """
+    billing = ScoredCandidate("billing", (101,), -3.0)
+    technical = ScoredCandidate("technical", (202,), -0.1)
+    return [
+        {
+            "name": "reversed_rows",
+            "rows": (technical, billing),
+            "match": "order",
+        },
+        {
+            "name": "missing_row",
+            "rows": (billing,),
+            "match": "count",
+        },
+        {
+            "name": "extra_row",
+            "rows": (billing, technical, ScoredCandidate("other", (303,), -1.0)),
+            "match": "count",
+        },
+        {
+            "name": "duplicate_row",
+            "rows": (billing, ScoredCandidate("billing", (101,), -0.1)),
+            "match": "duplicate",
+        },
+        {
+            "name": "unexpected_row",
+            "rows": (billing, ScoredCandidate("other", (202,), -0.1)),
+            "match": "unexpected",
+        },
+        {
+            "name": "wrong_token_ids",
+            "rows": (billing, ScoredCandidate("technical", (999,), -0.1)),
+            "match": "token ids",
+        },
+        {
+            "name": "wrong_stage",
+            "rows": (billing, technical),
+            "stage": ScoreStage.POST_SAMPLING,
+            "match": "stage",
+        },
+        {
+            "name": "non_finite_logprob",
+            "rows": (billing, ScoredCandidate("technical", (202,), float("inf"))),
+            "match": "non-finite",
+        },
+    ]
+
+
+def rogue_port_for(fixture: dict[str, Any]) -> RogueScoringPort:
+    """Build the rogue port for a result mismatch fixture."""
+    return RogueScoringPort(
+        rows=fixture["rows"],
+        stage=fixture.get("stage", ScoreStage.PRE_SAMPLING),
+    )
 
 
 def _req(

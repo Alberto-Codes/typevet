@@ -12,9 +12,14 @@ from pathlib import Path
 import pytest
 
 from tests.fixtures.judgment_scoring_contract import SequentialScoringFake
-from typevet.adapters.outbound.gemma import ServedTemplateClass
+from typevet.adapters.outbound.gemma import (
+    CHATML_IM_START,
+    GEMMA3_MODEL_TURN_HEADER,
+    GEMMA3_START_OF_TURN,
+    ServedTemplateClass,
+)
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
-from typevet.domain.media import count_media_markers
+from typevet.domain.media import MEDIA_MARKER, count_media_markers
 from typevet.evaluation.datasets.psai_vision import (
     FOX_FAMILY,
     GOLD_FIELDS,
@@ -157,6 +162,27 @@ def test_present_and_swapped_attach_one_marked_image_and_omitted_attaches_none(
         assert count_media_markers(call.prefix) == 1
         assert call.media[0].mime_type == "image/png"
         assert call.media[0].data == _read_image(control.image_file)
+
+
+def test_present_and_omitted_share_the_native_wrapper_and_field_block(
+    fixture_set,
+) -> None:
+    """Omitting the image drops only the marker and payload (#171)."""
+    rows: dict[str, list] = {}
+    for control in control_matrix(fixture_set.examples):
+        _response, call = _judge_control(control, fixture_set, 0.5)
+        rows.setdefault(control.unique_data_id, []).append((control.condition, call))
+    for calls in rows.values():
+        by_condition = dict(calls)
+        present = by_condition[CONDITION_PRESENT]
+        omitted = by_condition[CONDITION_OMITTED]
+        for call in (present, omitted):
+            assert call.prefix.startswith(f"{GEMMA3_START_OF_TURN}user\n")
+            assert call.prefix.endswith(GEMMA3_MODEL_TURN_HEADER)
+            assert CHATML_IM_START not in call.prefix
+        assert present.prefix.replace(f"{MEDIA_MARKER}\n", "", 1) == omitted.prefix
+        assert present.candidates == omitted.candidates
+        assert omitted.media == ()
 
 
 def test_a_perfectly_image_conditioned_scorer_hits_every_counted_control(
