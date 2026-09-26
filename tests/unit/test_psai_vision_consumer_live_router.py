@@ -50,14 +50,6 @@ def test_run_consumer_live_matrix_offline_scripted_router() -> None:
             "typevet.evaluation.psai_vision_consumer_live_router.httpx.Client",
         ) as client_cls,
         patch(
-            "typevet.evaluation.psai_vision_consumer_live_router.classify_served_template",
-            return_value=ServedTemplateClass.NATIVE_GEMMA4_TURN,
-        ),
-        patch(
-            "typevet.evaluation.psai_vision_consumer_live_router.fetch_media_capability",
-            return_value=capability,
-        ),
-        patch(
             "typevet.evaluation.psai_vision_consumer_live_router.open_gemma_native_vision_judgment",
         ) as factory_ctx,
         patch(

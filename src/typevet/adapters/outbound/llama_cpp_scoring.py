@@ -85,6 +85,7 @@ class LlamaCppCandidateScoringAdapter:
         timeout: float = 300.0,
         client: httpx.Client | None = None,
         n_vocab: int = DEFAULT_N_VOCAB,
+        media_capabilities: Mapping[str, MediaCapability] | None = None,
     ) -> None:
         """Create the scoring adapter with an empty media capability cache.
 
@@ -92,6 +93,7 @@ class LlamaCppCandidateScoringAdapter:
             base_url: llama.cpp server root URL.
             timeout: Request timeout in seconds.
             client: Optional shared httpx client (tests inject a fake).
+            media_capabilities: Optional initial capability cache, copied on construction.
             n_vocab: Vocabulary size for full ``n_probs`` pre-sampling receipt.
         """
         self._base_url = base_url.rstrip("/") + "/"
@@ -99,7 +101,9 @@ class LlamaCppCandidateScoringAdapter:
         self._client = client
         self._owns_client = client is None
         self._n_vocab = n_vocab
-        self._media_capabilities: dict[str, MediaCapability] = {}
+        self._media_capabilities: dict[str, MediaCapability] = dict(
+            media_capabilities or {}
+        )
 
     def close(self) -> None:
         """Close the owned HTTP client when the adapter created it."""

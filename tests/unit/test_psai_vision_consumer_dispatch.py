@@ -44,7 +44,7 @@ class _RaisingJudgmentPort(JudgmentPort):
 def test_scoring_budget_raises_when_exceeded() -> None:
     """Scoring wrapper enforces the frozen scoring ceiling."""
     ledger = ConsumerDispatchLedger()
-    ledger.scoring_requests = FROZEN_SCORING_REQUESTS
+    ledger.scoring_attempts = FROZEN_SCORING_REQUESTS
     fake = ScriptedScoringFake(logprobs={"True": -0.2, "False": -1.0})
     port = wrap_scoring_port(fake, ledger)
     request = CandidateScoringRequest(

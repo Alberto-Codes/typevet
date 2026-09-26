@@ -88,13 +88,22 @@ class _LedgerScoringPort:
     def score_candidates(
         self, request: CandidateScoringRequest
     ) -> CandidateScoringResult:
-        """Forward scoring and increment the ledger.
+        """Reserve scoring attempts and count successes separately.
+
+        Raises:
+            Exception: Re-raise dispatch failures after retaining their attempt.
 
         Returns:
             Scoring result from the inner port.
         """
         self._ledger.before_scoring()
-        return self._inner.score_candidates(request)
+        try:
+            result = self._inner.score_candidates(request)
+        except Exception:
+            self._ledger.record_failure()
+            raise
+        self._ledger.record_scoring_success()
+        return result
 
 
 class _LedgerJudgmentPort:
@@ -122,7 +131,7 @@ class _LedgerJudgmentPort:
         *,
         media: tuple[ImageInput, ...] | None = None,
     ) -> JudgmentResponse:
-        """Forward judgment and record failures.
+        """Reserve judgment attempts and count returned responses separately.
 
         Returns:
             Judgment response from the inner port.
@@ -132,10 +141,12 @@ class _LedgerJudgmentPort:
         """
         self._ledger.before_judgment()
         try:
-            return self._inner.judge(state, questions, model, media=media)
+            response = self._inner.judge(state, questions, model, media=media)
         except Exception:
             self._ledger.record_failure()
             raise
+        self._ledger.record_judgment_success()
+        return response
 
 
 def slice_present_controls(fixture: VisionSmokeFixture) -> tuple[VisualControl, ...]:

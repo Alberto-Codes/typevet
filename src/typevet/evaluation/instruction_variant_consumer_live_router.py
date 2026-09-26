@@ -1,4 +1,4 @@
-"""Router dispatch for instruction-variant live matrix ([#177][i177]).
+"""Budgeted router dispatch for instruction-variant live matrix ([#177][i177]).
 
 Examples:
     ```python
@@ -52,12 +52,12 @@ from typevet.evaluation.instruction_variant_consumer_protocol import (
     VariantDispatchLedger,
 )
 from typevet.evaluation.instruction_variant_consumer_run import VariantMatrixRun
+from typevet.evaluation.psai_vision_consumer_dispatch import wrap_scoring_port
 from typevet.evaluation.psai_vision_consumer_offline import load_frozen_consumer_fixture
-from typevet.evaluation.runner.live_gate import live_gate_action, live_skip_reason
+from typevet.evaluation.runner.live_gate import require_live_enabled
 from typevet.ports.judgment import JudgmentPort
 
 _MODEL_ENV = ("TYPEVET_GEMMA_MODEL", "TYPEVET_LLAMA__DEFAULT_MODEL")
-_VARIANT_SCORING_PER_MATRIX = 4
 
 
 def resolve_variant_live_model() -> str:
@@ -114,8 +114,15 @@ def run_live_variant_matrix(
     fixture_root: Path,
     seed_instruction: str,
     candidate_instruction: str,
+    ledger: VariantDispatchLedger | None = None,
 ) -> VariantMatrixRun | None:
-    """Execute the live variant matrix when the router gate allows.
+    """Execute the opted-in matrix with counted factory metadata and scoring.
+
+    Args:
+        fixture_root: Frozen fixture image directory.
+        seed_instruction: Caller instruction for the seed arm.
+        candidate_instruction: Caller instruction for the candidate arm.
+        ledger: Optional external ledger that retains attempts when setup fails.
 
     Opens ``open_gemma_native_vision_judgment`` for the configured router and
     reuses ``session.port`` for all variant arms.
@@ -124,39 +131,38 @@ def run_live_variant_matrix(
         Matrix run payload, or ``None`` when the live gate skips dispatch.
     """
     settings = load_llama_settings()
-    if live_gate_action(live_skip_reason(settings)).name != "RUN":
+    if not require_live_enabled():
         return None
     model_id = _resolve_model()
     fixture = load_frozen_consumer_fixture(fixture_root)
     controls = slice_present_controls(fixture)
     loader = lambda name: (fixture_root / name).read_bytes()
-    ledger = VariantDispatchLedger()
-    with (
-        httpx.Client(base_url=settings.base_url, timeout=settings.timeout) as client,
-        open_gemma_native_vision_judgment(
+    ledger = ledger or VariantDispatchLedger()
+    with httpx.Client(base_url=settings.base_url, timeout=settings.timeout) as client:
+        client.event_hooks["request"].append(ledger.before_http)
+        with open_gemma_native_vision_judgment(
             settings=settings,
             model=model_id,
             http_client=client,
-        ) as session,
-    ):
-        bare = session.port
-        invalid = probe_invalid_model(bare)
-        if invalid["ok"]:
-            ledger.record_failure()
-        port = LedgerJudgmentPort(bare, ledger)
-        negative = run_negative_probe(model_id, fixture_root, loader, fixture)
-        seed_rows, seed_outcomes, candidate_rows, candidate_outcomes = (
-            _live_variant_arms(
-                port,
-                controls=controls,
-                fixture=fixture,
-                loader=loader,
-                model_id=model_id,
-                seed_instruction=seed_instruction,
-                candidate_instruction=candidate_instruction,
+            scoring_port_wrapper=lambda scoring: wrap_scoring_port(scoring, ledger),
+        ) as session:
+            bare = session.port
+            invalid = probe_invalid_model(bare)
+            if invalid["ok"]:
+                ledger.record_failure()
+            port = LedgerJudgmentPort(bare, ledger)
+            negative = run_negative_probe(model_id, fixture_root, loader, fixture)
+            seed_rows, seed_outcomes, candidate_rows, candidate_outcomes = (
+                _live_variant_arms(
+                    port,
+                    controls=controls,
+                    fixture=fixture,
+                    loader=loader,
+                    model_id=model_id,
+                    seed_instruction=seed_instruction,
+                    candidate_instruction=candidate_instruction,
+                )
             )
-        )
-    ledger.scoring_requests = _VARIANT_SCORING_PER_MATRIX
     return VariantMatrixRun(
         fixture_root=fixture_root,
         controls=controls,

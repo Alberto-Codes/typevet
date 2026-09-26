@@ -1,4 +1,4 @@
-# Frozen instruction-variant consumer protocol (slice 4)
+# Frozen instruction-variant consumer protocol (revision 2)
 
 Kind: reference, for maintainers. Parent [#177](https://github.com/Alberto-Codes/typevet/issues/177).
 
@@ -11,7 +11,15 @@ Post this table on #177 **before** any live rerun for slice 4. Bump
 |---|---|
 | Judgment calls (`ScoringJudgmentAdapter.judge`) | **4** (2 cases × 2 instruction variants, present image only) |
 | Scoring requests (`score_candidates`) | **4** scheduled (**8** hard ceiling via ledger) |
-| Auxiliary HTTP (unsupported-template probe only) | **1** (offline negative; no scoring HTTP) |
+| Metadata HTTP (factory props and template) | **2** |
+| Tokenizer HTTP | **8** |
+| Completion HTTP | **8** hard ceiling |
+
+Each admitted attempt reserves a slot before dispatch. Failed calls consume slots;
+refused reservations perform no IO. New receipts use
+`dispatch_accounting_version: 1` with separate `attempts` and `successes`.
+Factory capability metadata seeds the scoring cache. Offline negative checks
+consume no HTTP slots. Historical revision 1 receipts remain unchanged.
 
 ## Case pins
 

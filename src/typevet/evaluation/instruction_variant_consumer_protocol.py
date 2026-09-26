@@ -1,4 +1,4 @@
-"""Frozen pins for the instruction-variant consumer slice ([#177][i177]).
+"""Revision 2 pins and attempt accounting for the instruction-variant consumer slice ([#177][i177]).
 
 Examples:
     ```python
@@ -20,11 +20,12 @@ See Also:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from typing import ClassVar
 
+from typevet.evaluation.consumer_http_accounting import DispatchAccounting
 from typevet.evaluation.psai_vision_consumer_accounting import ConsumerCallCounts
 
-INSTRUCTION_VARIANT_PROTOCOL_REVISION = 1
+INSTRUCTION_VARIANT_PROTOCOL_REVISION = 2
 
 FROZEN_VARIANT_CASE_UIDS: frozenset[str] = frozenset(
     {
@@ -40,63 +41,36 @@ DEFAULT_CANDIDATE_INSTRUCTION = (
 
 FROZEN_VARIANT_JUDGMENT_CALLS = 4
 FROZEN_VARIANT_SCORING_REQUESTS = 8
-FROZEN_VARIANT_AUXILIARY_HTTP = 1
+FROZEN_VARIANT_AUXILIARY_HTTP = 10
 
 
-@dataclass(slots=True)
-class VariantDispatchLedger:
-    """Dispatch counters for the instruction-variant slice.
+class VariantDispatchLedger(DispatchAccounting):
+    """Variant attempts with independent success counters and frozen ceilings.
 
     Attributes:
-        judgment_calls (int): Completed ``judge`` invocations.
-        scoring_requests (int): Completed ``score_candidates`` calls.
-        failed_attempts (int): Attempts that raised before a durable row.
+        limits (tuple[int, ...]): Judgment, scoring, metadata, tokenizer, completion.
 
     Examples:
         ```python
         ledger = VariantDispatchLedger()
         ledger.before_judgment()
-        assert ledger.judgment_calls == 1
+        assert ledger.judgment_attempts == 1
         ```
     """
 
-    judgment_calls: int = 0
-    scoring_requests: int = 0
-    failed_attempts: int = 0
+    limits: ClassVar[tuple[int, ...]] = (4, 8, 2, 8, 8)
 
     def before_judgment(self) -> None:
-        """Reserve one judgment slot.
-
-        Raises:
-            ValueError: When the judgment budget is exhausted.
-        """
-        next_count = self.judgment_calls + 1
-        if next_count > FROZEN_VARIANT_JUDGMENT_CALLS:
-            msg = (
-                f"judgment calls {next_count} exceed budget "
-                f"{FROZEN_VARIANT_JUDGMENT_CALLS}"
-            )
-            raise ValueError(msg)
-        self.judgment_calls = next_count
+        """Reserve an admitted judgment attempt."""
+        self.before_judgment_dispatch()
 
     def before_scoring(self) -> None:
-        """Reserve one scoring slot.
-
-        Raises:
-            ValueError: When the scoring budget is exhausted.
-        """
-        next_count = self.scoring_requests + 1
-        if next_count > FROZEN_VARIANT_SCORING_REQUESTS:
-            msg = (
-                f"scoring requests {next_count} exceed budget "
-                f"{FROZEN_VARIANT_SCORING_REQUESTS}"
-            )
-            raise ValueError(msg)
-        self.scoring_requests = next_count
+        """Reserve an admitted scoring attempt."""
+        self.before_scoring_dispatch()
 
     def record_failure(self) -> None:
-        """Increment failed attempts (invalid inputs, early abort)."""
-        self.failed_attempts += 1
+        """Retain a failed dispatch or offline negative probe."""
+        self.record_failed_attempt()
 
 
 def plan_instruction_variant_calls() -> ConsumerCallCounts:

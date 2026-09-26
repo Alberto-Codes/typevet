@@ -74,7 +74,7 @@ class LiveReceiptContext:
 
 
 def build_live_receipt_payload(context: LiveReceiptContext) -> dict[str, Any]:
-    """Build the JSON receipt body for one successful live consumer proof.
+    """Build a successful receipt with observed attempts and success counters.
 
     Args:
         context: Live receipt assembly inputs.
@@ -126,6 +126,7 @@ def build_live_receipt_payload(context: LiveReceiptContext) -> dict[str, Any]:
         "elapsed_s": matrix.elapsed_s,
         "fixture_root": str(fixture_root.resolve()),
     }
+    payload.update(ledger.accounting())
     payload.update(matrix.identity)
     payload.update(consumer_fixture_identity_pins(fixture_root))
     return payload

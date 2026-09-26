@@ -388,7 +388,7 @@ def variant_receipt_assembly_from_run(
 
 
 def assemble_variant_receipt(assembly: VariantReceiptAssembly) -> dict[str, Any]:
-    """Build the JSON receipt for one proof run.
+    """Build a JSON receipt with separate admitted attempts and successes.
 
     Returns:
         JSON-serializable receipt with matrix rows, replay metrics,
@@ -396,6 +396,7 @@ def assemble_variant_receipt(assembly: VariantReceiptAssembly) -> dict[str, Any]
         ``acceptance_failures`` (empty when acceptance passes).
     """
     return {
+        **assembly.ledger.accounting(),
         "instruction_variant_protocol_revision": INSTRUCTION_VARIANT_PROTOCOL_REVISION,
         "model": assembly.model,
         "fixture_root": str(assembly.fixture_root.resolve()),

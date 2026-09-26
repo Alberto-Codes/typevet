@@ -1,4 +1,4 @@
-"""Live instruction-variant consumer proof ([#177][i177], [#174][i174]).
+"""Live instruction-variant proof with retained dispatch attempts ([#177][i177]).
 
 Examples:
     ```python
@@ -33,7 +33,9 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from typevet.adapters.inbound.settings import load_llama_settings
+import httpx
+
+from typevet.domain.errors import GenerationError, JudgmentError
 from typevet.evaluation.experiment_identity import ReceiptAlreadyExistsError
 from typevet.evaluation.instruction_variant_consumer_live_router import (
     resolve_variant_live_model,
@@ -46,19 +48,59 @@ from typevet.evaluation.instruction_variant_consumer_offline import (
 from typevet.evaluation.instruction_variant_consumer_protocol import (
     DEFAULT_CANDIDATE_INSTRUCTION,
     DEFAULT_SEED_INSTRUCTION,
+    INSTRUCTION_VARIANT_PROTOCOL_REVISION,
+    VariantDispatchLedger,
     plan_instruction_variant_calls,
 )
 from typevet.evaluation.instruction_variant_consumer_receipt import (
     VariantProofRunContext,
     variant_receipt_basename,
+    write_variant_receipt_exclusive,
 )
 from typevet.evaluation.runner.live_gate import (
     TYPEVET_REQUIRE_LIVE_ENV,
-    live_skip_reason,
     require_live_enabled,
 )
 
 _EXIT_INVALID = 2
+
+
+def _failed_variant_proof(
+    ledger: VariantDispatchLedger,
+    exc: Exception,
+    wheel_sha256: str | None,
+    typevet_install_path: str | None,
+    out_dir: Path | None,
+) -> InstructionVariantProofResult:
+    """Retain admitted attempts and failure details in an exclusive receipt.
+
+    Returns:
+        Failed proof result with its optional receipt path.
+    """
+    receipt = {
+        **ledger.accounting(),
+        "acceptance_failures": [str(exc)],
+        "instruction_variant_protocol_revision": INSTRUCTION_VARIANT_PROTOCOL_REVISION,
+        "scoring_requests_observed": ledger.scoring_requests,
+        "failed_attempts": ledger.failed_attempts,
+        "model": resolve_variant_live_model(),
+        "wheel_sha256": wheel_sha256,
+        "typevet_install_path": typevet_install_path,
+        "evidence_kind": "instruction_variant_live_failure",
+    }
+    path = (
+        None
+        if out_dir is None
+        else write_variant_receipt_exclusive(
+            out_dir,
+            receipt,
+            wheel_sha256=wheel_sha256,
+            model_id=resolve_variant_live_model(),
+        )
+    )
+    return InstructionVariantProofResult(
+        exit_code=1, receipt=receipt, replay_report={}, receipt_path=path
+    )
 
 
 def run_live_instruction_variant_proof(
@@ -70,7 +112,7 @@ def run_live_instruction_variant_proof(
     typevet_install_path: str | None = None,
     out_dir: Path | None = None,
 ) -> InstructionVariantProofResult:
-    """Run live variant matrix when ``TYPEVET_REQUIRE_LIVE`` and router allow.
+    """Run the opted-in matrix and retain known dispatch failures as receipts.
 
     Args:
         fixture_root: Committed ``vision_smoke`` directory.
@@ -90,13 +132,24 @@ def run_live_instruction_variant_proof(
             replay_report={},
         )
     plan = plan_instruction_variant_calls()
-    run = run_live_variant_matrix(
-        fixture_root=fixture_root,
-        seed_instruction=seed_instruction,
-        candidate_instruction=candidate_instruction,
-    )
+    ledger = VariantDispatchLedger()
+    try:
+        run = run_live_variant_matrix(
+            fixture_root=fixture_root,
+            seed_instruction=seed_instruction,
+            candidate_instruction=candidate_instruction,
+            ledger=ledger,
+        )
+    except (ValueError, httpx.HTTPError, GenerationError, JudgmentError) as exc:
+        return _failed_variant_proof(
+            ledger,
+            exc,
+            wheel_sha256,
+            typevet_install_path,
+            out_dir,
+        )
     if run is None:
-        reason = live_skip_reason(load_llama_settings()) or "live gate blocked"
+        reason = "live gate blocked"
         return InstructionVariantProofResult(
             exit_code=_EXIT_INVALID,
             receipt={"acceptance_failures": [reason]},

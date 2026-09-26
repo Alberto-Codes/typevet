@@ -10,7 +10,15 @@ Post this table on #177 **before** any live rerun. Bump `consumer_live_protocol_
 |---|---|
 | Judgment calls (`ScoringJudgmentAdapter.judge`) | **14** (12 visual present/omit/swap + 2 text annotation) |
 | Scoring requests (`score_candidates`) | **16** (12 visual Noul + 4 annotation Choice/Noul) |
-| Auxiliary HTTP (health + capability + template probe) | **3** |
+| Metadata HTTP (health + factory capability + factory template) | **3** |
+| Tokenizer HTTP | **128** hard ceiling |
+| Completion HTTP | **16** hard ceiling |
+
+Dispatch accounting version 1 reserves slots before IO. Failed admitted calls
+consume slots; refused reservations perform no IO. Receipts retain attempts
+and successful judgment/scoring counts separately, including setup failures.
+Factory metadata is reused; the scoring adapter does not repeat the props probe.
+Historical receipts remain unchanged.
 
 ## Case pins (`FROZEN_CONSUMER_CASE_UIDS`)
 

@@ -107,11 +107,11 @@ def test_variant_ledger_enforces_budgets() -> None:
     ledger = VariantDispatchLedger()
     for _ in range(FROZEN_VARIANT_JUDGMENT_CALLS):
         ledger.before_judgment()
-    with pytest.raises(ValueError, match="judgment calls"):
+    with pytest.raises(ValueError, match="judgment_attempts"):
         ledger.before_judgment()
     for _ in range(FROZEN_VARIANT_SCORING_REQUESTS):
         ledger.before_scoring()
-    with pytest.raises(ValueError, match="scoring requests"):
+    with pytest.raises(ValueError, match="scoring_attempts"):
         ledger.before_scoring()
 
 
@@ -178,10 +178,6 @@ def test_run_live_instruction_variant_proof_when_gate_blocks() -> None:
         patch(
             "typevet.evaluation.instruction_variant_consumer_live.run_live_variant_matrix",
             return_value=None,
-        ),
-        patch(
-            "typevet.evaluation.instruction_variant_consumer_live.live_skip_reason",
-            return_value="live gate blocked",
         ),
     ):
         result = run_live_instruction_variant_proof(fixture_root=FIXTURE_ROOT)

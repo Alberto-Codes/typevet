@@ -17,6 +17,7 @@ from unittest.mock import patch
 import pytest
 
 from typevet.evaluation.datasets.psai_vision_controls import paired_image_ordering
+from typevet.evaluation.psai_vision_consumer_dispatch import ConsumerDispatchLedger
 from typevet.evaluation.psai_vision_consumer_harness import run_offline_consumer_proof
 from typevet.evaluation.psai_vision_consumer_live import run_live_consumer_proof
 from typevet.evaluation.psai_vision_consumer_offline import (
@@ -65,18 +66,12 @@ def test_run_live_consumer_proof_success_path() -> None:
             "health": {"status": "ok"},
             "capability": type("C", (), {"vision": True, "marker": "m"})(),
             "served": type("S", (), {"name": "NATIVE_GEMMA4_TURN"})(),
-            "ledger": type(
-                "L",
-                (),
-                {
-                    "scoring_requests": 16,
-                    "judgment_calls": 14,
-                    "auxiliary_http_total": 4,
-                    "auxiliary_metadata_http": 3,
-                    "auxiliary_tokenizer_http": 1,
-                    "failed_attempts": 0,
-                },
-            )(),
+            "ledger": ConsumerDispatchLedger(
+                scoring_requests=16,
+                judgment_calls=14,
+                auxiliary_metadata_http=3,
+                auxiliary_tokenizer_http=1,
+            ),
             "identity": {"run_id": "unit"},
             "elapsed_s": 0.1,
         },
@@ -100,10 +95,6 @@ def test_run_live_consumer_proof_success_path() -> None:
         settings.return_value.multimodal_model = "gemma-test"
         settings.return_value.default_model = None
         with (
-            patch(
-                "typevet.evaluation.psai_vision_consumer_live.live_skip_reason",
-                return_value=None,
-            ),
             patch(
                 "typevet.evaluation.psai_vision_consumer_live.paired_image_ordering",
                 return_value=pairs,

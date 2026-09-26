@@ -212,6 +212,7 @@ def open_gemma_native_vision_judgment(
             timeout=settings.timeout,
             client=client,
             n_vocab=n_vocab,
+            media_capabilities={model_id: capability},
         )
         scoring_port: CandidateScoringPort = scoring
         if scoring_port_wrapper is not None:

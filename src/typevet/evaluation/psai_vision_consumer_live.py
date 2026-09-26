@@ -1,4 +1,4 @@
-"""Live PSAI consumer matrix under public adapters ([#177][i177]).
+"""Live PSAI consumer matrix with retained dispatch attempts ([#177][i177]).
 
 Examples:
     ```python
@@ -37,7 +37,10 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
+import httpx
+
 from typevet.adapters.inbound.settings import LlamaSettings, load_llama_settings
+from typevet.domain.errors import GenerationError, JudgmentError
 from typevet.evaluation.datasets.psai_vision import VisionSmokeFixture
 from typevet.evaluation.datasets.psai_vision_controls import (
     VisualControl,
@@ -80,9 +83,15 @@ from typevet.evaluation.psai_vision_consumer_receipt import (
 )
 from typevet.evaluation.runner.live_gate import (
     TYPEVET_REQUIRE_LIVE_ENV,
-    live_gate_action,
-    live_skip_reason,
     require_live_enabled,
+)
+
+_DISPATCH_ERRORS = (
+    ConsumerCallBudgetError,
+    ValueError,
+    httpx.HTTPError,
+    GenerationError,
+    JudgmentError,
 )
 
 _MODEL_ENV = ("TYPEVET_GEMMA_MODEL", "TYPEVET_LLAMA__DEFAULT_MODEL")
@@ -105,14 +114,6 @@ def _git_head() -> str:
         cwd=_REPO_ROOT,
     )
     return proc.stdout.strip() if proc.returncode == 0 else "unknown"
-
-
-def _require_live_gate(settings: LlamaSettings) -> None:
-    reason = live_skip_reason(settings)
-    action = live_gate_action(reason)
-    if action.name != "RUN":
-        msg = reason or "live gate blocked"
-        raise ValueError(f"{TYPEVET_REQUIRE_LIVE_ENV}: {msg}")
 
 
 def _resolve_model(settings: LlamaSettings) -> str:
@@ -138,7 +139,6 @@ def _prepare_live_run(
     VisionSmokeFixture,
 ]:
     settings = load_llama_settings()
-    _require_live_gate(settings)
     model = _resolve_model(settings)
     timeout = max(settings.timeout, 900.0)
     settings = LlamaSettings(
@@ -163,7 +163,8 @@ def _accept_live_receipt(
     accepted, failures = evaluate_consumer_receipt_acceptance(receipt)
     if not accepted:
         receipt["failure_attempt"] = {
-            "checks_failed": failures,
+            "checks_failed": receipt.get("failure_attempt", {}).get("checks_failed", [])
+            + failures,
             "timestamp_unix": time.time(),
         }
     exit_code = 0 if accepted else _EXIT_ACCEPTANCE_FAIL
@@ -205,6 +206,7 @@ def _dispatch_failure_receipt(
             "timestamp_unix": time.time(),
         },
     }
+    failure_receipt.update(ledger.accounting())
     failure_receipt.update(consumer_fixture_identity_pins(fixture_root))
     return failure_receipt
 
@@ -217,7 +219,7 @@ def run_live_consumer_proof(
     typevet_install_path: str | None = None,
     evidence_kind: str = "isolated_wheel_live",
 ) -> ConsumerProofResult:
-    """Run the frozen live consumer matrix and optionally write a receipt.
+    """Run the frozen matrix and retain successes or known dispatch failures.
 
     Args:
         fixture_root: Committed ``vision_smoke`` directory.
@@ -248,7 +250,7 @@ def run_live_consumer_proof(
             fixture_root=fixture_root,
             ledger=ledger,
         )
-    except (ConsumerCallBudgetError, ValueError) as exc:
+    except _DISPATCH_ERRORS as exc:
         failure_receipt = _dispatch_failure_receipt(
             plan=plan,
             model=model,
