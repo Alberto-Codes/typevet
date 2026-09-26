@@ -79,3 +79,6 @@ log” epic. Until then, accepted judgment comments on issues are the record.
   triage, size and split work on GitHub before delegation.
 - [Delegate a bounded change](maintainers/delegate-work.md) (how-to): brief,
   harness, model weight and acceptance after a contract exists.
+- [Verify package typing and version](maintainers/verify-package.md) (how-to):
+  wheel `py.typed` marker, isolated consumer, and `__version__` checks before
+  publish.

@@ -19,6 +19,7 @@ Examples:
     ```
 
 See Also:
+    - [typevet._version][]: Resolves ``__version__`` from distribution metadata
     - [typevet.domain][]: Request, result and error types
     - [typevet.ports][]: GenerationPort protocol
     - [typevet.adapters.outbound][]: llama.cpp and fake adapters
@@ -32,9 +33,12 @@ Attributes:
     GenerationRequest (type): Prompt, schema and model ask.
     GenerationResult (type): Validated structured value.
     SchemaValidationError (type): Output failed the requested schema.
-    __version__ (str): Package version string.
+    __version__ (str): Installed distribution version; matches
+        ``importlib.metadata.version("typevet")`` when the package is on
+        ``PYTHONPATH``. Exported in ``__all__``.
 """
 
+from typevet._version import __version__
 from typevet.domain.errors import (
     BackendHttpError,
     GenerationError,
@@ -54,6 +58,5 @@ __all__ = [
     "GenerationResult",
     "SchemaValidationError",
     "TransportError",
+    "__version__",
 ]
-
-__version__ = "0.1.0"

@@ -87,8 +87,8 @@ convention = "google"
     "D104",
     "PLR2004",
 ]
+"scripts/build_wheel_for_tests.py" = ["S603"]
 "scripts/check_commit_msg.py" = ["S603"]
-"scripts/check_loc.py" = ["S603"]
 "src/typevet/eval_partner_guard.py" = ["S603", "S607"]
 
 [tool.ruff.lint.isort]
