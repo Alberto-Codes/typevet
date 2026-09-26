@@ -193,11 +193,14 @@ def compare_matched_prompt_outcomes(
         or selection verdicts.
 
     Raises:
-        ValueError: When ``labels`` is empty, gold labels are invalid, or an arm
-            reports ids outside the scheduled gold set.
+        ValueError: When ``labels`` is empty or contains duplicates, gold labels
+            are invalid, or an arm reports ids outside the scheduled gold set.
     """
     if not labels:
         msg = "labels must not be empty"
+        raise ValueError(msg)
+    if len(set(labels)) != len(labels):
+        msg = "duplicate labels are not allowed"
         raise ValueError(msg)
     _validate_gold(gold, labels=labels)
     _validate_no_unexpected_outcomes(gold, seed, arm="seed")

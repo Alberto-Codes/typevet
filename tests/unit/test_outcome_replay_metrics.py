@@ -27,6 +27,17 @@ _LABELS = ("no", "yes")
 
 
 @pytest.mark.unit
+def test_compare_rejects_duplicate_labels() -> None:
+    """Repeated label definitions cannot change replay metric weighting."""
+    gold = {"a": "yes"}
+    outcomes = {"a": SavedPromptOutcome(probabilities={"yes": 0.9, "no": 0.1})}
+    with pytest.raises(ValueError, match="duplicate labels"):
+        compare_matched_prompt_outcomes(
+            gold, outcomes, outcomes, labels=("yes", "yes", "no")
+        )
+
+
+@pytest.mark.unit
 def test_brier_and_log_loss_hand_calculated() -> None:
     """Formulas match pencil-and-paper values for a two-label case."""
     probs = {"no": 0.25, "yes": 0.75}
