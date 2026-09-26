@@ -25,6 +25,7 @@ See Also:
 
 Attributes:
     GenerationError (type): Base failure for a generation call.
+    AsyncGenerationPort (type): Structural protocol for async typed generation.
     GenerationPort (type): Structural protocol for typed generation.
     GenerationRequest (type): Prompt, schema and model ask.
     GenerationResult (type): Validated structured value.
@@ -34,9 +35,11 @@ Attributes:
 
 from typevet.domain.errors import GenerationError, SchemaValidationError
 from typevet.domain.models import GenerationRequest, GenerationResult
+from typevet.ports.async_generation import AsyncGenerationPort
 from typevet.ports.generation import GenerationPort
 
 __all__ = [
+    "AsyncGenerationPort",
     "GenerationError",
     "GenerationPort",
     "GenerationRequest",

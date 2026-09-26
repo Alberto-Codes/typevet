@@ -7,18 +7,10 @@ import json
 import httpx
 import pytest
 
+from tests.fixtures.generation_contract import CONTRACT_SCHEMA as SCHEMA
 from typevet.adapters.outbound import FakeGenerationAdapter, LlamaCppGenerationAdapter
 from typevet.domain.errors import GenerationError, SchemaValidationError
 from typevet.domain.models import GenerationRequest
-
-SCHEMA = {
-    "type": "object",
-    "properties": {
-        "answer": {"type": "integer"},
-    },
-    "required": ["answer"],
-    "additionalProperties": False,
-}
 
 
 @pytest.mark.contract
