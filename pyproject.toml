@@ -81,6 +81,7 @@ convention = "google"
 ]
 "scripts/check_commit_msg.py" = ["S603"]
 "scripts/check_loc.py" = ["S603"]
+"src/typevet/eval_partner_guard.py" = ["S603", "S607"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["typevet"]
@@ -90,6 +91,7 @@ quote-style = "double"
 docstring-code-format = true
 
 [tool.pytest.ini_options]
+pythonpath = ["."]
 testpaths = ["tests"]
 markers = [
     "unit: fast, isolated",

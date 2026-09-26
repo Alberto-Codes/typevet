@@ -1,0 +1,59 @@
+# Eval partner data policy
+
+Kind: reference. This page states which finvet datasets typevet may ship in public
+artifacts and which paths CI must reject.
+
+Parent non-goals: [#51](https://github.com/Alberto-Codes/typevet/issues/51),
+[#53](https://github.com/Alberto-Codes/typevet/issues/53). Guard issue:
+[#61](https://github.com/Alberto-Codes/typevet/issues/61).
+
+## Public eval datasets (v1 direction)
+
+typevet may adopt **public** finvet loaders and fixtures when a child issue
+accepts them. Examples from the #53 research return:
+
+| Dataset | License | typevet role |
+|---|---|---|
+| Banking77 | CC BY 4.0 | Proxy binary Noul / optional Choice |
+| DIFrauD | MIT | Natural binary Noul (`is_scam`) |
+
+CFPB and synth collections are **seed-only** until a regen or publish spec
+exists ([#62](https://github.com/Alberto-Codes/typevet/issues/62)). ABCD and
+UCI SMS stay parked until a later scan adopts them.
+
+## Collections NBA — never in public typevet
+
+**collections NBA** is finvet’s partner next-best-action split. finvet keeps it
+**local only** under git-ignored `data/collections_nba/`. The license is
+partner data; finvet does **not** redistribute it
+([finvet datasets](https://github.com/Alberto-Codes/finvet/blob/main/docs/reference/datasets.md)).
+
+typevet must **not**:
+
+- commit, bundle, or publish partner jsonl or derived shards;
+- add wheel/sdist paths that include `collections_nba` or `data/collections_nba`;
+- vendor finvet’s `collections_nba` loader or partner `nba` reward package;
+- document a “download this split” path for collections NBA in typevet artifacts.
+
+Developers may still run finvet locally with their own partner copy. That
+workflow stays outside this repo.
+
+## Forbidden markers (machine check)
+
+CI runs `typevet.eval_partner_guard` via pytest. A tracked path or packaging
+line must not contain any marker below, except in the allowlisted guard and
+policy files named in that module.
+
+| Marker | Meaning |
+|---|---|
+| `collections_nba` | finvet dataset id and directory name |
+| `data/collections_nba` | default local partner tree |
+| `collections/nba` | alternate path spelling |
+| `finvet.data.collections_nba` | partner loader import |
+
+## When eval loaders land
+
+Future eval modules ([#58](https://github.com/Alberto-Codes/typevet/issues/58),
+[#59](https://github.com/Alberto-Codes/typevet/issues/59)) must read **public**
+Hub or checked-in fixtures only. Wire the same guard in packaging tests so a
+manifest or `pyproject` include cannot regress partner paths.

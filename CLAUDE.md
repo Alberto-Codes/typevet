@@ -196,10 +196,15 @@ Record lasting decisions in docs, ADRs or issue contracts, not only in chat.
 | ty | `uv run ty check` |
 | import-linter | `uv run lint-imports` |
 | loc | `uv run python scripts/check_loc.py src` |
+| suppressions | `uv run python scripts/check_suppressions.py` |
 | docvet | `uv run docvet check --all` |
 | pytest | `uv run pytest -q` |
 | coverage (push) | `uv run pytest -q --cov=typevet --cov-report=term-missing` |
+| uv-secure (push) | `uv audit --locked --preview-features audit-command` |
 | commit-msg | `uv run python scripts/check_commit_msg.py` (hook) |
+
+`.pre-commit-config.yaml` is the complete hook inventory; the push-stage
+`dependency-audit` hook runs the uv-secure row above.
 
 Install hooks once per clone:
 
