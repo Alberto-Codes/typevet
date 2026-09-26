@@ -1,0 +1,215 @@
+"""IO-free categorical execution for closed Choice and Bool decisions.
+
+Examples:
+    ```python
+    from typevet.domain.decision_execute import execute_categorical_decision
+    from typevet.domain.decisions import Decision
+    from typevet.domain.candidate_scoring_request import CandidateTokenSpec
+
+    decision = Decision("c", "Pick.", ("a", "b"), syntax="Choice")
+    # port implements CandidateScoringPort (offline fake in tests)
+    ```
+
+See Also:
+    - [typevet.domain.decisions][]: Decision compile shape
+    - [typevet.ports.scoring][]: CandidateScoringPort protocol
+    - [typevet.domain.candidate_scoring_validate][]: Fail-closed score coverage
+"""
+
+from __future__ import annotations
+
+import math
+from dataclasses import dataclass
+from typing import Any, Protocol
+
+from typevet.domain.candidate_scoring_request import (
+    CandidateScoringRequest,
+    CandidateTokenSpec,
+)
+from typevet.domain.candidate_scoring_response import CandidateScoringResult
+from typevet.domain.decisions import MAX_ENUM_CHOICES, Decision
+from typevet.domain.errors import DecisionExecutionError, ScoringValidationError
+from typevet.domain.judgment_response import TokenUsage
+from typevet.domain.scoring_stage import ScoreStage
+
+_PROB_SUM_TOLERANCE = 1e-6
+_MIN_CATEGORICAL_CHOICES = 2
+_CATEGORICAL_SYNTAX = frozenset({"Choice", "Bool"})
+
+
+class CandidateScoringPort(Protocol):
+    """Structural protocol for candidate logprob scoring (mirrors ports layer).
+
+    Examples:
+        ```python
+        # Offline fakes and llama.cpp adapters both satisfy this shape.
+        def use(port: CandidateScoringPort) -> None:
+            _ = port.score_candidates
+        ```
+    """
+
+    def score_candidates(
+        self, request: CandidateScoringRequest
+    ) -> CandidateScoringResult:
+        """Score every requested candidate at the contracted stage."""
+        ...
+
+
+@dataclass(frozen=True, slots=True)
+class CategoricalExecutionResult:
+    """Greedy categorical decision outcome with full softmax distribution.
+
+    Attributes:
+        value (Any): Selected choice value from ``decision.choices``.
+        probabilities (tuple[tuple[Any, float], ...]): Ordered choice/probability
+            pairs aligned with ``decision.choices`` after softmax.
+        logprobs (tuple[float, ...]): Raw pre-sampling logprobs in choice order.
+        model (str): Model id from the scoring port result.
+        usage (TokenUsage): Token usage metadata from the scoring port.
+
+    Examples:
+        ```python
+        # Constructed by execute_categorical_decision; not built by callers.
+        ```
+    """
+
+    value: Any
+    probabilities: tuple[tuple[Any, float], ...]
+    logprobs: tuple[float, ...]
+    model: str
+    usage: TokenUsage
+
+
+def _choice_label(choice: Any) -> str:
+    if isinstance(choice, bool):
+        return "True" if choice else "False"
+    return str(choice)
+
+
+def _validate_inputs(
+    decision: Decision,
+    candidates: tuple[CandidateTokenSpec, ...],
+    *,
+    temperature: float,
+) -> None:
+    if decision.syntax not in _CATEGORICAL_SYNTAX:
+        msg = (
+            f"unsupported decision syntax for categorical execute: {decision.syntax!r}"
+        )
+        raise DecisionExecutionError(msg)
+    if decision.nullable:
+        msg = "nullable categorical decisions are not supported in M1 execute"
+        raise DecisionExecutionError(msg)
+    n = len(decision.choices)
+    if n < _MIN_CATEGORICAL_CHOICES or n > MAX_ENUM_CHOICES:
+        msg = (
+            f"choice count must be between {_MIN_CATEGORICAL_CHOICES} and "
+            f"{MAX_ENUM_CHOICES}, got {n}"
+        )
+        raise DecisionExecutionError(msg)
+    if len(candidates) != n:
+        msg = (
+            f"candidate count {len(candidates)!r} does not match "
+            f"decision choices length {n!r}"
+        )
+        raise DecisionExecutionError(msg)
+    if temperature <= 0.0 or not math.isfinite(temperature):
+        msg = f"temperature must be a finite value > 0, got {temperature!r}"
+        raise DecisionExecutionError(msg)
+    for spec, choice in zip(candidates, decision.choices, strict=True):
+        if len(spec.token_ids) != 1:
+            msg = f"candidate {spec.label!r} must be single-token for M1 execute"
+            raise DecisionExecutionError(msg)
+        expected = _choice_label(choice)
+        if spec.label != expected:
+            msg = (
+                f"candidate label {spec.label!r} does not align with "
+                f"decision choice {choice!r} (expected {expected!r})"
+            )
+            raise DecisionExecutionError(msg)
+
+
+def _softmax(logprobs: tuple[float, ...], *, temperature: float) -> tuple[float, ...]:
+    scaled = [lp / temperature for lp in logprobs]
+    peak = max(scaled)
+    exps = [math.exp(s - peak) for s in scaled]
+    total = sum(exps)
+    if total == 0.0 or not math.isfinite(total):
+        msg = "softmax normalization produced non-finite total mass"
+        raise DecisionExecutionError(msg)
+    probs = tuple(e / total for e in exps)
+    if not all(math.isfinite(p) for p in probs):
+        msg = "softmax produced non-finite probabilities"
+        raise DecisionExecutionError(msg)
+    prob_sum = sum(probs)
+    if abs(prob_sum - 1.0) > _PROB_SUM_TOLERANCE:
+        msg = f"probabilities sum to {prob_sum!r}, expected 1 within {_PROB_SUM_TOLERANCE}"
+        raise DecisionExecutionError(msg)
+    return probs
+
+
+def _greedy_index(probabilities: tuple[float, ...]) -> int:
+    best = probabilities[0]
+    index = 0
+    for i, prob in enumerate(probabilities[1:], start=1):
+        if prob > best:
+            best = prob
+            index = i
+    return index
+
+
+def execute_categorical_decision(
+    decision: Decision,
+    *,
+    prefix: str,
+    candidates: tuple[CandidateTokenSpec, ...],
+    port: CandidateScoringPort,
+    model: str,
+    temperature: float = 1.0,
+) -> CategoricalExecutionResult:
+    """Score candidates, softmax logprobs, and pick the greedy choice.
+
+    Probabilities are the conditional distribution over the declared candidate
+    set at temperature ``temperature`` (default 1) via log-sum-exp softmax.
+
+    Args:
+        decision: Closed categorical field (``Choice`` or ``Bool`` syntax).
+        prefix: Rendered prompt prefix before candidate tokens.
+        candidates: Single-token specs aligned 1:1 with ``decision.choices``.
+        port: Scoring port; ``ScoreStage.PRE_SAMPLING`` is required.
+        model: Model id forwarded to the scoring request.
+        temperature: Softmax temperature; must be finite and strictly positive.
+
+    Returns:
+        Selected value, full probability table, and raw logprobs.
+
+    Raises:
+        DecisionExecutionError: Unsupported syntax, nullable field, alignment,
+            candidate shape, or invalid temperature.
+        ScoringValidationError: Propagated when the port returns invalid scores.
+    """
+    _validate_inputs(decision, candidates, temperature=temperature)
+    request = CandidateScoringRequest(
+        model=model,
+        prefix=prefix,
+        candidates=candidates,
+        stage=ScoreStage.PRE_SAMPLING,
+    )
+    scored = port.score_candidates(request)
+    logprobs = tuple(row.logprob for row in scored.candidates)
+    if not all(math.isfinite(lp) for lp in logprobs):
+        msg = "non-finite logprobs after scoring"
+        raise ScoringValidationError(msg)
+    probabilities = _softmax(logprobs, temperature=temperature)
+    index = _greedy_index(probabilities)
+    value = decision.choices[index]
+    pairs = tuple(
+        (choice, probabilities[i]) for i, choice in enumerate(decision.choices)
+    )
+    return CategoricalExecutionResult(
+        value=value,
+        probabilities=pairs,
+        logprobs=logprobs,
+        model=scored.model,
+        usage=scored.usage,
+    )

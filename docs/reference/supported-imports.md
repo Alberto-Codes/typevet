@@ -71,6 +71,9 @@ and decision helpers, import from `typevet.domain` instead of the root.
 | `ScoreStage` | Pre- vs post-sampling stage enum |
 | `ScoringError`, `ScoringValidationError`, `ScoringUnsupportedCapabilityError` | Scoring failure types |
 | `build_and_validate_result` | Fail-closed result assembly for scoring |
+| `CategoricalExecutionResult` | Greedy categorical execute outcome |
+| `DecisionExecutionError` | Categorical execute rejected inputs |
+| `execute_categorical_decision` | IO-free Choice/Bool execution |
 
 ## `typevet.ports`
 

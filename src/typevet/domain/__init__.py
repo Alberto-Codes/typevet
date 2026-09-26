@@ -28,6 +28,8 @@ Attributes:
     BackendHttpError (type): llama.cpp HTTP status 400 or above.
     CandidateScoringRequest (type): Prompt and candidate tokens to score.
     CandidateScoringResult (type): Fail-closed scored candidates.
+    CategoricalExecutionResult (type): Greedy categorical execute outcome.
+    DecisionExecutionError (type): Categorical execute rejected inputs.
     GemmaTemplateError (type): Gemma served-template or answer-prefix violation.
     GenerationError (type): Base failure for a generation call.
     TransportError (type): HTTP client failure before a response.
@@ -43,6 +45,7 @@ Attributes:
     ScoringError (type): Base failure for a candidate-scoring call.
     compile_json_schema (callable): Compile object schema to decisions.
     dependency_layers (callable): Topological layers for decision dependencies.
+    execute_categorical_decision (callable): IO-free Choice/Bool execution.
 """
 
 from typevet.domain.candidate_scoring_request import (
@@ -56,6 +59,10 @@ from typevet.domain.candidate_scoring_response import (
 )
 from typevet.domain.candidate_scoring_validate import build_and_validate_result
 from typevet.domain.decision_compile import compile_json_schema
+from typevet.domain.decision_execute import (
+    CategoricalExecutionResult,
+    execute_categorical_decision,
+)
 from typevet.domain.decisions import (
     MAX_ENUM_CHOICES,
     MAX_PERMUTATIONS,
@@ -65,6 +72,7 @@ from typevet.domain.decisions import (
 )
 from typevet.domain.errors import (
     BackendHttpError,
+    DecisionExecutionError,
     GemmaTemplateError,
     GenerationError,
     JudgmentError,
@@ -100,9 +108,11 @@ __all__ = [
     "CandidateScoringRequest",
     "CandidateScoringResult",
     "CandidateTokenSpec",
+    "CategoricalExecutionResult",
     "Choice",
     "ChoiceAnswer",
     "Decision",
+    "DecisionExecutionError",
     "GemmaTemplateError",
     "GenerationError",
     "GenerationRequest",
@@ -128,5 +138,6 @@ __all__ = [
     "build_and_validate_result",
     "compile_json_schema",
     "dependency_layers",
+    "execute_categorical_decision",
     "question_types",
 ]

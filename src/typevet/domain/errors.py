@@ -18,6 +18,7 @@ Attributes:
     JudgmentError (type): Base failure for a judgment call.
     JudgmentValidationError (type): Answer failed judgment shape rules.
     GemmaTemplateError (type): Gemma served-template or answer-prefix violation.
+    DecisionExecutionError (type): Categorical decision execute rejected inputs.
     ScoringError (type): Base failure for a candidate scoring call.
     ScoringValidationError (type): Score coverage or value failed validation.
     ScoringUnsupportedCapabilityError (type): Backend cannot honor the stage.
@@ -139,6 +140,18 @@ class GemmaTemplateError(JudgmentError):
         from typevet.domain.errors import GemmaTemplateError
 
         raise GemmaTemplateError("unsupported served template family")
+        ```
+    """
+
+
+class DecisionExecutionError(GenerationError):
+    """A categorical decision could not be executed in-domain.
+
+    Examples:
+        ```python
+        from typevet.domain.errors import DecisionExecutionError
+
+        raise DecisionExecutionError("nullable categorical decisions are unsupported")
         ```
     """
 
