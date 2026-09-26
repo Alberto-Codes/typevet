@@ -43,6 +43,8 @@ print('noul', r.nouls['q'].noul)
 
 Tutorial: [First typed judgment offline](docs/tutorials/first-typed-judgment-offline.md).
 Live small eval: [Run a small live judgment eval](docs/how-to/run-a-small-live-judgment-eval.md).
+Multimodal (Gemma + image): [Run a multimodal live smoke](docs/how-to/run-a-multimodal-live-smoke.md).
+PSAI screenshots: [Run the PSAI vision smoke](docs/how-to/run-the-psai-vision-smoke.md).
 
 ## Quick start (contributors)
 
