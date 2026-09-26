@@ -65,10 +65,12 @@ Direct library use moves that job to your application:
 - Configure logging in the application. Importing typevet does not attach
   handlers to the root logger.
 
-A future CLI or MCP inbound adapter would read `TYPEVET_*` settings (when
-specified in a follow-up issue), construct `LlamaCppGenerationAdapter`, and
-close it at command or server shutdown. Library constructors would stay
-explicit so tests and embedders never depend on hidden global configuration.
+Composition roots read `TYPEVET_LLAMA__*` through
+[`load_llama_settings`](../reference/configuration.md) and pass the values into
+`LlamaCppGenerationAdapter` (or call `llama_cpp_adapter`). A future CLI or
+MCP inbound adapter would construct the adapter once per process and close it at
+shutdown. Library constructors stay explicit so tests and embedders never depend
+on hidden global configuration.
 
 Settings and credentials stay on the inbound side. Outbound adapters accept only
 values the composition root passes in. That boundary mirrors judgevet and

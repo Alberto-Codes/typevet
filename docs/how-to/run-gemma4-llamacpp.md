@@ -25,9 +25,12 @@ Use the bazzite-dotfiles llama.cpp router. The router serves GGUFs under
 ```bash
 cd /path/to/typevet
 uv sync
-TYPEVET_GEMMA_MODEL=gemma-4-31b-24gib-kv11-decoder \
+TYPEVET_LLAMA__DEFAULT_MODEL=gemma-4-31b-24gib-kv11-decoder \
   uv run pytest -m live -q
 ```
+
+Legacy names `TYPEVET_GEMMA_MODEL` and `TYPEVET_LLAMA_URL` still work. See
+[Configuration](../reference/configuration.md).
 
 Or from Python:
 

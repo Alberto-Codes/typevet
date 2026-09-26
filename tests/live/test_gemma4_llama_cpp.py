@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
-import os
+from dataclasses import replace
 
 import httpx
 import pytest
 
-from typevet.adapters.outbound import LlamaCppGenerationAdapter
+from typevet.adapters.inbound.settings import llama_cpp_adapter, load_llama_settings
 from typevet.domain.models import GenerationRequest
 
-BASE = os.environ.get("TYPEVET_LLAMA_URL", "http://127.0.0.1:8090")
-MODEL = os.environ.get("TYPEVET_GEMMA_MODEL", "gemma-4-31b-24gib-kv11-decoder")
+_LLAMA = load_llama_settings()
+BASE = _LLAMA.base_url
+MODEL = _LLAMA.default_model or "gemma-4-31b-24gib-kv11-decoder"
 
 SCHEMA = {
     "type": "object",
@@ -53,7 +54,8 @@ def gemma4_llama_router() -> None:
 
 @pytest.mark.live
 def test_gemma4_schema_in_valid_out(gemma4_llama_router: None) -> None:
-    with LlamaCppGenerationAdapter(base_url=BASE, timeout=600.0) as adapter:
+    live_settings = replace(_LLAMA, timeout=600.0)
+    with llama_cpp_adapter(live_settings) as adapter:
         result = adapter.generate(
             GenerationRequest(
                 prompt=(

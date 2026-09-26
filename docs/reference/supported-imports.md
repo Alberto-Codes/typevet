@@ -77,6 +77,12 @@ Root `typevet` also re-exports `AsyncGenerationPort` alongside the table above.
 |---|---|
 | `generate` | Build a `GenerationRequest` and invoke a sync port |
 | `run_sync` | Run an async generation coroutine from sync scripts |
+| `LlamaSettings` | Frozen llama.cpp connection settings for composition roots |
+| `load_llama_settings` | Read `TYPEVET_LLAMA__*` (and legacy aliases) from the environment |
+| `llama_cpp_adapter` | Construct `LlamaCppGenerationAdapter` from `LlamaSettings` |
+
+Environment names and CLI hookup notes live in
+[configuration.md](configuration.md).
 
 Signature: keyword-only `prompt`, `schema`, and `model` after the port argument.
 Prefer `generate` for library entry when you already hold a `GenerationPort`.
