@@ -3,7 +3,12 @@
 Kind: how-to.
 
 This distribution is private. Do not publish it.
-The bridge supports synchronous text Noul questions. Choice and Score remain unsupported in this slice.
+The bridge supports synchronous text Noul, Choice and Score questions.
+Choice accepts 2 to 24 ordered labels with string descriptions or `None`.
+Score accepts 2 to 24 ordered string levels. Its legend starts at zero.
+Raw mappings and consumer question objects use the same validation.
+Nested criteria and instructions are unsupported.
+The bridge preserves distributions, confidence and the probability-weighted Score value.
 
 1. Obtain both wheels identified by `dependency-artifacts.json`.
 2. Run this command from the Typevet checkout with the wheel paths:

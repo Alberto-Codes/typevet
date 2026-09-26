@@ -10,11 +10,13 @@ See Also:
 """
 
 import pytest
-from judgevet import Noul
+from judgevet import Choice, Noul, Score
 from typevet_consumer_bridge import BridgeRequestError
 from typevet_consumer_bridge.questions import convert_questions, snapshot_state
 
+from typevet.domain import Choice as EngineChoice
 from typevet.domain import Noul as EngineNoul
+from typevet.domain import Score as EngineScore
 
 pytestmark = pytest.mark.unit
 
@@ -65,8 +67,6 @@ def test_raw_noul(criteria: object) -> None:
         {"q": Noul(instructions={"text": "bad"})},
         {"q": Noul(criteria={"TRUE": "bad"})},
         {"q": Noul(criteria={"true": None})},
-        {"q": {"type": "choice", "criteria": {"a": "A", "b": "B"}}},
-        {"q": {"type": "score", "criteria": ["a", "b"]}},
     ],
 )
 def test_invalid_questions(invalid: object) -> None:
@@ -110,3 +110,74 @@ def test_cyclic_state() -> None:
     state.append(state)
     with pytest.raises(BridgeRequestError):
         snapshot_state(state)
+
+
+@pytest.mark.parametrize("count", [2, 24])
+@pytest.mark.parametrize("kind", ["choice", "score"])
+def test_choice_score_forms(count: int, kind: str) -> None:
+    """Preserve ordered criteria and instructions across raw and object forms."""
+    instructions = "  Exact caller instruction\n"
+    criteria = {f" label {i} ": None if i == 0 else str(i) for i in range(count)}
+    levels = tuple(str(i) for i in range(count))
+    question = (
+        Choice(criteria=criteria, instructions=instructions)
+        if kind == "choice"
+        else Score(criteria=levels, instructions=instructions)
+    )
+    expected = criteria if kind == "choice" else list(levels)
+    raw = {
+        "type": kind,
+        "criteria": criteria if kind == "choice" else levels,
+        "instructions": instructions,
+    }
+    results = convert_questions({" object ": question, "raw": raw})
+    require(list(results) == [" object ", "raw"], "ordered exact IDs")
+    for result in results.values():
+        require(
+            type(result) is (EngineChoice if kind == "choice" else EngineScore),
+            "explicit engine reconstruction",
+        )
+        require(result.instructions == instructions, "exact instructions")
+        require(result.criteria == expected, "exact ordered criteria")
+        require(result.criteria is not question.criteria, "fresh criteria")
+        if isinstance(result, EngineChoice):
+            require(list(result.criteria) == list(criteria), "label insertion order")
+
+
+@pytest.mark.parametrize(
+    "criteria",
+    [
+        None,
+        {},
+        {"a": "A"},
+        {str(i): None for i in range(25)},
+        {" ": None, "b": "B"},
+        {1: "A", "b": "B"},
+        {"a": {}, "b": "B"},
+        {"a": [], "b": "B"},
+    ],
+)
+def test_invalid_choice(criteria: object) -> None:
+    """Reject unsupported Choice option counts, labels and descriptions."""
+    with pytest.raises(BridgeRequestError):
+        convert_questions({"q": {"type": "choice", "criteria": criteria}})
+
+
+@pytest.mark.parametrize(
+    "criteria",
+    [
+        None,
+        [],
+        ["a"],
+        ["a"] * 25,
+        "ab",
+        {0: "a", 1: "b"},
+        [None, "b"],
+        [{}, "b"],
+        [[], "b"],
+    ],
+)
+def test_invalid_score(criteria: object) -> None:
+    """Reject unsupported Score levels without coercion."""
+    with pytest.raises(BridgeRequestError):
+        convert_questions({"q": {"type": "score", "criteria": criteria}})

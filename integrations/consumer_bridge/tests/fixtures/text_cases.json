@@ -1,0 +1,26 @@
+{
+  "state": "The invoice total is 42 dollars.",
+  "questions": {
+    "total_is_42": {
+      "type": "noul",
+      "instructions": "  Does the invoice total equal 42 dollars?\n",
+      "criteria": {"false": "Another total", "true": "Exactly forty-two"}
+    },
+    "amount": {
+      "type": "choice",
+      "instructions": "  Choose the invoice total: forty_two or seven.\n",
+      "criteria": {"seven": "seven dollars", "forty_two": "forty-two dollars"}
+    },
+    "amount_score": {
+      "type": "score",
+      "instructions": "  Score the invoice total using these ordered levels.\n",
+      "criteria": ["seven dollars", "forty-two dollars"]
+    }
+  },
+  "expected": {"positive": true, "negative": false},
+  "policy": {
+    "total_is_42": {"minimum": 0.8},
+    "amount": {"choice": "forty_two", "min_confidence": 0.8},
+    "amount_score": {"minimum": 0.8}
+  }
+}

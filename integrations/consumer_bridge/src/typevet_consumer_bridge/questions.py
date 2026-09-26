@@ -1,4 +1,4 @@
-"""Validate and snapshot consumer requests before judgment IO.
+"""Validate and snapshot Noul, Choice and Score requests before judgment IO.
 
 See Also:
     - [typevet_consumer_bridge.adapter][]: Synchronous entry point.
@@ -16,10 +16,15 @@ from collections.abc import Mapping
 from math import isfinite
 from typing import Any
 
-from judgevet import Noul
+from judgevet import Choice, Noul, Score
 
+from typevet.domain import Choice as EngineChoice
 from typevet.domain import Noul as EngineNoul
+from typevet.domain import Score as EngineScore
 from typevet_consumer_bridge.errors import BridgeRequestError
+
+_MIN_OPTIONS = 2
+_MAX_OPTIONS = 24
 
 
 def _snapshot(value: object, active: set[int]) -> Any:
@@ -57,11 +62,17 @@ def snapshot_state(state: object) -> Any:
     return _snapshot(state, set())
 
 
-def _convert(question: object) -> EngineNoul:
-    if isinstance(question, Noul):
+def _convert(question: object) -> EngineNoul | EngineChoice | EngineScore:
+    if isinstance(question, (Noul, Choice, Score)):
+        kind = (
+            "noul"
+            if isinstance(question, Noul)
+            else ("choice" if isinstance(question, Choice) else "score")
+        )
         instructions, criteria = question.instructions, question.criteria
     elif isinstance(question, Mapping):
-        if question.get("type") != "noul" or set(question) - {
+        kind = question.get("type")
+        if kind not in ("noul", "choice", "score") or set(question) - {
             "type",
             "instructions",
             "criteria",
@@ -72,6 +83,27 @@ def _convert(question: object) -> EngineNoul:
         raise BridgeRequestError("Unsupported question form.")
     if instructions is not None and not isinstance(instructions, str):
         raise BridgeRequestError("Invalid question instructions.")
+    if kind == "choice":
+        if (
+            not isinstance(criteria, Mapping)
+            or not _MIN_OPTIONS <= len(criteria) <= _MAX_OPTIONS
+            or any(
+                not isinstance(key, str)
+                or not key.strip()
+                or (value is not None and not isinstance(value, str))
+                for key, value in criteria.items()
+            )
+        ):
+            raise BridgeRequestError("Invalid Choice criteria.")
+        return EngineChoice(instructions=instructions, criteria=dict(criteria))
+    if kind == "score":
+        if (
+            not isinstance(criteria, (list, tuple))
+            or not _MIN_OPTIONS <= len(criteria) <= _MAX_OPTIONS
+            or any(not isinstance(value, str) for value in criteria)
+        ):
+            raise BridgeRequestError("Invalid Score criteria.")
+        return EngineScore(instructions=instructions, criteria=list(criteria))
     if criteria is not None:
         if not isinstance(criteria, Mapping) or any(
             key not in {"true", "false"} or not isinstance(value, str)
@@ -82,8 +114,10 @@ def _convert(question: object) -> EngineNoul:
     return EngineNoul(instructions=instructions, criteria=criteria)
 
 
-def convert_questions(questions: object) -> dict[str, EngineNoul]:
-    """Reconstruct engine questions from validated consumer-owned forms.
+def convert_questions(
+    questions: object,
+) -> dict[str, EngineNoul | EngineChoice | EngineScore]:
+    """Reconstruct engine Noul, Choice and Score from validated consumer forms.
 
     Args:
         questions: Nonempty mapping of exact IDs to questions.
