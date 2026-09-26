@@ -12,9 +12,13 @@ from typevet.evaluation.experiment_identity import (
     PromptSpec,
     RuntimeBuild,
     WorkingTreeState,
+    begin_run_identity,
     capture_experiment_identity,
+    capture_working_tree_at_run_start,
+    cord_expense_receipt_path,
     identity_digest,
     prompt_digest,
+    working_tree_from_porcelain,
 )
 
 pytestmark = pytest.mark.unit
@@ -132,6 +136,92 @@ def test_injected_working_tree_pins_baseline_commit() -> None:
     )
     assert identity.baseline_commit == "a" * 40
     assert identity.working_tree.baseline_commit == identity.baseline_commit
+
+
+def test_capture_working_tree_at_run_start_reports_dirty_checkout() -> None:
+    """Injected porcelain must mark the captured working tree dirty."""
+    tree = capture_working_tree_at_run_start(
+        _REPO,
+        porcelain=" M tests/unit/test_experiment_identity.py\n",
+    )
+    assert tree.baseline_commit != "unknown"
+    assert tree.dirty is True
+    assert "tests/unit/test_experiment_identity.py" in tree.dirty_paths
+
+
+def test_begin_run_identity_freezes_run_id_and_runtime() -> None:
+    """Run-start capture keeps the runtime labels and assigns a run id."""
+    runtime = _runtime()
+    tree = WorkingTreeState("a" * 40, True, ("src/foo.py",), "digest")
+    start = begin_run_identity(
+        repo_root=_REPO,
+        runtime=runtime,
+        working_tree=tree,
+        run_id="fixed-run",
+    )
+    assert start.run_id == "fixed-run"
+    assert start.runtime == runtime
+    assert start.working_tree == tree
+
+
+def test_working_tree_from_porcelain_marks_dirty_for_staged_and_unstaged() -> None:
+    """Porcelain lines must set dirty and list repo-relative paths."""
+    porcelain = " M src/foo.py\nA  new.txt\n?? untracked.py\n"
+    tree = working_tree_from_porcelain(
+        baseline_commit="b" * 40,
+        porcelain=porcelain,
+        repo_root=_REPO,
+    )
+    assert tree.dirty is True
+    assert "src/foo.py" in tree.dirty_paths
+    assert "new.txt" in tree.dirty_paths
+    assert "untracked.py" in tree.dirty_paths
+    assert tree.dirty_digest
+
+
+def test_working_tree_from_porcelain_clean_when_empty() -> None:
+    """An empty porcelain string means a clean tree at the baseline commit."""
+    tree = working_tree_from_porcelain(
+        baseline_commit="c" * 40,
+        porcelain="",
+        repo_root=_REPO,
+    )
+    assert tree.dirty is False
+    assert tree.dirty_paths == ()
+    assert tree.dirty_digest == ""
+
+
+def test_cord_expense_receipt_path_is_unique_per_attempt() -> None:
+    """Each run attempt gets its own receipt filename under the output dir."""
+    out = _REPO / "scratchpad" / "cord-expense"
+    first = cord_expense_receipt_path(out, "aaa")
+    second = cord_expense_receipt_path(out, "bbb")
+    assert first != second
+    assert first.name == "receipt-aaa.json"
+    assert second.name == "receipt-bbb.json"
+
+
+def test_runtime_receipt_records_unknown_projector_and_config() -> None:
+    """Runtime pins unknown template/projector/config fields honestly."""
+    identity = ExperimentIdentity(
+        run_id="run-1",
+        baseline_commit="b" * 40,
+        working_tree=_baseline_tree(),
+        prompt_digests={"expense": "p" * 64},
+        code_path_digests={"cord_expense": "c" * 64},
+        fixture_digests={"manifest": "f" * 64},
+        runtime=RuntimeBuild(
+            model="gemma-4-31b-kv9-q4km-mm",
+            served_template="native_gemma4_turn",
+            server_build="unknown",
+        ),
+        arm_call_counts={"combined": 18},
+    )
+    runtime = identity.to_receipt_mapping()["runtime"]
+    assert isinstance(runtime, dict)
+    assert runtime["template_identity"] == "unknown"
+    assert runtime["projector_identity"] == "unknown"
+    assert runtime["config_identity"] == "unknown"
 
 
 def test_to_receipt_mapping_includes_arm_call_counts_and_runtime_unknown() -> None:

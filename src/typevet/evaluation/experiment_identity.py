@@ -1,4 +1,4 @@
-"""Fingerprints that distinguish evaluation smoke runs ([#186][i186]).
+r"""Fingerprints that distinguish evaluation smoke runs ([#186][i186]).
 
 Captures repo baseline, working-tree drift, prompt bundles, pinned code and
 fixture bytes, runtime labels and per-arm call counts. Every run gets a unique
@@ -15,10 +15,11 @@ Examples:
         RuntimeBuild,
         WorkingTreeState,
         capture_experiment_identity,
+        capture_working_tree_at_run_start,
     )
 
     root = Path(".")
-    tree = WorkingTreeState("0" * 40, False, (), "")
+    tree = capture_working_tree_at_run_start(root, porcelain=" M dirty.py\n")
     identity = capture_experiment_identity(
         ExperimentIdentityRequest(
             repo_root=root,
@@ -48,6 +49,8 @@ import uuid
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+
+_PORCELAIN_PREFIX_LEN = 4
 
 
 def _sha256_text(text: str) -> str:
@@ -121,6 +124,9 @@ class RuntimeBuild:
         model (str): Model id the smoke called.
         served_template (str): Template family the adapter used.
         server_build (str): Router build string, or ``unknown`` when missing.
+        template_identity (str): Exact template or jinja pin, or ``unknown``.
+        projector_identity (str): Vision projector path or digest, or ``unknown``.
+        config_identity (str): Server preset or config pin, or ``unknown``.
 
 
     Examples:
@@ -132,6 +138,9 @@ class RuntimeBuild:
     model: str
     served_template: str
     server_build: str
+    template_identity: str = "unknown"
+    projector_identity: str = "unknown"
+    config_identity: str = "unknown"
 
 
 @dataclass(frozen=True, slots=True)
@@ -178,7 +187,10 @@ class ExperimentIdentity:
         """Serialize this identity for a live smoke receipt JSON object.
 
         Returns:
-            JSON-ready mapping with ``identity_digest`` included.
+            JSON-ready mapping with ``identity_digest``, working-tree dirty
+            flags, and runtime fields including ``template_identity``,
+            ``projector_identity`` and ``config_identity`` (``unknown`` when
+            not resolved).
         """
         return {
             "run_id": self.run_id,
@@ -195,6 +207,9 @@ class ExperimentIdentity:
                 "model": self.runtime.model,
                 "served_template": self.runtime.served_template,
                 "server_build": self.runtime.server_build,
+                "template_identity": self.runtime.template_identity,
+                "projector_identity": self.runtime.projector_identity,
+                "config_identity": self.runtime.config_identity,
             },
             "arm_call_counts": dict(self.arm_call_counts),
             "identity_digest": identity_digest(self),
@@ -220,7 +235,8 @@ def identity_digest(identity: ExperimentIdentity) -> str:
     """Return a stable digest that excludes ``run_id``.
 
     Returns:
-        Lowercase hex SHA-256 of every identity field except ``run_id``.
+        Lowercase hex SHA-256 of prompts, paths, baseline, working tree,
+        arm call counts and runtime labels including unknown identity slots.
     """
     payload = {
         "arm_call_counts": {
@@ -243,6 +259,9 @@ def identity_digest(identity: ExperimentIdentity) -> str:
             "model": identity.runtime.model,
             "served_template": identity.runtime.served_template,
             "server_build": identity.runtime.server_build,
+            "template_identity": identity.runtime.template_identity,
+            "projector_identity": identity.runtime.projector_identity,
+            "config_identity": identity.runtime.config_identity,
         },
         "working_tree": {
             "dirty": identity.working_tree.dirty,
@@ -290,6 +309,154 @@ class ExperimentIdentityRequest:
     runtime: RuntimeBuild
     arm_call_counts: Mapping[str, int]
     working_tree: WorkingTreeState
+
+
+def read_baseline_commit(repo_root: Path) -> str:
+    """Return ``HEAD`` commit hex from ``.git`` without a subprocess.
+
+    Returns:
+        Commit hex, or ``unknown`` when ``.git/HEAD`` is missing or unreadable.
+    """
+    head_path = repo_root / ".git" / "HEAD"
+    if not head_path.is_file():
+        return "unknown"
+    head = head_path.read_text(encoding="utf-8").strip()
+    if head.startswith("ref:"):
+        ref = head.split(" ", 1)[1].strip()
+        ref_path = repo_root / ".git" / ref
+        if not ref_path.is_file():
+            return "unknown"
+        return ref_path.read_text(encoding="utf-8").strip()
+    return head
+
+
+def _porcelain_path(line: str) -> str | None:
+    if len(line) < _PORCELAIN_PREFIX_LEN:
+        return None
+    raw = line[3:].strip()
+    if not raw:
+        return None
+    return raw.split(" -> ", 1)[-1].strip()
+
+
+def capture_working_tree_at_run_start(
+    repo_root: Path,
+    *,
+    porcelain: str,
+) -> WorkingTreeState:
+    """Fingerprint ``HEAD`` and working-tree drift before inference.
+
+    The caller supplies ``git status --porcelain`` text (live harness or tests).
+    This module does not spawn git.
+
+    Args:
+        repo_root: Repository root for the smoke harness checkout.
+        porcelain: Output of ``git status --porcelain`` captured by the caller.
+
+    Returns:
+        Baseline commit and dirty paths derived from ``porcelain``.
+    """
+    baseline = read_baseline_commit(repo_root)
+    if baseline == "unknown":
+        return WorkingTreeState("unknown", True, (".git/HEAD",), "unknown")
+    return working_tree_from_porcelain(
+        baseline_commit=baseline,
+        porcelain=porcelain,
+        repo_root=repo_root,
+    )
+
+
+def working_tree_from_porcelain(
+    *,
+    baseline_commit: str,
+    porcelain: str,
+    repo_root: Path,
+) -> WorkingTreeState:
+    """Build a working-tree fingerprint from ``git status --porcelain`` text.
+
+    Args:
+        baseline_commit: Commit at capture time.
+        porcelain: Output of ``git status --porcelain`` (may be empty).
+        repo_root: Repository root (paths in ``porcelain`` are repo-relative).
+
+    Returns:
+        Clean state when ``porcelain`` is empty; otherwise dirty with paths and
+        a digest of the porcelain lines.
+    """
+    _ = repo_root
+    lines = [line for line in porcelain.splitlines() if line.strip()]
+    if not lines:
+        return WorkingTreeState(baseline_commit, False, (), "")
+    paths = tuple(
+        sorted({path for line in lines if (path := _porcelain_path(line)) is not None})
+    )
+    digest = _sha256_bytes("\n".join(sorted(lines)).encode("utf-8", "surrogateescape"))
+    return WorkingTreeState(baseline_commit, True, paths, digest)
+
+
+def cord_expense_receipt_path(output_dir: Path, attempt_id: str) -> Path:
+    """Return the immutable receipt path for one CORD smoke attempt.
+
+    Args:
+        output_dir: Gitignored output directory for CORD receipts.
+        attempt_id: Unique run or attempt id from experiment identity.
+
+    Returns:
+        Path ``receipt-<attempt_id>.json`` under ``output_dir``.
+    """
+    return output_dir / f"receipt-{attempt_id}.json"
+
+
+@dataclass(frozen=True, slots=True)
+class RunIdentityStart:
+    """Identity captured before any scoring calls in a live smoke.
+
+    Attributes:
+        run_id (str): Unique id for this run attempt.
+        working_tree (WorkingTreeState): Tree fingerprint at run start.
+        runtime (RuntimeBuild): Model and template labels known before scoring.
+
+    Examples:
+        ```python
+        tree = WorkingTreeState("0" * 40, False, (), "")
+        begin_run_identity(
+            repo_root=Path("."),
+            runtime=RuntimeBuild("m", "native_gemma3_turn", "unknown"),
+            working_tree=tree,
+            run_id="attempt-1",
+        )
+        ```
+    """
+
+    run_id: str
+    working_tree: WorkingTreeState
+    runtime: RuntimeBuild
+
+
+def begin_run_identity(
+    *,
+    repo_root: Path,
+    runtime: RuntimeBuild,
+    working_tree: WorkingTreeState,
+    run_id: str | None = None,
+) -> RunIdentityStart:
+    """Capture run identity before inference begins.
+
+    Args:
+        repo_root: Repository root (reserved for future path checks).
+        runtime: Model and router labels already resolved for the run.
+        working_tree: Working-tree fingerprint captured before scoring.
+        run_id: Optional fixed id; a new uuid is used when omitted.
+
+    Returns:
+        Snapshot to pair with post-run call counts and digests.
+    """
+    _ = repo_root
+    return RunIdentityStart(
+        run_id=run_id or uuid.uuid4().hex,
+        working_tree=working_tree,
+        runtime=runtime,
+    )
 
 
 def capture_experiment_identity(
