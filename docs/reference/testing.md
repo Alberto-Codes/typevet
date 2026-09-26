@@ -64,6 +64,10 @@ There is no live llama.cpp judgment adapter in the default suite yet.
 
 Suite: [tests/contract/test_judgment_port.py](../../tests/contract/test_judgment_port.py).
 
+Scoring-backed judgment adapter fixtures live in
+[tests/fixtures/judgment_scoring_contract.py](../../tests/fixtures/judgment_scoring_contract.py).
+Suite: [tests/contract/test_judgment_scoring_adapter.py](../../tests/contract/test_judgment_scoring_adapter.py).
+
 ## Shared CandidateScoringPort fixtures
 
 Offline scoring contract fixtures live in

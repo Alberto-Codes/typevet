@@ -78,6 +78,13 @@ and decision helpers, import from `typevet.domain` instead of the root.
 | `bind_control_candidates`, `judgment_original_labels` | Control-token binding for native questions |
 | `normalize_noul`, `normalize_choice`, `normalize_score`, `normalize_question` | Native question → ``Decision`` |
 
+## `typevet.judge`
+
+| Name | Role |
+|---|---|
+| `ScoringJudgmentAdapter` | Sync ``JudgmentPort`` over ``CandidateScoringPort`` |
+| `judge_with_scoring` | One-shot helper wrapping the adapter |
+
 ## `typevet.ports`
 
 | Name | Role |
