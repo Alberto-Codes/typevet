@@ -20,6 +20,9 @@ See Also:
     - [typevet.evaluation.instruction_variant_consumer_live][]: receipt orchestration
     - [typevet.adapters.outbound.judgment_scoring][]: scoring-backed judgment
 
+``run_live_variant_matrix`` opens a scoring-backed judgment port when the live
+gate and native Gemma template class allow; otherwise it returns ``None``.
+
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
 """
 
@@ -71,13 +74,22 @@ _SUPPORTED_NATIVE = frozenset(
 )
 
 
-def _resolve_model() -> str:
+def resolve_variant_live_model() -> str:
+    """Return the model id for one live instruction-variant matrix.
+
+    Returns:
+        Model id from env or llama settings.
+    """
     for key in _MODEL_ENV:
         val = os.environ.get(key)
         if val:
-            return val
+            return val.strip()
     settings = load_llama_settings()
     return settings.multimodal_model
+
+
+def _resolve_model() -> str:
+    return resolve_variant_live_model()
 
 
 def _classify_native_template(

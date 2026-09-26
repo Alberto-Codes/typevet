@@ -17,10 +17,16 @@ Examples:
 See Also:
     - [typevet.evaluation.instruction_variant_consumer_matrix][]: matrix legs
     - [typevet.evaluation.instruction_variant_consumer_receipt][]: receipt writer
+
+``finalize_variant_proof`` compares saved outcomes, assembles the receipt, and
+calls ``persist_variant_receipt`` when ``VariantProofRunContext.out_dir`` is set.
+
+[i177]: https://github.com/Alberto-Codes/typevet/issues/177
 """
 
 from __future__ import annotations
 
+import subprocess
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -33,9 +39,12 @@ from typevet.evaluation.instruction_variant_consumer_protocol import (
     plan_instruction_variant_calls,
 )
 from typevet.evaluation.instruction_variant_consumer_receipt import (
-    VariantReceiptAssembly,
+    VariantFinalizeInputs,
+    VariantProofRunContext,
     acceptance_failures,
     assemble_variant_receipt,
+    persist_variant_receipt,
+    variant_receipt_assembly_from_run,
 )
 from typevet.evaluation.instruction_variant_consumer_run import (
     VariantMatrixRun,
@@ -63,11 +72,12 @@ class InstructionVariantProofResult:
         exit_code (int): Process exit code.
         receipt (dict[str, Any]): JSON-serializable proof artifact.
         replay_report (dict[str, Any]): Offline metrics compare block.
+        receipt_path (Path | None): Exclusive receipt path when written.
 
     Examples:
         ```python
         result = InstructionVariantProofResult(
-            exit_code=0, receipt={}, replay_report={}
+            exit_code=0, receipt={}, replay_report={}, receipt_path=None
         )
         assert result.exit_code == 0
         ```
@@ -76,6 +86,21 @@ class InstructionVariantProofResult:
     exit_code: int
     receipt: dict[str, Any]
     replay_report: dict[str, Any]
+    receipt_path: Path | None = None
+
+
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+
+
+def _git_head() -> str:
+    proc = subprocess.run(
+        ["/usr/bin/git", "rev-parse", "HEAD"],
+        check=False,
+        capture_output=True,
+        text=True,
+        cwd=_REPO_ROOT,
+    )
+    return proc.stdout.strip() if proc.returncode == 0 else "unknown"
 
 
 def _replay_report(
@@ -120,10 +145,16 @@ def finalize_variant_proof(
     *,
     seed_instruction: str,
     candidate_instruction: str,
-    wheel_sha256: str | None,
-    typevet_install_path: str | None,
+    context: VariantProofRunContext,
 ) -> InstructionVariantProofResult:
     """Assemble replay metrics and receipt from a completed matrix run.
+
+    Args:
+        plan: Scheduled call totals.
+        run: Completed matrix payload.
+        seed_instruction: Baseline instruction text.
+        candidate_instruction: Candidate instruction text.
+        context: Model, wheel, and optional exclusive receipt directory.
 
     Returns:
         Proof result with acceptance failures when checks fail.
@@ -141,32 +172,29 @@ def finalize_variant_proof(
         ledger=run.ledger,
         replay_check=replay_check,
     )
+    inputs = VariantFinalizeInputs(
+        seed_instruction=seed_instruction,
+        candidate_instruction=candidate_instruction,
+        context=context,
+        replay_report=replay_report,
+        replay_check=replay_check,
+        failures=failures,
+    )
     receipt = assemble_variant_receipt(
-        VariantReceiptAssembly(
-            fixture_root=run.fixture_root,
-            plan=plan,
-            ledger=run.ledger,
-            seed_instruction=seed_instruction,
-            candidate_instruction=candidate_instruction,
-            seed_rows=run.seed_rows,
-            candidate_rows=run.candidate_rows,
-            seed_outcomes=run.seed_outcomes,
-            candidate_outcomes=run.candidate_outcomes,
-            gold=gold,
-            invalid=run.invalid,
-            negative=run.negative,
-            replay_report=replay_report,
-            replay_check=replay_check,
-            acceptance_failures=failures,
-            wheel_sha256=wheel_sha256,
-            typevet_install_path=typevet_install_path,
-        )
+        variant_receipt_assembly_from_run(plan, run, inputs)
+    )
+    receipt_path = persist_variant_receipt(
+        receipt,
+        fixture_root=run.fixture_root,
+        context=context,
+        git_head=_git_head(),
     )
     exit_code = 0 if not failures else _EXIT_ACCEPTANCE_FAIL
     return InstructionVariantProofResult(
         exit_code=exit_code,
         receipt=receipt,
         replay_report=replay_report,
+        receipt_path=receipt_path,
     )
 
 
@@ -175,22 +203,30 @@ def run_offline_instruction_variant_proof(
     fixture_root: Path,
     seed_instruction: str = DEFAULT_SEED_INSTRUCTION,
     candidate_instruction: str = DEFAULT_CANDIDATE_INSTRUCTION,
-    model_id: str = "offline-instruction-variant-fake",
     read_image: Callable[[str], bytes] | None = None,
-    wheel_sha256: str | None = None,
-    typevet_install_path: str | None = None,
+    context: VariantProofRunContext | None = None,
 ) -> InstructionVariantProofResult:
     """Run the frozen instruction-variant matrix offline with scripted scoring.
+
+    Args:
+        fixture_root: Committed ``vision_smoke`` directory.
+        seed_instruction: Baseline instruction text.
+        candidate_instruction: Candidate instruction text.
+        read_image: Optional image loader override for tests.
+        context: Model, wheel digest, and optional exclusive receipt directory.
 
     Returns:
         Proof result with replay metrics and retained failures.
     """
+    run_context = context or VariantProofRunContext(
+        model_id="offline-instruction-variant-fake",
+    )
     plan = plan_instruction_variant_calls()
     run = run_variant_matrix(
         fixture_root=fixture_root,
         seed_instruction=seed_instruction,
         candidate_instruction=candidate_instruction,
-        model_id=model_id,
+        model_id=run_context.model_id,
         read_image=read_image,
     )
     return finalize_variant_proof(
@@ -198,6 +234,5 @@ def run_offline_instruction_variant_proof(
         run,
         seed_instruction=seed_instruction,
         candidate_instruction=candidate_instruction,
-        wheel_sha256=wheel_sha256,
-        typevet_install_path=typevet_install_path,
+        context=run_context,
     )

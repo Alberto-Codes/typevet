@@ -1,0 +1,193 @@
+{
+  "instruction_variant_protocol_revision": 1,
+  "model": "offline-instruction-variant-fake",
+  "fixture_root": "/var/home/Alberto-Codes/Projects/typevet/tests/fixtures/psai/vision_smoke",
+  "instruction_variants": {
+    "seed": "Is the website in this screenshot Fox News?",
+    "candidate": "Does the attached screenshot show the Fox News website chrome (logo and header)?"
+  },
+  "judgment_call_count": 4,
+  "scoring_request_count": 4,
+  "scoring_requests_observed": 4,
+  "failed_attempts": 1,
+  "matrix_rows": [
+    {
+      "arm": "seed",
+      "instruction": "Is the website in this screenshot Fox News?",
+      "unique_data_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "condition": "present",
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 0.65
+        }
+      },
+      "probabilities": {
+        "false": 0.35,
+        "true": 0.65
+      },
+      "latency_s": 0.0
+    },
+    {
+      "arm": "seed",
+      "instruction": "Is the website in this screenshot Fox News?",
+      "unique_data_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "condition": "present",
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 0.44999999999999996
+        }
+      },
+      "probabilities": {
+        "false": 0.55,
+        "true": 0.44999999999999996
+      },
+      "latency_s": 0.0
+    },
+    {
+      "arm": "candidate",
+      "instruction": "Does the attached screenshot show the Fox News website chrome (logo and header)?",
+      "unique_data_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "condition": "present",
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 0.8
+        }
+      },
+      "probabilities": {
+        "false": 0.19999999999999996,
+        "true": 0.8
+      },
+      "latency_s": 0.0
+    },
+    {
+      "arm": "candidate",
+      "instruction": "Does the attached screenshot show the Fox News website chrome (logo and header)?",
+      "unique_data_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "condition": "present",
+      "answers": {
+        "shows_fox_news_chrome": {
+          "kind": "Noul",
+          "noul": 0.55
+        }
+      },
+      "probabilities": {
+        "false": 0.44999999999999996,
+        "true": 0.55
+      },
+      "latency_s": 0.0
+    }
+  ],
+  "invalid_model_probe": {
+    "ok": true,
+    "exception": "JudgmentValidationError",
+    "message": "model must be non-empty"
+  },
+  "unsupported_template_probe": {
+    "ok": true,
+    "exception": "JudgmentValidationError",
+    "message": "media scoring needs a native Gemma 3 or Gemma 4 served template (served template=unknown)"
+  },
+  "gold_labels": {
+    "cmcc8u6yc00v91p1yw2eruz95": "true",
+    "cmcc8u6yd00wv1p1yy8guorre": "false"
+  },
+  "saved_outcomes": {
+    "seed": {
+      "cmcc8u6yc00v91p1yw2eruz95": {
+        "probabilities": {
+          "false": 0.35,
+          "true": 0.65
+        }
+      },
+      "cmcc8u6yd00wv1p1yy8guorre": {
+        "probabilities": {
+          "false": 0.55,
+          "true": 0.44999999999999996
+        }
+      }
+    },
+    "candidate": {
+      "cmcc8u6yc00v91p1yw2eruz95": {
+        "probabilities": {
+          "false": 0.19999999999999996,
+          "true": 0.8
+        }
+      },
+      "cmcc8u6yd00wv1p1yy8guorre": {
+        "probabilities": {
+          "false": 0.44999999999999996,
+          "true": 0.55
+        }
+      }
+    }
+  },
+  "replay_report": {
+    "labels": [
+      "false",
+      "true"
+    ],
+    "prob_sum_tolerance": 0.001,
+    "seed": {
+      "matched_cases": 2,
+      "transport_ok": 2,
+      "valid_distribution_cases": 2,
+      "invalid_distribution_cases": 0,
+      "accuracy": 1.0,
+      "mean_brier": 0.32499999999999996,
+      "mean_log_loss": 0.5143099584240374,
+      "coverage_valid_over_matched": 1.0
+    },
+    "candidate": {
+      "matched_cases": 2,
+      "transport_ok": 2,
+      "valid_distribution_cases": 2,
+      "invalid_distribution_cases": 0,
+      "accuracy": 0.5,
+      "mean_brier": 0.3425,
+      "mean_log_loss": 0.5108256237659907,
+      "coverage_valid_over_matched": 1.0
+    },
+    "delta_candidate_minus_seed": {
+      "mean_brier": 0.01750000000000007,
+      "mean_log_loss": -0.0034843346580466505,
+      "accuracy": -0.5
+    },
+    "candidate_improved": false
+  },
+  "replay_idempotent": true,
+  "comparison_verdict": "candidate_worse_or_mixed",
+  "wheel_sha256": "de76a97c7e2da8f2de30e80bbb805d27cc52bd7f94b0f2b480256ac49e5377de",
+  "typevet_install_path": "/var/home/Alberto-Codes/.cache/uv/archive-v0/ZJju5867c2PAwjN3/lib/python3.13/site-packages/typevet/__init__.py",
+  "harness_entrypoint": "scripts/run_consumer_instruction_variant_proof.py",
+  "acceptance_failures": [],
+  "evidence_kind": "instruction_variant_offline",
+  "require_live": false,
+  "git_head": "unknown",
+  "typevet_version": "0.1.0",
+  "manifest_sha256": "312d954ea3f59834caaafbd13b2217effea7e92040d7dfe42e72883f81f8f649",
+  "frozen_case_image_digests": [
+    {
+      "unique_data_id": "cmcc8u6yc00v91p1yw2eruz95",
+      "file_name": "cmcc8u6yc00v91p1yw2eruz95.png",
+      "sha256": "8adc6a49d46b50ada50ed23a40ea88d5560634cbe2c164b48b88085bb90b3101"
+    },
+    {
+      "unique_data_id": "cmcc8u6yc00va1p1ydsdu52zy",
+      "file_name": "cmcc8u6yc00va1p1ydsdu52zy.png",
+      "sha256": "4e47c7bf25d49c171106a0c57047432abb25465aa6412c85646282bd6c984d9f"
+    },
+    {
+      "unique_data_id": "cmcc8u6yd00wv1p1yy8guorre",
+      "file_name": "cmcc8u6yd00wv1p1yy8guorre.png",
+      "sha256": "426fd1f1827ccd7c94b694a6b3fa83a98225d1708a30a8458288b51a1486b703"
+    },
+    {
+      "unique_data_id": "cmcc8u6ym018l1p1yxhf18gc2",
+      "file_name": "cmcc8u6ym018l1p1yxhf18gc2.png",
+      "sha256": "82583cede3f62a847b426c1c0cd748ea3845a81e4c972a8fd0f2b2ee0051d68b"
+    }
+  ]
+}

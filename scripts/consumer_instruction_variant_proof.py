@@ -32,6 +32,7 @@ from typevet.testing.wheel_isolated import (
 )
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
+_CONSUMER_RECEIPT_DIR = _REPO_ROOT / "tests" / "fixtures" / "consumer"
 
 TYPEVET_WHEEL_SHA256_ENV = "TYPEVET_WHEEL_SHA256"
 _EXIT_INVALID = 2
@@ -69,8 +70,10 @@ def _isolated_offline_source(
     *,
     fixture_root: Path,
     wheel_sha256: str,
+    out_dir: Path,
 ) -> str:
     fixture = str(fixture_root.resolve())
+    receipt_dir = str(out_dir.resolve())
     return f"""
 import importlib.metadata
 from pathlib import Path
@@ -86,6 +89,8 @@ print("wheel_sha256_measured", {wheel_sha256!r})
 argv = [
     "--fixture-root",
     {fixture!r},
+    "--out-dir",
+    {receipt_dir!r},
     "--wheel-sha256",
     {wheel_sha256!r},
     "--typevet-install-path",
@@ -95,27 +100,37 @@ raise SystemExit(proof_main(argv))
 """
 
 
-def _isolated_live_source(*, fixture_root: Path, wheel_sha256: str) -> str:
+def _isolated_live_source(
+    *,
+    fixture_root: Path,
+    wheel_sha256: str,
+    out_dir: Path,
+) -> str:
     fixture = str(fixture_root.resolve())
+    receipt_dir = str(out_dir.resolve())
     return f"""
 import importlib.metadata
 from pathlib import Path
 
 import typevet
 from typevet.evaluation.instruction_variant_consumer_live import (
-    run_live_instruction_variant_proof,
+    live_instruction_variant_proof_main,
 )
 
 install_path = Path(typevet.__file__).resolve()
 print("typevet_install_path", install_path)
 print("wheel_sha256_measured", {wheel_sha256!r})
-result = run_live_instruction_variant_proof(
-    fixture_root=Path({fixture!r}),
-    wheel_sha256={wheel_sha256!r},
-    typevet_install_path=str(install_path),
-)
-print("live_exit_code", result.exit_code)
-raise SystemExit(result.exit_code)
+argv = [
+    "--fixture-root",
+    {fixture!r},
+    "--out-dir",
+    {receipt_dir!r},
+    "--wheel-sha256",
+    {wheel_sha256!r},
+    "--typevet-install-path",
+    str(install_path),
+]
+raise SystemExit(live_instruction_variant_proof_main(argv))
 """
 
 
@@ -123,6 +138,7 @@ def run_offline_wheel_proof(
     *,
     fixture_root: Path,
     work_dir: Path | None = None,
+    out_dir: Path | None = None,
 ) -> tuple[int, Path, str]:
     """Build wheel and run offline instruction-variant proof in isolation.
 
@@ -145,11 +161,13 @@ def run_offline_wheel_proof(
     except ValueError as exc:
         print(f"FAIL_CLOSED: {exc}", file=sys.stderr)
         return (_EXIT_INVALID, wheel, measured)
+    receipt_dir = out_dir or _CONSUMER_RECEIPT_DIR
     completed = run_isolated_wheel_python(
         wheel=wheel,
         source=_isolated_offline_source(
             fixture_root=fixture_root,
             wheel_sha256=measured,
+            out_dir=receipt_dir,
         ),
         cwd=isolated_cwd,
     )
@@ -166,6 +184,7 @@ def run_live_wheel_proof(
     wheel: Path,
     wheel_sha256: str,
     work_dir: Path | None = None,
+    out_dir: Path | None = None,
 ) -> int:
     """Run live instruction-variant proof inside an isolated wheel environment.
 
@@ -175,11 +194,13 @@ def run_live_wheel_proof(
     base = work_dir or Path(tempfile.mkdtemp(prefix="typevet-variant-live-"))
     isolated_cwd = base / "isolated_live_cwd"
     isolated_cwd.mkdir(parents=True, exist_ok=True)
+    receipt_dir = out_dir or _CONSUMER_RECEIPT_DIR
     completed = run_isolated_wheel_python(
         wheel=wheel,
         source=_isolated_live_source(
             fixture_root=fixture_root,
             wheel_sha256=wheel_sha256,
+            out_dir=receipt_dir,
         ),
         cwd=isolated_cwd,
     )
