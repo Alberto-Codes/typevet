@@ -48,6 +48,14 @@ TYPEVET_LLAMA__TIMEOUT=600 \
   uv run python -m typevet.eval_runner_cli --dataset boolq --limit 2
 ```
 
+Proof runs that must not silently skip (nonzero on missing config, model,
+workload, or incomplete schema-valid completion; wrong gold labels stay in
+metrics only):
+
+```bash
+uv run python -m typevet.eval_runner_cli --require-live --dataset boolq --limit 2
+```
+
 Run both loaders in one invocation:
 
 ```bash
