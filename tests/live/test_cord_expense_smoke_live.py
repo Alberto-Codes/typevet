@@ -4,7 +4,8 @@ Skips when the router or the multimodal model id is unavailable. **Fails** when
 ``assert_cord_expense_live_smoke_gate`` rejects capability or the served
 family, or when token gaps show a silently dropped receipt image (#185).
 Receipts carry experiment identity (#186) from a pre-scoring input snapshot
-and record one ``image_only`` omission control per run.
+and record one ``image_only`` omission control per run via
+``cord_expense_smoke_request_totals``.
 
 Three modalities per receipt. ``combined`` and ``image_only`` call
 ``judge_cord_expense_arm`` so a missing required receipt short-circuits before
@@ -54,6 +55,9 @@ from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.adapters.outbound.llama_cpp_multimodal import fetch_media_capability
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.media import ImageInput
+from typevet.evaluation.cord_expense_call_accounting import (
+    cord_expense_smoke_request_totals,
+)
 from typevet.evaluation.cord_expense_receipt_requirement import judge_cord_expense_arm
 from typevet.evaluation.cord_expense_smoke import (
     assert_cord_expense_attachment,
@@ -314,8 +318,8 @@ def test_cord_expense_triage_reads_the_receipt(
     """Run three modalities on 18 claims and record combined semantic metrics.
 
     Runs ``assert_cord_expense_live_smoke_gate`` before scoring (#185), records
-    an ``image_only`` omission control, and attaches experiment identity (#186)
-    from a pre-scoring snapshot.
+    an ``image_only`` omission control in judgment totals (#186), and attaches
+    experiment identity from a pre-scoring snapshot.
     """
     assert len(cases) == 18
     settings = replace(_LLAMA, timeout=max(_LLAMA.timeout, 900.0))
@@ -349,7 +353,11 @@ def test_cord_expense_triage_reads_the_receipt(
                 port, live_multimodal_model, cases
             )
 
-    requests = len(text_only) + len(image_only) + len(combined)
+    requests, arm_call_counts = cord_expense_smoke_request_totals(
+        text_only=text_only,
+        image_only=image_only,
+        combined=combined,
+    )
     gold = {case.claim_id: case.expected_verdict for case in cases}
     metrics = {
         "combined": semantic_metrics(
@@ -372,11 +380,7 @@ def test_cord_expense_triage_reads_the_receipt(
             **_experiment_identity_receipt(
                 run_start=run_start,
                 evaluated=evaluated_snapshot,
-                arm_call_counts={
-                    "text_only": len(text_only),
-                    "image_only": len(image_only),
-                    "combined": len(combined),
-                },
+                arm_call_counts=arm_call_counts,
             ),
             "model": live_multimodal_model,
             "media_marker": capability.marker,

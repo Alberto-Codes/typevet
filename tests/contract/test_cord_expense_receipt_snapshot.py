@@ -8,6 +8,10 @@ from pathlib import Path
 import pytest
 
 from tests.live import test_cord_expense_smoke_live as cord_live
+from typevet.evaluation.cord_expense_call_accounting import (
+    cord_expense_smoke_request_totals,
+    summarize_cord_expense_judgment_calls,
+)
 from typevet.evaluation.experiment_identity import (
     ReceiptAlreadyExistsError,
     RunIdentityStart,
@@ -24,6 +28,42 @@ pytestmark = pytest.mark.contract
 _RECEIPT_KEYS = tuple(
     f"receipt_{rid}" for rid in ("R01", "R02", "R03", "R04", "R05", "R06")
 )
+
+
+def test_cord_judgment_call_accounting_counts_omission_control() -> None:
+    """Receipt totals must include the image_only omission judgment (#186 rev5)."""
+    text_only = {f"C{i}": {"model_calls": 1} for i in range(18)}
+    image_only = {f"R0{i}": {"model_calls": 1} for i in range(1, 7)}
+    combined = {f"C{i}": {"model_calls": 1} for i in range(18)}
+    total, arms = summarize_cord_expense_judgment_calls(
+        text_only=text_only,
+        image_only=image_only,
+        combined=combined,
+        image_only_omission_calls=1,
+    )
+    assert total == 43
+    assert arms["image_only_omission"] == 1
+
+
+def test_cord_smoke_request_totals_matches_live_receipt_budget() -> None:
+    """Live harness must account through the smoke request-totals helper (#186)."""
+    text_only = {f"C{i}": {"model_calls": 1} for i in range(18)}
+    image_only = {f"R0{i}": {"model_calls": 1} for i in range(1, 7)}
+    combined = {f"C{i}": {"model_calls": 1} for i in range(18)}
+    total, arms = cord_expense_smoke_request_totals(
+        text_only=text_only,
+        image_only=image_only,
+        combined=combined,
+    )
+    assert total == 43
+    assert arms["image_only_omission"] == 1
+
+
+def test_cord_live_harness_accounts_via_smoke_request_totals() -> None:
+    """Default suite must fail when live wiring bypasses omission accounting."""
+    source = Path(cord_live.__file__).read_text(encoding="utf-8")
+    assert "cord_expense_smoke_request_totals(" in source
+    assert "summarize_cord_expense_judgment_calls(" not in source
 
 
 def test_cord_snapshot_includes_all_receipt_png_digests_before_scoring() -> None:
@@ -89,15 +129,20 @@ def test_cord_write_receipt_uses_exclusive_writer_and_snapshot_finalize(
     identity = finalize_experiment_identity(
         run_start=run_start,
         evaluated=evaluated,
-        arm_call_counts={"text_only": 18, "image_only": 6, "combined": 18},
+        arm_call_counts={
+            "text_only": 18,
+            "image_only": 6,
+            "combined": 18,
+            "image_only_omission": 1,
+        },
     )
     assert identity.code_path_digests["cord_expense_smoke_live"] == digest_at_snapshot
     receipt = {
         "experiment_identity": identity.to_receipt_mapping(),
-        "requests": 42,
+        "requests": 43,
     }
     cord_live._write_receipt(run_start, receipt)
     path = cord_live.cord_expense_receipt_path(tmp_path, run_start.run_id)
-    assert json.loads(path.read_text(encoding="utf-8"))["requests"] == 42
+    assert json.loads(path.read_text(encoding="utf-8"))["requests"] == 43
     with pytest.raises(ReceiptAlreadyExistsError):
         write_receipt_exclusive(path, {"requests": 99})

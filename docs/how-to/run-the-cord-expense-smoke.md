@@ -58,7 +58,8 @@ A pass says nothing about accuracy. Read the metrics in the receipt.
 | `combined` | The claim statement | The receipt | 18 |
 
 `image_only` runs once for each receipt, because its text is the same for all
-three claims. The total is 42 requests. The test asserts the total is 54 or
+three claims, plus one ``image_only`` omission control judgment. The total is
+43 requests. The test asserts the total is 54 or
 less.
 
 ## Read the receipt
