@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Grooming and delegation policy
+    url: https://github.com/Alberto-Codes/typevet/blob/main/docs/maintainers/groom-worker-issues.md
+    about: File work through a template. Then triage, size and split before dispatch.
+  - name: Agent rules (CLAUDE.md)
+    url: https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md
+    about: Issue bus, roles, harnesses, writing system and commit law.

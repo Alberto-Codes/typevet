@@ -1,0 +1,37 @@
+name: Bug
+description: Something broken or unexpected once product code exists.
+title: "fix: <symptom>"
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search open issues first. Keep secrets out of the body.
+        After triage, set priority, `worker-fit` or `judgment`, and size.
+  - type: textarea
+    id: happen
+    attributes:
+      label: What happens
+      description: Observed behaviour. Include command and output when you have them.
+    validations:
+      required: true
+  - type: textarea
+    id: expect
+    attributes:
+      label: What should happen
+    validations:
+      required: true
+  - type: textarea
+    id: prove
+    attributes:
+      label: Prove
+      description: Smallest command or steps that show the defect.
+    validations:
+      required: true
+  - type: input
+    id: parent
+    attributes:
+      label: Parent epic (optional)
+      placeholder: "#1"
+    validations:
+      required: false

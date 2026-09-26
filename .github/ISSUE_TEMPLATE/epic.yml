@@ -1,0 +1,48 @@
+name: Epic
+description: A capability tracker. Split into tasks before any builder dispatch.
+title: "epic: <capability>"
+labels: ["epic", "size-L", "needs-triage", "judgment"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        An epic is `size-L`. Do not dispatch it as one builder task.
+        After create, set `ready` when DoR holds. File children under
+        [groom worker issues](https://github.com/Alberto-Codes/typevet/blob/main/docs/maintainers/groom-worker-issues.md).
+
+        <!--
+        Maintainer: add P1–P4. Prefer depth ≤ 3 and ≤ 5–7 open children.
+        -->
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: Decision or goal this capability unlocks. Link sisters or upstream.
+      placeholder: Rebuild type-safe generation under hex without SGLang.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is in. What is out. One bullet per deliverable or child.
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: Combined acceptance for the epic. Children plus a parent status note.
+      placeholder: Children #N–#M accepted. Spike green. Remaining work named on this issue.
+    validations:
+      required: true
+  - type: textarea
+    id: children
+    attributes:
+      label: First children (optional)
+      description: Ordered list to file next. Leave empty if still fuzzy.
+      placeholder: |
+        1. research: …
+        2. judgment: …
+    validations:
+      required: false

@@ -1,0 +1,65 @@
+name: Bounded task
+description: One deliverable, exclusions and a reproducible proof (judgevet shape).
+title: "<verb> <object>"
+labels: ["task", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Prefer one behaviour or one research artifact.
+        After create, set `worker-fit` or `judgment`, `size-S` or `size-M`,
+        priority and `ready` when DoR holds.
+        Post an accepted contract comment before dispatch.
+        See [groom worker issues](https://github.com/Alberto-Codes/typevet/blob/main/docs/maintainers/groom-worker-issues.md).
+
+        <!--
+        Maintainer: worker-fit = mechanical for any harness (not "use pi").
+        judgment = supervisor or specifier first. size-L belongs on epic.
+        -->
+  - type: textarea
+    id: do
+    attributes:
+      label: Do
+      description: Problem and one concrete deliverable.
+      placeholder: Map TypeLLM portable core vs SGLang-only glue. Cite sources.
+    validations:
+      required: true
+  - type: textarea
+    id: do-not
+    attributes:
+      label: Do not
+      description: Exclusions and contracts that must stay intact.
+      placeholder: No typevet code. No backend pick. No hex sketch.
+    validations:
+      required: true
+  - type: textarea
+    id: prove
+    attributes:
+      label: Prove
+      description: >-
+        Reproducible command, or required research-return sections
+        (Sources, Tried, Findings, Limits, Open questions).
+      placeholder: >-
+        Research return comment with the four sections. Each claim cites a URL.
+    validations:
+      required: true
+  - type: input
+    id: parent
+    attributes:
+      label: Parent epic
+      description: Issue number of the parent tracker.
+      placeholder: "#1"
+    validations:
+      required: false
+  - type: dropdown
+    id: weight
+    attributes:
+      label: Weight hint
+      description: Model capacity for the next dispatch. Orthogonal to harness.
+      options:
+        - light
+        - medium
+        - heavy
+        - undecided
+    validations:
+      required: true

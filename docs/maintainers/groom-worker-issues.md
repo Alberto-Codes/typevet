@@ -31,8 +31,10 @@ gh issue list -R Alberto-Codes/typevet --state all --search "<keywords>"
 ```
 
 If nothing matches, open a parent issue (or draft the body for the user to
-confirm). Record observed need, desired outcome, non-goals, and a provisional
-done-when. Do not start research or implementation agents from chat alone.
+confirm). Prefer the GitHub issue forms under `.github/ISSUE_TEMPLATE/`
+(epic, bounded task, bug). Record observed need, desired outcome, non-goals,
+and a provisional done-when. Do not start research or implementation agents
+from chat alone.
 
 ## 2. Classify
 
