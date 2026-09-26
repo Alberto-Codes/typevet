@@ -107,6 +107,7 @@ instead of duplicating sync wrappers on each adapter.
 |---|---|
 | `FakeGenerationAdapter` | Offline adapter that validates a fixed or callable value |
 | `LlamaCppGenerationAdapter` | OpenAI-compat llama.cpp router adapter |
+| `LlamaCppCandidateScoringAdapter` | Pre-sampling ``/completion`` candidate scorer |
 
 Constructors take explicit arguments only (no settings module on the adapter).
 See [library-first architecture](../explanation/library-first-architecture.md).

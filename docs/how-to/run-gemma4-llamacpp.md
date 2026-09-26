@@ -85,6 +85,22 @@ is down or the id is missing from `/v1/models`, they **skip** as well.
 Legacy names `TYPEVET_GEMMA_MODEL` and `TYPEVET_LLAMA_URL` still work. See
 [Configuration](../reference/configuration.md).
 
+### Pre-sampling candidate scoring (opt-in)
+
+Enum / judgment **logprob** scoring uses stock llama.cpp ``POST /completion`` (not
+chat completions): ``prompt`` is the rendered answer prefix, ``n_predict=0``,
+``n_probs=262144`` (Gemma 4 vocab), ``post_sampling_probs=false``. Logprobs come
+from ``completion_probabilities[0].top_logprobs`` (``id`` + ``logprob``, pre-sampling).
+
+```bash
+TYPEVET_LLAMA__DEFAULT_MODEL='<your-gemma-4-model-id>' \
+  TYPEVET_LLAMA__TIMEOUT=600 \
+  uv run pytest tests/live/test_llama_cpp_scoring_live.py -m live -q
+```
+
+Library entry: ``LlamaCppCandidateScoringAdapter`` from
+``typevet.adapters.outbound``.
+
 ### Judgment template pin (opt-in)
 
 Gemma enum / judgment scoring gates on the **rendered** chat prompt from
