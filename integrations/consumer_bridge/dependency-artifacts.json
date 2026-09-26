@@ -1,0 +1,14 @@
+{
+  "typevet": {
+    "filename": "typevet-0.1.0-py3-none-any.whl",
+    "version": "0.1.0",
+    "source_sha": "5c1b7dc2672ce56384df0f692149d4f6bc8eab5e",
+    "sha256": "9ea130d153f784cdaf5973f7f20ddc4883c86d381829a4857811a2c386b2b750"
+  },
+  "judgevet": {
+    "filename": "judgevet-0.13.0-py3-none-any.whl",
+    "version": "0.13.0",
+    "source_sha": "0a7141119d47b5b2549d9277644a7a6359183495",
+    "sha256": "714eced969029900e598bce8184ffcfe5b39e88b241b5f8b9c126ca8bc0a9dc6"
+  }
+}

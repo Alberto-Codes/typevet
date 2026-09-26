@@ -1,0 +1,15 @@
+[project]
+name = "typevet-consumer-bridge"
+version = "0.1.0"
+description = "Private synchronous consumer bridge for Typevet"
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = ["Private :: Do Not Upload", "Typing :: Typed"]
+dependencies = ["typevet==0.1.0", "judgevet==0.13.0", "httpx>=0.28,<0.29"]
+
+[build-system]
+requires = ["uv_build>=0.11.20,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv_build]
+include = ["src/typevet_consumer_bridge/py.typed"]
