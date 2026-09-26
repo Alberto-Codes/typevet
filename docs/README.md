@@ -40,7 +40,9 @@ log” epic. Until then, accepted judgment comments on issues are the record.
 
 - [Eval partner data policy](reference/eval-partner-data-policy.md) (reference):
   public eval datasets vs collections NBA partner exclusion and CI markers.
-- [Errors](reference/errors.md) (reference): domain vs adapter generation errors and llama.cpp mapping.
+- [Testing pyramid](reference/testing.md) (reference): unit / contract / live markers and what each layer proves.
+- [Errors](reference/errors.md)
+ (reference): domain vs adapter generation errors and llama.cpp mapping.
 - [Configuration](reference/configuration.md) (reference): `TYPEVET_LLAMA__*`
   composition-root settings and future CLI hookup; links to log settings.
 - [Diagnostic events](reference/diagnostic-events.md) (reference): stderr

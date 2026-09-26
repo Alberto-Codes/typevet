@@ -1,0 +1,70 @@
+# Testing pyramid and markers
+
+Kind: reference.
+
+This page is the lookup for pytest markers, default commands, and what each
+layer can verify. Law lives in [CLAUDE.md](../../CLAUDE.md) and
+[AGENTS.md](../../AGENTS.md). Narrative and fixture labeling sit in
+[Verified evidence and inferred claims](../explanation/verification.md).
+
+## Three layers
+
+| Layer | Marker | Path | Default CI | Coverage counted |
+|---|---|---|---|---|
+| Unit | `unit` | `tests/unit/` | yes | yes |
+| Contract | `contract` | `tests/contract/` | yes | yes |
+| Live | `live` | `tests/live/` | no | no |
+
+Default pytest excludes `live` (`-m "not live"` in `pyproject.toml`). The
+default suite must keep **≥ 90** coverage (`tool.coverage.report.fail_under`).
+A live pass does not replace unit or contract proof.
+
+## What each layer proves
+
+**Unit.** Pure domain rules, inbound wiring with fakes, adapter edge paths with
+controlled inputs. No real network and no live model weights.
+
+**Contract.** The offline fake generation adapter and
+``LlamaCppGenerationAdapter`` (sync) or ``AsyncLlamaCppGenerationAdapter``
+(async) behave the same on **shared fixtures** under
+[tests/fixtures/generation_contract.py](../../tests/fixtures/generation_contract.py).
+HTTP is replayed with ``httpx.MockTransport``. Agreement verifies adapter
+compatibility for those labeled cases only.
+
+**Live.** One exercised call against the configured router and model. Opt in
+with ``pytest -m live``. See [Run Gemma 4 on llama.cpp](../how-to/run-gemma4-llamacpp.md).
+
+Valid JSON shape for a run is not the same as correct judgment. Do not infer
+calibration or task accuracy from pyramid passes alone.
+
+## Shared GenerationPort fixtures (judgevet shape)
+
+Contract fixtures are **synthetic**: the test author defines the request, fake
+value or failure, and mocked chat-completion body. Each fixture has a ``name``
+and ``label`` field for scope reporting on issues.
+
+Sync parity: [tests/contract/test_outbound.py](../../tests/contract/test_outbound.py).
+Async parity: [tests/contract/test_async_outbound.py](../../tests/contract/test_async_outbound.py).
+
+Add new port behaviour to the fixture list first, then extend fakes and the
+llama.cpp adapter until both sides agree. Do not weaken the default coverage
+floor or add a fourth pyramid layer to do it.
+
+## Commands
+
+```bash
+uv run pytest -m "unit or contract"
+uv run pytest -m contract
+uv run pytest -m live   # opt-in; not default CI
+uv run pytest --cov=typevet --cov-report=term-missing
+```
+
+Pre-commit runs unit and contract via the configured pytest hook. Import-linter
+contracts in `pyproject.toml` are unrelated to pytest ``contract`` markers.
+
+## Related pages
+
+- [Glossary — testing pyramid](glossary.md#terms)
+- [Worker runs](worker-runs.md) (launch evidence)
+- Parent tracking: [issue #28](https://github.com/Alberto-Codes/typevet/issues/28),
+  [issue #89](https://github.com/Alberto-Codes/typevet/issues/89)
