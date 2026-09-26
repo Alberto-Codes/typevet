@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
@@ -172,3 +173,179 @@ def test_rejects_choice_over_enum_cap() -> None:
                 "instructions": "Too many.",
             }
         )
+
+
+@pytest.mark.unit
+def test_rejects_non_mapping_record() -> None:
+    with pytest.raises(TypeError, match="mapping"):
+        question_record_to_property(cast(Any, ["not", "a", "mapping"]))
+
+
+@pytest.mark.unit
+def test_rejects_bad_name_syntax_and_instructions() -> None:
+    with pytest.raises(ValueError, match="name"):
+        question_record_to_property(
+            {"name": "", "syntax": "Noul", "instructions": "Q?"}
+        )
+    with pytest.raises(ValueError, match="syntax"):
+        question_record_to_property(
+            {"name": "q", "syntax": "Invalid", "instructions": "Q?"}
+        )
+    with pytest.raises(ValueError, match="instructions"):
+        question_record_to_property({"name": "q", "syntax": "Noul", "instructions": ""})
+
+
+@pytest.mark.unit
+def test_optional_metadata_validation_errors() -> None:
+    base = {"name": "q", "syntax": "Noul", "instructions": "Q?"}
+    with pytest.raises(ValueError, match="return_probabilities"):
+        question_record_to_property({**base, "return_probabilities": "yes"})
+    with pytest.raises(ValueError, match="depends_on"):
+        question_record_to_property({**base, "depends_on": "parent"})
+    with pytest.raises(ValueError, match="depends_on"):
+        question_record_to_property({**base, "depends_on": [""]})
+    with pytest.raises(ValueError, match="permutations"):
+        question_record_to_property({**base, "permutations": 0})
+
+
+@pytest.mark.unit
+def test_optional_metadata_accepts_valid_flags() -> None:
+    _, field = question_record_to_property(
+        {
+            "name": "q",
+            "syntax": "Noul",
+            "instructions": "Q?",
+            "return_probabilities": False,
+            "depends_on": ["parent"],
+            "permutations": "all",
+        }
+    )
+    assert field["return_probabilities"] is False
+    assert field["depends_on"] == ["parent"]
+    assert field["permutations"] == "all"
+
+
+@pytest.mark.unit
+def test_choice_requires_labels_and_non_empty_strings() -> None:
+    with pytest.raises(ValueError, match="labels list"):
+        question_record_to_property(
+            {"name": "c", "syntax": "Choice", "instructions": "Pick."}
+        )
+    with pytest.raises(ValueError, match="non-empty strings"):
+        question_record_to_property(
+            {
+                "name": "c",
+                "syntax": "Choice",
+                "labels": ["ok", ""],
+                "instructions": "Pick.",
+            }
+        )
+
+
+@pytest.mark.unit
+def test_score_label_variants_and_errors() -> None:
+    with pytest.raises(ValueError, match="at least two"):
+        question_record_to_property(
+            {
+                "name": "s",
+                "syntax": "Score",
+                "labels": [1],
+                "instructions": "Rate.",
+            }
+        )
+    _, int_field = question_record_to_property(
+        {
+            "name": "s",
+            "syntax": "Score",
+            "labels": [1, 2],
+            "instructions": "Rate.",
+        }
+    )
+    assert int_field["type"] == "integer"
+    assert int_field["enum"] == [1, 2]
+    _, float_field = question_record_to_property(
+        {
+            "name": "s2",
+            "syntax": "Score",
+            "labels": [1.0, 2.0],
+            "instructions": "Rate.",
+        }
+    )
+    assert float_field["enum"] == [1, 2]
+    _, str_field = question_record_to_property(
+        {
+            "name": "s3",
+            "syntax": "Score",
+            "labels": ["low", "high"],
+            "instructions": "Rate.",
+        }
+    )
+    assert str_field["type"] == "string"
+    with pytest.raises(ValueError, match="must be ints"):
+        question_record_to_property(
+            {
+                "name": "s4",
+                "syntax": "Score",
+                "labels": [1, "two"],
+                "instructions": "Rate.",
+            }
+        )
+
+
+@pytest.mark.unit
+def test_noul_label_shapes() -> None:
+    _, bare = question_record_to_property(
+        {"name": "n", "syntax": "Noul", "instructions": "Yes or no?"}
+    )
+    assert bare["type"] == "boolean"
+    _, null_labels = question_record_to_property(
+        {
+            "name": "n2",
+            "syntax": "Noul",
+            "instructions": "Yes or no?",
+            "labels": None,
+        }
+    )
+    assert null_labels["type"] == "boolean"
+    _, empty = question_record_to_property(
+        {
+            "name": "n3",
+            "syntax": "Noul",
+            "instructions": "Yes or no?",
+            "labels": [],
+        }
+    )
+    assert empty["type"] == "boolean"
+    with pytest.raises(TypeError, match="must be a list"):
+        question_record_to_property(
+            {
+                "name": "n4",
+                "syntax": "Noul",
+                "instructions": "Yes or no?",
+                "labels": "yes",
+            }
+        )
+    with pytest.raises(ValueError, match="exactly two"):
+        question_record_to_property(
+            {
+                "name": "n5",
+                "syntax": "Noul",
+                "instructions": "Yes or no?",
+                "labels": ["only-one"],
+            }
+        )
+
+
+@pytest.mark.unit
+def test_compile_question_records_round_trip() -> None:
+    records = [
+        {
+            "name": "answer",
+            "syntax": "Noul",
+            "instructions": "Answer yes or no.",
+            "return_probabilities": True,
+        }
+    ]
+    decisions = compile_question_records(records)
+    assert len(decisions) == 1
+    assert decisions[0].name == "answer"

@@ -1,0 +1,123 @@
+"""Unit tests for opt-in eval runner CLI (#98)."""
+
+from __future__ import annotations
+
+from contextlib import contextmanager
+from typing import Any, cast
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from typevet.adapters.inbound.settings import LlamaSettings
+from typevet.eval_runner_cli import _as_dataset, main
+from typevet.eval_runner_report import EvalRunReport
+
+
+@pytest.mark.unit
+def test_as_dataset_rejects_unknown() -> None:
+    with pytest.raises(ValueError, match="unsupported eval dataset"):
+        _as_dataset("not-a-dataset")
+
+
+@pytest.mark.unit
+def test_main_skips_when_live_gate_reports_reason(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    settings = LlamaSettings(default_model="gemma")
+    with (
+        patch("typevet.eval_runner_cli.load_llama_settings", return_value=settings),
+        patch(
+            "typevet.eval_runner_cli.live_skip_reason",
+            return_value="llama.cpp router not reachable",
+        ),
+    ):
+        code = main([])
+    assert code == 0
+    assert "skip: llama.cpp router not reachable" in capsys.readouterr().err
+
+
+@pytest.mark.unit
+def test_main_skips_when_default_model_missing_after_gate(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    settings = LlamaSettings(default_model=None)
+    with (
+        patch("typevet.eval_runner_cli.load_llama_settings", return_value=settings),
+        patch("typevet.eval_runner_cli.live_skip_reason", return_value=None),
+    ):
+        code = main([])
+    assert code == 0
+    err = capsys.readouterr().err
+    assert "skip:" in err
+    assert "DEFAULT_MODEL" in err
+
+
+@pytest.mark.unit
+def test_main_runs_datasets_and_prints_reports(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    settings = LlamaSettings(default_model="gemma", timeout=30.0)
+    report = EvalRunReport(
+        dataset="boolq",
+        metric_name="exact_match",
+        limit=1,
+        attempted=1,
+        schema_valid=1,
+        gold_match=1,
+    )
+    fake_port = MagicMock()
+
+    @contextmanager
+    def fake_adapter(_settings: LlamaSettings):
+        yield fake_port
+
+    with (
+        patch("typevet.eval_runner_cli.load_llama_settings", return_value=settings),
+        patch("typevet.eval_runner_cli.live_skip_reason", return_value=None),
+        patch("typevet.eval_runner_cli.llama_cpp_adapter", fake_adapter),
+        patch(
+            "typevet.eval_runner_cli.load_eval_tasks",
+            return_value=[cast(Any, object())],
+        ),
+        patch("typevet.eval_runner_cli.run_eval_tasks", return_value=report),
+    ):
+        code = main(["--dataset", "boolq", "--limit", "1", "--seed", "3"])
+    assert code == 0
+    out = capsys.readouterr().out
+    assert "dataset=boolq" in out
+    assert "gold_match=1" in out
+
+
+@pytest.mark.unit
+def test_main_default_dataset_is_boolq_when_omitted(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    settings = LlamaSettings(default_model="gemma", timeout=900.0)
+    seen: list[str] = []
+
+    def capture_load(dataset: str, **kwargs: object) -> list[object]:
+        seen.append(dataset)
+        return [cast(Any, object())]
+
+    report = EvalRunReport(
+        dataset="boolq",
+        metric_name="exact_match",
+        limit=4,
+        attempted=0,
+        schema_valid=0,
+        gold_match=0,
+    )
+
+    @contextmanager
+    def fake_adapter(_settings: LlamaSettings):
+        yield MagicMock()
+
+    with (
+        patch("typevet.eval_runner_cli.load_llama_settings", return_value=settings),
+        patch("typevet.eval_runner_cli.live_skip_reason", return_value=None),
+        patch("typevet.eval_runner_cli.llama_cpp_adapter", fake_adapter),
+        patch("typevet.eval_runner_cli.load_eval_tasks", side_effect=capture_load),
+        patch("typevet.eval_runner_cli.run_eval_tasks", return_value=report),
+    ):
+        main([])
+    assert seen == ["boolq"]
