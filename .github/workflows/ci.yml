@@ -1,0 +1,64 @@
+---
+name: quality gates
+
+"on":
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: true
+
+      - name: Install Python 3.12
+        run: uv python install 3.12
+
+      - name: Sync locked dependencies
+        run: uv sync --locked --all-groups
+
+      - name: pre-commit (commit stage)
+        run: >-
+          uv run pre-commit run --all-files --show-diff-on-failure
+          --hook-stage pre-commit
+
+      - name: pre-commit (push stage)
+        run: >-
+          uv run pre-commit run --all-files --show-diff-on-failure
+          --hook-stage pre-push
+
+      - name: Conventional Commits (push)
+        if: >-
+          github.event_name == 'push' &&
+          github.event.before != '0000000000000000000000000000000000000000'
+        run: >-
+          uv run python scripts/check_commit_msg.py --range
+          ${{ github.event.before }}..${{ github.sha }}
+
+      - name: Conventional Commits (pull request)
+        if: github.event_name == 'pull_request'
+        run: >-
+          uv run python scripts/check_commit_msg.py --range
+          ${{ github.event.pull_request.base.sha }}..${{
+          github.event.pull_request.head.sha }}
+
+      - name: Prune uv cache
+        if: always()
+        continue-on-error: true
+        run: uv cache prune --ci
