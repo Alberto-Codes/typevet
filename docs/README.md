@@ -25,8 +25,8 @@ answers a question, and a reference gives facts.
 
 ## How-to
 
-- [Run Gemma 4 on llama.cpp](how-to/run-gemma4-llamacpp.md): local router,
-  preset, and live pytest for the MVP path.
+- [Run Gemma 4 on llama.cpp](how-to/run-gemma4-llamacpp.md): stock
+  `llama-server`, nested `json_schema`, and opt-in live pytest.
 - [Call typevet from Python](how-to/call-typevet-from-python.md): Fake and
   llama.cpp adapters, `generate()` vs port injection; link to Gemma howto.
 

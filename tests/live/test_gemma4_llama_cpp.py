@@ -12,7 +12,7 @@ from typevet.domain.models import GenerationRequest
 
 _LLAMA = load_llama_settings()
 BASE = _LLAMA.base_url
-MODEL = _LLAMA.default_model or "gemma-4-31b-24gib-kv11-decoder"
+MODEL = _LLAMA.default_model
 
 SCHEMA = {
     "type": "object",
@@ -44,16 +44,20 @@ def _model_listed() -> bool:
 
 
 @pytest.fixture
-def gemma4_llama_router() -> None:
+def gemma4_llama_router() -> str:
     """Probe local llama.cpp only when a live test is selected to run."""
+    model = MODEL
+    if not model:
+        pytest.skip("TYPEVET_LLAMA__DEFAULT_MODEL (or TYPEVET_GEMMA_MODEL) not set")
     if not _router_up():
         pytest.skip("llama.cpp router not reachable")
     if not _model_listed():
-        pytest.skip(f"{MODEL} not in router catalog")
+        pytest.skip(f"{model} not in router catalog")
+    return model
 
 
 @pytest.mark.live
-def test_gemma4_schema_in_valid_out(gemma4_llama_router: None) -> None:
+def test_gemma4_schema_in_valid_out(gemma4_llama_router: str) -> None:
     live_settings = replace(_LLAMA, timeout=600.0)
     with llama_cpp_adapter(live_settings) as adapter:
         result = adapter.generate(
@@ -63,7 +67,7 @@ def test_gemma4_schema_in_valid_out(gemma4_llama_router: None) -> None:
                     "Return JSON only matching the schema."
                 ),
                 schema=SCHEMA,
-                model=MODEL,
+                model=gemma4_llama_router,
             )
         )
     assert result.value["sentiment"] in {"pos", "neg", "neu"}

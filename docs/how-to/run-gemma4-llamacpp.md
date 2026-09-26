@@ -2,32 +2,85 @@
 
 Kind: how-to.
 
-Use the bazzite-dotfiles llama.cpp router. The router serves GGUFs under
-`~/models` on `127.0.0.1:8090`. See
-`../bazzite-dotfiles/podman/llama-cpp/README.md` for install and tuning.
+typevet needs **stock upstream** llama.cpp and **public Gemma 4 text GGUF** weights.
+There are **no typevet forks or patches** of Gemma or llama.cpp for grammar-JSON.
+The adapter sends standard OpenAI `/v1/chat/completions` with nested
+`response_format.json_schema` only.
 
-## Prerequisites
+## Stock path (recommended)
 
-1. The user service is up:
+1. Build or install **unmodified** [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp)
+   `llama-server` (binary or official container).
+
+2. Use a **minimum server build** where nested `json_schema` is enforced (not
+   ignored). Research [#99](https://github.com/Alberto-Codes/typevet/issues/99)
+   treats **2025 H2+ releases** and builds from roughly **b4739+ / b4820+**
+   as the floor (fixes for nested schema landed around
+   [llama.cpp #11847](https://github.com/ggml-org/llama.cpp/issues/11847) /
+   [#11988](https://github.com/ggml-org/llama.cpp/issues/11988)). Pin a exact
+   tag here after your live smoke passes on your hardware.
+
+3. Download a **Gemma 4 text** GGUF from a public catalog (for example Hugging
+   Face community quant releases). Weights must include chat-template metadata,
+   or pass `--chat-template` / `--chat-template-file` explicitly.
+
+4. Start the server with **Jinja chat templates enabled** (`--jinja`; default
+   on in current upstream trees). Example single-model serve:
 
    ```bash
-   systemctl --user status llama-cpp-tuned.service
+   llama-server -m /path/to/gemma-4-text.gguf --jinja --host 127.0.0.1 --port 8090
+   ```
+
+   Multi-model routers are fine if the Gemma 4 id appears in `/v1/models`.
+
+5. Confirm the model id:
+
+   ```bash
    curl -s http://127.0.0.1:8090/v1/models | jq '.data[].id'
    ```
 
-2. Gemma 4 MVP weights are visible to the router as
-   `gemma-4-31b-24gib-kv11-decoder` (GGUF hardlinked into `~/models`, preset in
-   `~/models/presets.ini`). If the id is missing, restart the service after
-   adding the file and preset.
+6. Set that id for live tests and scripts (any alias your server exposes):
+
+   ```bash
+   export TYPEVET_LLAMA__DEFAULT_MODEL='<your-gemma-4-model-id>'
+   ```
+
+Wire shape must stay **nested** OpenAI form (typevet already does this):
+
+```json
+{
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "typevet_result",
+      "schema": { }
+    }
+  }
+}
+```
+
+Do **not** probe with the flat `{"type":"json_schema","schema":{…}}` shorthand
+from some README examples; on several builds it returns 200 but **does not**
+enforce grammar.
+
+### Enforcement sanity (optional)
+
+Same prompt once with `response_format` and once without. Constrained output
+should differ. Matching unconstrained prose usually means a too-old server or
+wrong wire shape, not a typevet bug.
 
 ## Call typevet
 
 ```bash
 cd /path/to/typevet
 uv sync
-TYPEVET_LLAMA__DEFAULT_MODEL=gemma-4-31b-24gib-kv11-decoder \
+TYPEVET_LLAMA__DEFAULT_MODEL='<your-gemma-4-model-id>' \
+  TYPEVET_LLAMA__TIMEOUT=600 \
   uv run pytest -m live -q
 ```
+
+If `TYPEVET_LLAMA__DEFAULT_MODEL` is unset, live tests **skip**. If the router
+is down or the id is missing from `/v1/models`, they **skip** as well.
 
 Legacy names `TYPEVET_GEMMA_MODEL` and `TYPEVET_LLAMA_URL` still work. See
 [Configuration](../reference/configuration.md).
@@ -44,19 +97,42 @@ schema = {
     "required": ["ok"],
     "additionalProperties": False,
 }
+model_id = "<your-gemma-4-model-id>"
 with LlamaCppGenerationAdapter() as port:
     result = port.generate(
         GenerationRequest(
             prompt="Return whether 2+2 equals 4.",
             schema=schema,
-            model="gemma-4-31b-24gib-kv11-decoder",
+            model=model_id,
         )
     )
 print(result.value)
 ```
 
+## Optional alternate: bazzite router preset
+
+On Fedora/Bazzite machines you may use the
+[bazzite-dotfiles llama.cpp router](https://github.com/Alberto-Codes/bazzite-dotfiles/tree/main/podman/llama-cpp)
+instead of hand-running `llama-server`. It serves GGUFs under `~/models` on
+`127.0.0.1:8090` with `--jinja` and operator presets. See
+`../bazzite-dotfiles/podman/llama-cpp/README.md` for install and tuning.
+
+The preset id `gemma-4-31b-24gib-kv11-decoder` is a **VRAM-fit quant alias**
+(same HTTP contract as any other Gemma 4 GGUF on the router). It is **not**
+required for typevet and is not a grammar patch.
+
+```bash
+systemctl --user status llama-cpp-tuned.service
+TYPEVET_LLAMA__DEFAULT_MODEL=gemma-4-31b-24gib-kv11-decoder \
+  uv run pytest -m live -q
+```
+
+First load of a large GGUF can take minutes; raise `TYPEVET_LLAMA__TIMEOUT` when
+needed.
+
 ## Notes
 
-- The router keeps `--models-max 1`. Loading Gemma 4 unloads the resident model.
-- First load of a 13 GiB GGUF can take minutes. Raise the adapter timeout.
-- Direction for presets and GPU image tags lives in bazzite-dotfiles, not here.
+- Keep schemas within llama.cpp grammar support (object root, properties,
+  `enum`, integer bounds, `additionalProperties: false` match the live test).
+- GPU images must match your hardware; CPU `:server` images may ignore `-ngl`.
+- Preset and image choices live in operator repos, not in typevet.
