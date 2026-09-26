@@ -21,9 +21,12 @@ from typevet.runtime import open_gemma_native_vision_judgment
 
 settings = load_llama_settings()
 with open_gemma_native_vision_judgment(settings=settings) as session:
-    # session.port implements JudgmentPort
-    ...
+    response = session.port.judge(state, questions, session.model)
 ```
+
+Pass ``session.model`` to ``judge``. The factory pins that id on
+``session.port``; any other model argument raises ``JudgmentValidationError``
+before tokenization or scoring.
 
 Defaults:
 
@@ -49,6 +52,9 @@ print(meta["served"], meta["vision"])
 
 - The context manager owns the scoring adapter lifecycle (`close()` on exit).
 - Pass an existing `httpx.Client` only in tests via `http_client=`.
+- Consumer live matrices may pass ``tokenize_content`` and
+  ``scoring_port_wrapper`` hooks for dispatch ledgers without duplicating probe
+  wiring.
 - For long-running services, prefer one session per request or explicit client
   ownership documented in your composition root.
 

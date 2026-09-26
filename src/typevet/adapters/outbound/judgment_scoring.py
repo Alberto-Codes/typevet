@@ -235,6 +235,8 @@ class ScoringJudgmentAdapter:
         _temperature (float): Softmax temperature forwarded to execute.
         _served_template (ServedTemplateClass | None): Served family for
             every prefix; ``None`` when unknown.
+        _pinned_model (str | None): When set, ``judge`` rejects other model ids
+            before tokenization or scoring IO.
     """
 
     def __init__(
@@ -244,12 +246,14 @@ class ScoringJudgmentAdapter:
         tokenize_content: Callable[[str], Sequence[int]],
         temperature: float = 1.0,
         served_template: ServedTemplateClass | None = None,
+        pinned_model: str | None = None,
     ) -> None:
-        """Wire scoring port, tokenizer hook, temperature and served family."""
+        """Wire scoring port, tokenizer hook, temperature, served family and pin."""
         self._port = scoring_port
         self._tokenize = tokenize_content
         self._temperature = temperature
         self._served_template = served_template
+        self._pinned_model = pinned_model
 
     def judge(
         self,
@@ -278,12 +282,16 @@ class ScoringJudgmentAdapter:
             ``JudgmentResponse`` with one typed answer per question id.
 
         Raises:
-            JudgmentValidationError: Invalid model, wire shape, question payload,
-                unsupported served template, or media without a native Gemma 3
-                or Gemma 4 served template, before any scoring IO.
+            JudgmentValidationError: Invalid or mismatched model, wire shape,
+                question payload, unsupported served template, or media without
+                a native Gemma 3 or Gemma 4 served template, before any scoring
+                IO.
         """
         if not model.strip():
             raise JudgmentValidationError("model must be non-empty")
+        if self._pinned_model is not None and model != self._pinned_model:
+            msg = f"model {model!r} does not match pinned model {self._pinned_model!r}"
+            raise JudgmentValidationError(msg)
         images = media or ()
         context = _media_context(state, images)
         prepared: list[

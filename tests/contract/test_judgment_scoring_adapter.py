@@ -55,7 +55,10 @@ def test_adapter_prompt_maps_controls_while_answers_keep_original_labels() -> No
 @pytest.mark.contract
 @pytest.mark.parametrize("fixture", get_fixtures(), ids=lambda f: f["name"])
 def test_scoring_judgment_adapter_honors_fixture(fixture: dict) -> None:
-    adapter, fake = adapter_for(logprobs_by_call=fixture["logprobs"])
+    adapter, fake = adapter_for(
+        logprobs_by_call=fixture["logprobs"],
+        pinned_model=fixture.get("pinned_model"),
+    )
     expect = fixture["expect"]
     if expect["kind"] == "success":
         response = adapter.judge(

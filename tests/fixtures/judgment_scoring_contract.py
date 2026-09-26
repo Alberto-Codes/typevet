@@ -44,10 +44,14 @@ def adapter_for(
     logprobs_by_call: list[dict[str, float]] | None = None,
     tokenize: Callable[[str], tuple[int, ...]] = _tokenize,
     served_template: ServedTemplateClass | None = None,
+    pinned_model: str | None = None,
 ) -> tuple[ScoringJudgmentAdapter, SequentialScoringFake]:
     fake = SequentialScoringFake(logprobs_by_call or [])
     adapter = ScoringJudgmentAdapter(
-        fake, tokenize_content=tokenize, served_template=served_template
+        fake,
+        tokenize_content=tokenize,
+        served_template=served_template,
+        pinned_model=pinned_model,
     )
     return adapter, fake
 
@@ -79,6 +83,21 @@ def get_fixtures() -> list[dict[str, Any]]:
                 "nouls": {"billing": 0.6},
                 "choices": {"route": "billing"},
                 "score_not_modal": {"quality": True},
+            },
+        },
+        {
+            "name": "pinned_model_mismatch_zero_scorer_calls",
+            "state": "x",
+            "model": "other-model",
+            "questions": {
+                "billing": Noul(instructions="Billing?"),
+            },
+            "logprobs": [],
+            "pinned_model": "pinned-only",
+            "expect": {
+                "kind": "error",
+                "exc_type": "JudgmentValidationError",
+                "calls": 0,
             },
         },
         {
