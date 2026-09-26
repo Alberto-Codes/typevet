@@ -8,8 +8,8 @@ typevet, whatever the model or harness. **Groom the issue first**
 decides boundaries, verifies behaviour and commits. The worker implements a
 scoped change (or returns a research artifact) and returns evidence. Apply the
 [bounded execution limits](../../AGENTS.md#bounded-execution) before dispatch.
-Use one validation path. Do not add another harness to repeat required
-repository checks.
+Use the [shared roles and gate evidence rules](../reference/worker-runs.md#shared-roles).
+Do not add another harness to repeat required repository checks.
 
 ## Required chain for behaviour changes
 
@@ -21,15 +21,16 @@ edits in the main supervisor session.
 | 1 | Supervisor (groom) | Issue classified, sized, `ready` when dispatchable |
 | 2 | Specifier (when the contract is not yet accepted) | Accepted specification comment on the issue |
 | 3 | Builder | Diff in allowed paths; red/green evidence; no commit |
-| 4 | Acceptance-reviewer | Fresh session; verdict accept, repair or reject |
+| 4 | Acceptance-reviewer | Fresh session; verdict accept, repair, reject or incomplete |
 | 5 | Supervisor | Commit after review accepts; `Closes #N` when the slice finishes |
 
-Research and docs-only slices follow the same issue and contract rules. They
-skip the builder when the deliverable is not code under `src/`. The contract
-names whether step 4 runs.
+Research and docs-only slices follow the same issue and contract rules.
+The contract may omit the builder for research and documentation.
+It names whether independent review runs. Named supervisor implementation exceptions still require that review.
 
 Repairs after a **repair** verdict reuse the builder (or a narrow follow-up
-brief), then a fresh acceptance-reviewer before commit.
+brief), then independent review of the integrated repair before commit.
+The existing independent reviewer may resume under the shared completion rules.
 
 ## Worker harnesses and model weight
 
@@ -37,7 +38,7 @@ The supervisor harness is independent of the worker. Cursor, Claude Code,
 Codex, Copilot and pi may each supervise. Preserve any user-selected
 supervisor model.
 
-typevet uses three verified worker harnesses. The
+typevet records receipt-backed harness use. The
 [worker run contract](../reference/worker-runs.md) records launch evidence.
 
 - **pi** runs local models through the `delegate-to-pi` skill.
@@ -50,7 +51,8 @@ typevet uses three verified worker harnesses. The
   (including Fable). `--auto-tier` may be set; the model id stays `auto`.
 
 The Claude definitions are `builder.md`, `acceptance-reviewer.md` and
-`specifier.md`. Other harnesses map to the same roles without those files.
+`specifier.md`. They load the shared roles. Other harnesses load those roles directly.
+Native Codex agents record context loading, tool permissions and session identity in their receipts.
 
 Pick **weight** separately from harness. Brands below are examples, not locks.
 
@@ -65,8 +67,8 @@ Pick **weight** separately from harness. Brands below are examples, not locks.
 `worker-fit` on an issue means the contract is mechanical enough for any
 verified worker harness. It does not select pi or a light model.
 
-The supervisor never spawns a sub agent to verify its own work.
-The supervisor never asks a worker to double-check itself.
+The supervisor never substitutes self-review for independent acceptance.
+Named supervisor exceptions require a separate reviewer. The builder cannot review its own implementation.
 An acceptance review runs in a fresh agent, separate from the builder.
 
 **Never run a Claude Code sub agent on Fable.** Fable (Claude Fable) is a
@@ -131,15 +133,22 @@ ignored `scratchpad/` directory, or outside the checkout.
 For pi, inspect the installed harness help before choosing options. For a
 Claude sub agent, pass `model` on every Agent call and name the agent
 definition. For Cursor, paste the full contract into the brief, because `gh`
-is denied to the worker. Planning and review stay read-only. Implementation
-needs local edit and test permissions.
+is denied to the worker. Planning and review preserve submitted files. Assign scratch permissions explicitly for independent probes.
+Implementation needs local edit and test permissions.
+Record loaded instructions and their source. Supply baseline, diff and contract text when `git` or `gh` is denied.
+Preserve harness deny rules. Missing access does not justify changing user settings.
 
 ```text
 Role: bounded worker. The supervisor owns acceptance and the commit.
 Supervisor / worker / harness / weight: <actual assignments>
 Issue and slice: <issue number, one behaviour or research artifact>
 Base revision and existing modifications: <exact values>
-Accepted specification: <exact issue comment URL and its text>
+Parent consumer outcome: <observable outcome and relevant counterexample>
+Effective contract: <exact URL, revision, text, amendments and superseded URLs>
+Submitted revision: <base plus diff identity>
+Loaded instructions: <files, source and loading method>
+Scratch permissions: <isolated location, permitted writes/installs/mutations, or none>
+Reusable gate evidence: <receipt, command, inputs, revision and result>
 Decision and reason: <settled shape and why>
 Read first: <targeted files and cited source URLs>
 Allowed edits / returns: <paths, or issue comment only>
@@ -150,11 +159,11 @@ Acceptance:
 - <regression or parent lines that must stay unchanged>
 Run the acceptance check before implementation when it is a test. Preserve red output.
 Do not weaken the acceptance check to obtain green output.
-Run focused checks during edits, then the CLAUDE.md gate table.
-Report required checks you did not run.
+Run focused checks during edits. Account for the full gate table under shared evidence rules.
+Name reused evidence, normal hook deferrals and unrun checks.
 
 Skip session bookkeeping and backlog sweeps.
-Do not edit CLAUDE.md, AGENTS.md or policy files.
+Edit policy files only when the accepted contract explicitly assigns them.
 Do not commit, push, pass --no-verify or add a gate suppression.
 Preserve unrelated changes. Do not reset, clean, stash or restore them.
 If required edits exceed the allowed scope, return the missing scope.
@@ -167,12 +176,17 @@ remaining gaps and your model identity. Leave the diff for review and stop.
 
 For code under `src/`, dispatch **acceptance-reviewer** in a fresh worker
 session before you commit. Pass the accepted contract URL, the builder return
-and the base revision. The supervisor reads the review return; do not treat
-your own diff read as step 4.
+and the actual submitted revision or diff identity.
+Put the parent consumer outcome before the builder summary.
+The supervisor reads the review return. Do not treat your own diff read as step 4.
 
-Read the diff (or research comment) against the agreed scope. Run an
-independent probe of the defining behaviour when code changed. Confirm that
-the regression can detect the original defect.
+Read the diff or research comment against the agreed scope and parent outcome.
+Run independent positive and negative probes through the real entry point. Execute tooling commands rather than only importing helpers.
+For installed-library claims, verify imports from the installation being tested.
+For documentation, recover effective contract, revision, next slice, acceptance and blockers from the active issue.
+Challenge contract adequacy separately from implementation correctness. Confirm the regression detects missing behaviour.
+An incomplete review cannot authorize completion. Record verified assertions, remaining probes and the next command on the issue.
+Resume unchanged independent reviews. Revalidate affected evidence after integrating repairs.
 
 The gate inventory is the gate table in the
 [repository rules](../../AGENTS.md#build-and-gates) and, when present,

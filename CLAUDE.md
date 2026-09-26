@@ -36,6 +36,7 @@ forming. Sister projects that share this worker pattern:
 
 ## Supervised workers
 
+The [shared roles](docs/reference/worker-runs.md#shared-roles) govern every harness.
 Roles describe responsibility, not model brands. Record the actual supervisor,
 worker, harness and model weight for each dispatch.
 
@@ -54,10 +55,9 @@ model”. Pick harness and weight separately after the issue is ready.
 The supervisor harness is independent of the worker harness. Preserve any
 user-selected supervisor. Choose the worker independently.
 
-typevet has three verified worker harnesses: pi, through the `delegate-to-pi`
-skill; Claude Code sub agents, through the Agent tool and the definitions in
-`.claude/agents/`; and the Cursor CLI in print mode, guarded by
-`.cursor/cli.json`. Any other worker harness meets the same role, isolation
+typevet has receipt-backed worker use through native Codex agents, pi, Claude Code sub agents and Cursor CLI.
+pi uses the `delegate-to-pi` skill. Claude uses the Agent tool and definitions in `.claude/agents/`.
+Cursor uses print mode, guarded by `.cursor/cli.json`. Any other worker harness meets the same role, isolation
 and evidence bar in
 [the worker run contract](docs/reference/worker-runs.md).
 
@@ -83,11 +83,13 @@ Required order (sister projects: judgevet, finvet, automarket, gepa-adk):
 4. **Acceptance-reviewer** — **fresh** worker session; not the builder, not
    the supervisor verifying its own diff.
 5. **Supervisor** — resolve findings, run remaining gates, **commit only after**
-   acceptance review accepts or a named repair round finishes.
+   acceptance review accepts the integrated result, including any repair.
+
+Named supervisor exceptions still require fresh independent acceptance. Self-review is not independent evidence.
 
 Research-only and docs-only deliverables still need the issue and contract.
-They omit the builder when the accept-when is an issue comment or named doc
-paths only; acceptance review applies when the contract requires it.
+The contract may omit the builder for an issue comment or named documentation paths.
+Acceptance review applies when the contract requires it.
 
 A chat turn that edits behaviour without a builder dispatch breaks this chain.
 Standing permission to file and groom issues is not permission to bypass it.
@@ -190,8 +192,8 @@ repeated context. Explicit user scope and required gates still govern.
   [the writing system](docs/reference/writing-system.md).
 - **Never silence a gate.** Fix the cause. Do not add `per-file-ignores`,
   `# noqa`, `# type: ignore`, `--no-verify`, or a narrowed scope.
-- **Fixing one gate must not break another.** Run the whole table before you
-  report.
+- **Fixing one gate must not break another.** Account for the whole table before completion.
+  Use the [gate evidence rules](docs/reference/worker-runs.md#gate-evidence) for unchanged inputs and normal hooks.
 - **No live-service claim without a call that exercised it.** Offline stand-ins
   say nothing about a live model or API.
 - **Do not invent product claims.** Until a page moves past `sketch`, treat
@@ -250,8 +252,8 @@ table. Until the package exists, the hook exits quietly. **uv is required** for
 every gate command; never call ruff/ty/docvet/pytest outside `uv run`.
 
 Cursor CLI and other harnesses do not load this Claude project hook. Their
-briefs still require focused checks on edited files via `uv run`, then the
-full gate table.
+briefs still require focused checks on edited files via `uv run`.
+Account for the full gate table under the shared gate evidence rules.
 
 **User-scope harness setup is allowed and not this repo's job.** If Claude,
 Cursor, Codex, Copilot or pi is already configured in the operator's user

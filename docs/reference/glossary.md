@@ -8,8 +8,8 @@ in alphabetical order.
 
 ## Terms
 
-**acceptance review.** An independent check of a builder's diff against the
-accepted issue contract. The reviewer changes no file.
+**acceptance review.** An independent check of the submitted diff, accepted contract and parent consumer outcome.
+The reviewer preserves submitted files and may use explicitly assigned scratch permissions.
 
 **Banking77 proxy label.** In typevet/finvet evals, PolyAI Banking77 intents
 collapsed via finvet’s six `FRAUD_INTENTS` into binary fraud / not_fraud for
@@ -70,9 +70,7 @@ so agents and callers can discover names from the init.
 concept. The writing system binds prose to it.
 
 **harness.** The program that runs a model and gives it tools. Orthogonal to
-role and to model weight. typevet verifies three worker harnesses: pi, the
-Claude Code Agent tool and the Cursor CLI. Supervisors may also use Codex,
-Copilot or others.
+role and to model weight. The [worker run contract](worker-runs.md#harness-boundary) lists receipt-backed use and launch evidence.
 
 **issue bus.** GitHub issues as the durable record for asks, triage,
 contracts, handoffs and acceptance across sessions and harnesses. Chat is not
@@ -86,7 +84,8 @@ Orthogonal to harness. A light model may run on Claude, Cursor or pi; a heavy
 model likewise. Do not equate weight with a brand name.
 
 **reviewer.** The role that exercises the defining behaviour and reports
-findings. A model name alone does not make a review independent.
+findings under the [shared role](worker-runs.md#acceptance-reviewer).
+A model name alone does not make a review independent.
 
 **specifier.** The role that writes a definition of ready and done for one
 issue. The specifier never edits code.

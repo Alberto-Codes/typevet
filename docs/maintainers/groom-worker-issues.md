@@ -150,6 +150,27 @@ Open questions: <none, or blocked items>
 Attribution: <who proposed and verified>
 ```
 
+### Keep the active state recoverable
+
+After contract amendments, review, repair or completion, post a compact current-state comment on the active issue.
+Select the effective contract explicitly. The newest comment is not automatically the contract.
+Preserve older comments and receipts. Do not create a second state store.
+
+```text
+Current state — #<issue>, <slice>
+Effective contract: <URL, revision, amendments; superseded URLs>
+Baseline and submitted diff: <revision and diff identity>
+Tested revision: <exact revision or diff identity>
+Acceptance: <verdict, independent session, evidence links; verified/unverified assertions>
+Status: <implemented / independently accepted / live-exercised, each separately>
+Next slice or command: <one bounded action, or complete>
+Blockers: <specific unresolved assertions or none>
+```
+
+Link durable evidence from this comment. A fresh supervisor must recover the next action without a chat transcript.
+Do not equate implementation with acceptance. Do not equate offline acceptance with live exercise.
+Reuse existing consumer receipts before proposing another trial. Never repeat model calls merely to demonstrate workflow.
+
 ### Research return shape
 
 A research `worker-fit` slice returns an issue comment (or a named path under
