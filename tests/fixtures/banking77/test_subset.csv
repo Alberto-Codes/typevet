@@ -1,0 +1,9 @@
+text,category
+How do I locate my card?,card_arrival
+I did not make this payment,card_payment_not_recognised
+Someone withdrew cash from my account,cash_withdrawal_not_recognised
+I see a direct debit I never approved,direct_debit_payment_not_recognised
+I was charged twice for one purchase,transaction_charged_twice
+I think my card was compromised,compromised_card
+There is an extra fee on my statement,extra_charge_on_statement
+What is the exchange rate?,exchange_rate

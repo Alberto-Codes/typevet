@@ -119,6 +119,16 @@ Choice for `fraud_type`. JevBench ([#24](https://github.com/Alberto-Codes/typeve
 remains the protocol peer. Banking77 regression tracks finvet domain choices,
 not JevBench substitution.
 
+## typevet loader ([#58](https://github.com/Alberto-Codes/typevet/issues/58))
+
+Public eval code lives in `typevet.eval_banking77`: same six-intent
+`FRAUD_INTENTS` collapse as finvet, test-split CSV parsing, optional
+`balanced_sample` / `load_test_split(..., balanced=True)`, and
+`REPORTS_UNAUTHORIZED_NOUL_SCHEMA` for the primary v1 Noul fixture. CI uses
+checked-in CSV under `tests/fixtures/banking77/` (no Hugging Face Hub). Optional
+`fraud_type` Choice mapping stays documented here and in finvet; not required in
+the first loader revision.
+
 ## Sampling note
 
 finvet `banking77.load` balances `fraud` and `not_fraud` rows up to `--limit`
