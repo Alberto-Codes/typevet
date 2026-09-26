@@ -14,6 +14,10 @@ Examples:
 
 See Also:
     - [typevet.evaluation.psai_vision_consumer_harness][]: orchestration
+    - [typevet.evaluation.psai_vision_consumer_receipt_structure][]: structural checks
+
+Acceptance runs structural fail-closed checks first, then semantic gold
+replay when fixture identity pins on the receipt are valid.
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
 """
@@ -33,6 +37,9 @@ from typevet.domain.judgment_answers import (
     ScoreAnswer,
 )
 from typevet.evaluation.psai_vision_consumer_outcomes import expected_outcome_failures
+from typevet.evaluation.psai_vision_consumer_receipt_structure import (
+    protocol_structural_failures,
+)
 
 
 def serialize_answer(answer: Answer) -> dict[str, Any]:
@@ -135,32 +142,11 @@ def evaluate_consumer_receipt_acceptance(
         receipt: Consumer proof receipt dict.
 
     Returns:
-        ``(accepted, failure_messages)``.
+        ``(accepted, failure_messages)``. Structural violations (empty body,
+        stripped matrix, bad counts) reject before gold outcome comparison.
+
     """
-    failures: list[str] = []
-    capability = receipt.get("capability")
-    if isinstance(capability, Mapping) and capability.get("vision") is False:
-        failures.append("capability.vision is false")
-    negative = receipt.get("unsupported_capability_negative")
-    if isinstance(negative, Mapping) and not negative.get("ok"):
-        failures.append("unsupported_capability_negative did not pass")
-    for pair in receipt.get("paired_ordering") or []:
-        if isinstance(pair, Mapping) and not pair.get("ordered"):
-            uid = pair.get("unique_data_id", "?")
-            failures.append(f"paired_ordering failed for row {uid!r}")
-    matrix = receipt.get("matrix_rows") or []
-    for row in matrix:
-        if not isinstance(row, Mapping):
-            continue
-        answers = row.get("answers")
-        if not isinstance(answers, Mapping) or not answers:
-            failures.append("matrix row missing answers map")
-            break
-    expected_j = int(receipt.get("judgment_call_count", 0))
-    if expected_j and len(matrix) != expected_j:
-        failures.append(
-            f"matrix_rows {len(matrix)} != judgment_call_count {expected_j}"
-        )
+    failures = protocol_structural_failures(receipt)
     failures.extend(expected_outcome_failures(receipt))
     return (not failures, failures)
 

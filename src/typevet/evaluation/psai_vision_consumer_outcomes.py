@@ -12,11 +12,16 @@ Examples:
 See Also:
     - [typevet.evaluation.psai_vision_consumer_receipt][]: acceptance wrapper
 
+Gold replay resolves the committed fixture from receipt identity pins
+(``manifest_sha256``, ``frozen_case_image_digests``) when ``fixture_root``
+is missing, for example on an isolated wheel install.
+
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
 """
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -34,6 +39,9 @@ from typevet.evaluation.datasets.psai_vision_controls import (
     semantic_hit,
 )
 from typevet.evaluation.psai_vision_consumer_accounting import FROZEN_CONSUMER_CASE_UIDS
+from typevet.evaluation.psai_vision_consumer_protocol import (
+    committed_consumer_fixture_root,
+)
 
 
 def _load_frozen_controls(
@@ -117,6 +125,63 @@ def _annotation_row_failures(
     return failures
 
 
+def _manifest_at_root_matches(fixture_root: Path, manifest_pin: str) -> bool:
+    manifest_path = vision_smoke_manifest_path(fixture_root)
+    if not manifest_path.is_file():
+        return False
+    digest = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    return digest == manifest_pin
+
+
+def _image_pins_match_fixture(
+    fixture: VisionSmokeFixture,
+    image_pins: list[Any],
+) -> bool:
+    pin_by_uid = {
+        row.get("unique_data_id"): row.get("sha256")
+        for row in image_pins
+        if isinstance(row, Mapping)
+    }
+    for example in fixture.examples:
+        if example.unique_data_id not in FROZEN_CONSUMER_CASE_UIDS:
+            continue
+        if pin_by_uid.get(example.unique_data_id) != example.screenshot.sha256:
+            return False
+    return True
+
+
+def _fixture_root_for_receipt(receipt: Mapping[str, Any]) -> Path | None:
+    """Resolve a fixture root when manifest and image pins match on disk.
+
+    Returns:
+        Path when pins match a readable fixture tree; ``None`` when pins fail.
+    """
+    manifest_pin = receipt.get("manifest_sha256")
+    if not isinstance(manifest_pin, str) or not manifest_pin.strip():
+        return None
+    image_pins = receipt.get("frozen_case_image_digests")
+    if not isinstance(image_pins, list):
+        return None
+    candidates: list[Path] = []
+    fixture_root = receipt.get("fixture_root")
+    if isinstance(fixture_root, str) and fixture_root.strip():
+        candidates.append(Path(fixture_root))
+    committed = committed_consumer_fixture_root()
+    if committed not in candidates:
+        candidates.append(committed)
+    for root in candidates:
+        if not _manifest_at_root_matches(root, manifest_pin):
+            continue
+        manifest_path = vision_smoke_manifest_path(root)
+        try:
+            fixture = load_vision_smoke(manifest_path.read_text(encoding="utf-8"))
+        except ValueError:
+            continue
+        if _image_pins_match_fixture(fixture, image_pins):
+            return root
+    return None
+
+
 def expected_outcome_failures(receipt: Mapping[str, Any]) -> list[str]:
     """Compare matrix rows against frozen gold expectations.
 
@@ -124,13 +189,16 @@ def expected_outcome_failures(receipt: Mapping[str, Any]) -> list[str]:
         receipt: Consumer proof receipt dict.
 
     Returns:
-        Human-readable failure messages (empty when outcomes match).
+        Human-readable failure messages (empty when outcomes match). When
+        identity pins are missing or invalid, returns a single fail-closed
+        message instead of skipping semantic checks.
+
     """
-    fixture_root = receipt.get("fixture_root")
-    if not isinstance(fixture_root, str) or not fixture_root.strip():
-        return []
+    fixture_root = _fixture_root_for_receipt(receipt)
+    if fixture_root is None:
+        return ["fixture identity pins missing or do not match committed fixture"]
     try:
-        fixture, controls = _load_frozen_controls(Path(fixture_root))
+        fixture, controls = _load_frozen_controls(fixture_root)
     except (FileNotFoundError, ValueError):
         return ["could not reload fixture for expected-outcome checks"]
 

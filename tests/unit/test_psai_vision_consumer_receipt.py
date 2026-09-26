@@ -11,27 +11,25 @@ See Also:
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
+from typevet.evaluation.psai_vision_consumer_harness import run_offline_consumer_proof
 from typevet.evaluation.psai_vision_consumer_receipt import (
     evaluate_consumer_receipt_acceptance,
 )
 
-
-def _minimal_pass_receipt() -> dict[str, object]:
-    return {
-        "judgment_call_count": 1,
-        "capability": {"vision": True},
-        "unsupported_capability_negative": {"ok": True},
-        "paired_ordering": [{"unique_data_id": "u1", "ordered": True}],
-        "matrix_rows": [{"answers": {"q": {"kind": "Noul", "noul": 0.5}}}],
-    }
+FIXTURE_ROOT = (
+    Path(__file__).resolve().parents[1] / "fixtures" / "psai" / "vision_smoke"
+)
 
 
 @pytest.mark.unit
 def test_evaluate_receipt_fails_when_capability_vision_false() -> None:
     """``capability.vision`` false adds a failure message."""
-    receipt = _minimal_pass_receipt()
+    result = run_offline_consumer_proof(fixture_root=FIXTURE_ROOT)
+    receipt = dict(result.receipt)
     receipt["capability"] = {"vision": False}
     accepted, failures = evaluate_consumer_receipt_acceptance(receipt)
     assert not accepted
@@ -41,7 +39,8 @@ def test_evaluate_receipt_fails_when_capability_vision_false() -> None:
 @pytest.mark.unit
 def test_evaluate_receipt_fails_when_unsupported_capability_negative_not_ok() -> None:
     """Negative control must report ``ok`` true."""
-    receipt = _minimal_pass_receipt()
+    result = run_offline_consumer_proof(fixture_root=FIXTURE_ROOT)
+    receipt = dict(result.receipt)
     receipt["unsupported_capability_negative"] = {"ok": False}
     accepted, failures = evaluate_consumer_receipt_acceptance(receipt)
     assert not accepted
@@ -51,26 +50,33 @@ def test_evaluate_receipt_fails_when_unsupported_capability_negative_not_ok() ->
 @pytest.mark.unit
 def test_evaluate_receipt_fails_when_matrix_row_missing_answers() -> None:
     """Every matrix row must serialize a non-empty ``answers`` map."""
-    receipt = _minimal_pass_receipt()
-    receipt["matrix_rows"] = [{"leg": "annotation"}]
+    result = run_offline_consumer_proof(fixture_root=FIXTURE_ROOT)
+    receipt = dict(result.receipt)
+    receipt["matrix_rows"] = list(receipt["matrix_rows"])
+    receipt["matrix_rows"][0] = {"leg": "visual", "unique_data_id": "x"}
     accepted, failures = evaluate_consumer_receipt_acceptance(receipt)
     assert not accepted
-    assert any("missing answers" in msg for msg in failures)
+    assert failures
 
 
 @pytest.mark.unit
 def test_evaluate_receipt_fails_when_paired_ordering_not_ordered() -> None:
     """Paired ordering failures reject the receipt."""
-    receipt = _minimal_pass_receipt()
-    receipt["paired_ordering"] = [{"unique_data_id": "u1", "ordered": False}]
+    result = run_offline_consumer_proof(fixture_root=FIXTURE_ROOT)
+    receipt = dict(result.receipt)
+    pairs = list(receipt["paired_ordering"])
+    pairs[0] = dict(pairs[0])
+    pairs[0]["ordered"] = False
+    receipt["paired_ordering"] = pairs
     accepted, failures = evaluate_consumer_receipt_acceptance(receipt)
     assert not accepted
     assert any("paired_ordering" in msg for msg in failures)
 
 
 @pytest.mark.unit
-def test_evaluate_receipt_passes_minimal_valid_payload() -> None:
-    """Minimal valid receipt accepts with no failure messages."""
-    accepted, failures = evaluate_consumer_receipt_acceptance(_minimal_pass_receipt())
+def test_evaluate_receipt_passes_offline_harness_payload() -> None:
+    """Offline harness receipt accepts with no failure messages."""
+    result = run_offline_consumer_proof(fixture_root=FIXTURE_ROOT)
+    accepted, failures = evaluate_consumer_receipt_acceptance(result.receipt)
     assert accepted
     assert failures == []

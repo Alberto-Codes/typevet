@@ -14,13 +14,16 @@ Examples:
         settings=settings,
         model="gemma-4-31b-kv9-q4km-mm",
         fixture_root=Path("tests/fixtures/psai/vision_smoke"),
-        auxiliary_budget=3,
     )
     assert result.matrix_rows
     ```
 
 See Also:
+    - [typevet.evaluation.psai_vision_consumer_dispatch][]: budget ledger
     - [typevet.evaluation.psai_vision_consumer_live][]: receipt orchestration
+
+Probes health, capability, and template identity before matrix dispatch;
+each HTTP leg increments auxiliary or tokenizer counters on the ledger.
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
 """
@@ -28,7 +31,6 @@ See Also:
 from __future__ import annotations
 
 import time
-from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -46,8 +48,25 @@ from typevet.adapters.outbound.llama_cpp_multimodal import (
     fetch_media_capability,
 )
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
-from typevet.evaluation.psai_vision_consumer_accounting import ConsumerCallBudgetError
-from typevet.evaluation.psai_vision_consumer_offline import run_offline_consumer_matrix
+from typevet.evaluation.datasets.psai_vision import VisionSmokeFixture
+from typevet.evaluation.experiment_identity import (
+    EvaluatedInputsSnapshot,
+    RunIdentityStart,
+)
+from typevet.evaluation.psai_vision_consumer_dispatch import (
+    ConsumerDispatchLedger,
+    counting_tokenizer,
+    wrap_judgment_port,
+    wrap_scoring_port,
+)
+from typevet.evaluation.psai_vision_consumer_live_identity import (
+    finalize_consumer_live_identity,
+    start_consumer_live_identity,
+)
+from typevet.evaluation.psai_vision_consumer_offline import (
+    load_frozen_consumer_fixture,
+    run_offline_consumer_matrix,
+)
 
 _N_VOCAB = 262144
 
@@ -62,7 +81,8 @@ class ConsumerLiveMatrixResult:
         health (dict[str, Any]): Router ``/health`` JSON body.
         capability (MediaCapability): Vision capability probe.
         served (ServedTemplateClass): Classified native template family.
-        auxiliary_http (int): Non-judgment HTTP calls consumed.
+        ledger (ConsumerDispatchLedger): Dispatch counters for the run.
+        identity (dict[str, object]): Pre-dispatch finalized experiment identity.
         elapsed_s (float): Wall seconds for the matrix leg.
 
     Examples:
@@ -80,38 +100,22 @@ class ConsumerLiveMatrixResult:
     health: dict[str, Any]
     capability: MediaCapability
     served: ServedTemplateClass
-    auxiliary_http: int
+    ledger: ConsumerDispatchLedger
+    identity: dict[str, object]
     elapsed_s: float
 
 
-def _tokenizer(client: httpx.Client, model: str) -> Callable[[str], tuple[int, ...]]:
-    """Return a llama.cpp tokenize closure for ``model``.
-
-    Returns:
-        Callable that maps prompt text to token id tuples.
-    """
-
-    def tokenize_content(text: str) -> tuple[int, ...]:
-        """Tokenize one prompt string through the router.
-
-        Returns:
-            Token id tuple from the router ``/tokenize`` endpoint.
-        """
-        payload = (
-            client.post(
-                "/tokenize",
-                json={"model": model, "content": text, "add_special": False},
-            )
-            .raise_for_status()
-            .json()
-        )
-        return tuple(payload["tokens"])
-
-    return tokenize_content
-
-
-def _served_template(client: httpx.Client, model: str) -> ServedTemplateClass:
+def _served_template(
+    client: httpx.Client,
+    model: str,
+    ledger: ConsumerDispatchLedger,
+) -> ServedTemplateClass:
     """Classify the router template for ``model`` and require Gemma 4 native.
+
+    Args:
+        client: Router HTTP client.
+        model: Model id under test.
+        ledger: Dispatch ledger receiving metadata HTTP counts.
 
     Returns:
         ``NATIVE_GEMMA4_TURN`` when the router matches the consumer protocol.
@@ -119,6 +123,7 @@ def _served_template(client: httpx.Client, model: str) -> ServedTemplateClass:
     Raises:
         ValueError: When the classified template is not Gemma 4 native.
     """
+    ledger.before_metadata_http()
     rendered = (
         client.post(
             "/apply-template",
@@ -138,12 +143,89 @@ def _served_template(client: httpx.Client, model: str) -> ServedTemplateClass:
     return family
 
 
+def _probe_router(
+    *,
+    client: httpx.Client,
+    base: str,
+    model: str,
+    fixture_root: Path,
+    fixture: VisionSmokeFixture,
+    dispatch: ConsumerDispatchLedger,
+) -> tuple[
+    dict[str, Any],
+    MediaCapability,
+    ServedTemplateClass,
+    RunIdentityStart,
+    EvaluatedInputsSnapshot,
+]:
+    """Run health, capability and template probes; snapshot identity before matrix.
+
+    Returns:
+        Health JSON, capability, served template, and pre-dispatch identity parts.
+
+    Raises:
+        ValueError: When the model reports text-only input modalities.
+    """
+    dispatch.before_metadata_http()
+    health = client.get("/health").raise_for_status().json()
+    dispatch.before_metadata_http()
+    capability = fetch_media_capability(client, f"{base}/", model)
+    if not capability.vision:
+        msg = "model reports text-only input modalities"
+        raise ValueError(msg)
+    served = _served_template(client, model, dispatch)
+    run_start, evaluated = start_consumer_live_identity(
+        fixture_root=fixture_root,
+        fixture=fixture,
+        model=model,
+        served_template=served.name,
+        health=health,
+    )
+    return health, capability, served, run_start, evaluated
+
+
+def _dispatch_consumer_matrix(
+    *,
+    client: httpx.Client,
+    base: str,
+    settings: LlamaSettings,
+    model: str,
+    fixture_root: Path,
+    dispatch: ConsumerDispatchLedger,
+    served: ServedTemplateClass,
+) -> tuple[list[dict[str, Any]], dict[tuple[str, str], float]]:
+    """Run judgment/scoring matrix rows through a configured router client.
+
+    Returns:
+        Matrix rows and visual Noul probability map (negative leg omitted).
+    """
+    with LlamaCppCandidateScoringAdapter(
+        base_url=base,
+        timeout=settings.timeout,
+        n_vocab=_N_VOCAB,
+    ) as scoring:
+        scoring_wrapped = wrap_scoring_port(scoring, dispatch)
+        port = ScoringJudgmentAdapter(
+            scoring_wrapped,
+            tokenize_content=counting_tokenizer(
+                client.post, ledger=dispatch, model=model
+            ),
+            served_template=served,
+        )
+        port = wrap_judgment_port(port, dispatch)
+        return run_offline_consumer_matrix(
+            port,
+            fixture_root=fixture_root,
+            model_id=model,
+        )[:2]
+
+
 def run_consumer_live_matrix(
     *,
     settings: LlamaSettings,
     model: str,
     fixture_root: Path,
-    auxiliary_budget: int,
+    ledger: ConsumerDispatchLedger | None = None,
 ) -> ConsumerLiveMatrixResult:
     """Run the frozen consumer matrix against a live llama.cpp router.
 
@@ -151,53 +233,49 @@ def run_consumer_live_matrix(
         settings: Router connection options.
         model: Multimodal model id under test.
         fixture_root: Committed ``vision_smoke`` directory.
-        auxiliary_budget: Maximum health, capability and template HTTP calls.
+        ledger: Optional dispatch ledger; a fresh ledger is used when omitted.
 
     Returns:
         Matrix rows, probabilities, and probe metadata.
 
     Raises:
         ValueError: When vision is unavailable or the template is wrong.
-        ConsumerCallBudgetError: When auxiliary HTTP exceeds ``auxiliary_budget``.
+        ConsumerCallBudgetError: When auxiliary HTTP exceeds frozen ceilings.
     """
+    dispatch = ledger or ConsumerDispatchLedger()
+    fixture = load_frozen_consumer_fixture(fixture_root)
     base = settings.base_url.rstrip("/")
-    auxiliary_http = 0
     t0 = time.perf_counter()
     with httpx.Client(base_url=base, timeout=settings.timeout) as client:
-        health = client.get("/health").raise_for_status().json()
-        auxiliary_http += 1
-        capability = fetch_media_capability(client, f"{base}/", model)
-        auxiliary_http += 1
-        if not capability.vision:
-            msg = "model reports text-only input modalities"
-            raise ValueError(msg)
-        served = _served_template(client, model)
-        auxiliary_http += 1
-        if auxiliary_http > auxiliary_budget:
-            raise ConsumerCallBudgetError(
-                f"auxiliary_http {auxiliary_http} exceed budget {auxiliary_budget}"
-            )
-        with LlamaCppCandidateScoringAdapter(
-            base_url=base,
-            timeout=settings.timeout,
-            n_vocab=_N_VOCAB,
-        ) as scoring:
-            port = ScoringJudgmentAdapter(
-                scoring,
-                tokenize_content=_tokenizer(client, model),
-                served_template=served,
-            )
-            matrix_rows, probabilities, _ = run_offline_consumer_matrix(
-                port,
-                fixture_root=fixture_root,
-                model_id=model,
-            )
+        health, capability, served, run_start, evaluated = _probe_router(
+            client=client,
+            base=base,
+            model=model,
+            fixture_root=fixture_root,
+            fixture=fixture,
+            dispatch=dispatch,
+        )
+        matrix_rows, probabilities = _dispatch_consumer_matrix(
+            client=client,
+            base=base,
+            settings=settings,
+            model=model,
+            fixture_root=fixture_root,
+            dispatch=dispatch,
+            served=served,
+        )
+    identity = finalize_consumer_live_identity(
+        run_start=run_start,
+        evaluated=evaluated,
+        ledger=dispatch,
+    )
     return ConsumerLiveMatrixResult(
         matrix_rows=matrix_rows,
         probabilities=probabilities,
         health=health,
         capability=capability,
         served=served,
-        auxiliary_http=auxiliary_http,
+        ledger=dispatch,
+        identity=identity,
         elapsed_s=round(time.perf_counter() - t0, 3),
     )

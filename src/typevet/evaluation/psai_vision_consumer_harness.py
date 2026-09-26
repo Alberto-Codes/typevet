@@ -17,7 +17,12 @@ Examples:
 
 See Also:
     - [typevet.evaluation.psai_vision_consumer_accounting][]: call budgets
+    - [typevet.evaluation.psai_vision_consumer_dispatch][]: dispatch ledger
     - [typevet.evaluation.psai_vision_consumer_offline][]: matrix runner
+
+Offline runs wrap the scoring port with a [ConsumerDispatchLedger][]
+so ``scoring_requests_observed`` and ``failed_attempts`` reflect real
+dispatch, then fail-closed acceptance runs on the assembled receipt.
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
 [i184]: https://github.com/Alberto-Codes/typevet/issues/184
@@ -36,7 +41,11 @@ from typing import Any
 
 from typevet.adapters.inbound.cord_semantic_acceptance_cli import main as cord_cli_main
 from typevet.adapters.outbound.gemma import ServedTemplateClass
-from typevet.evaluation.datasets.psai_vision_controls import paired_image_ordering
+from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
+from typevet.evaluation.datasets.psai_vision_controls import (
+    VisualControl,
+    paired_image_ordering,
+)
 from typevet.evaluation.experiment_identity import (
     ReceiptAlreadyExistsError,
     write_receipt_exclusive,
@@ -48,6 +57,11 @@ from typevet.evaluation.psai_vision_consumer_accounting import (
     enforce_consumer_call_budget,
     plan_frozen_consumer_calls,
 )
+from typevet.evaluation.psai_vision_consumer_dispatch import (
+    ConsumerDispatchLedger,
+    wrap_judgment_port,
+    wrap_scoring_port,
+)
 from typevet.evaluation.psai_vision_consumer_offline import (
     build_offline_consumer_port,
     consumer_fixture_identity_pins,
@@ -55,12 +69,15 @@ from typevet.evaluation.psai_vision_consumer_offline import (
     load_frozen_consumer_fixture,
     run_offline_consumer_matrix,
 )
+from typevet.evaluation.psai_vision_consumer_protocol import (
+    FROZEN_PROTOCOL_REVISION as PROTOCOL_REVISION,
+)
 from typevet.evaluation.psai_vision_consumer_receipt import (
     consumer_receipt_basename,
     evaluate_consumer_receipt_acceptance,
 )
+from typevet.ports.judgment import JudgmentPort
 
-PROTOCOL_REVISION = 2
 _EXIT_ACCEPTANCE_FAIL = 1
 _EXIT_INVALID = 2
 
@@ -75,6 +92,7 @@ class _OfflineReceiptAssembly:
         pairs (Sequence[Any]): Paired ordering summary rows.
         negative (dict[str, Any]): Unsupported-template probe outcome.
         scoring_observed (int): ``score_candidates`` calls observed.
+        failed_attempts (int): Dispatch attempts that raised before a row.
         fixture_root (Path): Committed fixture directory.
         wheel_sha256 (str | None): Built wheel digest when known.
         typevet_install_path (str | None): Resolved ``typevet.__file__`` when known.
@@ -99,6 +117,7 @@ class _OfflineReceiptAssembly:
     pairs: Sequence[Any]
     negative: dict[str, Any]
     scoring_observed: int
+    failed_attempts: int
     fixture_root: Path
     wheel_sha256: str | None
     typevet_install_path: str | None = None
@@ -143,7 +162,7 @@ def _offline_receipt_payload(assembly: _OfflineReceiptAssembly) -> dict[str, Any
         "scoring_request_count": assembly.plan.scoring_requests,
         "scoring_requests_observed": assembly.scoring_observed,
         "auxiliary_http_count": 0,
-        "failed_attempts": 0,
+        "failed_attempts": assembly.failed_attempts,
         "capability": {"vision": True, "offline_stub": True},
         "served_template": ServedTemplateClass.NATIVE_GEMMA4_TURN.name,
         "unsupported_capability_negative": assembly.negative,
@@ -159,6 +178,22 @@ def _offline_receipt_payload(assembly: _OfflineReceiptAssembly) -> dict[str, Any
     }
     payload.update(consumer_fixture_identity_pins(assembly.fixture_root))
     return payload
+
+
+def _instrumented_offline_port(
+    fixture_root: Path,
+) -> tuple[JudgmentPort, tuple[VisualControl, ...], ConsumerDispatchLedger]:
+    _built, controls, fake = build_offline_consumer_port(fixture_root)
+    ledger = ConsumerDispatchLedger()
+    instrumented = wrap_judgment_port(
+        ScoringJudgmentAdapter(
+            wrap_scoring_port(fake, ledger),
+            tokenize_content=lambda text: (ord(text[0]),) if text else (),
+            served_template=ServedTemplateClass.NATIVE_GEMMA4_TURN,
+        ),
+        ledger,
+    )
+    return instrumented, controls, ledger
 
 
 def run_offline_consumer_proof(
@@ -179,7 +214,9 @@ def run_offline_consumer_proof(
         force_acceptance_fail: When true, mark paired ordering failed (tests).
 
     Returns:
-        ``ConsumerProofResult`` with exit code and receipt payload.
+        ``ConsumerProofResult`` with exit code and receipt payload. The
+        receipt carries instrumented ``scoring_requests_observed`` and
+        ``failed_attempts`` plus fixture identity pins for acceptance.
 
     Raises:
         FileNotFoundError: Missing fixture manifest.
@@ -191,9 +228,9 @@ def run_offline_consumer_proof(
     plan = plan_frozen_consumer_calls(visual_control_rows=len(controls))
     enforce_consumer_call_budget(plan, plan)
 
-    port, _controls, fake = build_offline_consumer_port(fixture_root)
+    wrapped, controls, ledger = _instrumented_offline_port(fixture_root)
     matrix_rows, probabilities, negative = run_offline_consumer_matrix(
-        port,
+        wrapped,
         fixture_root=fixture_root,
     )
     pairs = paired_image_ordering(controls, probabilities)
@@ -209,10 +246,11 @@ def run_offline_consumer_proof(
             matrix_rows=matrix_rows,
             pairs=pairs,
             negative=negative,
-            scoring_observed=len(fake.calls),
+            scoring_observed=ledger.scoring_requests,
             fixture_root=fixture_root,
             wheel_sha256=wheel_sha256,
             typevet_install_path=typevet_install_path,
+            failed_attempts=ledger.failed_attempts,
         ),
     )
     accepted, failures = evaluate_consumer_receipt_acceptance(receipt)
