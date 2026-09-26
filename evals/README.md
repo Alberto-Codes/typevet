@@ -22,6 +22,8 @@ re-litigate dataset research.
 | [fixtures/clinc_banking_intent_choice_schema_v1.json](fixtures/clinc_banking_intent_choice_schema_v1.json) | Versioned 15-intent banking Choice schema for CLINC (#73) |
 | [fixtures/clinc_in_scope_noul_schema_v1.json](fixtures/clinc_in_scope_noul_schema_v1.json) | Optional OOS `in_scope` Noul schema for CLINC (#73) |
 | [fixtures/go_emotions_emotion_choice_schema_v1.json](fixtures/go_emotions_emotion_choice_schema_v1.json) | Versioned 24-emotion Choice schema for go_emotions (#79) |
+| [fixtures/psai_metadata_decisions_schema_v1.json](fixtures/psai_metadata_decisions_schema_v1.json) | Combined metadata Choice/Noul schema for PSAI (#71) |
+| [fixtures/psai_metadata_manifest_v1.yaml](fixtures/psai_metadata_manifest_v1.yaml) | Metadata-only slice manifest; excludes vision (#71) |
 
 Human-readable commentary and epic links:
 [Eval complementary manifest](../docs/reference/eval-complementary-manifest.md).
@@ -33,6 +35,7 @@ Loader reference pages (Python modules under ``src/typevet/``):
 | BoolQ | [BoolQ loader and answer Noul](../docs/reference/eval-boolq-loader.md) |
 | CLINC150 | [CLINC loader and domain Choice](../docs/reference/eval-clinc-loader.md) |
 | Hyperpartisan | [Hyperpartisan loader and hyperpartisan Noul](../docs/reference/eval-hyperpartisan-loader.md) |
+| PSAI computer-use (metadata) | [PSAI metadata Decision map](../docs/reference/eval-psai-metadata-map.md) |
 
 ## Rules
 

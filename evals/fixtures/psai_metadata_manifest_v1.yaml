@@ -1,0 +1,16 @@
+manifest_version: 1
+loader_issue: 71
+design_issue: 56
+research_issue: 52
+dataset_id: anaisleila/computer-use-data-psai
+split: train
+license: MIT
+default_sample_seed: 0
+contract_row_bounds:
+  min: 12
+  max: 24
+non_goals:
+  - screenshot/video/DOM decode (#57)
+  - event-count Score in v1
+  - full 49GB corpus in CI
+  - ECE or calibration claims (#50)

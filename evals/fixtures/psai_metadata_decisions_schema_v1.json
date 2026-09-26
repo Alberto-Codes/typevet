@@ -1,0 +1,68 @@
+{
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string",
+      "enum": ["BROWSER_TASK", "COMPUTER_TASK"],
+      "instructions": "Is this a browser task or a computer (desktop) task?"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": ["EASY", "MEDIUM", "HARD"],
+      "instructions": "What difficulty label applies to this task?"
+    },
+    "benchmark": {
+      "type": "string",
+      "enum": ["Web Bench", "Proprietary", "Web Voyager"],
+      "instructions": "Which upstream benchmark bucket sourced this task?"
+    },
+    "appType": {
+      "type": "string",
+      "enum": ["SINGLE_APP", "MULTI_APP"],
+      "instructions": "Does the task stay in one app or span multiple apps?"
+    },
+    "os": {
+      "type": "string",
+      "enum": ["CROSS_PLATFORM", "WINDOWS", "MAC", "LINUX"],
+      "instructions": "Which OS scope label applies to this task?"
+    },
+    "requires_login": {
+      "type": "boolean",
+      "instructions": "Does the task require the user to be logged in?"
+    },
+    "sub_category": {
+      "type": "string",
+      "enum": [
+        "Development & Tech Services",
+        "Document Editing",
+        "Education & Learning",
+        "Email Ops",
+        "File Management",
+        "Finance & Banking",
+        "Health & Wellness",
+        "Navigation & Maps",
+        "News & Media",
+        "Other / Miscellaneous",
+        "Presentations",
+        "Search & Research",
+        "Shopping & E-commerce",
+        "Social Media & Communication",
+        "Utilities",
+        "Utilities & Tools",
+        "Web Settings",
+        "OTHER"
+      ],
+      "instructions": "Which sub-category best describes the task (first Hub tag)?"
+    }
+  },
+  "required": [
+    "category",
+    "difficulty",
+    "benchmark",
+    "appType",
+    "os",
+    "requires_login",
+    "sub_category"
+  ],
+  "additionalProperties": false
+}
