@@ -132,6 +132,29 @@ Broader semantic acceptance fixtures:
 uv run pytest -q tests/unit/test_cord_semantic_acceptance.py
 ```
 
+Operator acceptance on an exact saved receipt path (nonzero exit when
+`accepted: false` or the file is malformed):
+
+```bash
+uv run python scripts/check_cord_semantic_acceptance.py \
+  tests/fixtures/cord/expense_smoke/gemma4_kv9_direct_receipt.json
+echo $?   # expect 1 — historical FAIL on combined semantic floors
+
+uv run python scripts/check_cord_semantic_acceptance.py \
+  tests/fixtures/cord/semantic_acceptance/labeled_synthetic_pass.json
+echo $?   # expect 0 — synthetic PASS exercising every floor
+
+uv run python -m typevet.cord_semantic_acceptance_cli \
+  tests/fixtures/cord/semantic_acceptance/gemma4_post187_combined_pass.json
+echo $?   # expect 0 — vendored historical PASS (provenance in sibling .note.md)
+```
+
+Contract proof for the CLI exit codes:
+
+```bash
+uv run pytest -q tests/contract/test_cord_semantic_acceptance_cli.py
+```
+
 ### Attachment and live wiring gates ([#185](https://github.com/Alberto-Codes/typevet/issues/185))
 
 ```bash

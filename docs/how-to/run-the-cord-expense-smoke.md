@@ -144,6 +144,35 @@ Semantic FAIL rows below are unchanged; only identity metadata is annotated.
 Combined accuracy was 0.444. The model abstained on most imaged rows; that is a
 quality read, not proof the receipt was unread.
 
+## Check semantic acceptance on a saved receipt
+
+After a live run writes a combined receipt JSON, evaluate the frozen #161
+revision 1 floors offline. Exit code **0** means `accepted: true`; **1** means
+checks failed; **2** means usage or malformed input.
+
+```bash
+uv run python scripts/check_cord_semantic_acceptance.py path/to/receipt.json
+```
+
+Equivalent module entry:
+
+```bash
+uv run python -m typevet.cord_semantic_acceptance_cli path/to/receipt.json
+```
+
+Vendored examples (no live model):
+
+```bash
+uv run python scripts/check_cord_semantic_acceptance.py \
+  tests/fixtures/cord/expense_smoke/gemma4_kv9_direct_receipt.json
+
+uv run python scripts/check_cord_semantic_acceptance.py \
+  tests/fixtures/cord/semantic_acceptance/gemma4_post187_combined_pass.json
+```
+
+Pytest regression tests for the evaluator and CLI are separate from operator
+acceptance; see [Release support matrix](../reference/typed-judgment-release-support-matrix.md).
+
 ## Known limits
 
 - One model, one router build, six receipts, 18 claims.
