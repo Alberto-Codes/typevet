@@ -1,0 +1,167 @@
+[project]
+name = "typevet"
+version = "0.1.0"
+description = "Type-safe structured generation under hexagonal architecture (llama.cpp first)"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "Alberto-Codes", email = "alberto.codes.dev@gmail.com" }]
+dependencies = [
+    "httpx>=0.28",
+    "jsonschema>=4.26.0",
+]
+
+[project.optional-dependencies]
+cli = ["typer>=0.12"]
+
+[build-system]
+requires = ["uv_build>=0.11.20,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv_build]
+include = ["src/typevet/py.typed"]
+
+[dependency-groups]
+dev = [
+    "docvet[griffe]>=1.16.0",
+    "import-linter>=2.15",
+    "pre-commit>=4.6.2",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.16.8",
+    "ty>=0.0.82",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = [".venv", "__pycache__", "*.egg-info"]
+
+[tool.ruff.lint]
+extend-select = [
+    "E402",
+    "E501",
+    "I",
+    "D",
+    "B",
+    "SIM",
+    "UP",
+    "RUF",
+    "PL",
+    "C901",
+    "TRY",
+    "PERF",
+    "S",
+    "G",
+]
+ignore = [
+    "TRY003",
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 12
+
+[tool.ruff.lint.pylint]
+max-args = 7
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 100
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "PLR2004",
+]
+"scripts/check_commit_msg.py" = ["S603"]
+"scripts/check_loc.py" = ["S603"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["typevet"]
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "unit: fast, isolated",
+    "contract: adapter behaviour against fakes",
+    "live: touches local llama.cpp; never in default CI",
+]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--showlocals",
+    "-m",
+    "not live",
+]
+
+[tool.coverage.run]
+source = ["typevet"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+
+[tool.ty.src]
+include = ["src", "tests", "scripts"]
+
+[tool.importlinter]
+root_package = "typevet"
+include_external_packages = true
+exclude_type_checking_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Hexagonal layers"
+type = "layers"
+layers = [
+    "typevet.adapters.inbound",
+    "typevet.adapters.outbound",
+    "typevet.testing",
+    "typevet.ports",
+    "typevet.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "Fakes stay off the adapters"
+type = "forbidden"
+source_modules = ["typevet.testing"]
+forbidden_modules = ["typevet.adapters"]
+
+[[tool.importlinter.contracts]]
+name = "Domain is IO-free"
+type = "forbidden"
+source_modules = ["typevet.domain"]
+forbidden_modules = [
+    "json",
+    "pathlib",
+    "os",
+    "io",
+    "logging",
+    "httpx",
+    "typer",
+    "jsonschema",
+]
+
+[tool.docvet]
+fail-on = ["enrichment", "freshness", "coverage", "griffe", "presence"]
+exclude = ["tests", "scripts"]
+
+[tool.docvet.presence]
+min-coverage = 100.0
+
+[tool.typevet.commit-msg]
+allowed-authors = [
+    "alberto.nieto.80@gmail.com",
+    "alberto.codes.dev@gmail.com",
+    "github-actions[bot]@users.noreply.github.com",
+]
