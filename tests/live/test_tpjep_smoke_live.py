@@ -9,6 +9,7 @@ from pathlib import Path
 import httpx
 import pytest
 
+from tests.fixtures.tpjep.live_acceptance import assert_tpjep_live_smoke_receipt
 from typevet.adapters.inbound.settings import load_llama_settings
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
@@ -72,12 +73,11 @@ def test_tpjep_eight_task_smoke_live(live_tpjep_model: str) -> None:
             port = ScoringJudgmentAdapter(scoring, tokenize_content=tokenize_content)
             receipt = run_tpjep_with_receipt(port, tasks, config=config)
 
-    assert receipt.summary.n_scheduled == 8
+    assert_tpjep_live_smoke_receipt(receipt)
     assert receipt.metadata.thinking is False
     assert receipt.metadata.permutations == 1
     assert receipt.metadata.manifest_hash
     assert receipt.metadata.local_concat_hash
-    assert receipt.summary.n_skipped == 0
     _OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     (_OUTPUT_DIR / "live_attempts.jsonl").write_text(
         records_to_jsonl(receipt.records), encoding="utf-8"
