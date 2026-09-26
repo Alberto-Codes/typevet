@@ -50,11 +50,10 @@ answers a question, and a reference gives facts.
   vendored computer-use screenshots, annotation-backed and manual visual
   questions, and matched present / omitted / swapped image controls (#154).
 
-## Architecture decisions (planned)
+## Architecture decisions
 
-`docs/adr/` is not present yet. When hex and related judgments lock, add an
-ADR log in the automarket shape (`NNNN-slug.md`). Tracked on the “adopt ADR
-log” epic. Until then, accepted judgment comments on issues are the record.
+- [ADR index](adr/README.md) (reference): accepted architecture decisions and their source evidence.
+- [0001: Runtime orchestration](adr/0001-runtime-orchestration.md) (reference): thin runtime facades without an engine layer.
 
 ## Reference
 

@@ -30,16 +30,20 @@ kind and one job:
 Do not mix kinds on one page. Name the kind in the page header. The README is
 the overview. Do not add a second summary file.
 
-### Architecture decision records (when ready)
+### Architecture decision records
 
-Durable architecture choices live under `docs/adr/` (sisters: automarket,
-gepa-adk). Prefer automarket’s shape: `NNNN-slug.md`, Context / Decision /
-Consequences, status Proposed → Accepted with a human mark.
+Durable architecture choices live in the [ADR index](../adr/README.md).
+Use `NNNN-slug.md` with a number and title, status, decision date, acceptance authority and evidence.
+Include Context, Decision and Consequences sections. Mark each record as reference documentation.
 
-ADRs are not how-to pages and not the issue bus. File a write issue when a
-judgment locks and should outlive chat. Do not invent ADRs ahead of a locked
-decision. Tracker: GitHub epic “adopt ADR log”. See also
-[groom worker issues](../maintainers/groom-worker-issues.md).
+New architecture decisions require human approval before a proposed record becomes Accepted.
+For this initial record, the user authorized the supervisor to record an already accepted decision.
+This authorization does not approve new architecture decisions.
+Record the actual historical authority and evidence. Do not invent a human approval mark.
+
+Record an already locked decision without expanding its scope.
+ADRs preserve decisions. GitHub issues retain contracts, handoffs and acceptance evidence.
+See [groom worker issues](../maintainers/groom-worker-issues.md) for the issue procedure.
 
 ## Conventional Commits is law
 
