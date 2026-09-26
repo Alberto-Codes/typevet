@@ -85,6 +85,28 @@ is down or the id is missing from `/v1/models`, they **skip** as well.
 Legacy names `TYPEVET_GEMMA_MODEL` and `TYPEVET_LLAMA_URL` still work. See
 [Configuration](../reference/configuration.md).
 
+### Judgment template pin (opt-in)
+
+Gemma enum / judgment scoring gates on the **rendered** chat prompt from
+llama.cpp ``POST /apply-template`` (same Jinja path as completions). typevet
+classifies that string into:
+
+- **native Gemma4 turn** — ``<|turn>`` / ``<turn|>`` markers without ChatML
+- **degraded ChatML** — ``<|im_start|>`` family without turn markers
+- **unsupported** — mixed families, or neither marker set
+
+Unsupported templates fail before scoring; native and degraded paths use
+different answer-prefix anchors and stop markers
+(``typevet.gemma_served_template``).
+
+Live receipt (router up, model catalog reachable; pins
+``gemma-4-31b-24gib-kv11-decoder`` on ``/apply-template`` as degraded ChatML):
+
+```bash
+TYPEVET_LLAMA__DEFAULT_MODEL='<your-gemma-4-model-id>' \
+  uv run pytest tests/live/test_gemma_template_pin.py -m live -q
+```
+
 ### Loader eval slice (opt-in)
 
 After the schema smoke passes, run a tiny BoolQ or Banking77 slice through the

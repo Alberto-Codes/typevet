@@ -26,6 +26,9 @@ See Also:
 Attributes:
     Decision (type): One compiled TypeLLM field from JSON Schema.
     BackendHttpError (type): llama.cpp HTTP status 400 or above.
+    CandidateScoringRequest (type): Prompt and candidate tokens to score.
+    CandidateScoringResult (type): Fail-closed scored candidates.
+    GemmaTemplateError (type): Gemma served-template or answer-prefix violation.
     GenerationError (type): Base failure for a generation call.
     TransportError (type): HTTP client failure before a response.
     GenerationRequest (type): Prompt, schema and model ask.
@@ -37,6 +40,7 @@ Attributes:
     MAX_PERMUTATIONS (int): Upper bound on enum permutation budget.
     SchemaError (type): Invalid or unsupported schema for compilation.
     SchemaValidationError (type): Output failed the requested schema.
+    ScoringError (type): Base failure for a candidate-scoring call.
     compile_json_schema (callable): Compile object schema to decisions.
     dependency_layers (callable): Topological layers for decision dependencies.
 """
@@ -61,6 +65,7 @@ from typevet.domain.decisions import (
 )
 from typevet.domain.errors import (
     BackendHttpError,
+    GemmaTemplateError,
     GenerationError,
     JudgmentError,
     JudgmentValidationError,
@@ -98,6 +103,7 @@ __all__ = [
     "Choice",
     "ChoiceAnswer",
     "Decision",
+    "GemmaTemplateError",
     "GenerationError",
     "GenerationRequest",
     "GenerationResult",
