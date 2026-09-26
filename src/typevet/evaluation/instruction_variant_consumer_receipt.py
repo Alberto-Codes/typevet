@@ -3,10 +3,12 @@
 Examples:
     ```python
     from typevet.evaluation.instruction_variant_consumer_receipt import (
-        comparison_verdict,
+        descriptive_replay_label,
     )
 
-    assert comparison_verdict({"candidate_improved": False}) != "candidate_improved"
+    assert descriptive_replay_label({"shared_valid_case_ids": []}) == (
+        "no_shared_valid_cases"
+    )
     ```
 
 See Also:
@@ -296,27 +298,30 @@ def write_variant_receipt_exclusive(
     return path
 
 
-def comparison_verdict(replay_report: Mapping[str, Any]) -> str:
-    """Summarize seed vs candidate replay without overstating improvement.
+def descriptive_replay_label(replay_report: Mapping[str, Any]) -> str:
+    """Return a non-promotional label for a descriptive replay report.
 
     Returns:
-        One of ``candidate_improved``, ``tie``, ``candidate_worse_or_mixed``,
-        or ``insufficient_valid_metrics``.
+        ``no_shared_valid_cases`` when pairing has no shared valid distributions,
+        otherwise ``shared_metrics_computed``. Legacy receipts with
+        ``candidate_improved`` are labeled ``legacy_promotion_schema`` for readers
+        only; new reports must use ``replay_report_schema`` descriptive v2.
     """
-    if replay_report.get("candidate_improved") is True:
-        return "candidate_improved"
-    delta = replay_report.get("delta_candidate_minus_seed") or {}
-    brier = delta.get("mean_brier")
-    loss = delta.get("mean_log_loss")
-    if brier is None or loss is None:
-        return "insufficient_valid_metrics"
-    if brier == 0.0 and loss == 0.0:
-        return "tie"
-    if (isinstance(brier, float) and brier > 0) or (
-        isinstance(loss, float) and loss > 0
-    ):
-        return "candidate_worse_or_mixed"
-    return "tie"
+    if replay_report.get("candidate_improved") is not None:
+        return "legacy_promotion_schema"
+    shared = replay_report.get("shared_valid_case_ids")
+    if not shared:
+        return "no_shared_valid_cases"
+    return "shared_metrics_computed"
+
+
+def comparison_verdict(replay_report: Mapping[str, Any]) -> str:
+    """Deprecated alias for historical receipt readers.
+
+    Returns:
+        Same string as ``descriptive_replay_label``.
+    """
+    return descriptive_replay_label(replay_report)
 
 
 def acceptance_failures(
@@ -387,7 +392,7 @@ def assemble_variant_receipt(assembly: VariantReceiptAssembly) -> dict[str, Any]
 
     Returns:
         JSON-serializable receipt with matrix rows, replay metrics,
-        ``comparison_verdict``, wheel digest fields, and
+        ``replay_descriptive_label``, wheel digest fields, and
         ``acceptance_failures`` (empty when acceptance passes).
     """
     return {
@@ -418,7 +423,8 @@ def assemble_variant_receipt(assembly: VariantReceiptAssembly) -> dict[str, Any]
         },
         "replay_report": dict(assembly.replay_report),
         "replay_idempotent": assembly.replay_check,
-        "comparison_verdict": comparison_verdict(assembly.replay_report),
+        "replay_descriptive_label": descriptive_replay_label(assembly.replay_report),
+        "replay_report_schema": assembly.replay_report.get("replay_report_schema"),
         "wheel_sha256": assembly.wheel_sha256,
         "typevet_install_path": assembly.typevet_install_path,
         "harness_entrypoint": _VARIANT_HARNESS,

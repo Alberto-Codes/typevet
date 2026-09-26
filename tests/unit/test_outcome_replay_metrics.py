@@ -36,22 +36,22 @@ def test_brier_and_log_loss_hand_calculated() -> None:
 
 
 @pytest.mark.unit
-def test_invalid_distribution_excluded_from_quality_denominator() -> None:
-    """Malformed distributions do not enter accuracy or Brier means."""
+def test_invalid_distribution_excluded_from_shared_valid() -> None:
+    """Malformed distributions do not enter shared valid pairing."""
     gold = {"a": "yes", "b": "yes"}
     seed = {
         "a": SavedPromptOutcome(probabilities={"no": 0.1, "yes": 0.9}),
         "b": SavedPromptOutcome(probabilities={"no": 0.6, "yes": 0.3}),
     }
     report = compare_matched_prompt_outcomes(gold, seed, seed, labels=_LABELS)
-    assert report["seed"]["valid_distribution_cases"] == 1
-    assert report["seed"]["invalid_distribution_cases"] == 1
-    assert report["seed"]["accuracy"] == 1.0
+    assert report["seed"]["invalid_distribution_case_ids"] == ["b"]
+    assert report["shared_valid_case_ids"] == ["a"]
+    assert report["shared_valid_quality"]["seed"]["accuracy"] == 1.0
 
 
 @pytest.mark.unit
-def test_compare_improvement_requires_both_metrics() -> None:
-    """Candidate improvement needs lower Brier and log loss."""
+def test_shared_valid_deltas_require_both_arms() -> None:
+    """Paired deltas use only cases valid on seed and candidate."""
     gold = {"c1": "yes"}
     seed = {
         "c1": SavedPromptOutcome(probabilities={"no": 0.4, "yes": 0.6}),
@@ -59,15 +59,45 @@ def test_compare_improvement_requires_both_metrics() -> None:
     better = {
         "c1": SavedPromptOutcome(probabilities={"no": 0.2, "yes": 0.8}),
     }
-    log_loss_only = {
-        "c1": SavedPromptOutcome(probabilities={"no": 0.41, "yes": 0.59}),
-    }
     base = compare_matched_prompt_outcomes(gold, seed, better, labels=_LABELS)
-    assert base["candidate_improved"] is True
+    assert "candidate_improved" not in base
+    assert base["delta_candidate_minus_seed"]["mean_brier"] < 0.0
     tie = compare_matched_prompt_outcomes(gold, seed, seed, labels=_LABELS)
-    assert tie["candidate_improved"] is False
-    mixed = compare_matched_prompt_outcomes(gold, seed, log_loss_only, labels=_LABELS)
-    assert mixed["candidate_improved"] is False
+    assert tie["delta_candidate_minus_seed"]["mean_brier"] == 0.0
+    assert tie["delta_candidate_minus_seed"]["mean_log_loss"] == 0.0
+
+
+@pytest.mark.unit
+def test_dropped_hard_case_does_not_improve_via_missing_candidate() -> None:
+    """Omitting a hard case cannot inflate shared metrics (optimizer blocker)."""
+    gold = {"easy": "yes", "hard": "yes"}
+    seed = {
+        "easy": SavedPromptOutcome(probabilities={"no": 0.1, "yes": 0.9}),
+        "hard": SavedPromptOutcome(probabilities={"no": 0.1, "yes": 0.9}),
+    }
+    candidate = {
+        "easy": SavedPromptOutcome(probabilities={"no": 0.1, "yes": 0.9}),
+    }
+    report = compare_matched_prompt_outcomes(gold, seed, candidate, labels=_LABELS)
+    assert report["candidate"]["missing_case_ids"] == ["hard"]
+    assert report["shared_valid_case_ids"] == ["easy"]
+    assert report["delta_candidate_minus_seed"]["mean_brier"] == 0.0
+    assert report["delta_candidate_minus_seed"]["mean_log_loss"] == 0.0
+    assert report["shared_valid_quality"]["seed"]["accuracy"] == 1.0
+    assert report["shared_valid_quality"]["candidate"]["accuracy"] == 1.0
+
+
+@pytest.mark.unit
+def test_unexpected_outcome_id_rejected() -> None:
+    """Arms cannot report ids outside the scheduled gold set."""
+    gold = {"a": "yes"}
+    seed = {"a": SavedPromptOutcome(probabilities={"no": 0.5, "yes": 0.5})}
+    extra = {
+        "a": SavedPromptOutcome(probabilities={"no": 0.5, "yes": 0.5}),
+        "ghost": SavedPromptOutcome(probabilities={"no": 0.5, "yes": 0.5}),
+    }
+    with pytest.raises(ValueError, match="unexpected outcome ids"):
+        compare_matched_prompt_outcomes(gold, seed, extra, labels=_LABELS)
 
 
 @pytest.mark.unit

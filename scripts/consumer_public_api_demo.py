@@ -48,7 +48,11 @@ def main() -> int:
     out.write_text(json.dumps(record, indent=2), encoding="utf-8")
     print(
         json.dumps(
-            {"wrote": str(out), "candidate_improved": report["candidate_improved"]}
+            {
+                "wrote": str(out),
+                "shared_valid_case_ids": report["shared_valid_case_ids"],
+                "replay_report_schema": report["replay_report_schema"],
+            }
         )
     )
     return 0

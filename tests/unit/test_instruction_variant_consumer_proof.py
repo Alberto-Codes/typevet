@@ -34,7 +34,7 @@ from typevet.evaluation.instruction_variant_consumer_protocol import (
 )
 from typevet.evaluation.instruction_variant_consumer_receipt import (
     acceptance_failures,
-    comparison_verdict,
+    descriptive_replay_label,
 )
 from typevet.evaluation.instruction_variant_consumer_run import run_variant_matrix
 from typevet.evaluation.outcome_replay_metrics import replay_identical_reports
@@ -60,42 +60,25 @@ def test_offline_instruction_variant_proof_passes() -> None:
         result.replay_report,
         receipt["replay_report"],
     )
-    assert receipt["comparison_verdict"] in {
-        "candidate_improved",
-        "tie",
-        "candidate_worse_or_mixed",
-        "insufficient_valid_metrics",
+    assert receipt["replay_descriptive_label"] in {
+        "shared_metrics_computed",
+        "no_shared_valid_cases",
     }
+    assert receipt["replay_report_schema"] == "descriptive_v2"
+    assert "candidate_improved" not in result.replay_report
 
 
 @pytest.mark.unit
-def test_replay_does_not_claim_improvement_without_both_metrics() -> None:
-    """Scripted offline arms use mixed deltas; verdict must stay honest."""
-    result = run_offline_instruction_variant_proof(fixture_root=FIXTURE_ROOT)
-    improved = result.replay_report.get("candidate_improved")
-    if improved is False:
-        assert result.receipt["comparison_verdict"] != "candidate_improved"
-
-
-@pytest.mark.unit
-def test_comparison_verdict_branches() -> None:
-    """Verdict helper stays honest across replay shapes."""
-    assert comparison_verdict({"candidate_improved": True}) == "candidate_improved"
-    assert (
-        comparison_verdict({"delta_candidate_minus_seed": {}})
-        == "insufficient_valid_metrics"
+def test_descriptive_replay_label_branches() -> None:
+    """Descriptive labels avoid promotion wording on new schema reports."""
+    assert descriptive_replay_label({"shared_valid_case_ids": []}) == (
+        "no_shared_valid_cases"
     )
-    assert (
-        comparison_verdict(
-            {"delta_candidate_minus_seed": {"mean_brier": 0.0, "mean_log_loss": 0.0}}
-        )
-        == "tie"
+    assert descriptive_replay_label({"shared_valid_case_ids": ["a"]}) == (
+        "shared_metrics_computed"
     )
-    assert (
-        comparison_verdict(
-            {"delta_candidate_minus_seed": {"mean_brier": 0.1, "mean_log_loss": 0.0}}
-        )
-        == "candidate_worse_or_mixed"
+    assert descriptive_replay_label({"candidate_improved": True}) == (
+        "legacy_promotion_schema"
     )
 
 
@@ -169,7 +152,7 @@ def test_proof_main_writes_receipt(tmp_path: Path) -> None:
     assert code == 0
     assert out.is_file()
     summary = json.loads(out.read_text(encoding="utf-8"))
-    assert summary["comparison_verdict"]
+    assert summary["replay_descriptive_label"]
 
 
 @pytest.mark.unit

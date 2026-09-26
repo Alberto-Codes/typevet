@@ -45,6 +45,7 @@ def proof_main(argv: Sequence[str] | None = None) -> int:
     Returns:
         Exit code ``0`` when acceptance passes, ``1`` on acceptance failure,
         and ``2`` when exclusive receipt write hits ``ReceiptAlreadyExistsError``.
+        Prints a JSON summary with ``replay_descriptive_label`` on success paths.
     """
     parser = argparse.ArgumentParser(
         description="Instruction-variant consumer proof (#177 slice 4)",
@@ -89,7 +90,7 @@ def proof_main(argv: Sequence[str] | None = None) -> int:
         print(f"wrote {result.receipt_path}")
     summary = {
         "exit_code": result.exit_code,
-        "verdict": result.receipt.get("comparison_verdict"),
+        "replay_descriptive_label": result.receipt.get("replay_descriptive_label"),
     }
     print(json.dumps(summary))
     return result.exit_code
