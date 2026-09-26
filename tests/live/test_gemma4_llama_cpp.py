@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-import httpx
 import pytest
 
 from typevet.adapters.inbound.settings import llama_cpp_adapter, load_llama_settings
 from typevet.domain.models import GenerationRequest
+from typevet.eval_runner_live_gate import live_skip_reason
 
 _LLAMA = load_llama_settings()
 BASE = _LLAMA.base_url
@@ -25,35 +25,14 @@ SCHEMA = {
 }
 
 
-def _router_up() -> bool:
-    try:
-        response = httpx.get(f"{BASE.rstrip('/')}/v1/models", timeout=5.0)
-    except httpx.HTTPError:
-        return False
-    return response.status_code == 200
-
-
-def _model_listed() -> bool:
-    try:
-        response = httpx.get(f"{BASE.rstrip('/')}/v1/models", timeout=5.0)
-        data = response.json()
-    except (httpx.HTTPError, ValueError):
-        return False
-    ids = {item.get("id") for item in data.get("data", [])}
-    return MODEL in ids
-
-
 @pytest.fixture
 def gemma4_llama_router() -> str:
     """Probe local llama.cpp only when a live test is selected to run."""
-    model = MODEL
-    if not model:
-        pytest.skip("TYPEVET_LLAMA__DEFAULT_MODEL (or TYPEVET_GEMMA_MODEL) not set")
-    if not _router_up():
-        pytest.skip("llama.cpp router not reachable")
-    if not _model_listed():
-        pytest.skip(f"{model} not in router catalog")
-    return model
+    reason = live_skip_reason(_LLAMA)
+    if reason is not None:
+        pytest.skip(reason)
+    assert MODEL is not None
+    return MODEL
 
 
 @pytest.mark.live
