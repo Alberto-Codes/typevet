@@ -36,8 +36,8 @@ Fixture root: `tests/fixtures/psai/vision_smoke`.
 | Variant matrix | Both arms run on both cases; rows and distributions retained |
 | Invalid input | Empty model raises ``JudgmentValidationError``; failure retained |
 | Unsupported template | ``JudgmentValidationError`` with ``served_template=None`` |
-| Replay (#132) | ``compare_matched_prompt_outcomes`` on saved distributions only |
-| Improvement claim | ``candidate_improved`` true only when both Brier and log loss improve |
+| Replay (#132) | ``compare_matched_prompt_outcomes`` descriptive v2 on saved distributions |
+| Selection verdict | **None** — paired deltas on shared valid cases only; no promotion fields |
 
 ## Wheel + entry
 

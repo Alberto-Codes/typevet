@@ -49,7 +49,34 @@ uv run python scripts/run_consumer_instruction_variant_proof.py --dev
 TYPEVET_WHEEL_SHA256=$(sha256sum dist/typevet-*.whl | awk '{print $1}') \
   uv run python scripts/consumer_instruction_variant_proof.py
 uv run pytest -q tests/unit/test_instruction_variant_consumer_proof.py
+uv run pytest -q tests/contract/test_gemma_native_vision_wheel_consumer.py
+uv run python scripts/gemma_native_vision_wheel_proof.py
 ```
+
+Wheel harnesses write receipts under a temp ``work_dir`` unless ``--out-dir`` is set;
+they do not default to ``tests/fixtures/consumer/``.
+
+## Post scope-correction handoff (#177 / #191)
+
+Executable local checks:
+
+```bash
+uv run pytest -q --cov=typevet --cov-report=term-missing
+uv run pytest -q tests/contract/test_runtime_gemma_vision_factory.py
+uv run pytest -q tests/contract/test_gemma_native_vision_wheel_consumer.py
+uv run pytest -q tests/unit/test_outcome_replay_metrics.py
+TYPEVET_REQUIRE_LIVE=1 uv run pytest -q tests/unit/test_eval_runner_live_gate.py
+uv run python scripts/gemma_native_vision_wheel_proof.py
+```
+
+Limitations:
+
+- Runtime proof (factory smoke, live routers) is not quality proof; probabilities stay
+  router-derived and uncalibrated.
+- Isolated wheel factory smoke uses an offline httpx stub; live matrix rerun is optional
+  when ``TYPEVET_REQUIRE_LIVE=1`` and a router are available.
+- Historical consumer JSON fixtures keep legacy ``comparison_verdict`` fields; new runs
+  emit ``replay_descriptive_label`` and descriptive v2 replay blocks only.
 
 Freeze protocol for slice 4: [consumer instruction-variant protocol](consumer-instruction-variant-protocol.md) (post on #177 before live).
 
@@ -70,8 +97,8 @@ Done when:
 - Call budget frozen before live (≤8 scoring hard cap; 4 scheduled for slice).
 - Invalid model and unsupported-template probes retained with nonzero
   `failed_attempts`.
-- `#132` `compare_matched_prompt_outcomes` on saved distributions; improvement
-  claimed only when `candidate_improved` is true.
+- `#132` `compare_matched_prompt_outcomes` descriptive v2 on saved distributions;
+  receipts expose `replay_descriptive_label` (no promotion verdicts).
 - Unit + contract tests green; handoff updated. Commit `Refs #177`.
 
 

@@ -21,6 +21,7 @@ Examples:
 See Also:
     - [typevet.evaluation.psai_vision_consumer_dispatch][]: budget ledger
     - [typevet.evaluation.psai_vision_consumer_live][]: receipt orchestration
+    - [typevet.adapters.outbound.gemma_native_vision_factory][]: native vision factory
 
 Probes health, capability, and template identity before matrix dispatch;
 each HTTP leg increments auxiliary or tokenizer counters on the ledger.
@@ -42,12 +43,13 @@ from typevet.adapters.outbound.gemma import (
     ServedTemplateClass,
     classify_served_template,
 )
-from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
+from typevet.adapters.outbound.gemma_native_vision_factory import (
+    open_gemma_native_vision_judgment,
+)
 from typevet.adapters.outbound.llama_cpp_multimodal import (
     MediaCapability,
     fetch_media_capability,
 )
-from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
 from typevet.evaluation.datasets.psai_vision import VisionSmokeFixture
 from typevet.evaluation.experiment_identity import (
     EvaluatedInputsSnapshot,
@@ -67,8 +69,6 @@ from typevet.evaluation.psai_vision_consumer_offline import (
     load_frozen_consumer_fixture,
     run_offline_consumer_matrix,
 )
-
-_N_VOCAB = 262144
 
 
 @dataclass(frozen=True, slots=True)
@@ -196,23 +196,21 @@ def _dispatch_consumer_matrix(
 ) -> tuple[list[dict[str, Any]], dict[tuple[str, str], float]]:
     """Run judgment/scoring matrix rows through a configured router client.
 
+    Delegates port construction to ``open_gemma_native_vision_judgment`` so live
+    dispatch matches the public factory path.
+
     Returns:
         Matrix rows and visual Noul probability map (negative leg omitted).
     """
-    with LlamaCppCandidateScoringAdapter(
-        base_url=base,
-        timeout=settings.timeout,
-        n_vocab=_N_VOCAB,
-    ) as scoring:
-        scoring_wrapped = wrap_scoring_port(scoring, dispatch)
-        port = ScoringJudgmentAdapter(
-            scoring_wrapped,
-            tokenize_content=counting_tokenizer(
-                client.post, ledger=dispatch, model=model
-            ),
-            served_template=served,
-        )
-        port = wrap_judgment_port(port, dispatch)
+    _ = served
+    with open_gemma_native_vision_judgment(
+        settings=settings,
+        model=model,
+        http_client=client,
+        tokenize_content=counting_tokenizer(client.post, ledger=dispatch, model=model),
+        scoring_port_wrapper=lambda scoring: wrap_scoring_port(scoring, dispatch),
+    ) as session:
+        port = wrap_judgment_port(session.port, dispatch)
         return run_offline_consumer_matrix(
             port,
             fixture_root=fixture_root,

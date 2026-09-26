@@ -32,7 +32,6 @@ from typevet.testing.wheel_isolated import (
 )
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
-_CONSUMER_RECEIPT_DIR = _REPO_ROOT / "tests" / "fixtures" / "consumer"
 
 TYPEVET_WHEEL_SHA256_ENV = "TYPEVET_WHEEL_SHA256"
 _EXIT_INVALID = 2
@@ -161,7 +160,8 @@ def run_offline_wheel_proof(
     except ValueError as exc:
         print(f"FAIL_CLOSED: {exc}", file=sys.stderr)
         return (_EXIT_INVALID, wheel, measured)
-    receipt_dir = out_dir or _CONSUMER_RECEIPT_DIR
+    receipt_dir = out_dir or (base / "receipts")
+    receipt_dir.mkdir(parents=True, exist_ok=True)
     completed = run_isolated_wheel_python(
         wheel=wheel,
         source=_isolated_offline_source(
@@ -194,7 +194,8 @@ def run_live_wheel_proof(
     base = work_dir or Path(tempfile.mkdtemp(prefix="typevet-variant-live-"))
     isolated_cwd = base / "isolated_live_cwd"
     isolated_cwd.mkdir(parents=True, exist_ok=True)
-    receipt_dir = out_dir or _CONSUMER_RECEIPT_DIR
+    receipt_dir = out_dir or (base / "receipts")
+    receipt_dir.mkdir(parents=True, exist_ok=True)
     completed = run_isolated_wheel_python(
         wheel=wheel,
         source=_isolated_live_source(

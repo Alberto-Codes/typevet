@@ -18,7 +18,7 @@ Examples:
 
 See Also:
     - [typevet.evaluation.instruction_variant_consumer_live][]: receipt orchestration
-    - [typevet.adapters.outbound.judgment_scoring][]: scoring-backed judgment
+    - [typevet.adapters.outbound.gemma_native_vision_factory][]: native vision factory
 
 ``run_live_variant_matrix`` opens a scoring-backed judgment port when the live
 gate and native Gemma template class allow; otherwise it returns ``None``.
@@ -29,23 +29,15 @@ gate and native Gemma template class allow; otherwise it returns ``None``.
 from __future__ import annotations
 
 import os
-from collections.abc import Callable, Iterator
-from contextlib import contextmanager
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
 import httpx
 
-from typevet.adapters.inbound.settings import LlamaSettings, load_llama_settings
-from typevet.adapters.outbound.gemma import (
-    ServedTemplateClass,
-    classify_served_template,
-)
-from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
-from typevet.adapters.outbound.llama_cpp_multimodal import fetch_media_capability
-from typevet.adapters.outbound.llama_cpp_scoring import (
-    DEFAULT_N_VOCAB,
-    LlamaCppCandidateScoringAdapter,
+from typevet.adapters.inbound.settings import load_llama_settings
+from typevet.adapters.outbound.gemma_native_vision_factory import (
+    open_gemma_native_vision_judgment,
 )
 from typevet.evaluation.instruction_variant_consumer_matrix import (
     _LedgerJudgmentPort as LedgerJudgmentPort,
@@ -66,12 +58,6 @@ from typevet.ports.judgment import JudgmentPort
 
 _MODEL_ENV = ("TYPEVET_GEMMA_MODEL", "TYPEVET_LLAMA__DEFAULT_MODEL")
 _VARIANT_SCORING_PER_MATRIX = 4
-_SUPPORTED_NATIVE = frozenset(
-    {
-        ServedTemplateClass.NATIVE_GEMMA3_TURN,
-        ServedTemplateClass.NATIVE_GEMMA4_TURN,
-    }
-)
 
 
 def resolve_variant_live_model() -> str:
@@ -90,92 +76,6 @@ def resolve_variant_live_model() -> str:
 
 def _resolve_model() -> str:
     return resolve_variant_live_model()
-
-
-def _classify_native_template(
-    client: httpx.Client,
-    model: str,
-    *,
-    require_gemma4: bool,
-) -> ServedTemplateClass:
-    rendered = (
-        client.post(
-            "/apply-template",
-            json={
-                "model": model,
-                "messages": [{"role": "user", "content": "hello"}],
-                "add_generation_prompt": True,
-            },
-        )
-        .raise_for_status()
-        .json()["prompt"]
-    )
-    family = classify_served_template(rendered)
-    if require_gemma4 and family is not ServedTemplateClass.NATIVE_GEMMA4_TURN:
-        msg = f"expected NATIVE_GEMMA4_TURN, got {family.value}"
-        raise ValueError(msg)
-    if family not in _SUPPORTED_NATIVE:
-        msg = f"unsupported served template for native vision: {family.value}"
-        raise ValueError(msg)
-    return family
-
-
-def _tokenize_factory(
-    client: httpx.Client,
-    model: str,
-) -> Callable[[str], tuple[int, ...]]:
-    def tokenize(text: str) -> tuple[int, ...]:
-        """Tokenize ``text`` through the router ``/tokenize`` endpoint.
-
-        Returns:
-            Token id tuple from the router JSON body.
-        """
-        body = client.post(
-            "/tokenize",
-            json={"model": model, "content": text, "add_special": False},
-        )
-        return tuple(body.raise_for_status().json()["tokens"])
-
-    return tokenize
-
-
-@contextmanager
-def _open_native_vision_port(
-    *,
-    settings: LlamaSettings,
-    model: str,
-    http_client: httpx.Client,
-) -> Iterator[JudgmentPort]:
-    """Yield a Gemma native-turn judgment port for one live matrix.
-
-    Yields:
-        Scoring-backed judgment port wired to ``http_client``.
-
-    Raises:
-        ValueError: When vision or template probes fail.
-    """
-    base = settings.base_url.rstrip("/")
-    capability = fetch_media_capability(http_client, f"{base}/", model)
-    if not capability.vision:
-        msg = "model reports text-only input modalities"
-        raise ValueError(msg)
-    served = _classify_native_template(http_client, model, require_gemma4=True)
-    tokenize = _tokenize_factory(http_client, model)
-    scoring = LlamaCppCandidateScoringAdapter(
-        base_url=base,
-        timeout=settings.timeout,
-        client=http_client,
-        n_vocab=DEFAULT_N_VOCAB,
-    )
-    port: JudgmentPort = ScoringJudgmentAdapter(
-        scoring,
-        tokenize_content=tokenize,
-        served_template=served,
-    )
-    try:
-        yield port
-    finally:
-        scoring.close()
 
 
 def _live_variant_arms(
@@ -217,6 +117,9 @@ def run_live_variant_matrix(
 ) -> VariantMatrixRun | None:
     """Execute the live variant matrix when the router gate allows.
 
+    Opens ``open_gemma_native_vision_judgment`` for the configured router and
+    reuses ``session.port`` for all variant arms.
+
     Returns:
         Matrix run payload, or ``None`` when the live gate skips dispatch.
     """
@@ -230,12 +133,13 @@ def run_live_variant_matrix(
     ledger = VariantDispatchLedger()
     with (
         httpx.Client(base_url=settings.base_url, timeout=settings.timeout) as client,
-        _open_native_vision_port(
+        open_gemma_native_vision_judgment(
             settings=settings,
             model=model_id,
             http_client=client,
-        ) as bare,
+        ) as session,
     ):
+        bare = session.port
         invalid = probe_invalid_model(bare)
         if invalid["ok"]:
             ledger.record_failure()

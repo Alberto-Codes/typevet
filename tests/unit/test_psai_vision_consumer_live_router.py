@@ -18,6 +18,10 @@ import pytest
 
 from typevet.adapters.inbound.settings import LlamaSettings
 from typevet.adapters.outbound.gemma import ServedTemplateClass
+from typevet.adapters.outbound.gemma_native_vision_factory import (
+    GemmaNativeVisionSession,
+)
+from typevet.adapters.outbound.llama_cpp_multimodal import MediaCapability
 from typevet.evaluation.psai_vision_consumer_live_router import run_consumer_live_matrix
 
 FIXTURE_ROOT = (
@@ -38,10 +42,7 @@ def test_run_consumer_live_matrix_offline_scripted_router() -> None:
         {"tokens": [1, 2, 3]},
     ]
 
-    class _Cap:
-        vision = True
-        marker = "m"
-
+    capability = MediaCapability(vision=True, marker="m")
     settings = LlamaSettings(base_url="http://127.0.0.1:8090", timeout=30.0)
 
     with (
@@ -54,18 +55,25 @@ def test_run_consumer_live_matrix_offline_scripted_router() -> None:
         ),
         patch(
             "typevet.evaluation.psai_vision_consumer_live_router.fetch_media_capability",
-            return_value=_Cap(),
+            return_value=capability,
         ),
         patch(
-            "typevet.evaluation.psai_vision_consumer_live_router.LlamaCppCandidateScoringAdapter",
-        ) as scoring_cls,
+            "typevet.evaluation.psai_vision_consumer_live_router.open_gemma_native_vision_judgment",
+        ) as factory_ctx,
         patch(
             "typevet.evaluation.psai_vision_consumer_live_router.run_offline_consumer_matrix",
-            return_value=([], {}, {"ok": True}),
+            return_value=([], {}),
         ),
     ):
         client_cls.return_value.__enter__.return_value = mock_client
-        scoring_cls.return_value.__enter__.return_value = MagicMock()
+        mock_port = MagicMock()
+        factory_ctx.return_value.__enter__.return_value = GemmaNativeVisionSession(
+            port=mock_port,
+            client=mock_client,
+            model="gemma-test",
+            served=ServedTemplateClass.NATIVE_GEMMA4_TURN,
+            capability=capability,
+        )
         result = run_consumer_live_matrix(
             settings=settings,
             model="gemma-test",

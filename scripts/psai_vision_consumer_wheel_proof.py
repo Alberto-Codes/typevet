@@ -37,7 +37,6 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 TYPEVET_WHEEL_SHA256_ENV = "TYPEVET_WHEEL_SHA256"
 _EXIT_INVALID = 2
 _FIXTURE_CLI_ARG_COUNT = 2
-_CONSUMER_RECEIPT_DIR = _REPO_ROOT / "tests" / "fixtures" / "consumer"
 
 
 def sha256_hex(path: Path) -> str:
@@ -214,7 +213,7 @@ def run_live_wheel_proof(
         wheel: Built ``typevet`` wheel installed in isolation.
         wheel_sha256: Measured digest of ``wheel``.
         work_dir: Optional parent for isolated cwd.
-        out_dir: Receipt directory (defaults to ``tests/fixtures/consumer``).
+        out_dir: Receipt directory (defaults to a temp dir under ``work_dir``).
 
     Returns:
         Process exit code from the isolated live harness.
@@ -222,7 +221,8 @@ def run_live_wheel_proof(
     base = work_dir or Path(tempfile.mkdtemp(prefix="typevet-consumer-live-"))
     isolated_cwd = base / "isolated_live_cwd"
     isolated_cwd.mkdir(parents=True, exist_ok=True)
-    receipt_dir = out_dir or _CONSUMER_RECEIPT_DIR
+    receipt_dir = out_dir or (base / "live_receipts")
+    receipt_dir.mkdir(parents=True, exist_ok=True)
     return _run_isolated_phase(
         wheel=wheel,
         source=_isolated_live_source(
