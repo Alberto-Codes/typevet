@@ -23,6 +23,7 @@ See Also:
     - [typevet.eval_banking77][]: Banking77 fraud-proxy loader (separate corpus)
     - [typevet.eval_difraud][]: DIFrauD scam/legit loader (separate corpus)
     - [typevet.eval_banking77][]: Banking77 fraud-proxy loader (separate corpus)
+    - [typevet.eval_pubmedqa][]: PubMedQA labeled Choice loader (separate corpus)
     - [typevet.domain.decision_compile][]: compile Noul schemas for fixtures
 """
 

@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "answer": {
+      "type": "string",
+      "enum": ["yes", "no", "maybe"],
+      "instructions": "Given the biomedical question and PubMed abstract contexts, is the answer yes, no, or maybe?"
+    }
+  },
+  "required": ["answer"],
+  "additionalProperties": false
+}

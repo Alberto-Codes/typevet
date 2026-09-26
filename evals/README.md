@@ -14,6 +14,7 @@ re-litigate dataset research.
 | [fixtures/difraud_is_scam_noul_schema_v1.json](fixtures/difraud_is_scam_noul_schema_v1.json) | Versioned `is_scam` Noul JSON Schema for DIFrauD (#59) |
 | [fixtures/civil_comments_is_toxic_noul_schema_v1.json](fixtures/civil_comments_is_toxic_noul_schema_v1.json) | Versioned `is_toxic` Noul JSON Schema for Civil Comments (#72) |
 | [fixtures/civil_comments_tier_manifest_v1.yaml](fixtures/civil_comments_tier_manifest_v1.yaml) | Seeded tier A/B limits and τ=0.5 policy (#72) |
+| [fixtures/pubmedqa_answer_choice_schema_v1.json](fixtures/pubmedqa_answer_choice_schema_v1.json) | Versioned yes/no/maybe Choice schema for PubMedQA (#78) |
 
 Human-readable commentary and epic links:
 [Eval complementary manifest](../docs/reference/eval-complementary-manifest.md).
