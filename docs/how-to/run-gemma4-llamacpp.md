@@ -101,6 +101,9 @@ TYPEVET_LLAMA__DEFAULT_MODEL='<your-gemma-4-model-id>' \
 Library entry: ``LlamaCppCandidateScoringAdapter`` from
 ``typevet.adapters.outbound``. For enum decisions, inject that adapter as
 ``scoring_port`` on ``typevet.decide_categorical`` (caller owns client lifetime).
+Use ``inject_prefix=True`` with a template-derived ``prefix=`` when you already
+applied ``/apply-template``; otherwise pass ``context=`` and let the library
+compose the degraded ChatML scoring prefix.
 
 ```bash
 TYPEVET_LLAMA__DEFAULT_MODEL='<your-gemma-4-model-id>' \

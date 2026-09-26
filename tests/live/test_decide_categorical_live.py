@@ -110,8 +110,9 @@ def test_decide_categorical_live_enum(gemma4_decide_ready: str) -> None:
     ) as scoring_port:
         result = decide_categorical(
             field=_ENUM_SCHEMA,
-            prompt=prompt,
+            context=prompt,
             prefix=anchor.prefix,
+            inject_prefix=True,
             model=gemma4_decide_ready,
             scoring_port=scoring_port,
             candidates=candidates,

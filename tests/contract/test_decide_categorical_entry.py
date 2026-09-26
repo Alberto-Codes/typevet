@@ -33,8 +33,9 @@ def test_decide_categorical_public_entry_matches_executor_semantics() -> None:
     fake = ContractScoringFake(logprobs={"billing": -0.5, "technical": -1.2})
     result = decide_categorical(
         field=schema,
-        prompt="Classify.",
+        context="Classify.",
         prefix="Answer:",
+        inject_prefix=True,
         model="fake-scoring",
         scoring_port=fake,
         candidates=candidates,

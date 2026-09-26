@@ -16,8 +16,7 @@ Examples:
     # scoring_port: offline fake or LlamaCppCandidateScoringAdapter
     decide_categorical(
         field=schema,
-        prompt="Pick one.",
-        prefix="Answer:",
+        context="Pick one.",
         model="fake",
         scoring_port=scoring_port,
         candidates=(
@@ -46,6 +45,11 @@ from typevet.domain.decision_execute import (
 )
 from typevet.domain.decisions import Decision
 from typevet.domain.errors import DecisionExecutionError
+from typevet.field_prompt import (
+    choice_criteria_from_schema,
+    compose_scoring_prefix,
+    render_field_instructions,
+)
 from typevet.ports.scoring import CandidateScoringPort
 
 _CATEGORICAL_SYNTAX = frozenset({"Choice", "Bool"})
@@ -98,16 +102,47 @@ def _resolve_field(field: Decision | Mapping[str, Any]) -> Decision:
     return _decision_from_schema(field)
 
 
+def _resolve_context(
+    *,
+    context: str,
+    prompt_alias: str | None,
+    inject_prefix: bool,
+) -> str:
+    if prompt_alias is not None:
+        if context.strip():
+            msg = "pass only one of context= or prompt= to decide_categorical"
+            raise DecisionExecutionError(msg)
+        context = prompt_alias
+    if not inject_prefix:
+        _require_non_empty("context", context)
+    elif context.strip():
+        pass
+    return context
+
+
+def _native_scoring_prefix(
+    *,
+    context: str,
+    decision: Decision,
+    field: Decision | Mapping[str, Any],
+) -> str:
+    criteria = None
+    if isinstance(field, Mapping):
+        criteria = choice_criteria_from_schema(field, decision.name)
+    field_block = render_field_instructions(decision, choice_criteria=criteria)
+    return compose_scoring_prefix(context=context, field_block=field_block)
+
+
 def decide_categorical(
     *,
     scoring_port: CandidateScoringPort,
     model: str,
     candidates: tuple[CandidateTokenSpec, ...],
-    prefix: str,
-    prompt: str,
     field: Decision | Mapping[str, Any],
+    context: str = "",
+    inject_prefix: bool = False,
     temperature: float = 1.0,
-    **unsupported: Any,
+    **legacy: Any,
 ) -> CategoricalExecutionResult:
     """Score categorical candidates and return the greedy choice plus distribution.
 
@@ -116,18 +151,22 @@ def decide_categorical(
     are never closed by this function (construct and own
     ``LlamaCppCandidateScoringAdapter`` at the call site when needed).
 
+    By default the library composes the scoring prefix from ``context`` plus
+    rendered field instructions. Set ``inject_prefix=True`` and pass ``prefix=``
+    to score an exact caller-owned prefix (``context`` does not alter it).
+
     Args:
         scoring_port: Offline fake or llama.cpp adapter implementing scoring.
         model: Backend model id forwarded to the scorer.
         candidates: Single-token specs aligned with the decision choices.
-        prefix: Rendered answer prefix before candidate tokens (offline or live).
-        prompt: User message content; must be non-empty (context validation).
         field: Compiled ``Decision`` or JSON Schema with one categorical property.
+        context: User or task text for the judgment (native path).
+        inject_prefix: When true, require ``prefix=`` and score it verbatim.
         temperature: Softmax temperature for the executor (default 1.0).
 
     Other Parameters:
-        unsupported: Extra keyword arguments are rejected with
-            ``DecisionExecutionError`` before scoring IO.
+        legacy: ``prefix`` for inject mode; ``prompt`` as deprecated ``context``
+            alias. Other keys raise ``DecisionExecutionError``.
 
     Returns:
         Greedy value, full probability table, and raw logprobs from the executor.
@@ -138,17 +177,40 @@ def decide_categorical(
         SchemaError: Schema cannot be compiled.
         ScoringValidationError: Propagated from the scoring port or executor.
     """
-    if unsupported:
-        keys = ", ".join(sorted(unsupported))
+    prefix = legacy.pop("prefix", None)
+    prompt_alias = legacy.pop("prompt", None)
+    if legacy:
+        keys = ", ".join(sorted(legacy))
         msg = f"unsupported decide_categorical arguments: {keys}"
         raise DecisionExecutionError(msg)
-    _require_non_empty("prompt", prompt)
     _require_non_empty("model", model)
-    _require_non_empty("prefix", prefix)
+    resolved_context = _resolve_context(
+        context=context,
+        prompt_alias=prompt_alias,
+        inject_prefix=inject_prefix,
+    )
     resolved = _resolve_field(field)
+    if inject_prefix:
+        if prefix is None:
+            msg = "inject_prefix=True requires prefix="
+            raise DecisionExecutionError(msg)
+        _require_non_empty("prefix", prefix)
+        scoring_prefix = prefix
+    else:
+        if prefix is not None:
+            msg = (
+                "prefix= is only valid with inject_prefix=True; "
+                "omit prefix on the native path"
+            )
+            raise DecisionExecutionError(msg)
+        scoring_prefix = _native_scoring_prefix(
+            context=resolved_context,
+            decision=resolved,
+            field=field,
+        )
     return execute_categorical_decision(
         resolved,
-        prefix=prefix,
+        prefix=scoring_prefix,
         candidates=candidates,
         port=scoring_port,
         model=model,

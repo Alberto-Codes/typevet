@@ -13,6 +13,7 @@ from typevet import decide_categorical
 from typevet.domain.candidate_scoring_request import CandidateTokenSpec
 from typevet.domain.decisions import Decision, SchemaError
 from typevet.domain.errors import DecisionExecutionError
+from typevet.gemma_served_template import CHATML_ASSISTANT_HEADER
 
 _SINGLE_ENUM_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -34,20 +35,112 @@ def _specs(*labels: str) -> tuple[CandidateTokenSpec, ...]:
 
 
 @pytest.mark.unit
+def test_decide_categorical_native_context_reaches_scorer_prefix() -> None:
+    decision = Decision(
+        "label",
+        "Pick the department.",
+        ("billing", "technical"),
+        syntax="Choice",
+    )
+    fake_a = ContractScoringFake(logprobs={"billing": -0.5, "technical": -1.2})
+    fake_b = ContractScoringFake(logprobs={"billing": -0.5, "technical": -1.2})
+    decide_categorical(
+        field=decision,
+        context="First ticket context.",
+        model="fake",
+        scoring_port=fake_a,
+        candidates=_specs("billing", "technical"),
+    )
+    decide_categorical(
+        field=decision,
+        context="Second ticket context.",
+        model="fake",
+        scoring_port=fake_b,
+        candidates=_specs("billing", "technical"),
+    )
+    assert fake_a.calls[0].prefix != fake_b.calls[0].prefix
+    assert "First ticket context." in fake_a.calls[0].prefix
+    assert "Second ticket context." in fake_b.calls[0].prefix
+    assert "Pick the department." in fake_a.calls[0].prefix
+    assert fake_a.calls[0].prefix.endswith(CHATML_ASSISTANT_HEADER)
+
+
+@pytest.mark.unit
+def test_decide_categorical_native_question_change_reaches_scorer() -> None:
+    fake_a = ContractScoringFake(logprobs={"billing": -0.5, "technical": -1.2})
+    fake_b = ContractScoringFake(logprobs={"billing": -0.5, "technical": -1.2})
+    decide_categorical(
+        field=Decision(
+            "label",
+            "Question A.",
+            ("billing", "technical"),
+            syntax="Choice",
+        ),
+        context="Same context.",
+        model="fake",
+        scoring_port=fake_a,
+        candidates=_specs("billing", "technical"),
+    )
+    decide_categorical(
+        field=Decision(
+            "label",
+            "Question B.",
+            ("billing", "technical"),
+            syntax="Choice",
+        ),
+        context="Same context.",
+        model="fake",
+        scoring_port=fake_b,
+        candidates=_specs("billing", "technical"),
+    )
+    assert fake_a.calls[0].prefix != fake_b.calls[0].prefix
+    assert "Question A." in fake_a.calls[0].prefix
+    assert "Question B." in fake_b.calls[0].prefix
+
+
+@pytest.mark.unit
+def test_decide_categorical_inject_prefix_isolates_context() -> None:
+    fixed = "Injected scoring prefix:"
+    fake_a = ContractScoringFake(logprobs={"billing": -0.5, "technical": -1.2})
+    fake_b = ContractScoringFake(logprobs={"billing": -0.5, "technical": -1.2})
+    decide_categorical(
+        field=_SINGLE_ENUM_SCHEMA,
+        context="Context one.",
+        prefix=fixed,
+        inject_prefix=True,
+        model="fake",
+        scoring_port=fake_a,
+        candidates=_specs("billing", "technical"),
+    )
+    decide_categorical(
+        field=_SINGLE_ENUM_SCHEMA,
+        context="Context two.",
+        prefix=fixed,
+        inject_prefix=True,
+        model="fake",
+        scoring_port=fake_b,
+        candidates=_specs("billing", "technical"),
+    )
+    assert fake_a.calls[0].prefix == fixed
+    assert fake_b.calls[0].prefix == fixed
+    assert len(fake_a.calls) == 1
+    assert len(fake_b.calls) == 1
+
+
+@pytest.mark.unit
 def test_decide_categorical_calls_scorer_and_full_distribution() -> None:
     fake = ContractScoringFake(
         logprobs={"billing": -0.5, "technical": -1.2},
     )
     result = decide_categorical(
         field=_SINGLE_ENUM_SCHEMA,
-        prompt="Route this ticket.",
-        prefix="Answer:",
+        context="Route this ticket.",
         model="fake",
         scoring_port=fake,
         candidates=_specs("billing", "technical"),
     )
     assert len(fake.calls) == 1
-    assert fake.calls[0].prefix == "Answer:"
+    assert "Route this ticket." in fake.calls[0].prefix
     assert len(result.probabilities) == 2
     assert result.value == "billing"
     assert sum(p for _, p in result.probabilities) == pytest.approx(1.0, abs=1e-6)
@@ -63,8 +156,7 @@ def test_decide_categorical_accepts_compiled_decision() -> None:
     )
     result = decide_categorical(
         field=decision,
-        prompt="Route.",
-        prefix="P:",
+        context="Route.",
         model="m",
         scoring_port=fake,
         candidates=_specs("billing", "technical"),
@@ -118,9 +210,8 @@ def test_decide_categorical_accepts_compiled_decision() -> None:
             DecisionExecutionError,
         ),
         ({"field": {"type": "array"}}, SchemaError),
-        ({"prompt": ""}, DecisionExecutionError),
+        ({"context": ""}, DecisionExecutionError),
         ({"model": ""}, DecisionExecutionError),
-        ({"prefix": ""}, DecisionExecutionError),
     ],
 )
 def test_decide_categorical_invalid_before_io(
@@ -128,14 +219,12 @@ def test_decide_categorical_invalid_before_io(
 ) -> None:
     fake = ContractScoringFake(logprobs={"billing": -0.5, "technical": -1.2})
     field = kwargs.get("field", _SINGLE_ENUM_SCHEMA)
-    prompt = kwargs.get("prompt", "Route.")
-    prefix = kwargs.get("prefix", "Answer:")
+    context = kwargs.get("context", "Route.")
     model = kwargs.get("model", "fake")
     with pytest.raises(exc_type):
         decide_categorical(
             field=field,
-            prompt=prompt,
-            prefix=prefix,
+            context=context,
             model=model,
             scoring_port=fake,
             candidates=_specs("billing", "technical"),
@@ -149,8 +238,7 @@ def test_decide_categorical_rejects_unsupported_kwargs() -> None:
     with pytest.raises(DecisionExecutionError, match="unsupported"):
         decide_categorical(
             field=_SINGLE_ENUM_SCHEMA,
-            prompt="Route.",
-            prefix="Answer:",
+            context="Route.",
             model="fake",
             scoring_port=fake,
             candidates=_specs("billing", "technical"),
@@ -175,14 +263,29 @@ def test_decide_categorical_permutations_one_control_still_scores() -> None:
     )
     result = decide_categorical(
         field=schema,
-        prompt="Route.",
-        prefix="Answer:",
+        context="Route.",
         model="fake",
         scoring_port=fake,
         candidates=_specs("billing", "technical"),
     )
     assert len(fake.calls) == 1
     assert result.value == "billing"
+
+
+@pytest.mark.unit
+def test_decide_categorical_inject_prefix_requires_nonempty_prefix() -> None:
+    fake = ContractScoringFake(logprobs={"billing": -0.5, "technical": -1.2})
+    with pytest.raises(DecisionExecutionError, match="prefix"):
+        decide_categorical(
+            field=_SINGLE_ENUM_SCHEMA,
+            context="Route.",
+            prefix="",
+            inject_prefix=True,
+            model="fake",
+            scoring_port=fake,
+            candidates=_specs("billing", "technical"),
+        )
+    assert fake.calls == []
 
 
 @pytest.mark.unit
@@ -215,13 +318,12 @@ def test_decide_categorical_rejects_permutations_two_before_io(
     with pytest.raises(DecisionExecutionError, match="permutation"):
         decide_categorical(
             field=field,
-            prompt="Route.",
-            prefix="Answer:",
+            context="Route.",
             model="fake",
             scoring_port=fake,
             candidates=_specs("billing", "technical"),
         )
-    assert fake.calls == []
+        assert fake.calls == []
 
 
 @pytest.mark.unit
@@ -239,13 +341,12 @@ def test_decide_categorical_rejects_permutations_all_before_io() -> None:
     with pytest.raises(DecisionExecutionError, match="permutation"):
         decide_categorical(
             field=schema,
-            prompt="Route.",
-            prefix="Answer:",
+            context="Route.",
             model="fake",
             scoring_port=fake,
             candidates=_specs("billing", "technical"),
         )
-    assert fake.calls == []
+        assert fake.calls == []
 
 
 @pytest.mark.unit
@@ -260,8 +361,7 @@ def test_decide_categorical_does_not_close_injected_port() -> None:
     fake = _CloseTrackingFake()
     decide_categorical(
         field=_SINGLE_ENUM_SCHEMA,
-        prompt="Route.",
-        prefix="Answer:",
+        context="Route.",
         model="fake",
         scoring_port=fake,
         candidates=_specs("billing", "technical"),
