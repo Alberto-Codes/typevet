@@ -1,0 +1,324 @@
+"""Fingerprints that distinguish evaluation smoke runs ([#186][i186]).
+
+Captures repo baseline, working-tree drift, prompt bundles, pinned code and
+fixture bytes, runtime labels and per-arm call counts. Every run gets a unique
+``run_id``; the ``identity_digest`` excludes it so two prompt variants at the
+same commit stay distinguishable.
+
+Examples:
+    ```python
+    from pathlib import Path
+
+    from typevet.evaluation.experiment_identity import (
+        ExperimentIdentityRequest,
+        PromptSpec,
+        RuntimeBuild,
+        WorkingTreeState,
+        capture_experiment_identity,
+    )
+
+    root = Path(".")
+    tree = WorkingTreeState("0" * 40, False, (), "")
+    identity = capture_experiment_identity(
+        ExperimentIdentityRequest(
+            repo_root=root,
+            prompts=(PromptSpec("expense", ("a",), "instructions", {"a": "rule"}),),
+            code_paths={},
+            fixture_paths={},
+            runtime=RuntimeBuild("model", "template", "unknown"),
+            arm_call_counts={"combined": 1},
+            working_tree=tree,
+        )
+    )
+    assert identity.run_id
+    ```
+
+See Also:
+    - [typevet.evaluation.datasets.cord_expense][]: CORD expense smoke prompts
+    - tests/live/test_cord_expense_smoke_live.py: live receipt wiring
+
+[i186]: https://github.com/Alberto-Codes/typevet/issues/186
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import uuid
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+from pathlib import Path
+
+
+def _sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
+def _sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def file_digest(path: Path) -> str:
+    """Return the SHA-256 hex digest of one file's bytes.
+
+    Returns:
+        Lowercase hex SHA-256 of the file contents.
+    """
+    return _sha256_bytes(path.read_bytes())
+
+
+@dataclass(frozen=True, slots=True)
+class PromptSpec:
+    """One named prompt bundle whose wording pins experiment identity.
+
+    Attributes:
+        name (str): Stable key in receipts, for example ``expense``.
+        label_order (tuple[str, ...]): Label order the judge sees.
+        instructions (str): Instruction text.
+        criteria (Mapping[str, str]): Criterion text per label or answer key.
+
+
+    Examples:
+        ```python
+        PromptSpec("expense", ("match",), "instructions", {"match": "rule"})
+        ```
+    """
+
+    name: str
+    label_order: tuple[str, ...]
+    instructions: str
+    criteria: Mapping[str, str]
+
+
+@dataclass(frozen=True, slots=True)
+class WorkingTreeState:
+    """Git baseline and optional dirty working tree at run start.
+
+    Attributes:
+        baseline_commit (str): ``HEAD`` commit at capture time.
+        dirty (bool): Whether the working tree had unstaged or staged edits.
+        dirty_paths (tuple[str, ...]): Repo-relative paths that differed.
+        dirty_digest (str): Digest of dirty file bytes; empty when clean.
+
+
+    Examples:
+        ```python
+        WorkingTreeState("0" * 40, False, (), "")
+        ```
+    """
+
+    baseline_commit: str
+    dirty: bool
+    dirty_paths: tuple[str, ...]
+    dirty_digest: str
+
+
+@dataclass(frozen=True, slots=True)
+class RuntimeBuild:
+    """Model and router labels recorded on the receipt.
+
+    Attributes:
+        model (str): Model id the smoke called.
+        served_template (str): Template family the adapter used.
+        server_build (str): Router build string, or ``unknown`` when missing.
+
+
+    Examples:
+        ```python
+        RuntimeBuild("model", "native_gemma3_turn", "unknown")
+        ```
+    """
+
+    model: str
+    served_template: str
+    server_build: str
+
+
+@dataclass(frozen=True, slots=True)
+class ExperimentIdentity:
+    """Full identity for one smoke run.
+
+    Attributes:
+        run_id (str): Unique id for this run attempt.
+        baseline_commit (str): Git commit at capture time.
+        working_tree (WorkingTreeState): Dirty-tree fingerprint.
+        prompt_digests (Mapping[str, str]): Digest per ``PromptSpec.name``.
+        code_path_digests (Mapping[str, str]): Digest per named source path.
+        fixture_digests (Mapping[str, str]): Digest per named fixture path.
+        runtime (RuntimeBuild): Model and template labels.
+        arm_call_counts (Mapping[str, int]): Scoring calls per modality or arm.
+
+
+    Examples:
+        ```python
+        tree = WorkingTreeState("0" * 40, False, (), "")
+        ExperimentIdentity(
+            run_id="r1",
+            baseline_commit="0" * 40,
+            working_tree=tree,
+            prompt_digests={},
+            code_path_digests={},
+            fixture_digests={},
+            runtime=RuntimeBuild("m", "t", "unknown"),
+            arm_call_counts={"combined": 0},
+        )
+        ```
+    """
+
+    run_id: str
+    baseline_commit: str
+    working_tree: WorkingTreeState
+    prompt_digests: Mapping[str, str]
+    code_path_digests: Mapping[str, str]
+    fixture_digests: Mapping[str, str]
+    runtime: RuntimeBuild
+    arm_call_counts: Mapping[str, int]
+
+    def to_receipt_mapping(self) -> dict[str, object]:
+        """Serialize this identity for a live smoke receipt JSON object.
+
+        Returns:
+            JSON-ready mapping with ``identity_digest`` included.
+        """
+        return {
+            "run_id": self.run_id,
+            "baseline_commit": self.baseline_commit,
+            "working_tree": {
+                "dirty": self.working_tree.dirty,
+                "dirty_paths": list(self.working_tree.dirty_paths),
+                "dirty_digest": self.working_tree.dirty_digest,
+            },
+            "prompt_digests": dict(self.prompt_digests),
+            "code_path_digests": dict(self.code_path_digests),
+            "fixture_digests": dict(self.fixture_digests),
+            "runtime": {
+                "model": self.runtime.model,
+                "served_template": self.runtime.served_template,
+                "server_build": self.runtime.server_build,
+            },
+            "arm_call_counts": dict(self.arm_call_counts),
+            "identity_digest": identity_digest(self),
+        }
+
+
+def prompt_digest(spec: PromptSpec) -> str:
+    """Hash one prompt bundle so label order and wording pin identity.
+
+    Returns:
+        Lowercase hex SHA-256 of the canonical prompt JSON payload.
+    """
+    payload = {
+        "name": spec.name,
+        "label_order": list(spec.label_order),
+        "instructions": spec.instructions,
+        "criteria": {key: spec.criteria[key] for key in sorted(spec.criteria)},
+    }
+    return _sha256_text(json.dumps(payload, sort_keys=True))
+
+
+def identity_digest(identity: ExperimentIdentity) -> str:
+    """Return a stable digest that excludes ``run_id``.
+
+    Returns:
+        Lowercase hex SHA-256 of every identity field except ``run_id``.
+    """
+    payload = {
+        "arm_call_counts": {
+            key: identity.arm_call_counts[key]
+            for key in sorted(identity.arm_call_counts)
+        },
+        "baseline_commit": identity.baseline_commit,
+        "code_path_digests": {
+            key: identity.code_path_digests[key]
+            for key in sorted(identity.code_path_digests)
+        },
+        "fixture_digests": {
+            key: identity.fixture_digests[key]
+            for key in sorted(identity.fixture_digests)
+        },
+        "prompt_digests": {
+            key: identity.prompt_digests[key] for key in sorted(identity.prompt_digests)
+        },
+        "runtime": {
+            "model": identity.runtime.model,
+            "served_template": identity.runtime.served_template,
+            "server_build": identity.runtime.server_build,
+        },
+        "working_tree": {
+            "dirty": identity.working_tree.dirty,
+            "dirty_digest": identity.working_tree.dirty_digest,
+            "dirty_paths": list(identity.working_tree.dirty_paths),
+        },
+    }
+    return _sha256_text(json.dumps(payload, sort_keys=True))
+
+
+@dataclass(frozen=True, slots=True)
+class ExperimentIdentityRequest:
+    """Inputs that pin one smoke run besides optional overrides.
+
+    Attributes:
+        repo_root (Path): Repository root for resolving relative paths.
+        prompts (Sequence[PromptSpec]): Named prompt bundles for the run.
+        code_paths (Mapping[str, Path]): Named production files to digest.
+        fixture_paths (Mapping[str, Path]): Named fixture files to digest.
+        runtime (RuntimeBuild): Model and template labels.
+        arm_call_counts (Mapping[str, int]): Scoring calls per arm name.
+        working_tree (WorkingTreeState): Baseline commit and dirty fingerprint
+            captured by the caller at run start (no git subprocess here).
+
+
+    Examples:
+        ```python
+        tree = WorkingTreeState("0" * 40, False, (), "")
+        ExperimentIdentityRequest(
+            repo_root=Path("."),
+            prompts=(),
+            code_paths={},
+            fixture_paths={},
+            runtime=RuntimeBuild("m", "t", "unknown"),
+            arm_call_counts={},
+            working_tree=tree,
+        )
+        ```
+    """
+
+    repo_root: Path
+    prompts: Sequence[PromptSpec]
+    code_paths: Mapping[str, Path]
+    fixture_paths: Mapping[str, Path]
+    runtime: RuntimeBuild
+    arm_call_counts: Mapping[str, int]
+    working_tree: WorkingTreeState
+
+
+def capture_experiment_identity(
+    request: ExperimentIdentityRequest,
+    *,
+    run_id: str | None = None,
+) -> ExperimentIdentity:
+    """Capture run identity from an injected working-tree fingerprint.
+
+    Args:
+        request: Repo, prompts, paths, runtime, call counts and working tree.
+        run_id: Optional fixed id; a new uuid is used when omitted.
+
+    Returns:
+        A complete ``ExperimentIdentity`` for receipt serialization.
+    """
+    tree = request.working_tree
+    return ExperimentIdentity(
+        run_id=run_id or uuid.uuid4().hex,
+        baseline_commit=tree.baseline_commit,
+        working_tree=tree,
+        prompt_digests={spec.name: prompt_digest(spec) for spec in request.prompts},
+        code_path_digests={
+            name: file_digest(path) for name, path in sorted(request.code_paths.items())
+        },
+        fixture_digests={
+            name: file_digest(path)
+            for name, path in sorted(request.fixture_paths.items())
+        },
+        runtime=request.runtime,
+        arm_call_counts=dict(request.arm_call_counts),
+    )
