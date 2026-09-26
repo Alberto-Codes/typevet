@@ -69,6 +69,11 @@ Agent call. Do not `fork` from a Fable session. User-scope routing in
 `~/.claude/CLAUDE.md` is authoritative for Claude Code; this repo repeats the
 rule so every harness sees it.
 
+**Copilot workers use `--model auto` only.** The Copilot CLI lists many
+models (including Fable). Do not pick them for typevet work. `auto` (and
+`--auto-tier` if needed) is the only allowed Copilot worker choice. Record
+the resolved identity if the receipt shows one; otherwise `unknown`.
+
 ## Issues before agents
 
 A research, port, design or implementation ask that will outlive one turn

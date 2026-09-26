@@ -11,8 +11,9 @@ in alphabetical order.
 **acceptance review.** An independent check of a builder's diff against the
 accepted issue contract. The reviewer changes no file.
 
-**builder.** The worker role that implements one accepted contract inside named
-paths and returns evidence. The builder never commits.
+**Copilot.** GitHub Copilot CLI (`copilot`). Present on this operator
+machine. For typevet worker dispatches, request `--model auto` only. Named
+Copilot models (including Fable) are out.
 
 **Diátaxis.** Documentation standard at [diataxis.fr](https://diataxis.fr/).
 Every page is one kind: tutorial, how-to, explanation or reference. Law in

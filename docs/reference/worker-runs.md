@@ -56,7 +56,8 @@ configure a harness.
 |---|---|
 | pi | Installed version. Provider and model. Effective `--thinking` setting. Instruction loading. Tool permissions. Session identifier |
 | Claude sub agent | Requested alias (`haiku`, `sonnet` or `opus` only — never Fable). Resolved model ID from the agent's return, or `unknown`. Effort. Allowed tools. Agent definition name |
-| Cursor CLI | Installed version. Requested model ID. Identity that the worker reports, or `unknown`. `session_id` and usage from the JSON receipt. `.cursor/cli.json` deny list |
+| Cursor CLI | Installed version. Requested model ID (`auto` allowed). Identity that the worker reports, or `unknown`. `session_id` and usage from the JSON receipt. `.cursor/cli.json` deny list |
+| Copilot CLI | Installed version. Requested model **must be `auto`**. `--auto-tier` if set. Resolved identity if shown, else `unknown`. Print-mode flags (`-p`) |
 | Any other harness | The same role, context, isolation, observation and return requirements |
 
 Also record the intended **weight** class for the job, even when the harness

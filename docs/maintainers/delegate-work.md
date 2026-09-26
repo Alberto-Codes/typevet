@@ -24,7 +24,10 @@ typevet uses three verified worker harnesses. The
 - **Claude sub agents** run through the Agent tool with definitions in
   `.claude/agents/`.
 - **Cursor CLI** runs Cursor-pool models in print mode, guarded by
-  `.cursor/cli.json`.
+  `.cursor/cli.json`. Cursor `auto` / Task `inherit` is allowed.
+- **GitHub Copilot CLI** (`copilot`, 1.0.86 here) is present. **Workers
+  must pass `--model auto` only.** Do not request named Copilot models
+  (including Fable). `--auto-tier` may be set; the model id stays `auto`.
 
 The Claude definitions are `builder.md`, `acceptance-reviewer.md` and
 `specifier.md`. Other harnesses map to the same roles without those files.
