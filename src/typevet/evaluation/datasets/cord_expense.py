@@ -10,6 +10,13 @@ A judge answers one three-label ``Choice``. The labels keep a pinned order,
 label to exactly one manifest verdict. Gold stays on the case and never enters
 ``ExpenseCase.model_inputs``.
 
+The question wording makes a legible claimed amount the precondition for
+``mismatch`` and ``match`` ([#182][i182]). A masked claim writes ``?`` in place
+of a digit while the receipt total stays readable, so the earlier wording let a
+literal reader compare anyway and ``insufficient_evidence`` never won.
+
+[i182]: https://github.com/Alberto-Codes/typevet/issues/182
+
 [i163]: https://github.com/Alberto-Codes/typevet/issues/163
 [i164]: https://github.com/Alberto-Codes/typevet/issues/164
 
@@ -85,14 +92,25 @@ _ROUTES: Final[Mapping[str, str]] = {
 }
 _CRITERIA: Final[Mapping[str, str]] = {
     INSUFFICIENT_EVIDENCE: (
-        "The claim or the receipt does not show a total that can be read."
+        "The claimed amount is not fully readable (for example it holds a ? "
+        "in place of a digit), or the receipt total cannot be read."
     ),
-    MISMATCH: "The claimed total differs from the total on the receipt.",
-    MATCH: "The claimed total equals the total on the receipt.",
+    MISMATCH: (
+        "The claim shows every digit of its amount "
+        "and that amount differs from the receipt total."
+    ),
+    MATCH: (
+        "The claim shows every digit of its amount "
+        "and that amount equals the receipt total."
+    ),
 }
 _INSTRUCTIONS: Final[str] = (
-    "Compare the expense claim with the receipt image. Read the receipt total. "
-    "Ignore thousands separators. Choose one label."
+    "Look at the claimed amount in the expense claim before you look at the "
+    "receipt. A ? stands where a digit was lost; it is not a digit you may "
+    "guess and it is not a wildcard. Compare with the receipt total only when "
+    "the claim shows every digit of its amount. Otherwise choose "
+    "insufficient_evidence. A comma or a dot groups digits and does not "
+    "change an amount."
 )
 _PLAIN = re.compile(r"(?:0|[1-9]\d*)")
 _GROUPED = re.compile(r"[1-9]\d{0,2}(?P<sep>[,.])\d{3}(?:(?P=sep)\d{3})*")
