@@ -23,12 +23,23 @@ answers a question, and a reference gives facts.
   the importable library is the artifact; composition root vs explicit adapter
   args; hex layers and judgevet alignment.
 
+- [Native typed judgments](explanation/native-typed-judgments.md): what typevet
+  owns after M2 — questions → Gemma judgments → TPJEP eight-task smoke; validity
+  vs calibration; control-token binding.
+
+## Tutorials
+
+- [First typed judgment offline](tutorials/first-typed-judgment-offline.md): Fake outbound adapter through JudgmentPort; no network.
+
 ## How-to
 
 - [Run Gemma 4 on llama.cpp](how-to/run-gemma4-llamacpp.md): stock
   `llama-server`, nested `json_schema`, and opt-in live pytest.
 - [Call typevet from Python](how-to/call-typevet-from-python.md): Fake and
   llama.cpp adapters, `generate()` vs port injection; link to Gemma howto.
+
+- [Run a small live judgment eval](how-to/run-a-small-live-judgment-eval.md):
+  frozen six-message finvet workload, semantic controls, receipt paths (#133).
 
 ## Architecture decisions (planned)
 
@@ -60,6 +71,7 @@ log” epic. Until then, accepted judgment comments on issues are the record.
 - [PubMedQA loader and answer Choice fixture](reference/eval-pubmedqa-loader.md) (reference): pqa_labeled yes/no/maybe; contexts state; MIT.
 - [BoolQ loader and answer Noul fixture](reference/eval-boolq-loader.md) (reference): validation split, no/yes Noul, CC BY-SA smoke cap, HF bulk stream.
 - [Live eval runner](reference/eval-live-runner.md) (reference): opt-in Banking77/BoolQ slice via GenerationPort; attempted / schema-valid / gold-match counts.
+- [Judgment live receipts](reference/judgment-live-receipts.md) (reference): measured #133 live predictions, latencies, semantic controls, known limitations.
 - [Hyperpartisan loader and hyperpartisan Noul fixture](reference/eval-hyperpartisan-loader.md) (reference): byarticle train only, HTML cleanup, stratified holdout, excludes bypublisher.
 - [Complementary eval manifest](reference/eval-complementary-manifest.md) (reference): JevBench-primary ranked open sets; see also `evals/`.
 - [Question records → JSON Schema](reference/question-schema-map.md) (reference): Noul/Choice/Score export records to `compile_json_schema` fixtures ([#102](https://github.com/Alberto-Codes/typevet/issues/102)).

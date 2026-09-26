@@ -2,12 +2,15 @@
 
 Kind: explanation, the project overview.
 
-typevet delivers type-safe structured generation under hexagonal architecture.
-The MVP path is **local llama.cpp** with **Gemma 4** (schema in → validated
-JSON out). That is the transport floor. The product spine follows
-[TypeLLM](https://github.com/TypeLLM/TypeLLM)’s decision model (Jev-inspired)
-so sisters like [judgevet](https://github.com/Alberto-Codes/judgevet) can
-consume a local System One–shaped backend later. See
+typevet delivers **native typed judgments** (`Noul`, `Choice`, `Score`) and
+type-safe structured generation under hexagonal architecture. The default path
+is **local llama.cpp** with **Gemma 4** candidate scoring. Grammar-JSON
+generation is the transport floor for some adapters. typevet owns its
+implementation. [TypeLLM](https://github.com/TypeLLM/TypeLLM) is a research
+reference for the Jev-inspired decision model, not a runtime dependency.
+Sisters like [judgevet](https://github.com/Alberto-Codes/judgevet) may consume
+this surface later. See
+[Native typed judgments](docs/explanation/native-typed-judgments.md) and
 [TypeLLM, Jev and judgevet](docs/explanation/typellm-and-judgevet.md).
 No SGLang dependency.
 
@@ -18,10 +21,32 @@ It shares the supervised-worker pattern with
 [automarket](https://github.com/Alberto-Codes/automarket) and
 [docvet](https://github.com/Alberto-Codes/docvet).
 
-## Quick start (MVP)
+## Quick start (users)
 
 ```bash
 uv sync
+```
+
+Obtain one offline typed judgment (no model):
+
+```bash
+uv run python -c "
+from tests.fixtures.scoring_contract import ContractScoringFake
+from typevet.domain.judgment_questions import Noul
+from typevet.judge import ScoringJudgmentAdapter
+fake = ContractScoringFake(logprobs={'True': -0.2, 'False': -1.0})
+port = ScoringJudgmentAdapter(fake, tokenize_content=lambda t: (ord(t[0]),))
+r = port.judge('text', {'q': Noul(instructions='Ok?', criteria={'true': 'Y', 'false': 'N'})}, 'fake')
+print('noul', r.nouls['q'].noul)
+"
+```
+
+Tutorial: [First typed judgment offline](docs/tutorials/first-typed-judgment-offline.md).
+Live small eval: [Run a small live judgment eval](docs/how-to/run-a-small-live-judgment-eval.md).
+
+## Quick start (contributors)
+
+```bash
 uv run pre-commit install --hook-types pre-commit --hook-types pre-push --hook-types commit-msg
 uv run pytest -q
 # optional live (loads Gemma 4 on the local router; slow first load):
@@ -66,5 +91,7 @@ Verified worker harnesses:
 ## Where to read next
 
 - [docs/README.md](docs/README.md) indexes every page.
+- [Native typed judgments](docs/explanation/native-typed-judgments.md) states
+  scope, receipts, and limitations.
 - [The glossary](docs/reference/glossary.md) defines each term.
 - [Worker runs](docs/reference/worker-runs.md) for launch evidence and trailers.
