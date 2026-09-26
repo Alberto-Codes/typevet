@@ -87,7 +87,8 @@ The supervisor owns the cost of the whole assignment, including workers and
 repeated context. Explicit user scope and required gates still govern.
 
 - **Define done first.** On the issue. Keep the contract under 150 words.
-  Link existing specifications instead of rewriting them.
+  Link existing specifications instead of rewriting them. For behaviour, the
+  acceptance test and its expected red output are part of done.
 - **Require a reason for each action.** Advance the decision, repair a
   demonstrated blocker, or satisfy a required gate. Skip actions that serve
   none of these.
@@ -95,6 +96,9 @@ repeated context. Explicit user scope and required gates still govern.
   one independent acceptance review and one repair dispatch per behaviour.
   Before exceeding these limits, report the unresolved assertion and why
   another dispatch could resolve it.
+- **Red before green.** Behavioural dispatches prove the test fails for the
+  missing behaviour before production edits. Preserve both outputs in the
+  return.
 - **Use one validation path.** The gate table and the hooks are that path. Do
   not add a second review pipeline. Reuse passing checks for unchanged
   revisions. Do not duplicate by hand what the commit or push hook runs.
@@ -109,6 +113,11 @@ repeated context. Explicit user scope and required gates still govern.
 - **uv is the ground floor.** Install, sync, run tools, tests and hooks through
   `uv` / `uv run`. Do not invent a parallel pip/poetry/conda path. When the
   package does not exist yet, still plan gates and scripts for `uv run`.
+- **TDD is law for behavioural changes.** Write or locate the acceptance test
+  first. Run it and keep the red output. Implement until green. Do not weaken,
+  skip or delete a test to obtain green. A test that cannot fail is not
+  evidence. Research-only slices may omit a code test; their accept-when is
+  still named first.
 - **Diátaxis is law.** Every docs page is one kind: tutorial, how-to,
   explanation or reference. See
   [the writing system](docs/reference/writing-system.md).

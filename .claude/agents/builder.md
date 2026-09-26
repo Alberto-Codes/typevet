@@ -25,12 +25,13 @@ Treat every existing modification as someone else's work.
 
 ## Prove red, then implement
 
-Write or locate the acceptance test the contract names.
-Run it before you change production code.
+TDD is law. Write or locate the acceptance test the contract names.
+Run it with `uv run` before you change production code.
 Preserve the exact command and its failing output.
 Check that it fails for the missing behaviour, not a broken fixture.
 Implement the change inside the allowed paths only.
 Run the acceptance test again and preserve its passing output.
+Do not reverse the order. Do not “fix the test later”.
 
 ## Run the gates
 

@@ -63,6 +63,8 @@ defect with a decided fix and regression.
 For behavioural changes, require a regression that fails before the fix.
 Check that the failure shows missing behaviour, not a broken fixture. Keep
 the test and implementation in the same deliverable and the same dispatch.
+**TDD is law:** red output first, then green. The brief names the exact
+`uv run` command.
 
 For research slices, require the comment sections or file path the child issue
 names. Prefer returning findings as an issue comment the next supervisor can

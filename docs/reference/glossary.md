@@ -43,9 +43,9 @@ findings. A model name alone does not make a review independent.
 **specifier.** The role that writes a definition of ready and done for one
 issue. The specifier never edits code.
 
-**supervisor.** The session that selects work, settles decisions, owns
-acceptance and commits. The supervisor harness is independent of the worker
-harness.
+**TDD.** Test-driven development. For behavioural work: accept-when and red
+test first, then implementation, then green. Law in this repo. Research-only
+slices use a named accept-when instead of a code test.
 
 **uv.** Astral’s package and tool runner. Ground floor for typevet: sync,
 locks, `uv run` for every gate and script. No parallel pip/poetry install path.

@@ -61,6 +61,8 @@ An issue is ready to dispatch when all of these hold:
 - Size is set. `size-L` is never one builder dispatch.
 - Parent link is set when this is a child.
 - Accept-when is named (command, required comment sections, or artifact path).
+- For behavioural `worker-fit` work, the acceptance test and expected red
+  failure are named (TDD).
 - Allowed return and non-goals are named.
 - For `worker-fit`, an accepted contract comment exists (URL + text for the
   brief).
