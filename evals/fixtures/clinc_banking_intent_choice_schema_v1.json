@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "properties": {
+    "intent": {
+      "type": "string",
+      "enum": [
+        "freeze_account",
+        "routing",
+        "pin_change",
+        "bill_due",
+        "pay_bill",
+        "account_blocked",
+        "interest_rate",
+        "min_payment",
+        "bill_balance",
+        "transfer",
+        "order_checks",
+        "balance",
+        "spending_history",
+        "transactions",
+        "report_fraud"
+      ],
+      "instructions": "Given the user utterance, which in-domain intent applies within the banking shard?"
+    }
+  },
+  "required": ["intent"],
+  "additionalProperties": false
+}

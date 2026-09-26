@@ -19,6 +19,8 @@ re-litigate dataset research.
 | [fixtures/boolq_tier_manifest_v1.yaml](fixtures/boolq_tier_manifest_v1.yaml) | Seeded tier A/B limits and CC BY-SA smoke policy (#77) |
 | [fixtures/hyperpartisan_hyperpartisan_noul_schema_v1.json](fixtures/hyperpartisan_hyperpartisan_noul_schema_v1.json) | Versioned `hyperpartisan` Noul JSON Schema (#81) |
 | [fixtures/hyperpartisan_holdout_manifest_v1.yaml](fixtures/hyperpartisan_holdout_manifest_v1.yaml) | Stratified holdout from byarticle train; excludes bypublisher (#81) |
+| [fixtures/clinc_banking_intent_choice_schema_v1.json](fixtures/clinc_banking_intent_choice_schema_v1.json) | Versioned 15-intent banking Choice schema for CLINC (#73) |
+| [fixtures/clinc_in_scope_noul_schema_v1.json](fixtures/clinc_in_scope_noul_schema_v1.json) | Optional OOS `in_scope` Noul schema for CLINC (#73) |
 | [fixtures/go_emotions_emotion_choice_schema_v1.json](fixtures/go_emotions_emotion_choice_schema_v1.json) | Versioned 24-emotion Choice schema for go_emotions (#79) |
 
 Human-readable commentary and epic links:
@@ -29,6 +31,7 @@ Loader reference pages (Python modules under ``src/typevet/``):
 | Corpus | Doc |
 |---|---|
 | BoolQ | [BoolQ loader and answer Noul](../docs/reference/eval-boolq-loader.md) |
+| CLINC150 | [CLINC loader and domain Choice](../docs/reference/eval-clinc-loader.md) |
 | Hyperpartisan | [Hyperpartisan loader and hyperpartisan Noul](../docs/reference/eval-hyperpartisan-loader.md) |
 
 ## Rules

@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+    "in_scope": {
+      "type": "string",
+      "enum": ["yes", "no"],
+      "instructions": "Is the utterance in scope for the domain shard (yes) or out of scope (no)?",
+      "return_probabilities": true
+    }
+  },
+  "required": ["in_scope"],
+  "additionalProperties": false
+}

@@ -49,6 +49,7 @@ log” epic. Until then, accepted judgment comments on issues are the record.
 - [Banking77 proxy and metrics](reference/banking77-proxy-and-metrics.md) (reference): six-intent proxy; Noul vs Choice metric claims.
 - [go_emotions conversion and prune](reference/go-emotions-conversion-and-prune.md) (reference): strict exactly-one gold, 24-enum prune, neutral co-label rule.
 - [CLINC150 domain shard map](reference/eval-clinc-shard-map.md) (reference): 10×15 Choice shards; CC BY 3.0; no Banking77 / FRAUD_INTENTS mapping.
+- [CLINC150 loader and domain Choice](reference/eval-clinc-loader.md) (reference): `plus` config; default `banking` shard; optional OOS Noul.
 - [DIFrauD loader and is_scam fixture](reference/eval-difraud-loader.md) (reference): SMS-default domain flag, natural binary Noul, class imbalance notes.
 - [Civil Comments loader and is_toxic fixture](reference/eval-civil-comments-loader.md) (reference): τ=0.5 toxicity Noul, balanced tiers A/B, sensitive-text policy.
 - [go_emotions loader and emotion Choice fixture](reference/eval-go-emotions-loader.md) (reference): simplified strict exactly-one; 24-enum; Apache 2.0.

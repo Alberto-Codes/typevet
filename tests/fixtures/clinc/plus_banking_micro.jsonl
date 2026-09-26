@@ -1,0 +1,17 @@
+{"text": "utterance for freeze_account", "intent": "freeze_account"}
+{"text": "utterance for routing", "intent": "routing"}
+{"text": "utterance for pin_change", "intent": "pin_change"}
+{"text": "utterance for bill_due", "intent": "bill_due"}
+{"text": "utterance for pay_bill", "intent": "pay_bill"}
+{"text": "utterance for account_blocked", "intent": "account_blocked"}
+{"text": "utterance for interest_rate", "intent": "interest_rate"}
+{"text": "utterance for min_payment", "intent": "min_payment"}
+{"text": "utterance for bill_balance", "intent": "bill_balance"}
+{"text": "utterance for transfer", "intent": "transfer"}
+{"text": "utterance for order_checks", "intent": "order_checks"}
+{"text": "utterance for balance", "intent": "balance"}
+{"text": "utterance for spending_history", "intent": "spending_history"}
+{"text": "utterance for transactions", "intent": "transactions"}
+{"text": "utterance for report_fraud", "intent": "report_fraud"}
+{"text": "out of scope phrase", "intent": "oos"}
+{"text": "credit card limit", "intent": "credit_limit"}
