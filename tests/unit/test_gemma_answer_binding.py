@@ -11,7 +11,9 @@ from tests.fixtures.gemma_template_contract import (
     pinned_tokenize_content,
     pinned_tokenize_with_special,
 )
+from typevet.adapters.outbound.gemma.scoring_prefix import compose_media_scoring_prefix
 from typevet.domain.errors import GemmaTemplateError
+from typevet.domain.media import MEDIA_MARKER
 from typevet.gemma_answer_binding import (
     bind_enum_label,
     resolve_answer_anchor,
@@ -120,6 +122,28 @@ def test_resolve_anchor_native_rejects_nonempty_thought_after_final_turn() -> No
         resolve_answer_anchor(
             rendered, tokenize_with_special=pinned_tokenize_with_special
         )
+
+
+@pytest.mark.unit
+def test_resolve_anchor_accepts_gemma4_media_scoring_prefix_with_prefill() -> None:
+    prefix = compose_media_scoring_prefix(
+        context=f"{MEDIA_MARKER}\nReceipt photo.",
+        field_block="Control 0 → billing",
+        template_class=ServedTemplateClass.NATIVE_GEMMA4_TURN,
+    )
+    anchor = resolve_answer_anchor(
+        prefix,
+        tokenize_with_special=pinned_tokenize_with_special,
+    )
+    assert anchor.template_class is ServedTemplateClass.NATIVE_GEMMA4_TURN
+    assert anchor.prefix == prefix
+    bad = compose_media_scoring_prefix(
+        context=f"{MEDIA_MARKER}\nReceipt photo.<|think|>",
+        field_block="Control 0 → billing",
+        template_class=ServedTemplateClass.NATIVE_GEMMA4_TURN,
+    )
+    with pytest.raises(GemmaTemplateError, match="no_thinking"):
+        resolve_answer_anchor(bad, tokenize_with_special=pinned_tokenize_with_special)
 
 
 @pytest.mark.unit

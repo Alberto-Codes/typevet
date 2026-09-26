@@ -1,8 +1,11 @@
-"""Unit tests for native media scoring prefixes (#157, #171, #179)."""
+"""Unit tests for native media scoring prefixes (#157, #171, #179, #187)."""
 
 from __future__ import annotations
 
+import base64
+import json
 import math
+from pathlib import Path
 
 import pytest
 
@@ -14,6 +17,7 @@ from typevet.adapters.outbound.gemma import (
     GEMMA3_MODEL_TURN_HEADER,
     GEMMA3_START_OF_TURN,
     GEMMA4_MODEL_TURN_HEADER,
+    GEMMA4_NO_THINKING_PREFILL,
     GEMMA4_TURN_CLOSE,
     GEMMA4_TURN_OPEN,
     ServedTemplateClass,
@@ -27,7 +31,20 @@ from typevet.domain.media import MEDIA_MARKER, ImageInput
 
 pytestmark = pytest.mark.unit
 
+_GEMMA4_31B_SUFFIX_FIXTURE = (
+    Path(__file__).resolve().parents[1]
+    / "fixtures"
+    / "gemma4"
+    / "gemma4_31b_no_thinking_generation_suffix.json"
+)
+
 _IMAGE = ImageInput(data=b"\x89PNG\r\n\x1a\nunit", mime_type="image/png")
+
+
+def _pinned_gemma4_31b_no_thinking_suffix() -> str:
+    payload = json.loads(_GEMMA4_31B_SUFFIX_FIXTURE.read_text(encoding="utf-8"))
+    raw = base64.b64decode(payload["generation_prompt_suffix_b64"])
+    return raw.decode("utf-8")
 
 
 def _served_gemma3(content: str) -> str:
@@ -39,11 +56,11 @@ def _served_gemma4(content: str) -> str:
     """Mirror the native Gemma 4 turn shape for a single user turn.
 
     Returns:
-        User turn wrapped in ``<|turn>`` markers, ending at the model header.
+        User turn wrapped in ``<|turn>`` markers, ending at no-thinking prefill.
     """
     return (
         f"{GEMMA4_TURN_OPEN}user\n{content}{GEMMA4_TURN_CLOSE}\n"
-        f"{GEMMA4_MODEL_TURN_HEADER}"
+        f"{GEMMA4_MODEL_TURN_HEADER}{GEMMA4_NO_THINKING_PREFILL}"
     )
 
 
@@ -101,6 +118,24 @@ def test_media_prefix_matches_served_gemma3_shape() -> None:
     assert CHATML_IM_START not in prefix
 
 
+def test_gemma4_media_prefix_ends_with_pinned_31b_no_thinking_suffix() -> None:
+    pinned_suffix = _pinned_gemma4_31b_no_thinking_suffix()
+    field_block = "Control 0 → red"
+    with_media = compose_media_scoring_prefix(
+        context=f"{MEDIA_MARKER}\nLook.",
+        field_block=field_block,
+        template_class=ServedTemplateClass.NATIVE_GEMMA4_TURN,
+    )
+    without_media = compose_media_scoring_prefix(
+        context="Look.",
+        field_block=field_block,
+        template_class=ServedTemplateClass.NATIVE_GEMMA4_TURN,
+    )
+    assert with_media.endswith(pinned_suffix)
+    assert without_media.endswith(pinned_suffix)
+    assert with_media.replace(f"{MEDIA_MARKER}\n", "", 1) == without_media
+
+
 def test_media_prefix_matches_served_gemma4_shape() -> None:
     prefix = compose_media_scoring_prefix(
         context=f"{MEDIA_MARKER}\nLook.",
@@ -109,7 +144,9 @@ def test_media_prefix_matches_served_gemma4_shape() -> None:
     )
     assert prefix == _served_gemma4(f"{MEDIA_MARKER}\nLook.\n\nControl 0 → red")
     assert prefix.startswith(f"{GEMMA4_TURN_OPEN}user\n")
-    assert prefix.endswith(f"{GEMMA4_TURN_CLOSE}\n{GEMMA4_MODEL_TURN_HEADER}")
+    assert prefix.endswith(
+        f"{GEMMA4_TURN_CLOSE}\n{GEMMA4_MODEL_TURN_HEADER}{GEMMA4_NO_THINKING_PREFILL}"
+    )
     assert MEDIA_MARKER in prefix
     assert CHATML_IM_START not in prefix
     assert GEMMA3_START_OF_TURN not in prefix
@@ -183,7 +220,9 @@ def test_adapter_media_uses_native_gemma4_prefix_and_keeps_bindings() -> None:
     assert len(fake.calls) == 2
     for call in fake.calls:
         assert call.prefix.startswith(f"{GEMMA4_TURN_OPEN}user\n")
-        assert call.prefix.endswith(f"{GEMMA4_TURN_CLOSE}\n{GEMMA4_MODEL_TURN_HEADER}")
+        assert call.prefix.endswith(
+            f"{GEMMA4_TURN_CLOSE}\n{GEMMA4_MODEL_TURN_HEADER}{GEMMA4_NO_THINKING_PREFILL}"
+        )
         assert CHATML_IM_START not in call.prefix
         assert GEMMA3_START_OF_TURN not in call.prefix
         assert call.prefix.count(MEDIA_MARKER) == len(media)
@@ -210,7 +249,7 @@ def test_adapter_omitted_media_keeps_native_gemma4_prefix(
     for with_image, without_image in pairs:
         assert without_image.prefix.startswith(f"{GEMMA4_TURN_OPEN}user\n")
         assert without_image.prefix.endswith(
-            f"{GEMMA4_TURN_CLOSE}\n{GEMMA4_MODEL_TURN_HEADER}"
+            f"{GEMMA4_TURN_CLOSE}\n{GEMMA4_MODEL_TURN_HEADER}{GEMMA4_NO_THINKING_PREFILL}"
         )
         assert CHATML_IM_START not in without_image.prefix
         assert GEMMA3_START_OF_TURN not in without_image.prefix
@@ -229,7 +268,9 @@ def test_adapter_text_only_uses_native_gemma4_wrappers() -> None:
     assert len(fake.calls) == 2
     for call in fake.calls:
         assert call.prefix.startswith(f"{GEMMA4_TURN_OPEN}user\nCharged twice.\n\n")
-        assert call.prefix.endswith(f"{GEMMA4_TURN_CLOSE}\n{GEMMA4_MODEL_TURN_HEADER}")
+        assert call.prefix.endswith(
+            f"{GEMMA4_TURN_CLOSE}\n{GEMMA4_MODEL_TURN_HEADER}{GEMMA4_NO_THINKING_PREFILL}"
+        )
         assert CHATML_IM_START not in call.prefix
         assert GEMMA3_START_OF_TURN not in call.prefix
         assert MEDIA_MARKER not in call.prefix

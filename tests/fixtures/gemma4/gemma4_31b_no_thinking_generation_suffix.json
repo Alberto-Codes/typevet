@@ -1,0 +1,11 @@
+{
+  "provenance": {
+    "issue": 187,
+    "template_path": "/models/templates/google-gemma-4-31B-it.jinja",
+    "template_sha256": "85a08664d16d8f3be4416c92427b3ac10df1024ac566cc0b4bc3bab409393f98",
+    "model_id": "gemma-4-31b-kv9-q4km-mm",
+    "enable_thinking": false,
+    "capture": "add_generation_prompt suffix after user turn (enable_thinking=false)"
+  },
+  "generation_prompt_suffix_b64": "PHx0dXJuPm1vZGVsCjx8Y2hhbm5lbD50aG91Z2h0CjxjaGFubmVsfD4="
+}

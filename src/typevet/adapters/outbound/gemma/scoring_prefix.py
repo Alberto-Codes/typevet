@@ -1,7 +1,8 @@
-"""Scoring-prefix composition for Gemma judgment (#148, #157, #179).
+"""Scoring-prefix composition for Gemma judgment (#148, #157, #179, #187).
 
 Text-only scoring uses degraded ChatML. Media scoring uses the served native
-turn family: Gemma 3 ``<start_of_turn>`` or Gemma 4 ``<|turn>``.
+turn family: Gemma 3 ``<start_of_turn>`` or Gemma 4 ``<|turn>`` with
+no-thinking prefill after the model header.
 
 Examples:
     ```python
@@ -26,6 +27,7 @@ from typevet.adapters.outbound.gemma.served_template import (
     GEMMA3_MODEL_TURN_HEADER,
     GEMMA3_START_OF_TURN,
     GEMMA4_MODEL_TURN_HEADER,
+    GEMMA4_NO_THINKING_PREFILL,
     GEMMA4_TURN_CLOSE,
     GEMMA4_TURN_OPEN,
     ServedTemplateClass,
@@ -79,7 +81,9 @@ def compose_media_scoring_prefix(
         template_class: Classified served-template family of the scoring model.
 
     Returns:
-        Prefix string ending with the model turn header of ``template_class``.
+        Prefix string ending at the answer boundary for ``template_class``.
+        Gemma 4 includes the no-thinking thought-channel prefill after the model
+        header, matching ``/apply-template`` with ``enable_thinking=false``.
 
     Raises:
         GemmaTemplateError: ``template_class`` is not a native turn family.
@@ -92,4 +96,7 @@ def compose_media_scoring_prefix(
         )
         raise GemmaTemplateError(msg)
     turn_open, turn_close, model_header = wrappers
-    return f"{turn_open}user\n{context}\n\n{field_block}{turn_close}\n{model_header}"
+    prefix = f"{turn_open}user\n{context}\n\n{field_block}{turn_close}\n{model_header}"
+    if template_class is ServedTemplateClass.NATIVE_GEMMA4_TURN:
+        return f"{prefix}{GEMMA4_NO_THINKING_PREFILL}"
+    return prefix
