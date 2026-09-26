@@ -44,7 +44,8 @@ def _result(
 def test_noul_answer_uses_probability_of_true() -> None:
     question = Noul(instructions="Yes?")
     decision = normalize_question(question, field_name="q")
-    result = _result(decision, probs=(0.7, 0.3))
+    # Choices are false-first: (False, True); keep P(true) at 0.7.
+    result = _result(decision, probs=(0.3, 0.7))
     answer = answer_from_execution(question, result)
     assert isinstance(answer, NoulAnswer)
     assert answer.noul == pytest.approx(0.7)
@@ -91,6 +92,6 @@ def test_bind_noul_candidates_use_execute_bool_labels() -> None:
     decision = normalize_question(question, field_name="flag")
     specs = bind_candidates_for_execute(decision, question, _single_char_tokenize)
     assert specs == (
-        CandidateTokenSpec("True", (ord("0"),)),
-        CandidateTokenSpec("False", (ord("1"),)),
+        CandidateTokenSpec("False", (ord("0"),)),
+        CandidateTokenSpec("True", (ord("1"),)),
     )

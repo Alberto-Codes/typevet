@@ -81,15 +81,16 @@ def test_render_field_instructions_choice_control_mapping_with_descriptions() ->
 
 
 @pytest.mark.unit
-def test_render_field_instructions_noul_control_zero_is_true() -> None:
-    decision = Decision("flag", "Is it urgent?", (True, False), syntax="Bool")
+def test_render_field_instructions_noul_control_zero_is_false() -> None:
+    decision = Decision("flag", "Is it urgent?", (False, True), syntax="Bool")
     block = render_field_instructions(
         decision,
         choice_criteria={"true": "Yes", "false": "No"},
-        original_labels=("true", "false"),
+        original_labels=("false", "true"),
     )
-    assert "Control 0 → true: Yes" in block
-    assert "Control 1 → false: No" in block
+    false_pos = block.index("Control 0 → false: No")
+    true_pos = block.index("Control 1 → true: Yes")
+    assert false_pos < true_pos
 
 
 @pytest.mark.unit

@@ -29,9 +29,9 @@ def test_normalize_noul_bool_decision_and_labels() -> None:
     )
     decision = normalize_noul(question, field_name="billing")
     assert decision.syntax == "Bool"
-    assert decision.choices == (True, False)
+    assert decision.choices == (False, True)
     assert decision.question == "Is this about billing?"
-    assert judgment_original_labels(question) == ("true", "false")
+    assert judgment_original_labels(question) == ("false", "true")
 
 
 @pytest.mark.unit

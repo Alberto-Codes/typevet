@@ -12,7 +12,8 @@ Examples:
         Noul(instructions="Is it urgent?"),
         field_name="urgent",
     )
-    specs = bind_control_candidates(("true", "false"), lambda s: (42,))
+    # Noul Control bindings are false-first: Control 0 → false, Control 1 → true.
+    specs = bind_control_candidates(("false", "true"), lambda s: (42,))
     ```
 
 See Also:
@@ -30,7 +31,7 @@ from typevet.domain.decisions import Decision
 from typevet.domain.errors import JudgmentValidationError
 from typevet.domain.judgment_questions import Choice, Noul, Question, Score
 
-_NOUL_LABELS = ("true", "false")
+_NOUL_LABELS = ("false", "true")
 _MIN_SCORE_LEVELS = 2
 
 
@@ -82,7 +83,7 @@ def judgment_original_labels(question: Question) -> tuple[str, ...]:
 
 
 def normalize_noul(question: Noul, *, field_name: str) -> Decision:
-    """Map a Noul question to a Bool ``Decision`` with ``(True, False)`` choices.
+    """Map a Noul question to a Bool ``Decision`` with ``(False, True)`` choices.
 
     Args:
         question: Yes/no judgment question.
@@ -97,7 +98,7 @@ def normalize_noul(question: Noul, *, field_name: str) -> Decision:
     return Decision(
         field_name,
         _question_text(question.instructions),
-        (True, False),
+        (False, True),
         syntax="Bool",
         return_probabilities=True,
     )

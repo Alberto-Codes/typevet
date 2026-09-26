@@ -43,8 +43,9 @@ def test_adapter_prompt_maps_controls_while_answers_keep_original_labels() -> No
     assert response.scores["quality"].legend == {0: "Poor", 1: "Fair", 2: "Good"}
 
     noul_prefix = fake.calls[0].prefix
-    assert "Control 0 → true" in noul_prefix
-    assert "Control 1 → false" in noul_prefix
+    false_pos = noul_prefix.index("Control 0 → false")
+    true_pos = noul_prefix.index("Control 1 → true")
+    assert false_pos < true_pos
     choice_prefix = fake.calls[1].prefix
     assert "Control 0 → billing: Money" in choice_prefix
     score_prefix = fake.calls[2].prefix
