@@ -87,6 +87,9 @@ log” epic. Until then, accepted judgment comments on issues are the record.
 - [Glossary](reference/glossary.md) (reference): the one meaning of each term.
 - [Supported imports](reference/supported-imports.md) (reference): package
   `__all__` surfaces, root compatibility shims, and the module command entry.
+- [Typed-judgment release support matrix](reference/typed-judgment-release-support-matrix.md)
+  (reference): supported sync APIs, Gemma 4 native vision pins, evidence
+  commands, and release exclusions ([#191](https://github.com/Alberto-Codes/typevet/issues/191)).
 - [Worker runs](reference/worker-runs.md) (reference): the launch evidence and
   commit trailers for each worker.
 - [Writing system](reference/writing-system.md) (reference): Diátaxis,
