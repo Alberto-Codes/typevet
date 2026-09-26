@@ -17,6 +17,7 @@ are **not** stored by default.
 | Record + summary types | ``typevet.eval_tpjep_records`` |
 | Mixed smoke JSONL (5 rows) | ``tests/fixtures/tpjep/mixed_attempts_smoke.jsonl`` |
 | Unit tests | ``tests/unit/test_eval_tpjep_records.py`` |
+| Eight-task runner | [eval-tpjep-runner.md](eval-tpjep-runner.md) |
 
 ## Required fields
 
