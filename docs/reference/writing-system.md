@@ -103,13 +103,73 @@ until that change owns it.
 
 ## Gates
 
-When packaging and hooks exist, add:
+| Gate | Command |
+|---|---|
+| Owned prose | `uv run python scripts/check_plain_english.py` |
+| Named files | `uv run python scripts/check_plain_english.py PATH ...` |
+| Saved patch | `uv run python scripts/check_plain_english.py --diff PATCH` |
 
-- a commit-message check for Conventional Commits
-- a plain-English / sentence-length check (sister: judgevet
-  `check_plain_english`, automarket STE sentence report)
-- a terminology check against the glossary (sister: judgevet
-  `check_terminology`)
+The prose gate enforces the 20-word sentence limit and five banned adjectives.
+The banned words are `seamless`, `robust`, `powerful`, `blazing` and `cutting-edge`.
+Matches ignore case and require whole words.
+Other strict-mode rules still require manual review.
+The gate is not yet a hook.
 
-Until those gates exist, the rules still bind. Models and humans apply them by
-eye. Do not wait for a script to write clear prose.
+### Ownership
+
+Without arguments, the gate compares tracked working-tree files against `HEAD`.
+It also checks untracked Markdown files within the default scope.
+That scope includes `README.md`, `CLAUDE.md`, `docs/reference/`, `docs/how-to/` and `docs/maintainers/`.
+`AGENTS.md` aliases `CLAUDE.md`.
+The gate excludes `scratchpad/` from default scope.
+
+An added or modified line selects each complete sentence that overlaps that line, including unchanged wrapped lines.
+Untouched sentences remain outside the check, even within the same paragraph.
+Multiple sentences on one changed line are all selected.
+Findings report the first source line of the selected sentence.
+Explicit paths check complete Markdown files, including files outside the default scope.
+The output reports selected file and paragraph counts.
+A clean checkout reports zero owned paragraphs.
+
+Saved patches select added lines within the default scope.
+Each added line must match the current file at its recorded line number.
+Use a zero-context Git patch for committed changes:
+
+```bash
+git diff --no-ext-diff --unified=0 BASE HEAD > /tmp/typevet-owned.diff
+uv run python scripts/check_plain_english.py --diff /tmp/typevet-owned.diff
+```
+
+Record both revisions with the result.
+Exit status `0` means no findings; `1` means findings; `2` means invalid input.
+Missing files, directories, unsupported suffixes and unreadable text are invalid inputs.
+Deleted files select no new prose.
+Deletion-only edits do not select surviving paragraphs; review those edits manually.
+Out-of-scope file contents are ignored, including binary, empty-file and mode-only changes.
+Supported Markdown mode-only and empty-file changes select no prose.
+Malformed owned patches, context lines, owned binary patches and owned renames are rejected.
+Quoted Git paths are unsupported; use explicit paths for those files.
+Git commands require `/usr/bin/git`; installations elsewhere are unsupported.
+Explicit file checks do not require Git.
+
+### Scanner limits
+
+The scanner uses lightweight Markdown rules, not a full CommonMark parser.
+Blank lines separate paragraphs; headings, list items and table cells start separate prose units.
+Sentence boundaries are `.`, `?`, `!` and paragraph ends.
+Abbreviations and decimal points can split sentences.
+Words contain letters or digits; internal apostrophes and hyphens keep a word together.
+Thus `don't` and `well-known` each count as one word.
+
+The scanner excludes fenced code, indented code, inline code, URLs and file paths.
+It retains visible link labels and table body prose, but excludes table headers.
+It excludes YAML front matter and closed HTML comments.
+An unclosed HTML comment is invalid input.
+A contiguous blockquote is excluded when its quoted lines contain a URL or a reference-style source link.
+Uncited blockquotes remain prose.
+Nested Markdown, multiline inline literals and complex link destinations need manual review.
+File-path detection covers slash paths and common source or configuration suffixes.
+
+Tutorial steps, code comments, docstrings, commit prose and flavored pages remain manual for this checker.
+Terminology checks remain manual until their separate gate exists.
+The commit-message hook enforces Conventional Commits.
