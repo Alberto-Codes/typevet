@@ -53,6 +53,15 @@ evidence. Never use `Co-Authored-By` for a model.
 
 ## Gate
 
-When hooks exist, a `commit-msg` check will refuse a message that breaks this
-page. Until then, the supervisor and every worker still write messages in this
-form.
+When hooks exist, `prepare-commit-msg` strips auto-appended harness
+`Co-Authored-By` lines (for example Cursor's `cursoragent@cursor.com`) before
+the `commit-msg` check runs. The check still refuses any forbidden co-author
+trailer that remains, or a message that breaks the rules above. In CI,
+`--range` warns on harness co-authors only on commits already on `main` at or
+before the #85 cutover; newer commits must not carry them.
+
+Install both hook stages:
+
+```console
+uv run pre-commit install -t prepare-commit-msg -t commit-msg
+```

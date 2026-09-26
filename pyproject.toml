@@ -5,6 +5,13 @@ description = "Type-safe structured generation under hexagonal architecture (lla
 readme = "README.md"
 requires-python = ">=3.12"
 authors = [{ name = "Alberto-Codes", email = "alberto.codes.dev@gmail.com" }]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+]
 dependencies = [
     "httpx>=0.28",
     "jsonschema>=4.26.0",
@@ -170,3 +177,5 @@ allowed-authors = [
     "alberto.codes.dev@gmail.com",
     "github-actions[bot]@users.noreply.github.com",
 ]
+# Commits at or before this SHA on main may keep harness Co-Authored-By; CI warns only.
+coauthor-grandfather-through = "1b1d9a3cfde019c5dbfe164c1660f1d3be28b5ba"

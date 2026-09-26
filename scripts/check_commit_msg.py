@@ -1,7 +1,8 @@
 """Commit gate: every message follows Conventional Commits 1.0.0 (#42).
 
 The subject reads ``<type>[(scope)][!]: <description>``. The type comes
-from a closed vocabulary. A body starts one blank line after the subject.
+from the eleven-type vocabulary in ``docs/reference/commits.md``. A body
+starts one blank line after the subject.
 A breaking change writes ``BREAKING CHANGE`` in upper case. Every message
 names its issue as ``#N``, in the subject or in a footer. A ``feat`` or
 ``fix`` without ``Closes``/``Refs`` gets a warning, not a failure, because
@@ -10,6 +11,8 @@ not every such commit finishes an issue.
 The gate reads the file pre-commit hands it at the ``commit-msg`` stage. It
 skips a merge, a revert and a ``fixup!`` message, because git writes those.
 It also refuses commits whose author email is not in the allowed list.
+Known model or harness ``Co-Authored-By`` identities fail; worker evidence
+uses ``Generated-By`` and ``Specified-By`` instead.
 
 CI is the backstop, because a hook can be bypassed. ``--range`` checks
 every message a branch adds.
@@ -23,6 +26,9 @@ Examples:
     $ uv run python scripts/check_commit_msg.py --range origin/main..HEAD
     checked de7f8331c: status, 3 issue references
     ```
+
+See Also:
+    - docs/reference/commits.md: Vocabulary, issue footers and worker trailers.
 """
 
 from __future__ import annotations
@@ -43,8 +49,12 @@ TYPES = (
     "fix",
     "perf",
     "refactor",
+    "revert",
+    "style",
     "test",
 )
+_FORBIDDEN_COAUTHOR_EMAILS = frozenset({"cursoragent@cursor.com"})
+_CO_AUTHORED_BY = re.compile(r"^Co-Authored-By:\s+(?P<ident>.+)$", re.IGNORECASE)
 RANGE = "--range"
 RANGE_ARGS = 2
 _SUBJECT = re.compile(
@@ -63,6 +73,86 @@ _ISSUE = re.compile(r"#\d+")
 _TRAILING_REFS = re.compile(r"\s*\((?:#\d+(?:,\s*)?)+\)$")
 _FOOTER_TOKEN_RE = re.compile(r"^([A-Za-z][A-Za-z0-9 -]*)(?:: | #)")
 _AUTHOR_PATTERN = re.compile(r"^(?:.*<)?(?P<email>[^>]+@[^>]+)>?.*$")
+
+
+def get_grandfather_cutover() -> str | None:
+    """Read the co-author grandfather boundary from pyproject.toml.
+
+    Returns:
+        A full commit SHA, or None when grandfathering is disabled.
+    """
+    pyproject = Path("pyproject.toml")
+    if not pyproject.exists():
+        return None
+    config = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+    try:
+        value = config["tool"]["typevet"]["commit-msg"]["coauthor-grandfather-through"]
+    except KeyError:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        return None
+    return value.strip()
+
+
+def is_coauthor_grandfathered(full_sha: str) -> bool:
+    """Whether a commit may keep a harness ``Co-Authored-By`` in range checks.
+
+    Args:
+        full_sha: The commit object name git accepts.
+
+    Returns:
+        True when the commit is at or before the configured cutover on main.
+    """
+    cutover = get_grandfather_cutover()
+    if cutover is None:
+        return False
+    result = subprocess.run(
+        ["/usr/bin/git", "merge-base", "--is-ancestor", full_sha, cutover],
+        check=False,
+        capture_output=True,
+    )
+    return result.returncode == 0
+
+
+def _forbidden_coauthor_email(line: str) -> str | None:
+    """The forbidden email on a ``Co-Authored-By`` line, if any.
+
+    Args:
+        line: One line from a commit message.
+
+    Returns:
+        The lower-cased email when the line names a forbidden harness identity.
+    """
+    match = _CO_AUTHORED_BY.match(line.strip())
+    if match is None:
+        return None
+    ident = match["ident"].strip()
+    email_match = _AUTHOR_PATTERN.match(ident)
+    if email_match is None:
+        return None
+    email = email_match["email"].casefold()
+    if email in _FORBIDDEN_COAUTHOR_EMAILS:
+        return email
+    return None
+
+
+def strip_harness_coauthors(text: str) -> str:
+    """Drop auto-appended harness ``Co-Authored-By`` lines from a message.
+
+    Args:
+        text: Raw commit message file contents.
+
+    Returns:
+        The message with forbidden harness co-author trailers removed.
+    """
+    lines = text.splitlines()
+    kept = [line for line in lines if _forbidden_coauthor_email(line) is None]
+    while len(kept) > 1 and not kept[-1].strip() and not kept[-2].strip():
+        kept.pop()
+    result = "\n".join(kept)
+    if text.endswith("\n"):
+        result += "\n"
+    return result
 
 
 def get_allowed_authors() -> list[str]:
@@ -225,8 +315,48 @@ def body_problems(lines: list[str]) -> list[str]:
     return problems
 
 
+def coauthor_problems(lines: list[str]) -> list[str]:
+    """Why a model or harness ``Co-Authored-By`` trailer fails, if it does.
+
+    Args:
+        lines: Every line of the message, subject first.
+
+    Returns:
+        Failure messages, empty when every co-author line is allowed.
+    """
+    return [
+        "Co-Authored-By must not name a model or harness; "
+        "use Generated-By or Specified-By instead"
+        for line in lines
+        if _forbidden_coauthor_email(line) is not None
+    ]
+
+
+_COAUTHOR_PROBLEM = (
+    "Co-Authored-By must not name a model or harness; "
+    "use Generated-By or Specified-By instead"
+)
+
+
+def split_coauthor_problems(found: list[str]) -> tuple[list[str], list[str]]:
+    """Separate harness co-author failures from every other failure.
+
+    Args:
+        found: Failure messages from :func:`problems`.
+
+    Returns:
+        Co-author failures and all other failures.
+    """
+    coauthor = [problem for problem in found if problem == _COAUTHOR_PROBLEM]
+    other = [problem for problem in found if problem != _COAUTHOR_PROBLEM]
+    return coauthor, other
+
+
 def problems(text: str) -> tuple[list[str], bool]:
     """Every way the message fails the specification.
+
+    Checks the subject, body layout, breaking-change tokens and forbidden
+    model or harness ``Co-Authored-By`` trailers.
 
     Args:
         text: The raw content of the commit message file.
@@ -240,7 +370,7 @@ def problems(text: str) -> tuple[list[str], bool]:
     if _GENERATED.match(lines[0]):
         return [], False
 
-    found = subject_problems(lines[0]) + body_problems(lines)
+    found = subject_problems(lines[0]) + body_problems(lines) + coauthor_problems(lines)
     has_issue = _ISSUE.search("\n".join(lines)) is not None
 
     return found, has_issue
@@ -263,14 +393,15 @@ def summary(text: str) -> str:
     return f"{kind}, {refs} issue {unit}"
 
 
-def messages_in_range(rev_range: str) -> list[tuple[str, str]]:
+def messages_in_range(rev_range: str) -> list[tuple[str, str, str]]:
     """Every commit message in a revision range.
 
     Args:
         rev_range: A git range such as ``origin/main..HEAD``.
 
     Returns:
-        The short hash and the message of each commit, newest first.
+        The short hash, the message body, and the full hash of each commit,
+        newest first.
     """
     proc = subprocess.run(
         ["/usr/bin/git", "log", "-z", "--format=%H%n%B", rev_range],
@@ -283,7 +414,7 @@ def messages_in_range(rev_range: str) -> list[tuple[str, str]]:
         if not chunk.strip():
             continue
         sha, _, body = chunk.partition("\n")
-        found.append((sha[:9], body))
+        found.append((sha[:9], body, sha))
     return found
 
 
@@ -296,6 +427,10 @@ def check_author_for_commit_msg() -> list[str] | None:
     Returns:
         A list with one failure message if the author is not allowed,
         or None if the author is allowed.
+
+    Raises:
+        RuntimeError: When author configuration cannot be read, except for
+            an unconfigured git identity (that case returns guidance instead).
     """
     allowed = get_allowed_authors()
     try:
@@ -353,6 +488,7 @@ def report(
     *,
     range_mode: bool = False,
     rev_range: str | None = None,
+    full_sha: str | None = None,
 ) -> bool:
     """Check one message and print the outcome.
 
@@ -362,6 +498,7 @@ def report(
         range_mode: If True, check authors from commit history rather than
             the pending commit. Ignored unless range is provided.
         rev_range: The revision range for author checking in range mode.
+        full_sha: The commit object name when checking history.
 
     Returns:
         True when the message failed.
@@ -379,11 +516,22 @@ def report(
         return True
 
     found, _ = problems(text)
-    for problem in found:
+    coauthor, other = split_coauthor_problems(found)
+    grandfather = (
+        range_mode
+        and full_sha is not None
+        and coauthor
+        and is_coauthor_grandfathered(full_sha)
+    )
+    if grandfather:
+        for problem in coauthor:
+            print(f"WARN {label}: {problem} (grandfathered on main before #85)")
+    failures = other + ([] if grandfather else coauthor)
+    for problem in failures:
         print(f"FAIL {label}: {problem}")
-    if not found:
+    if not failures:
         print(f"checked {label}: {summary(text)}")
-    return bool(found)
+    return bool(failures)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -414,15 +562,25 @@ def main(argv: list[str] | None = None) -> int:
                 f"FAIL {args[1]}: git log refused the range: {reason[0] if reason else ''}"
             )
             return 1
-        for sha, text in found:
-            failed |= report(sha, text, range_mode=True, rev_range=rev_range)
+        for sha, text, full_sha in found:
+            failed |= report(
+                sha,
+                text,
+                range_mode=True,
+                rev_range=rev_range,
+                full_sha=full_sha,
+            )
     else:
         for path in (Path(arg) for arg in args):
             if not path.is_file():
                 print(f"FAIL {path}: missing")
                 failed = True
                 continue
-            failed |= report(str(path), path.read_text(encoding="utf-8"))
+            # Strip harness coauthors in-place so Cursor injection after
+            # prepare-commit-msg (or a missing prepare hook) cannot land.
+            text = strip_harness_coauthors(path.read_text(encoding="utf-8"))
+            path.write_text(text, encoding="utf-8")
+            failed |= report(str(path), text)
     if failed:
         print(f"the specification is at {SPEC}")
     return 1 if failed else 0
