@@ -25,8 +25,9 @@ from typevet.evaluation.cord_expense_smoke import (
     GEMMA4_NATIVE_TURN,
     assert_cord_expense_attachment,
     cord_combined_attachment_floor,
-    cord_image_only_attachment_floor,
+    cord_image_only_attachment_gap_floor,
     measured_image_prompt_tokens,
+    resolve_cord_expense_attachment_profile,
     validate_gemma4_smoke_capability,
 )
 from typevet.evaluation.cord_semantic_acceptance import (
@@ -89,7 +90,7 @@ def test_gemma4_attachment_floors_use_measured_image_costs() -> None:
     assert measured_image_prompt_tokens("gemma-3-4b-it-q4km-mm") == 256
     assert measured_image_prompt_tokens(GEMMA4_DIRECT_RECEIPT_MODEL) == 245
     assert cord_combined_attachment_floor(GEMMA4_DIRECT_RECEIPT_MODEL) == 214
-    assert cord_image_only_attachment_floor("gemma-3-4b-it-q4km-mm") == 225
+    assert cord_image_only_attachment_gap_floor("gemma-3-4b-it-q4km-mm") == 225
 
 
 def test_unsupported_model_id_has_no_attachment_floor() -> None:
@@ -127,18 +128,36 @@ def test_gemma4_capability_rejects_native_gemma3_turn() -> None:
         )
 
 
+def _image_only_omission_tokens(receipt: dict[str, Any]) -> int:
+    image_only = receipt["image_only"]
+    if isinstance(image_only, dict) and "omission_tokens_evaluated" in image_only:
+        value = image_only["omission_tokens_evaluated"]
+        assert isinstance(value, int)
+        return value
+    profile = resolve_cord_expense_attachment_profile(
+        str(receipt["model"]),
+        str(receipt["served_template"]),
+    )
+    return profile.image_only_state_omission_tokens
+
+
 def test_vendored_gemma4_receipt_passes_offline_attachment_gate() -> None:
     """Saved token counts meet the Gemma 4 attachment floors."""
     receipt = _load_receipt()
     claim_ids, receipt_ids = _claim_and_receipt_ids()
     image_rows = receipt["image_only"]["rows"]
+    profile = resolve_cord_expense_attachment_profile(
+        str(receipt["model"]),
+        str(receipt["served_template"]),
+    )
     assert_cord_expense_attachment(
-        model_id=str(receipt["model"]),
+        profile=profile,
         text_only=receipt["text_only"],
         image_only=image_rows,
         combined=receipt["combined"],
         claim_ids=claim_ids,
         receipt_ids=receipt_ids,
+        image_only_omission_tokens=_image_only_omission_tokens(receipt),
     )
 
 

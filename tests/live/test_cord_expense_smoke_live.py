@@ -1,10 +1,10 @@
 """Opt-in live CORD expense smoke with semantic metrics (#165, #185, #186).
 
 Skips when the router or the multimodal model id is unavailable. **Fails** when
-the router serves that id text-only or silently drops a receipt image, because
-a text-only pass says nothing about reading a receipt. Native Gemma 3 or
-Gemma 4 turns are accepted (#185). Receipts carry experiment identity (#186)
-from a pre-scoring input snapshot.
+``assert_cord_expense_live_smoke_gate`` rejects capability or the served
+family, or when token gaps show a silently dropped receipt image (#185).
+Receipts carry experiment identity (#186) from a pre-scoring input snapshot
+and record one ``image_only`` omission control per run.
 
 Three modalities per receipt:
 
@@ -48,7 +48,10 @@ from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.adapters.outbound.llama_cpp_multimodal import fetch_media_capability
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.media import ImageInput
-from typevet.evaluation.cord_expense_smoke import assert_cord_expense_attachment
+from typevet.evaluation.cord_expense_smoke import (
+    assert_cord_expense_attachment,
+    assert_cord_expense_live_smoke_gate,
+)
 from typevet.evaluation.datasets.cord_expense import (
     INSUFFICIENT,
     INSUFFICIENT_EVIDENCE,
@@ -205,6 +208,7 @@ def _run(port, model: str, cases: tuple[ExpenseCase, ...]):
     text_only: dict[str, dict[str, object]] = {}
     image_only: dict[str, dict[str, object]] = {}
     combined: dict[str, dict[str, object]] = {}
+    image_only_omission = _judge(port, model, _IMAGE_ONLY_STATE, ())
     for case in cases:
         image = _receipt_image(case)
         statement = case.model_inputs()["statement"]
@@ -214,7 +218,7 @@ def _run(port, model: str, cases: tuple[ExpenseCase, ...]):
                 port, model, _IMAGE_ONLY_STATE, (image,)
             )
         combined[case.claim_id] = _judge(port, model, statement, (image,))
-    return text_only, image_only, combined
+    return text_only, image_only, combined, image_only_omission
 
 
 def semantic_metrics(
@@ -279,8 +283,9 @@ def test_cord_expense_triage_reads_the_receipt(
 ) -> None:
     """Run three modalities on 18 claims and record combined semantic metrics.
 
-    Accepts native Gemma 3 or Gemma 4 served templates (#185) and attaches
-    experiment identity on the receipt (#186) from a pre-scoring snapshot.
+    Runs ``assert_cord_expense_live_smoke_gate`` before scoring (#185), records
+    an ``image_only`` omission control, and attaches experiment identity (#186)
+    from a pre-scoring snapshot.
     """
     assert len(cases) == 18
     settings = replace(_LLAMA, timeout=max(_LLAMA.timeout, 900.0))
@@ -288,16 +293,12 @@ def test_cord_expense_triage_reads_the_receipt(
 
     with httpx.Client(base_url=base, timeout=settings.timeout) as client:
         capability = fetch_media_capability(client, f"{base}/", live_multimodal_model)
-        assert capability.vision, (
-            f"{live_multimodal_model} reports text-only input modalities; "
-            "a text-only router cannot prove receipt reading"
-        )
         served = _served_template(client, live_multimodal_model)
-        # #185: CORD may exercise Gemma 3 or Gemma 4 native turns.
-        assert served in (
-            ServedTemplateClass.NATIVE_GEMMA3_TURN,
-            ServedTemplateClass.NATIVE_GEMMA4_TURN,
-        ), served
+        attachment_profile = assert_cord_expense_live_smoke_gate(
+            vision=capability.vision,
+            served_template=served.value,
+            model_id=live_multimodal_model,
+        )
         run_start = begin_run_identity(
             repo_root=_REPO_ROOT,
             runtime=_runtime_build(client, live_multimodal_model, served),
@@ -314,7 +315,9 @@ def test_cord_expense_triage_reads_the_receipt(
                 tokenize_content=_tokenizer(client, live_multimodal_model),
                 served_template=served,
             )
-            text_only, image_only, combined = _run(port, live_multimodal_model, cases)
+            text_only, image_only, combined, image_only_omission = _run(
+                port, live_multimodal_model, cases
+            )
 
     requests = len(text_only) + len(image_only) + len(combined)
     gold = {case.claim_id: case.expected_verdict for case in cases}
@@ -362,7 +365,11 @@ def test_cord_expense_triage_reads_the_receipt(
                 for case in cases
             ],
             "text_only": text_only,
-            "image_only": {"state": _IMAGE_ONLY_STATE, "rows": image_only},
+            "image_only": {
+                "state": _IMAGE_ONLY_STATE,
+                "omission_tokens_evaluated": image_only_omission["tokens_evaluated"],
+                "rows": image_only,
+            },
             "combined": combined,
             "metrics": metrics,
             "image_only_insufficient_rate": image_only_abstained / len(image_only),
@@ -387,11 +394,33 @@ def test_cord_expense_triage_reads_the_receipt(
             probabilities = row["probabilities"]
             assert isinstance(probabilities, dict)
             assert set(probabilities) == set(LABEL_ORDER)
-    _assert_attachment(live_multimodal_model, text_only, image_only, combined, cases)
+    _assert_attachment(
+        attachment_profile,
+        text_only,
+        image_only,
+        combined,
+        cases,
+        int(image_only_omission["tokens_evaluated"]),
+    )
 
 
-def _assert_attachment(model_id, text_only, image_only, combined, cases) -> None:
+def _assert_attachment(
+    profile,
+    text_only,
+    image_only,
+    combined,
+    cases,
+    image_only_omission_tokens: int,
+) -> None:
     """Fail loud on a silently dropped receipt image (#155, #185).
+
+    Args:
+        profile: Verified attachment profile from the pre-scoring gate.
+        text_only: Text-only arm rows keyed by claim id.
+        image_only: Image-only arm rows keyed by receipt id.
+        combined: Combined arm rows keyed by claim id.
+        cases: Loaded expense cases for id lists.
+        image_only_omission_tokens: Same ``image_only`` prompt without media.
 
     Raises:
         AssertionError: When token growth falls below the model-specific floor.
@@ -400,12 +429,13 @@ def _assert_attachment(model_id, text_only, image_only, combined, cases) -> None
     receipt_ids = tuple(dict.fromkeys(case.receipt_id for case in cases))
     try:
         assert_cord_expense_attachment(
-            model_id=model_id,
+            profile=profile,
             text_only=text_only,
             image_only=image_only,
             combined=combined,
             claim_ids=claim_ids,
             receipt_ids=receipt_ids,
+            image_only_omission_tokens=image_only_omission_tokens,
         )
     except ValueError as exc:
         raise AssertionError(str(exc)) from exc

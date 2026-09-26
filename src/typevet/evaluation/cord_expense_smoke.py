@@ -10,6 +10,7 @@ Examples:
     ```python
     from typevet.evaluation.cord_expense_smoke import (
         assert_cord_expense_attachment,
+        assert_cord_expense_live_smoke_gate,
         cord_combined_attachment_floor,
     )
 
@@ -27,6 +28,7 @@ See Also:
 from __future__ import annotations
 
 from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import Any, Final
 
 # One attached receipt image on the CORD smoke router, measured on live runs.
@@ -35,8 +37,108 @@ _GEMMA4_IMAGE_PROMPT_TOKENS: Final[int] = 245
 # A silently dropped image adds marker text only (#155 recipe).
 _MARKER_ONLY_PROMPT_TOKENS: Final[int] = 31
 
+GEMMA3_DIRECT_RECEIPT_MODEL: Final[str] = "gemma-3-4b-it-q4km-mm"
 GEMMA4_DIRECT_RECEIPT_MODEL: Final[str] = "gemma-4-31b-kv9-q4km-mm"
 GEMMA4_NATIVE_TURN: Final[str] = "native_gemma4_turn"
+GEMMA3_NATIVE_TURN: Final[str] = "native_gemma3_turn"
+
+
+@dataclass(frozen=True, slots=True)
+class CordExpenseAttachmentProfile:
+    """Verified attachment calibration for one router model and served family.
+
+    Attributes:
+        model_id (str): Router multimodal model id.
+        served_template (str): Native turn family from ``/apply-template``.
+        measured_image_prompt_tokens (int): Prompt tokens one receipt image adds
+            on the combined arm (text baseline subtracted).
+        image_only_state_omission_tokens (int): Prompt tokens for the fixed
+            ``image_only`` claim text with no image (same prompt, omission).
+
+    Examples:
+        ```python
+        from typevet.evaluation.cord_expense_smoke import (
+            GEMMA4_DIRECT_RECEIPT_MODEL,
+            resolve_cord_expense_attachment_profile,
+        )
+
+        profile = resolve_cord_expense_attachment_profile(
+            GEMMA4_DIRECT_RECEIPT_MODEL,
+            "native_gemma4_turn",
+        )
+        assert profile.measured_image_prompt_tokens == 245
+        ```
+    """
+
+    model_id: str
+    served_template: str
+    measured_image_prompt_tokens: int
+    image_only_state_omission_tokens: int
+
+
+_VERIFIED_ATTACHMENT_PROFILES: Final[
+    dict[tuple[str, str], CordExpenseAttachmentProfile]
+] = {
+    (
+        GEMMA3_DIRECT_RECEIPT_MODEL,
+        GEMMA3_NATIVE_TURN,
+    ): CordExpenseAttachmentProfile(
+        model_id=GEMMA3_DIRECT_RECEIPT_MODEL,
+        served_template=GEMMA3_NATIVE_TURN,
+        measured_image_prompt_tokens=_GEMMA3_IMAGE_PROMPT_TOKENS,
+        image_only_state_omission_tokens=218,
+    ),
+    (
+        GEMMA4_DIRECT_RECEIPT_MODEL,
+        GEMMA4_NATIVE_TURN,
+    ): CordExpenseAttachmentProfile(
+        model_id=GEMMA4_DIRECT_RECEIPT_MODEL,
+        served_template=GEMMA4_NATIVE_TURN,
+        measured_image_prompt_tokens=_GEMMA4_IMAGE_PROMPT_TOKENS,
+        image_only_state_omission_tokens=218,
+    ),
+}
+
+
+class CordExpenseLiveSmokeGateError(ValueError):
+    """The live CORD smoke harness must fail before scoring.
+
+    Examples:
+        ```python
+        from typevet.evaluation.cord_expense_smoke import (
+            CordExpenseLiveSmokeGateError,
+        )
+
+        assert issubclass(CordExpenseLiveSmokeGateError, ValueError)
+        ```
+    """
+
+
+def resolve_cord_expense_attachment_profile(
+    model_id: str,
+    served_template: str,
+) -> CordExpenseAttachmentProfile:
+    """Return the verified attachment profile for one model and served family.
+
+    Args:
+        model_id: Router model id from ``TYPEVET_LLAMA__MULTIMODAL_MODEL``.
+        served_template: ``ServedTemplateClass`` value from ``/apply-template``.
+
+    Returns:
+        Measured attachment calibration bound to that configuration.
+
+    Raises:
+        ValueError: When the pair is not a verified CORD smoke configuration.
+    """
+    profile = _VERIFIED_ATTACHMENT_PROFILES.get((model_id, served_template))
+    if profile is None:
+        msg = (
+            "CORD expense attachment evidence is defined only for verified "
+            f"gemma-3 or gemma-4 native-turn configurations, not "
+            f"({model_id!r}, {served_template!r})"
+        )
+        raise ValueError(msg)
+    return profile
 
 
 def measured_image_prompt_tokens(model_id: str) -> int:
@@ -74,16 +176,58 @@ def cord_combined_attachment_floor(model_id: str) -> int:
     return measured_image_prompt_tokens(model_id) - _MARKER_ONLY_PROMPT_TOKENS
 
 
-def cord_image_only_attachment_floor(model_id: str) -> int:
-    """Minimum absolute prompt tokens for an ``image_only`` row.
+def cord_image_only_attachment_gap_floor(model_id: str) -> int:
+    """Minimum ``image_only`` minus omission token gap that proves attachment.
 
     Args:
         model_id: Router model id from ``TYPEVET_LLAMA__MULTIMODAL_MODEL``.
 
     Returns:
-        Absolute ``tokens_evaluated`` floor for a receipt-only request.
+        Token gap floor for the fixed ``image_only`` prompt with media present.
     """
-    return measured_image_prompt_tokens(model_id) - _MARKER_ONLY_PROMPT_TOKENS
+    return cord_combined_attachment_floor(model_id)
+
+
+def assert_cord_expense_live_smoke_gate(
+    *,
+    vision: bool,
+    served_template: str,
+    model_id: str,
+) -> CordExpenseAttachmentProfile:
+    """Fail before scoring when the router cannot run the CORD smoke contract.
+
+    Args:
+        vision: Whether ``GET /props`` reports image input for the model.
+        served_template: Served template family from ``/apply-template``.
+        model_id: Multimodal model id under test.
+
+    Returns:
+        Verified attachment profile when native Gemma 3 or Gemma 4 may score.
+
+    Raises:
+        CordExpenseLiveSmokeGateError: When vision or the served family blocks
+            the smoke before any scoring call.
+        ValueError: When ``model_id`` and ``served_template`` are not verified.
+    """
+    if not vision:
+        msg = (
+            f"{model_id} reports text-only input modalities; "
+            "a text-only router cannot prove receipt reading"
+        )
+        raise CordExpenseLiveSmokeGateError(msg)
+    if served_template not in (GEMMA3_NATIVE_TURN, GEMMA4_NATIVE_TURN):
+        msg = (
+            "CORD expense smoke requires a native Gemma 3 or Gemma 4 turn, "
+            f"not {served_template!r}"
+        )
+        raise CordExpenseLiveSmokeGateError(msg)
+    if served_template == GEMMA4_NATIVE_TURN and not model_id.startswith("gemma-4"):
+        msg = "native Gemma 4 turn requires a gemma-4 multimodal model id"
+        raise CordExpenseLiveSmokeGateError(msg)
+    if served_template == GEMMA3_NATIVE_TURN and not model_id.startswith("gemma-3"):
+        msg = "native Gemma 3 turn requires a gemma-3 multimodal model id"
+        raise CordExpenseLiveSmokeGateError(msg)
+    return resolve_cord_expense_attachment_profile(model_id, served_template)
 
 
 def validate_gemma4_smoke_capability(receipt: Mapping[str, Any]) -> None:
@@ -110,29 +254,48 @@ def validate_gemma4_smoke_capability(receipt: Mapping[str, Any]) -> None:
 
 def assert_cord_expense_attachment(
     *,
-    model_id: str,
+    profile: CordExpenseAttachmentProfile,
     text_only: Mapping[str, Mapping[str, object]],
     image_only: Mapping[str, Mapping[str, object]],
     combined: Mapping[str, Mapping[str, object]],
     claim_ids: tuple[str, ...],
     receipt_ids: tuple[str, ...],
+    image_only_omission_tokens: int,
 ) -> None:
     """Fail loud when prompt token counts show a silently dropped receipt image.
 
     Args:
-        model_id: Router model id used for the smoke run.
+        profile: Verified model and served-template attachment calibration.
         text_only: ``text_only`` rows keyed by claim id.
         image_only: ``image_only`` rows keyed by receipt id.
         combined: ``combined`` rows keyed by claim id.
         claim_ids: Claim ids to compare across ``text_only`` and ``combined``.
-        receipt_ids: Receipt ids that must meet the ``image_only`` floor.
+        receipt_ids: Receipt ids that must meet the ``image_only`` gap floor.
+        image_only_omission_tokens: Prompt tokens for the ``image_only`` claim
+            text with no image on the same native turn family.
 
     Raises:
         TypeError: When the router omits integer token counts.
-        ValueError: When any row falls below the model-specific floor.
+        ValueError: When any row falls below the model-specific floor or the
+            profile does not match the receipt configuration.
     """
-    combined_floor = cord_combined_attachment_floor(model_id)
-    image_floor = cord_image_only_attachment_floor(model_id)
+    if profile.model_id.startswith("gemma-4"):
+        if profile.served_template != GEMMA4_NATIVE_TURN:
+            msg = "attachment profile served_template does not match Gemma 4"
+            raise ValueError(msg)
+    elif profile.model_id.startswith("gemma-3"):
+        if profile.served_template != GEMMA3_NATIVE_TURN:
+            msg = "attachment profile served_template does not match Gemma 3"
+            raise ValueError(msg)
+    else:
+        msg = f"unsupported attachment profile model id {profile.model_id!r}"
+        raise ValueError(msg)
+
+    combined_floor = profile.measured_image_prompt_tokens - _MARKER_ONLY_PROMPT_TOKENS
+    image_gap_floor = combined_floor
+    if not isinstance(image_only_omission_tokens, int):
+        msg = "image_only omission control must report integer prompt tokens"
+        raise TypeError(msg)
     for claim_id in claim_ids:
         text_row = text_only[claim_id]
         combined_row = combined[claim_id]
@@ -155,9 +318,11 @@ def assert_cord_expense_attachment(
         if not isinstance(tokens, int):
             msg = "router did not report integer prompt tokens"
             raise TypeError(msg)
-        if tokens < image_floor:
+        gap = tokens - image_only_omission_tokens
+        if gap < image_gap_floor:
             msg = (
-                f"{receipt_id} image_only evaluated {tokens} prompt tokens; "
-                "the image was not attached"
+                f"{receipt_id} image_only evaluated {tokens} prompt tokens "
+                f"against a {image_only_omission_tokens}-token omission baseline "
+                f"(gap {gap}); the image was not attached"
             )
             raise ValueError(msg)

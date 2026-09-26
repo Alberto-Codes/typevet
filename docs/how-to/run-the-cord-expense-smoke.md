@@ -43,7 +43,7 @@ edits cannot change `experiment_identity` digests.
 |---|---|
 | Skip | The router is down, or the model id is not in the catalog |
 | Fail on `text-only input modalities` | The router serves that id without a projector |
-| Fail on `the image was not attached` | The prompt token count did not grow |
+| Fail on `the image was not attached` | The prompt token gap vs text or omission did not grow |
 | Fail on a label or probability assertion | A response is not one of the three labels |
 | Pass | Every request is typed and every image is attached |
 
@@ -79,9 +79,12 @@ less.
 Compare `tokens_evaluated` for the same claim in `text_only` and `combined`.
 One Gemma 3 image costs 256 prompt tokens on the CORD smoke router; one Gemma 4
 image costs 245. A silently dropped image grows the count by about 30 tokens,
-the marker as plain text. The live test uses
-`typevet.evaluation.cord_expense_smoke` model-specific floors derived from those
-measured costs. The test passes the served family to `ScoringJudgmentAdapter` as
+the marker as plain text. The live harness calls
+`assert_cord_expense_live_smoke_gate` before scoring and uses
+`typevet.evaluation.cord_expense_smoke` verified profiles for those measured
+costs. For `image_only`, compare each receipt row to
+`image_only.omission_tokens_evaluated`, the same claim text with no image.
+The test passes the served family to `ScoringJudgmentAdapter` as
 `served_template`, so `text_only` and `combined` share one native turn family
 and the gap holds the image and its marker only. Every `/completion` request
 sends `"cache_prompt": false`.
