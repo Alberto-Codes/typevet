@@ -17,7 +17,9 @@ Kind: reference and how-to, for agents. Guidance for coding agents. `AGENTS.md` 
 5. Use [groom worker issues](docs/maintainers/groom-worker-issues.md) for the
    select → classify → split → contract path. Use
    [delegate a bounded change](docs/maintainers/delegate-work.md) only after a
-   contract exists on the issue.
+   contract exists on the issue. For behaviour under `src/`, run
+   specifier (when needed) → builder → fresh acceptance-reviewer → supervisor
+   commit; do not implement in the main session by default.
 6. Write under [the writing system](docs/reference/writing-system.md): Diátaxis
    page kinds, Conventional Commits and the ASD-STE100 local prose profile.
 
@@ -41,7 +43,7 @@ Three independent choices:
 
 | Choice | Meaning |
 |---|---|
-| Role | supervisor, specifier, builder, reviewer |
+| Role | supervisor, specifier, builder, acceptance-reviewer |
 | Harness | which program runs the model (Cursor, Claude Code, Codex, Copilot, pi, …) |
 | Weight | light, medium or heavy capacity for this job |
 
@@ -63,6 +65,32 @@ The supervisor selects work, decides boundaries, accepts the result and
 commits. A worker follows its brief, skips session bookkeeping, and never
 commits, pushes or changes policy unless the brief assigns it. Each checkout
 has one writer. Workers preserve unrelated changes.
+
+### Delegation chain (behaviour changes)
+
+Non-trivial **behaviour** changes — production code under `src/` and the tests
+that prove it — follow one supervised path. **Do not implement them in the main
+supervisor session** unless the accepted contract explicitly assigns that role
+to the supervisor (rare; docs-only and policy slices only).
+
+Required order (sister projects: judgevet, finvet, automarket, gepa-adk):
+
+1. **Groomed issue** — classified, sized, parent linked when needed; see
+   [groom worker issues](docs/maintainers/groom-worker-issues.md).
+2. **Accepted specification** — a titled issue comment (specifier or
+   supervisor); URL and text in every brief.
+3. **Builder** — allowed paths only; red then green; gate table; no commit.
+4. **Acceptance-reviewer** — **fresh** worker session; not the builder, not
+   the supervisor verifying its own diff.
+5. **Supervisor** — resolve findings, run remaining gates, **commit only after**
+   acceptance review accepts or a named repair round finishes.
+
+Research-only and docs-only deliverables still need the issue and contract.
+They omit the builder when the accept-when is an issue comment or named doc
+paths only; acceptance review applies when the contract requires it.
+
+A chat turn that edits behaviour without a builder dispatch breaks this chain.
+Standing permission to file and groom issues is not permission to bypass it.
 
 **Fable is supervisor-only.** Never run a Claude Code sub agent (or any
 worker dispatch) on Fable / `fable`. Pass an explicit worker model on every

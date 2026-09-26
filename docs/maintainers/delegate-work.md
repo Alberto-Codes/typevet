@@ -11,6 +11,26 @@ scoped change (or returns a research artifact) and returns evidence. Apply the
 Use one validation path. Do not add another harness to repeat required
 repository checks.
 
+## Required chain for behaviour changes
+
+Production behaviour changes use this order. Do not replace a step with ad hoc
+edits in the main supervisor session.
+
+| Step | Role | Outcome |
+|---|---|---|
+| 1 | Supervisor (groom) | Issue classified, sized, `ready` when dispatchable |
+| 2 | Specifier (when the contract is not yet accepted) | Accepted specification comment on the issue |
+| 3 | Builder | Diff in allowed paths; red/green evidence; no commit |
+| 4 | Acceptance-reviewer | Fresh session; verdict accept, repair or reject |
+| 5 | Supervisor | Commit after review accepts; `Closes #N` when the slice finishes |
+
+Research and docs-only slices follow the same issue and contract rules. They
+skip the builder when the deliverable is not code under `src/`. The contract
+names whether step 4 runs.
+
+Repairs after a **repair** verdict reuse the builder (or a narrow follow-up
+brief), then a fresh acceptance-reviewer before commit.
+
 ## Worker harnesses and model weight
 
 The supervisor harness is independent of the worker. Cursor, Claude Code,
@@ -89,7 +109,7 @@ together when a split would leave an unsafe intermediate state.
 
 | Task shape | Dispatch |
 |---|---|
-| Decided behaviour with a failing acceptance test | Implement directly |
+| Decided behaviour with a failing acceptance test | Dispatch **builder** (not main-session edits) |
 | Several independent behaviours or acceptance commands | Split into named slices or child issues |
 | Unresolved API, port or source decision | Resolve on the issue first (`judgment`) |
 | Small mechanical correction with an obvious proof | Short repair brief (`worker-fit`, often light or medium) |
@@ -144,6 +164,11 @@ remaining gaps and your model identity. Leave the diff for review and stop.
 ```
 
 ## 4. Accept behaviour and finish
+
+For code under `src/`, dispatch **acceptance-reviewer** in a fresh worker
+session before you commit. Pass the accepted contract URL, the builder return
+and the base revision. The supervisor reads the review return; do not treat
+your own diff read as step 4.
 
 Read the diff (or research comment) against the agreed scope. Run an
 independent probe of the defining behaviour when code changed. Confirm that

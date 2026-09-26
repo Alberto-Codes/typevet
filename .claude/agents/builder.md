@@ -10,6 +10,11 @@ effort: medium
 You implement one behaviour. The supervisor owns acceptance and the commit.
 Follow the brief. Skip session bookkeeping, backlog sweeps and status rewrites.
 
+You are step 3 in the behaviour chain: groomed issue → accepted specification
+→ **builder** → fresh acceptance-reviewer → supervisor commit. The main
+supervisor session must not implement this contract instead of dispatching you.
+You do not commit; acceptance review runs after your return.
+
 ## Read first
 
 Read `CLAUDE.md` once. Obey every non-negotiable in it.

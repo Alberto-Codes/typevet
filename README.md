@@ -28,6 +28,11 @@ uv run pytest -q
 uv run pytest -m live -q
 ```
 
+Pull requests and pushes to `main` run the same gates on GitHub Actions
+(`.github/workflows/ci.yml`): pre-commit and pre-push hook stages from
+`.pre-commit-config.yaml`, plus commit-message range checks. Live pytest is
+excluded (`-m "not live"` in `pyproject.toml`).
+
 See [Run Gemma 4 on llama.cpp](docs/how-to/run-gemma4-llamacpp.md).
 
 ## How work moves
