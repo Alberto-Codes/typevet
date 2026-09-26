@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "hyperpartisan": {
+      "type": "boolean",
+      "instructions": "Is this news article hyperpartisan?",
+      "return_probabilities": true
+    }
+  },
+  "required": ["hyperpartisan"],
+  "additionalProperties": false
+}

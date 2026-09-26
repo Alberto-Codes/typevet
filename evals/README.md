@@ -17,6 +17,8 @@ re-litigate dataset research.
 | [fixtures/pubmedqa_answer_choice_schema_v1.json](fixtures/pubmedqa_answer_choice_schema_v1.json) | Versioned yes/no/maybe Choice schema for PubMedQA (#78) |
 | [fixtures/boolq_answer_noul_schema_v1.json](fixtures/boolq_answer_noul_schema_v1.json) | Versioned `answer` Noul JSON Schema for BoolQ (#77) |
 | [fixtures/boolq_tier_manifest_v1.yaml](fixtures/boolq_tier_manifest_v1.yaml) | Seeded tier A/B limits and CC BY-SA smoke policy (#77) |
+| [fixtures/hyperpartisan_hyperpartisan_noul_schema_v1.json](fixtures/hyperpartisan_hyperpartisan_noul_schema_v1.json) | Versioned `hyperpartisan` Noul JSON Schema (#81) |
+| [fixtures/hyperpartisan_holdout_manifest_v1.yaml](fixtures/hyperpartisan_holdout_manifest_v1.yaml) | Stratified holdout from byarticle train; excludes bypublisher (#81) |
 | [fixtures/go_emotions_emotion_choice_schema_v1.json](fixtures/go_emotions_emotion_choice_schema_v1.json) | Versioned 24-emotion Choice schema for go_emotions (#79) |
 
 Human-readable commentary and epic links:
@@ -27,6 +29,7 @@ Loader reference pages (Python modules under ``src/typevet/``):
 | Corpus | Doc |
 |---|---|
 | BoolQ | [BoolQ loader and answer Noul](../docs/reference/eval-boolq-loader.md) |
+| Hyperpartisan | [Hyperpartisan loader and hyperpartisan Noul](../docs/reference/eval-hyperpartisan-loader.md) |
 
 ## Rules
 

@@ -54,6 +54,7 @@ log” epic. Until then, accepted judgment comments on issues are the record.
 - [go_emotions loader and emotion Choice fixture](reference/eval-go-emotions-loader.md) (reference): simplified strict exactly-one; 24-enum; Apache 2.0.
 - [PubMedQA loader and answer Choice fixture](reference/eval-pubmedqa-loader.md) (reference): pqa_labeled yes/no/maybe; contexts state; MIT.
 - [BoolQ loader and answer Noul fixture](reference/eval-boolq-loader.md) (reference): validation split, no/yes Noul, CC BY-SA smoke cap, HF bulk stream.
+- [Hyperpartisan loader and hyperpartisan Noul fixture](reference/eval-hyperpartisan-loader.md) (reference): byarticle train only, HTML cleanup, stratified holdout, excludes bypublisher.
 - [Complementary eval manifest](reference/eval-complementary-manifest.md) (reference): JevBench-primary ranked open sets; see also `evals/`.
 - [Glossary](reference/glossary.md) (reference): the one meaning of each term.
 - [Supported imports](reference/supported-imports.md) (reference): package

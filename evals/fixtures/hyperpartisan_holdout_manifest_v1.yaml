@@ -1,0 +1,17 @@
+# Seeded byarticle holdout (#68 accepted, loader #81).
+manifest_version: 1
+loader_issue: 81
+research_issue: 68
+dataset_id: SemEval-2019/Task4-hyperpartisan-news-detection
+split: byarticle-train
+license: CC BY 4.0
+corpus_byarticle_train_rows: 645
+excluded_splits:
+  - bypublisher
+default_holdout_seed: 0
+holdout_fraction: 0.2
+body_max_chars: 8000
+non_goals:
+  - bypublisher distant publisher labels
+  - SemEval official by-article test claim
+  - full 645-row corpus in git
