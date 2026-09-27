@@ -1,4 +1,11 @@
-"""Prove private installed bridge policy behavior without service calls."""
+"""Prove installed bridge policy and verify bytes before optional public imports.
+
+Examples:
+    Run ``uv run python installed_policy_proof.py --help`` for artifact inputs.
+
+See Also:
+    - [verify_install][]: Wheel metadata and external command verification.
+"""
 
 from __future__ import annotations
 
@@ -30,13 +37,21 @@ PACKAGES = ("typevet", "judgevet", "typevet_consumer_bridge")
 
 
 def require(condition: bool, message: str) -> None:
-    """Reject a failed proof assertion."""
+    """Reject a failed proof assertion.
+
+    Raises:
+        AssertionError: When the proof condition fails.
+    """
     if not condition:
         raise AssertionError(message)
 
 
 def digest(path: Path) -> str:
-    """Return the SHA256 of exact file bytes."""
+    """Return the SHA256 of exact file bytes.
+
+    Returns:
+        The hexadecimal SHA256 digest.
+    """
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
@@ -48,8 +63,15 @@ def check_record(data: bytes, encoded: str, size: str) -> None:
     require(actual.decode() == value and len(data) == int(size), "RECORD bytes")
 
 
-def attest(config: dict) -> dict:
-    """Check wheel bytes, installed RECORD bytes and every loaded package module."""
+def attest_bytes(config: dict) -> set[Path]:
+    """Check wheel and installed RECORD bytes without importing public packages.
+
+    Returns:
+        Verified installed file paths.
+
+    Raises:
+        AssertionError: When installed RECORD metadata is absent.
+    """
     prefix = Path(sys.prefix).resolve()
     checkout = Path(config["checkout"])
     require(prefix != Path(sys.base_prefix).resolve(), "isolated environment")
@@ -95,6 +117,20 @@ def attest(config: dict) -> dict:
                 },
                 "complete wheel RECORD",
             )
+    return verified
+
+
+def attest(config: dict) -> dict:
+    """Check wheel bytes, installed RECORD bytes and every loaded package module.
+
+    Returns:
+        Installed environment and loaded module evidence.
+
+    Raises:
+        AssertionError: When a loaded module has no source path.
+    """
+    verified = attest_bytes(config)
+    prefix = Path(sys.prefix).resolve()
     modules = {}
     for name, module in tuple(sys.modules.items()):
         if name.split(".")[0] in PACKAGES:
@@ -113,7 +149,14 @@ def attest(config: dict) -> dict:
 
 
 def handler(request, positive: bool, calls: list):
-    """Return deterministic protocol payloads behind the real runtime factory."""
+    """Return deterministic protocol payloads behind the real runtime factory.
+
+    Returns:
+        A deterministic HTTP response.
+
+    Raises:
+        AssertionError: When a request uses an unexpected endpoint.
+    """
     httpx = importlib.import_module("httpx")
     path = request.url.path
     body = json.loads(request.content) if request.content else {}
@@ -205,7 +248,14 @@ def verify_wire(case: dict, calls: list) -> None:
 
 
 def prove_case(case: dict, positive: bool) -> dict:
-    """Exercise raw mappings, consumer policy and meaningful wrapper cleanup."""
+    """Exercise raw mappings, consumer policy and meaningful wrapper cleanup.
+
+    Returns:
+        Consumer results, policy outcomes, wire inputs, and cleanup evidence.
+
+    Raises:
+        AssertionError: When the owned wrapper fails to invalidate its adapter.
+    """
     httpx = importlib.import_module("httpx")
     consumer = importlib.import_module("judgevet")
     policy = importlib.import_module("judgevet.policy")
@@ -378,7 +428,11 @@ async def install_and_prove(arguments: argparse.Namespace, receipt: dict) -> Non
 
 
 def main() -> None:
-    """Create an exclusive receipt before installing or exercising proof inputs."""
+    """Create an exclusive receipt before installing or exercising proof inputs.
+
+    Raises:
+        BaseException: After retaining the failed proof receipt.
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--installed-config", type=Path, help=argparse.SUPPRESS)
     for name in ("typevet-wheel", "consumer-wheel", "bridge-wheel", "receipt"):

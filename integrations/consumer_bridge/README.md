@@ -113,3 +113,28 @@ uv run --no-project --python /operator/gates/bin/python pytest -q \
 The gate environment needs pytest, the accepted dependency wheels and the current bridge wheel.
 The tests build a fresh bridge wheel and reject three behavior mutations through the installed command.
 They also reject changed installed bytes and an incorrect wheel hash.
+
+## Bounded installed live proof
+
+`scripts/live_text_proof.py` uses the accepted offline proof environment without installation.
+Copy this script outside the checkout before execution.
+Use that environment's interpreter with `-I -B` from an external directory.
+The required flags pin the script, offline receipt, and installed configuration with SHA256 hashes.
+The offline receipt pins all dependency wheels and the bridge wheel.
+The script checks installed bytes before and after the attempt.
+
+```text
+live_text_proof.py --offline-receipt PATH --offline-receipt-sha256 SHA256 \
+  --installed-config-sha256 SHA256 --script-sha256 SHA256 \
+  --endpoint URL --model REQUESTED_MODEL --receipt NEW_PATH
+```
+
+One run admits one aggregate judgment with three questions.
+The ceilings allow three scoring entries, two metadata requests, six tokenizer requests, and three completion requests.
+Failed attempts consume their category budget before dispatch.
+Unknown routes, redirects, retries, and later cleanup requests cannot add model calls.
+The exclusive receipt retains results, policy rules, wire bodies, failures, artifact identities, and cleanup evidence.
+Statuses distinguish unavailable service, runtime failure, policy failure, and policy success.
+Requested model names do not attest served weights.
+Usage remains unknown.
+The operator must freeze the exact command and artifacts before the authorized live attempt.
