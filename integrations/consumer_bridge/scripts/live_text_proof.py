@@ -1,4 +1,4 @@
-"""Run one installed text judgment with admitted-attempt budgets and a receipt.
+"""Run one installed text judgment with bounded attempts and observed usage evidence.
 
 Examples:
     Run ``uv run python live_text_proof.py --help`` for required frozen inputs.
@@ -232,6 +232,27 @@ def validate_wire(case: dict, receipt: dict, model: str) -> None:
     require(all(call["body"].get("model", model) == model for call in calls), "model")
 
 
+def validate_usage(receipt: dict) -> None:
+    """Match each usage field to available completion counts under engine semantics."""
+    payloads = [
+        json.loads(call["response"])
+        for call in receipt["calls"]
+        if call["path"] == "/completion"
+    ]
+    expected = {}
+    for field, source in (
+        ("input_tokens", "tokens_evaluated"),
+        ("output_tokens", "tokens_predicted"),
+    ):
+        values = [payload.get(source) for payload in payloads]
+        counts = [value for value in values if type(value) is int and value >= 0]
+        expected[field] = sum(counts) if counts else None
+    require(
+        receipt["response"]["usage"] == expected, "usage matches completion evidence"
+    )
+    require(receipt["usage"] == expected, "receipt usage matches response")
+
+
 def check_prompt(case: dict, question: dict, body: dict) -> None:
     """Reject modified caller inputs before the completion transport runs."""
     require(isinstance(body["prompt"], str), "text prompt")
@@ -245,7 +266,7 @@ def check_prompt(case: dict, question: dict, body: dict) -> None:
 def run_case(
     case: dict, arguments: argparse.Namespace, receipt: dict, transport=None
 ) -> None:
-    """Exercise the real factory and bridge once, with caller-owned HTTP cleanup."""
+    """Exercise the factory and bridge once, checking observed usage and caller-owned cleanup."""
     httpx = importlib.import_module("httpx")
     consumer = importlib.import_module("judgevet")
     policy = importlib.import_module("judgevet.policy")
@@ -313,10 +334,8 @@ def run_case(
                 == [consumer.NoulAnswer, consumer.ChoiceAnswer, consumer.ScoreAnswer],
                 "consumer answer types",
             )
-            require(
-                asdict(response.usage) == {"input_tokens": None, "output_tokens": None},
-                "unknown usage",
-            )
+            receipt["usage"] = asdict(response.usage)
+            validate_usage(receipt)
             validate_wire(case, receipt, arguments.model)
             receipt["status"] = "passed" if report.passed else "policy_failed"
     finally:
@@ -326,13 +345,13 @@ def run_case(
 
 
 def execute(arguments: argparse.Namespace, receipt: dict) -> None:
-    """Retain failures and recheck installed bytes after every attempted judgment."""
+    """Retain usage and failures, then recheck installed bytes after each judgment."""
     helper, config, case = verified_inputs(arguments, receipt)
     receipt.update(
         endpoint=arguments.endpoint,
         requested_model=arguments.model,
         served_weights="unknown",
-        usage="unknown",
+        usage={"input_tokens": None, "output_tokens": None},
         fixture=case,
     )
     try:

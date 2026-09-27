@@ -136,5 +136,6 @@ Unknown routes, redirects, retries, and later cleanup requests cannot add model 
 The exclusive receipt retains results, policy rules, wire bodies, failures, artifact identities, and cleanup evidence.
 Statuses distinguish unavailable service, runtime failure, policy failure, and policy success.
 Requested model names do not attest served weights.
-Usage remains unknown.
+The receipt preserves available usage counts and unknown fields.
+Usage checks follow the engine aggregation of valid counts from completion responses.
 The operator must freeze the exact command and artifacts before the authorized live attempt.

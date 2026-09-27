@@ -1,4 +1,4 @@
-"""Exercise installed offline and bounded live proof commands under socket guards.
+"""Exercise installed proof commands, usage evidence, and saved responses without service calls.
 
 Examples:
     Run ``uv run pytest integrations/consumer_bridge/tests/contract``.
@@ -676,3 +676,111 @@ def test_live_rejects_before_import(
         "zero attempt counters",
     )
     require(result["calls"] == [], "zero HTTP attempts")
+
+
+@pytest.mark.parametrize(
+    ("usage", "expected"),
+    [
+        ([(82, 1), (80, 1), (80, 1)], {"input_tokens": 242, "output_tokens": 3}),
+        (
+            [(82, None), (None, None), (80, None)],
+            {"input_tokens": 162, "output_tokens": None},
+        ),
+        (
+            [(None, 1), (None, None), (None, 1)],
+            {"input_tokens": None, "output_tokens": 2},
+        ),
+        (
+            [(True, -1), (1.5, "1"), (None, None)],
+            {"input_tokens": None, "output_tokens": None},
+        ),
+        ([(0, 0), (None, None), (None, None)], {"input_tokens": 0, "output_tokens": 0}),
+    ],
+)
+def test_live_usage_evidence(live, router, usage: list, expected: dict) -> None:
+    """Preserve available per-field usage with the real runtime aggregation."""
+    completion = iter(usage)
+
+    def handle(request):
+        """Attach recorded or partially available usage to deterministic answers.
+
+        Returns:
+            A real protocol response with the selected usage fields.
+        """
+        response = router.handle(request)
+        if request.url.path == "/completion":
+            input_tokens, output_tokens = next(completion)
+            payload = response.json()
+            payload.update(
+                tokens_evaluated=input_tokens, tokens_predicted=output_tokens
+            )
+            return httpx.Response(200, json=payload)
+        return response
+
+    receipt = {}
+    case = json.loads((ROOT / "tests/fixtures/text_cases.json").read_text())
+    arguments = argparse.Namespace(
+        endpoint="http://offline.invalid", timeout=1.0, model="requested-model"
+    )
+    live.run_case(case, arguments, receipt, httpx.MockTransport(handle))
+    require(receipt["response"]["usage"] == expected, "actual engine usage")
+    require(
+        receipt["usage"] == expected, "receipt usage preserves known and unknown fields"
+    )
+    require(receipt["status"] == "passed", "usage does not reject policy success")
+    receipt["response"]["usage"]["input_tokens"] = 999
+    with pytest.raises(AssertionError, match="usage matches completion evidence"):
+        live.validate_usage(receipt)
+
+
+def test_saved_live_evidence_replay(live) -> None:
+    """Replay frozen HTTP evidence without claiming a new live script execution."""
+    path = os.environ.get("TYPEVET_LIVE_RECEIPT")
+    if path is None:
+        pytest.skip("Set TYPEVET_LIVE_RECEIPT for the retained one-shot evidence")
+    raw = Path(path).read_bytes()
+    require(
+        hashlib.sha256(raw).hexdigest()
+        == "ccb61825233c4bcbd27b2e9e5c08ada2107c71bca79717c8befb019e9691bda5",
+        "original live evidence bytes",
+    )
+    saved = json.loads(raw)
+    calls = iter(saved["calls"])
+
+    def handle(request):
+        """Serve recorded responses only for byte-equivalent request bodies.
+
+        Returns:
+            A saved response through an offline MockTransport.
+        """
+        call = next(calls)
+        require(str(request.url) == call["url"], "recorded request URL")
+        require(request.method == call["method"], "recorded request method")
+        body = json.loads(request.content) if request.content else {}
+        require(body == call["body"], "recorded request body")
+        return httpx.Response(call["status"], text=call["response"])
+
+    receipt = {}
+    arguments = argparse.Namespace(
+        endpoint=saved["endpoint"], timeout=1.0, model=saved["requested_model"]
+    )
+    live.run_case(saved["fixture"], arguments, receipt, httpx.MockTransport(handle))
+    require(next(calls, None) is None, "all recorded calls consumed once")
+    require(
+        receipt["counts"] == saved["counts"] == live.LIMITS, "recorded attempt counts"
+    )
+    require(
+        json.loads(json.dumps(receipt["response"])) == saved["response"],
+        "exact saved typed result",
+    )
+    require(
+        json.loads(json.dumps(receipt["policy"])) == saved["policy"],
+        "exact saved policy outcome",
+    )
+    require(
+        receipt["usage"] == {"input_tokens": 242, "output_tokens": 3},
+        "recorded known usage",
+    )
+    require(receipt["status"] == "passed", "repaired oracle accepts offline replay")
+    require(saved["status"] == "runtime_failed", "original process failure preserved")
+    require(Path(path).read_bytes() == raw, "original receipt unchanged")
