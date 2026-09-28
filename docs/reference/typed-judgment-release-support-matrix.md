@@ -48,12 +48,14 @@ Task-specific smokes (not a single “release pass”):
 
 | Limit | Where set | Release statement |
 |---|---|---|
-| HTTP deadline | `TYPEVET_LLAMA__TIMEOUT` (default 300 s) | Callers and live tests may raise it (for example 900 s on multimodal smokes) |
+| HTTP deadline | `TYPEVET_LLAMA__TIMEOUT` (default 300 s) | Callers and live tests may raise it (for example 900 s on multimodal smokes). The value reaches the client that the Gemma 4 native vision factory builds. A transport timeout during scoring raises `TransportError` ([`test_env_timeout_reaches_factory_http_client`, `test_transport_timeout_during_scoring_raises_transport_error`](../../tests/unit/test_runtime_limits.py)) |
 | Router URL | `TYPEVET_LLAMA__BASE_URL` | Default `http://127.0.0.1:8090` |
-| Media marker | Cached per model id on `LlamaCppCandidateScoringAdapter` | **Rebuild the adapter** after a router model reload; stale markers fail tokenization — see multimodal how-to |
-| Image bytes / pixels | `ImageInput` validates mime and non-empty data only | **No** documented byte, pixel, or per-request image-count cap in domain types ([#191](https://github.com/Alberto-Codes/typevet/issues/191) open gap) |
+| Media marker | Cached per model id on `LlamaCppCandidateScoringAdapter` | **Rebuild the adapter** after a router model reload. A reused adapter keeps the old marker; a new adapter reads the new marker. Stale markers fail tokenization — see multimodal how-to ([`test_reused_adapter_keeps_cached_marker_after_router_change`](../../tests/unit/test_runtime_limits.py)) |
+| Image bytes / pixels | `ImageInput` validates mime and non-empty data only | **No** byte or pixel cap in domain types. An 8 MiB payload is accepted ([`test_image_input_accepts_eight_mib_payload`](../../tests/unit/test_runtime_limits.py)). Pixel limits are not characterized ([#204](https://github.com/Alberto-Codes/typevet/issues/204)) |
+| Images per request | `CandidateScoringRequest` requires one marker per image | **No** count cap. The scoring adapter sends every image of one request, for example 16 ([`test_scoring_sends_every_image_without_count_cap`](../../tests/unit/test_runtime_limits.py)) |
+| Client closure | Factory ownership rules | The factory closes a client it owns and keeps a caller client open on every exit path ([`test_factory_http_client_ownership`](../../tests/contract/test_runtime_gemma_vision_factory.py), commit `71275a4`) |
 | Concurrency / cancellation | Caller-owned httpx client lifecycle | No shipped async judgment release surface (below) |
-| Long-lived service | Not characterized beyond adapter lifetime rules | Do not infer production SLOs from smoke receipts |
+| Long-lived service | Not characterized beyond adapter lifetime rules | Do not infer production SLOs from smoke receipts ([#204](https://github.com/Alberto-Codes/typevet/issues/204)) |
 
 ## Failure classes (distinguish these)
 
