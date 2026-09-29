@@ -103,7 +103,7 @@ print('ok', response.nouls['reports_unauthorized'].noul)
 ## Next steps
 
 - Add `Choice` and `Score` in one call — see
-  [contract fixtures](../../tests/fixtures/judgment_scoring_contract.py).
+  [contract fixtures](https://github.com/Alberto-Codes/typevet/blob/main/tests/fixtures/judgment_scoring_contract.py).
 - Run a live small eval — [Run a small live judgment eval](../how-to/run-a-small-live-judgment-eval.md).
 - Read [Native typed judgments](../explanation/native-typed-judgments.md) for
   product scope and limitations.

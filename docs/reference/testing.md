@@ -3,8 +3,8 @@
 Kind: reference.
 
 This page is the lookup for pytest markers, default commands, and what each
-layer can verify. Law lives in [CLAUDE.md](../../CLAUDE.md) and
-[AGENTS.md](../../AGENTS.md). Narrative and fixture labeling sit in
+layer can verify. Law lives in [CLAUDE.md](https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md) and
+[AGENTS.md](https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md). Narrative and fixture labeling sit in
 [Verified evidence and inferred claims](../explanation/verification.md).
 
 ## Three layers
@@ -27,7 +27,7 @@ controlled inputs. No real network and no live model weights.
 **Contract.** The offline fake generation adapter and
 ``LlamaCppGenerationAdapter`` (sync) or ``AsyncLlamaCppGenerationAdapter``
 (async) behave the same on **shared fixtures** under
-[tests/fixtures/generation_contract.py](../../tests/fixtures/generation_contract.py).
+[tests/fixtures/generation_contract.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/fixtures/generation_contract.py).
 HTTP is replayed with ``httpx.MockTransport``. Agreement verifies adapter
 compatibility for those labeled cases only.
 
@@ -52,8 +52,8 @@ Contract fixtures are **synthetic**: the test author defines the request, fake
 value or failure, and mocked chat-completion body. Each fixture has a ``name``
 and ``label`` field for scope reporting on issues.
 
-Sync parity: [tests/contract/test_outbound.py](../../tests/contract/test_outbound.py).
-Async parity: [tests/contract/test_async_outbound.py](../../tests/contract/test_async_outbound.py).
+Sync parity: [tests/contract/test_outbound.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/contract/test_outbound.py).
+Async parity: [tests/contract/test_async_outbound.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/contract/test_async_outbound.py).
 
 Add new port behaviour to the fixture list first, then extend fakes and the
 llama.cpp adapter until both sides agree. Do not weaken the default coverage
@@ -62,27 +62,27 @@ floor or add a fourth pyramid layer to do it.
 ## Shared JudgmentPort fixtures (judgevet shape)
 
 Offline judgment contract fixtures live in
-[tests/fixtures/judgment_contract.py](../../tests/fixtures/judgment_contract.py).
+[tests/fixtures/judgment_contract.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/fixtures/judgment_contract.py).
 They exercise `ContractJudgmentFake` against labeled success and error cases.
 There is no live llama.cpp judgment adapter in the default suite yet.
 
-Suite: [tests/contract/test_judgment_port.py](../../tests/contract/test_judgment_port.py).
+Suite: [tests/contract/test_judgment_port.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/contract/test_judgment_port.py).
 
 Scoring-backed judgment adapter fixtures live in
-[tests/fixtures/judgment_scoring_contract.py](../../tests/fixtures/judgment_scoring_contract.py).
-Suite: [tests/contract/test_judgment_scoring_adapter.py](../../tests/contract/test_judgment_scoring_adapter.py).
+[tests/fixtures/judgment_scoring_contract.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/fixtures/judgment_scoring_contract.py).
+Suite: [tests/contract/test_judgment_scoring_adapter.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/contract/test_judgment_scoring_adapter.py).
 
 ## Shared CandidateScoringPort fixtures
 
 Offline scoring contract fixtures live in
-[tests/fixtures/scoring_contract.py](../../tests/fixtures/scoring_contract.py).
+[tests/fixtures/scoring_contract.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/fixtures/scoring_contract.py).
 `ContractScoringFake` there aliases public
-[typevet.testing.ScriptedScoringFake](../../src/typevet/testing/__init__.py).
+[typevet.testing.ScriptedScoringFake](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/testing/__init__.py).
 They exercise that fake against labeled success and fail-closed
 error cases (missing candidates, non-finite logprobs, unsupported stage).
 There is no live llama.cpp scoring adapter in the default suite yet.
 
-Suite: [tests/contract/test_scoring_port.py](../../tests/contract/test_scoring_port.py).
+Suite: [tests/contract/test_scoring_port.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/contract/test_scoring_port.py).
 
 ## Commands
 
@@ -91,6 +91,7 @@ uv run pytest -m "unit or contract"
 uv run pytest -m contract
 uv run pytest -m live   # opt-in; not default CI
 uv run pytest --cov=typevet --cov-report=term-missing
+uv run mkdocs build --strict   # site build; also a unit test
 ```
 
 Pre-commit runs unit and contract via the configured pytest hook. Import-linter

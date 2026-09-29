@@ -16,7 +16,7 @@ capability work lives under
 | `tests/fixtures/psai/vision_choice_evidence/corrected_v1.json` | Versioned corrected artifact with SHA-256 source links |
 
 Library helpers live in
-[`typevet.evaluation.psai_vision_probability_evidence`](../../src/typevet/evaluation/psai_vision_probability_evidence.py).
+[`typevet.evaluation.psai_vision_probability_evidence`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/evaluation/psai_vision_probability_evidence.py).
 
 ## Raw mass vs normalized confidence
 

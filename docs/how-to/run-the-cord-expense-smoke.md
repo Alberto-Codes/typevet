@@ -133,7 +133,7 @@ The vendored receipt’s `experiment_identity` block is flawed on this historica
 run: `working_tree.dirty` was falsely `false`, identity was captured after
 scoring, the live harness path is missing from `code_path_digests`, and
 `runtime.server_build` is `unknown`. See the sibling annotation
-[`gemma4_kv9_direct_receipt.note.md`](../../tests/fixtures/cord/expense_smoke/gemma4_kv9_direct_receipt.note.md).
+[`gemma4_kv9_direct_receipt.note.md`](https://github.com/Alberto-Codes/typevet/blob/main/tests/fixtures/cord/expense_smoke/gemma4_kv9_direct_receipt.note.md).
 Semantic FAIL rows below are unchanged; only identity metadata is annotated.
 
 | #161 check | Limit | Measured | Status |

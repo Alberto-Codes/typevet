@@ -1,7 +1,7 @@
 # Question records → JSON Schema
 
 Kind: reference. Pure mapping from loader JevBench-shaped ``questions`` entries
-to object schemas that [``compile_json_schema``](../../src/typevet/domain/decision_compile.py)
+to object schemas that [``compile_json_schema``](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/domain/decision_compile.py)
 accepts ([#102](https://github.com/Alberto-Codes/typevet/issues/102)).
 
 Parent: [#95](https://github.com/Alberto-Codes/typevet/issues/95) (gap 6).
@@ -22,10 +22,10 @@ element is a mapping with:
 | ``permutations`` | no | Copied for enum fields when present |
 
 Examples live in
-[``typevet.evaluation.datasets.boolq``](../../src/typevet/evaluation/datasets/boolq.py)
+[``typevet.evaluation.datasets.boolq``](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/evaluation/datasets/boolq.py)
 (``questions_payload``),
-[``typevet.evaluation.datasets.hyperpartisan``](../../src/typevet/evaluation/datasets/hyperpartisan.py),
-and [``typevet.evaluation.datasets.psai``](../../src/typevet/evaluation/datasets/psai.py).
+[``typevet.evaluation.datasets.hyperpartisan``](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/evaluation/datasets/hyperpartisan.py),
+and [``typevet.evaluation.datasets.psai``](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/evaluation/datasets/psai.py).
 
 ## Mapping rules
 
@@ -48,7 +48,7 @@ compilation rejects those. Score maps to the same closed-enum path as Choice.
 
 ## API
 
-Module: [``typevet.question_schema``](../../src/typevet/question_schema.py).
+Module: [``typevet.question_schema``](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/question_schema.py).
 
 | Function | Role |
 |---|---|
@@ -58,7 +58,7 @@ Module: [``typevet.question_schema``](../../src/typevet/question_schema.py).
 
 ## Verification
 
-Unit tests in [``tests/unit/test_question_schema.py``](../../tests/unit/test_question_schema.py)
+Unit tests in [``tests/unit/test_question_schema.py``](https://github.com/Alberto-Codes/typevet/blob/main/tests/unit/test_question_schema.py)
 round-trip loader ``questions_payload()`` values against versioned fixture
 schemas (BoolQ, Hyperpartisan, PSAI metadata) and sample Choice / Score rows.
 

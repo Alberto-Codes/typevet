@@ -10,7 +10,7 @@ uv run python scripts/check_loc.py src
 ```
 
 Pre-commit runs the same command on push-stage hooks. See the **loc** row in
-[AGENTS.md](../../AGENTS.md).
+[AGENTS.md](https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md).
 
 ## What gets counted
 
@@ -37,6 +37,6 @@ prints a `FAIL` line and a non-zero exit code.
 
 ## Implementation
 
-Logic lives in [scripts/check_loc.py](../../scripts/check_loc.py). Unit tests
-in [tests/unit/test_check_loc.py](../../tests/unit/test_check_loc.py) cover
+Logic lives in [scripts/check_loc.py](https://github.com/Alberto-Codes/typevet/blob/main/scripts/check_loc.py). Unit tests
+in [tests/unit/test_check_loc.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/unit/test_check_loc.py) cover
 function-body enforcement.

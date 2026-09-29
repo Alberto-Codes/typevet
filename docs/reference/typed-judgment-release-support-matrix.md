@@ -18,7 +18,7 @@ replace the design contract on #191 or invent new live measurements.
 | Grammar-JSON path | `GenerationPort` + `LlamaCppGenerationAdapter` | [Live eval runner](eval-live-runner.md) slice only |
 | Offline proof | `typevet.testing` fakes (`ScriptedScoringFake`, …) | Default CI pyramid |
 | Wheel consumer | Public imports only; no `tests.*` on install path | [#190](https://github.com/Alberto-Codes/typevet/issues/190) |
-| Composition root | `TYPEVET_LLAMA__*` via [`load_llama_settings`][] | [Configuration](configuration.md) |
+| Composition root | `TYPEVET_LLAMA__*` via [`load_llama_settings`][typevet.adapters.inbound.load_llama_settings] | [Configuration](configuration.md) |
 
 Library callers pass explicit adapter arguments. Importing `typevet` does not
 read the environment.
@@ -48,12 +48,12 @@ Task-specific smokes (not a single “release pass”):
 
 | Limit | Where set | Release statement |
 |---|---|---|
-| HTTP deadline | `TYPEVET_LLAMA__TIMEOUT` (default 300 s) | Callers and live tests may raise it (for example 900 s on multimodal smokes). The value reaches the client that the Gemma 4 native vision factory builds. A transport timeout during scoring raises `TransportError` ([`test_env_timeout_reaches_factory_http_client`, `test_transport_timeout_during_scoring_raises_transport_error`](../../tests/unit/test_runtime_limits.py)) |
+| HTTP deadline | `TYPEVET_LLAMA__TIMEOUT` (default 300 s) | Callers and live tests may raise it (for example 900 s on multimodal smokes). The value reaches the client that the Gemma 4 native vision factory builds. A transport timeout during scoring raises `TransportError` ([`test_env_timeout_reaches_factory_http_client`, `test_transport_timeout_during_scoring_raises_transport_error`](https://github.com/Alberto-Codes/typevet/blob/main/tests/unit/test_runtime_limits.py)) |
 | Router URL | `TYPEVET_LLAMA__BASE_URL` | Default `http://127.0.0.1:8090` |
-| Media marker | Cached per model id on `LlamaCppCandidateScoringAdapter` | **Rebuild the adapter** after a router model reload. A reused adapter keeps the old marker; a new adapter reads the new marker. Stale markers fail tokenization — see multimodal how-to ([`test_reused_adapter_keeps_cached_marker_after_router_change`](../../tests/unit/test_runtime_limits.py)) |
-| Image bytes / pixels | `ImageInput` validates mime and non-empty data only | **No** byte or pixel cap in domain types. An 8 MiB payload is accepted ([`test_image_input_accepts_eight_mib_payload`](../../tests/unit/test_runtime_limits.py)). Pixel limits are not characterized ([#204](https://github.com/Alberto-Codes/typevet/issues/204)) |
-| Images per request | `CandidateScoringRequest` requires one marker per image | **No** count cap. The scoring adapter sends every image of one request, for example 16 ([`test_scoring_sends_every_image_without_count_cap`](../../tests/unit/test_runtime_limits.py)) |
-| Client closure | Factory ownership rules | The factory closes a client it owns and keeps a caller client open on every exit path ([`test_factory_http_client_ownership`](../../tests/contract/test_runtime_gemma_vision_factory.py), commit `71275a4`) |
+| Media marker | Cached per model id on `LlamaCppCandidateScoringAdapter` | **Rebuild the adapter** after a router model reload. A reused adapter keeps the old marker; a new adapter reads the new marker. Stale markers fail tokenization — see multimodal how-to ([`test_reused_adapter_keeps_cached_marker_after_router_change`](https://github.com/Alberto-Codes/typevet/blob/main/tests/unit/test_runtime_limits.py)) |
+| Image bytes / pixels | `ImageInput` validates mime and non-empty data only | **No** byte or pixel cap in domain types. An 8 MiB payload is accepted ([`test_image_input_accepts_eight_mib_payload`](https://github.com/Alberto-Codes/typevet/blob/main/tests/unit/test_runtime_limits.py)). Pixel limits are not characterized ([#204](https://github.com/Alberto-Codes/typevet/issues/204)) |
+| Images per request | `CandidateScoringRequest` requires one marker per image | **No** count cap. The scoring adapter sends every image of one request, for example 16 ([`test_scoring_sends_every_image_without_count_cap`](https://github.com/Alberto-Codes/typevet/blob/main/tests/unit/test_runtime_limits.py)) |
+| Client closure | Factory ownership rules | The factory closes a client it owns and keeps a caller client open on every exit path ([`test_factory_http_client_ownership`](https://github.com/Alberto-Codes/typevet/blob/main/tests/contract/test_runtime_gemma_vision_factory.py), commit `71275a4`) |
 | Concurrency / cancellation | Caller-owned httpx client lifecycle | No shipped async judgment release surface (below) |
 | Long-lived service | Not characterized beyond adapter lifetime rules | Do not infer production SLOs from smoke receipts ([#204](https://github.com/Alberto-Codes/typevet/issues/204)) |
 
@@ -63,7 +63,7 @@ Task-specific smokes (not a single “release pass”):
 |---|---|---|
 | Missing live config | pytest **skip** or CLI `skip:` stderr | Default; acceptable for dev |
 | Missing live config (strict) | pytest **fail** with router/model reason | `TYPEVET_REQUIRE_LIVE=1` ([#191](https://github.com/Alberto-Codes/typevet/issues/191)) |
-| Router / catalog | Skip or fail: unreachable, empty/invalid catalog, model not listed | [Live gate](../../src/typevet/evaluation/runner/live_gate.py) |
+| Router / catalog | Skip or fail: unreachable, empty/invalid catalog, model not listed | [Live gate](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/evaluation/runner/live_gate.py) |
 | Request / schema ask | `ValueError`, `TypeError`, `SchemaError` | Before any port call — [Errors](errors.md) |
 | Transport / backend | `TransportError`, `BackendHttpError`, `GenerationError` | Generation path |
 | Scoring / attachment | `ScoringValidationError`, `ScoringUnsupportedCapabilityError`, attachment assert messages | [#185](https://github.com/Alberto-Codes/typevet/issues/185) floors |
@@ -78,7 +78,7 @@ Task-specific smokes (not a single “release pass”):
   The same receipt **fails** two #161 revision 1 **semantic** floors on the combined arm
   (`accept_combined_receipt` — see commands below). Identity metadata on that
   historical file is annotated in
-  [`gemma4_kv9_direct_receipt.note.md`](../../tests/fixtures/cord/expense_smoke/gemma4_kv9_direct_receipt.note.md).
+  [`gemma4_kv9_direct_receipt.note.md`](https://github.com/Alberto-Codes/typevet/blob/main/tests/fixtures/cord/expense_smoke/gemma4_kv9_direct_receipt.note.md).
 - **Scratchpad live receipts** (`scratchpad/cord-expense/…`, `scratchpad/psai-vision/…`):
   a fresh live run can **pytest-pass** wiring and attachment while
   `accept_combined_receipt` still **rejects** the saved JSON for semantic floors.
@@ -98,7 +98,7 @@ model unless noted.
 uv run pytest -q tests/contract/test_typed_judgment_wheel_onboarding.py
 ```
 
-Matches the root [README](../../README.md) quick-start imports without
+Matches the root [README](https://github.com/Alberto-Codes/typevet/blob/main/README.md) quick-start imports without
 `PYTHONPATH=src`.
 
 ### Require-live gate (strict collection)
@@ -113,7 +113,7 @@ uv run pytest tests/live/test_eval_runner_live.py -m live -q
 
 Equivalent CLI flag: `--require-live` on `typevet.eval_runner_cli` — see
 [Live eval runner](eval-live-runner.md). Other live modules honor the same env
-via [tests/live/gate.py](../../tests/live/gate.py).
+via [tests/live/gate.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/live/gate.py).
 
 ### Semantic acceptance on the designated CORD receipt
 
@@ -190,7 +190,7 @@ uv run pytest -q
 uv run docvet check --all
 ```
 
-Full gate table: [CLAUDE.md](../../CLAUDE.md).
+Full gate table: [CLAUDE.md](https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md).
 
 ## Deliberate exclusions
 

@@ -7,7 +7,7 @@ typevet, whatever the model or harness. **Groom the issue first**
 ([groom worker issues](groom-worker-issues.md)). The supervisor selects work,
 decides boundaries, verifies behaviour and commits. The worker implements a
 scoped change (or returns a research artifact) and returns evidence. Apply the
-[bounded execution limits](../../AGENTS.md#bounded-execution) before dispatch.
+[bounded execution limits](https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md#bounded-execution) before dispatch.
 Use the [shared roles and gate evidence rules](../reference/worker-runs.md#shared-roles).
 Do not add another harness to repeat required repository checks.
 
@@ -189,7 +189,7 @@ An incomplete review cannot authorize completion. Record verified assertions, re
 Resume unchanged independent reviews. Revalidate affected evidence after integrating repairs.
 
 The gate inventory is the gate table in the
-[repository rules](../../AGENTS.md#build-and-gates) and, when present,
+[repository rules](https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md#build-and-gates) and, when present,
 `.pre-commit-config.yaml`. Never weaken a gate or report an unrun gate as
 green.
 

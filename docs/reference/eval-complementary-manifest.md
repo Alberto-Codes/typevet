@@ -3,7 +3,7 @@
 Kind: reference.
 
 This page documents the durable inventory filed under
-[`evals/complementary-manifest.yaml`](../../evals/complementary-manifest.yaml).
+[`evals/complementary-manifest.yaml`](https://github.com/Alberto-Codes/typevet/blob/main/evals/complementary-manifest.yaml).
 It implements the accepted spec on
 [#63](https://github.com/Alberto-Codes/typevet/issues/63) from the
 [#54](https://github.com/Alberto-Codes/typevet/issues/54) research ranks.

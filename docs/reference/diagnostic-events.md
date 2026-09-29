@@ -15,7 +15,7 @@ Parent: [#29](https://github.com/Alberto-Codes/typevet/issues/29). Tracking:
 Structured stderr lines are **diagnostics**, not telemetry. Nothing in
 `typevet.adapters.diagnostics` opens a remote sink or exports metrics.
 Domain code must not import structlog; only the composition root and adapters
-call [`configure`](../../src/typevet/adapters/diagnostics/logs.py) and the event
+call [`configure`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/logs.py) and the event
 helpers.
 
 ## Rendering and ownership
@@ -33,9 +33,9 @@ set `TYPEVET_LOG__LEVEL=debug` to see `http.request` and `generation.call`.
 | `TYPEVET_LOG__LEVEL` | `debug`, `info`, `warning`, `error`, `critical` | `info` | Minimum severity kept after filtering. |
 | `TYPEVET_LOG__LOG_PROMPTS` | truthy (`1`, `true`, `yes`, `on`) | off | When off, prompt-like field names are redacted. |
 
-Use [`configure_from_environ`](../../src/typevet/adapters/diagnostics/logs.py) or
-[`configure`](../../src/typevet/adapters/diagnostics/logs.py) with
-[`LogSettings`](../../src/typevet/adapters/diagnostics/settings.py) at the
+Use [`configure_from_environ`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/logs.py) or
+[`configure`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/logs.py) with
+[`LogSettings`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/settings.py) at the
 composition root. See
 [library-first architecture](../explanation/library-first-architecture.md).
 
@@ -45,15 +45,15 @@ order is not part of the contract.
 
 ## Invocation correlation
 
-Import [`bind_run_id`](../../src/typevet/adapters/diagnostics/logs.py) and
-[`new_run_id`](../../src/typevet/adapters/diagnostics/logs.py) from
+Import [`bind_run_id`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/logs.py) and
+[`new_run_id`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/logs.py) from
 `typevet.adapters.diagnostics`. `new_run_id()` returns twelve lowercase hex
 characters. `bind_run_id` attaches that value to built-in events through
-[`current_run_id`](../../src/typevet/adapters/diagnostics/fields.py).
+[`current_run_id`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/fields.py).
 
 Built-in events expose `run_id` in their closed field set. Arbitrary structlog
 context keys are stripped from built-in events by
-[`filter_event_fields`](../../src/typevet/adapters/diagnostics/fields.py); use
+[`filter_event_fields`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/fields.py); use
 the dedicated binding instead of ad hoc context fields.
 
 ## Built-in event names
@@ -70,10 +70,10 @@ Application-defined events are separate. The field filter leaves unknown
 
 ## HTTP terminal event (`http.request`)
 
-Emit with [`http_request_event`](../../src/typevet/adapters/diagnostics/http_events.py)
+Emit with [`http_request_event`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/http_events.py)
 once per logical request, at debug level, when logging is configured.
 
-Adapters update the yielded [`HttpRequestEvent`](../../src/typevet/adapters/diagnostics/http_events.py)
+Adapters update the yielded [`HttpRequestEvent`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/http_events.py)
 before the block exits. Default `outcome` is `error` until the adapter sets
 `success`. Exceptions propagate; the terminal line records `error_type` as the
 exception class name (never message text).
@@ -98,17 +98,17 @@ excluded. They are not in the closed field set.
 
 ### Adapter wiring (**sketch**)
 
-[`LlamaCppGenerationAdapter`](../../src/typevet/adapters/outbound/llama_cpp.py) and
-[`FakeGenerationAdapter`](../../src/typevet/adapters/outbound/fake.py) do not yet
+[`LlamaCppGenerationAdapter`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/llama_cpp.py) and
+[`FakeGenerationAdapter`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/fake.py) do not yet
 wrap `http_request_event`. The contract above is authoritative for the next
 adapter change.
 
 ## Generation terminal event (`generation.call`)
 
-Emit with [`generation_call_event`](../../src/typevet/adapters/diagnostics/generation_events.py)
+Emit with [`generation_call_event`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/generation_events.py)
 once per logical generation call, at debug level, when logging is configured.
 
-Adapters update the yielded [`GenerationCallEvent`](../../src/typevet/adapters/diagnostics/generation_events.py)
+Adapters update the yielded [`GenerationCallEvent`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/generation_events.py)
 before the block exits. Exception handling matches `http.request`.
 
 With JSON rendering, built-in keys are exactly:
@@ -133,14 +133,14 @@ around the port work, one `http.request` around the POST).
 
 ## Model alias filter
 
-[`diagnostic_model`](../../src/typevet/adapters/diagnostics/fields.py) keeps
+[`diagnostic_model`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/fields.py) keeps
 values that match ASCII
 `^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$`. Other strings become null in
 diagnostics only. Request and API model values are unchanged.
 
 ## Redaction
 
-[`make_redact_processor`](../../src/typevet/adapters/diagnostics/redaction.py)
+[`make_redact_processor`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/redaction.py)
 masks:
 
 - Field names in `SECRET_KEYS`: `api_key`, `authorization`, `password`,
@@ -149,10 +149,10 @@ masks:
   `prompt`, `raw_text`, `system`, `user`.
 - String values that look like PEM (`-----BEGIN`).
 
-Masked scalars become `***` ([`REDACTED`](../../src/typevet/adapters/diagnostics/redaction.py)).
+Masked scalars become `***` ([`REDACTED`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/redaction.py)).
 Nested structures are walked; non-scalar leaves become type names.
 
-Unit tests in [`test_diagnostics.py`](../../tests/unit/test_diagnostics.py)
+Unit tests in [`test_diagnostics.py`](https://github.com/Alberto-Codes/typevet/blob/main/tests/unit/test_diagnostics.py)
 cover secret keys, prompt keys and built-in field stripping.
 
 ## Public surface
@@ -168,7 +168,7 @@ Import from `typevet.adapters.diagnostics` (not the package root):
 | `REDACTED`, `SECRET_KEYS` | Redaction constants |
 
 Implementation modules live under
-[`src/typevet/adapters/diagnostics/`](../../src/typevet/adapters/diagnostics/).
+[`src/typevet/adapters/diagnostics/`](https://github.com/Alberto-Codes/typevet/tree/main/src/typevet/adapters/diagnostics).
 
 ## Related pages
 

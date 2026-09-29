@@ -25,12 +25,12 @@ Keep backend framing in outbound adapters.
 ## Consequences
 
 Runtime composes lower layers without owning evaluation workflows.
-The [import policy](../../pyproject.toml) enforces the layer order.
+The [import policy](https://github.com/Alberto-Codes/typevet/blob/main/pyproject.toml) enforces the layer order.
 Later, [commit 58bfc8a](https://github.com/Alberto-Codes/typevet/commit/58bfc8a616231d1d04d77a7ef91d6b87df868fc8) added the runtime-to-evaluation prohibition for [issue 190](https://github.com/Alberto-Codes/typevet/issues/190).
 That guard is current enforcement, not part of the original decision.
 Run `uv run lint-imports` to check these boundaries.
 
 [Issue 148](https://github.com/Alberto-Codes/typevet/issues/148#issuecomment-5843140235) assigned the migration and compatibility requirements.
 [Commit 68c0dda](https://github.com/Alberto-Codes/typevet/commit/68c0dda) implemented runtime ownership and Gemma framing separation.
-The [current runtime package](../../src/typevet/runtime/__init__.py) exposes the orchestration surface.
+The [current runtime package](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/runtime/__init__.py) exposes the orchestration surface.
 This record makes no new runtime change and does not prove live model quality.

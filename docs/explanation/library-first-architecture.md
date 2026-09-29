@@ -140,4 +140,4 @@ For import paths and root exports, see
 - Research baseline: issue [#33](https://github.com/Alberto-Codes/typevet/issues/33)
 - Layer ownership: issue [#174](https://github.com/Alberto-Codes/typevet/issues/174)
 - Product spine: [TypeLLM, Jev and judgevet](typellm-and-judgevet.md)
-- Agent architecture law: [CLAUDE.md](../../CLAUDE.md) and [AGENTS.md](../../AGENTS.md)
+- Agent architecture law: [CLAUDE.md](https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md) and [AGENTS.md](https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md)

@@ -9,7 +9,7 @@ Parent epic: [#51](https://github.com/Alberto-Codes/typevet/issues/51).
 Research baseline: [#66](https://github.com/Alberto-Codes/typevet/issues/66)
 (accepted). Loader and manifest coordination: [#58](https://github.com/Alberto-Codes/typevet/issues/58),
 rank-5 entry in [Complementary eval manifest](eval-complementary-manifest.md)
-and [`evals/complementary-manifest.yaml`](../../evals/complementary-manifest.yaml).
+and [`evals/complementary-manifest.yaml`](https://github.com/Alberto-Codes/typevet/blob/main/evals/complementary-manifest.yaml).
 
 Upstream intent names live in
 [`domains.json`](https://github.com/clinc/oos-eval/blob/master/data/domains.json)

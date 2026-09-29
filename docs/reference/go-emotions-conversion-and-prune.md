@@ -99,7 +99,7 @@ Apply in order:
 
 Report **keep rate** (rows kept / rows seen) and **split** when you publish
 numbers. Subsample caps stay **TBD** in
-[`evals/complementary-manifest.yaml`](../../evals/complementary-manifest.yaml).
+[`evals/complementary-manifest.yaml`](https://github.com/Alberto-Codes/typevet/blob/main/evals/complementary-manifest.yaml).
 
 ## Metric claims typevet may make (v1)
 

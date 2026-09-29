@@ -8,7 +8,7 @@ answers a question, and a reference gives facts.
 
 ## Overview
 
-- [README.md](../README.md) (explanation): what typevet is and where the
+- [README.md](https://github.com/Alberto-Codes/typevet/blob/main/README.md) (explanation): what typevet is and where the
   worker harness lives.
 
 ## Explanation
@@ -86,6 +86,8 @@ answers a question, and a reference gives facts.
 - [Complementary eval manifest](reference/eval-complementary-manifest.md) (reference): JevBench-primary ranked open sets; see also `evals/`.
 - [Question records → JSON Schema](reference/question-schema-map.md) (reference): Noul/Choice/Score export records to `compile_json_schema` fixtures ([#102](https://github.com/Alberto-Codes/typevet/issues/102)).
 - [Glossary](reference/glossary.md) (reference): the one meaning of each term.
+- [Python API reference](reference/api.md) (reference): the public package
+  docstrings in the site build.
 - [Supported imports](reference/supported-imports.md) (reference): package
   `__all__` surfaces, root compatibility shims, and the module command entry.
 - [Typed-judgment release support matrix](reference/typed-judgment-release-support-matrix.md)
@@ -100,7 +102,7 @@ answers a question, and a reference gives facts.
 
 ## For maintainers and agents
 
-- [CLAUDE.md](../CLAUDE.md) (reference and how-to, for agents): start-here for
+- [CLAUDE.md](https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md) (reference and how-to, for agents): start-here for
   fresh sessions, issue bus, non-negotiables and commit rules.
 - [Groom worker issues](maintainers/groom-worker-issues.md) (how-to): file,
   triage, size and split work on GitHub before delegation.

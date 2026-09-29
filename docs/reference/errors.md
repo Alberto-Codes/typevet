@@ -28,7 +28,7 @@ define a parallel adapter-specific hierarchy.
 before any generation port call. It is not a `GenerationError` and is never
 raised from `GenerationPort.generate`.
 
-The [generation port](../../src/typevet/ports/generation.py) documents failure
+The [generation port](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/ports/generation.py) documents failure
 modes every implementation may raise: `TransportError`, `BackendHttpError`,
 other `GenerationError` parse failures, and fail-fast `SchemaValidationError`.
 
@@ -47,7 +47,7 @@ The package root `typevet` exports only the first four types.
 
 `SchemaValidationError` stores the message in standard exception `args`. When
 set, `payload` is the parsed object or mapping that failed validation (see
-[`domain/errors.py`](../../src/typevet/domain/errors.py)).
+[`domain/errors.py`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/domain/errors.py)).
 
 ### Request validation (not generation errors)
 
@@ -64,7 +64,7 @@ errors, not `GenerationError`:
 | `schema` fails the JSON Schema Draft 2020-12 meta-schema, or `json.dumps` cannot encode it (adapter check) | `ValueError` (`schema is not a valid JSON Schema:`) |
 
 The last row comes from `check_request_schema` in
-[`chat_completion.py`](../../src/typevet/adapters/outbound/chat_completion.py).
+[`chat_completion.py`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/chat_completion.py).
 The llama.cpp and vLLM generation adapters, sync and async, call it before the
 request, so no request is sent. The check runs once for each distinct schema.
 
@@ -96,7 +96,7 @@ Import `SchemaError` from `typevet.domain` (not the package root):
 | `SchemaError` | `ValueError` | The JSON Schema mapping is outside the supported compile subset (`compile_json_schema`, `Decision`, dependency layers). |
 
 `compile_json_schema` and helpers in
-[`decision_compile.py`](../../src/typevet/domain/decision_compile.py) raise
+[`decision_compile.py`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/domain/decision_compile.py) raise
 `SchemaError` with a human-readable message for unsupported keywords, bad
 enums, dependency cycles and similar compile-time rules.
 
@@ -106,7 +106,7 @@ not a malformed document the caller can correct by editing one field.
 
 ## llama.cpp adapter mapping
 
-[`LlamaCppGenerationAdapter`](../../src/typevet/adapters/outbound/llama_cpp.py)
+[`LlamaCppGenerationAdapter`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/llama_cpp.py)
 POSTs to `v1/chat/completions` with `response_format` `json_schema`. HTTP status
 **400 and above** are treated as adapter failure (constant `_HTTP_ERROR_STATUS`).
 
@@ -127,7 +127,7 @@ a given llama.cpp build returns for every failure mode. See
 
 ## Fake adapter mapping
 
-[`FakeGenerationAdapter`](../../src/typevet/adapters/outbound/fake.py) validates
+[`FakeGenerationAdapter`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/fake.py) validates
 a fixed or callable mapping with the same `jsonschema` path as llama.cpp:
 
 | Condition | Raised type |
@@ -161,7 +161,7 @@ Use these boundaries when a caller adds retries:
 need distinct handling (for example logging `payload`).
 
 Shared mapping lives in
-[`llama_cpp_http.py`](../../src/typevet/adapters/outbound/llama_cpp_http.py).
+[`llama_cpp_http.py`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/llama_cpp_http.py).
 Adapters map `httpx.HTTPError` to `TransportError` and HTTP status ≥ 400 to
 `BackendHttpError`. Other library or application errors propagate unless the
 caller handles them.

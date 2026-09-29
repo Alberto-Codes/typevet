@@ -12,7 +12,7 @@ Sister projects (automarket, judgevet, finvet, gepa-adk) use the same idea.
 Short, active, glossary-bound prose helps every model, every harness and every
 human reader.
 
-[CLAUDE.md](../../CLAUDE.md) names the modes as law. This page states scope,
+[CLAUDE.md](https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md) names the modes as law. This page states scope,
 deviations and what the rules leave alone.
 
 ## Diátaxis is law

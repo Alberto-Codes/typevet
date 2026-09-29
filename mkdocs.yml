@@ -1,0 +1,140 @@
+site_name: typevet
+site_description: Type-safe structured generation under hexagonal architecture
+site_url: https://alberto-codes.github.io/typevet/
+repo_url: https://github.com/Alberto-Codes/typevet
+repo_name: Alberto-Codes/typevet
+edit_uri: blob/main/docs/
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font: false
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - navigation.footer
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.tooltips
+plugins:
+  - search
+  - autorefs
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_root_heading: true
+            show_source: false
+            # Signatures
+            show_signature_annotations: true
+            separate_signature: true
+            signature_crossrefs: true
+            modernize_annotations: true
+            line_length: 88
+            # Headings
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            # Members
+            members_order: source
+            show_category_heading: true
+            # Docstrings
+            merge_init_into_class: true
+            docstring_section_style: table
+            docstring_options:
+              ignore_init_summary: true
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - toc:
+      permalink: true
+validation:
+  omitted_files: warn
+  links:
+    not_found: warn
+    anchors: warn
+    unrecognized_links: warn
+nav:
+  - Documentation: README.md
+  - Tutorials:
+      - First typed judgment offline: tutorials/first-typed-judgment-offline.md
+  - How-to:
+      - Call typevet from Python: how-to/call-typevet-from-python.md
+      - Run Gemma 4 on llama.cpp: how-to/run-gemma4-llamacpp.md
+      - Serve typevet on vLLM: how-to/serve-typevet-on-vllm.md
+      - Connect Gemma 4 native vision judgment: how-to/connect-gemma4-native-vision-judgment.md
+      - Run a small live judgment eval: how-to/run-a-small-live-judgment-eval.md
+      - Run the image-conditioned live smoke: how-to/run-a-multimodal-live-smoke.md
+      - Run the CORD expense smoke: how-to/run-the-cord-expense-smoke.md
+      - Run the PSAI vision smoke: how-to/run-the-psai-vision-smoke.md
+  - Explanation:
+      - Library-first architecture: explanation/library-first-architecture.md
+      - Native typed judgments: explanation/native-typed-judgments.md
+      - TypeLLM, Jev and judgevet: explanation/typellm-and-judgevet.md
+      - Verified evidence and inferred claims: explanation/verification.md
+  - Reference:
+      - Python API: reference/api.md
+      - Supported imports: reference/supported-imports.md
+      - Configuration: reference/configuration.md
+      - Errors: reference/errors.md
+      - Diagnostic events: reference/diagnostic-events.md
+      - Glossary: reference/glossary.md
+      - Question schema map: reference/question-schema-map.md
+      - Typed-judgment release support matrix: reference/typed-judgment-release-support-matrix.md
+      - Judgment live receipts: reference/judgment-live-receipts.md
+      - PSAI vision Choice probability evidence: reference/psai-vision-choice-probability-evidence.md
+      - Testing pyramid: reference/testing.md
+      - LOC gate: reference/loc-gate.md
+      - Worker runs: reference/worker-runs.md
+      - Writing system: reference/writing-system.md
+      - Commit messages: reference/commits.md
+      - Evaluation:
+          - Partner data policy: reference/eval-partner-data-policy.md
+          - Complementary manifest: reference/eval-complementary-manifest.md
+          - Live runner: reference/eval-live-runner.md
+          - TPJEP runner: reference/eval-tpjep-runner.md
+          - TPJEP records: reference/eval-tpjep-records.md
+          - Banking77 proxy and metrics: reference/banking77-proxy-and-metrics.md
+          - BoolQ loader: reference/eval-boolq-loader.md
+          - CFPB and synth seed-only: reference/eval-cfpb-synth-seed-only.md
+          - Civil Comments loader: reference/eval-civil-comments-loader.md
+          - CLINC150 loader: reference/eval-clinc-loader.md
+          - CLINC150 shard map: reference/eval-clinc-shard-map.md
+          - DIFrauD loader: reference/eval-difraud-loader.md
+          - go_emotions loader: reference/eval-go-emotions-loader.md
+          - go_emotions conversion and prune: reference/go-emotions-conversion-and-prune.md
+          - Hyperpartisan loader: reference/eval-hyperpartisan-loader.md
+          - PSAI metadata map: reference/eval-psai-metadata-map.md
+          - PubMedQA loader: reference/eval-pubmedqa-loader.md
+  - ADRs:
+      - Index: adr/README.md
+      - "0001: Runtime orchestration": adr/0001-runtime-orchestration.md
+  - Maintainers:
+      - Groom worker issues: maintainers/groom-worker-issues.md
+      - Delegate work: maintainers/delegate-work.md
+      - Verify package: maintainers/verify-package.md
+      - Instruction-variant consumer protocol: maintainers/consumer-instruction-variant-protocol.md
+      - Consumer live protocol rev 2: maintainers/consumer-live-protocol-rev2.md
+      - Issue 177 handoff: maintainers/issue-177-handoff.md

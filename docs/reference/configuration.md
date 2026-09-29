@@ -16,13 +16,13 @@ were added in [#30](https://github.com/Alberto-Codes/typevet/issues/30).
 | Diagnostics | yes (stderr only) | [typevet.adapters.diagnostics.settings][] |
 
 Importing typevet does not read the environment. Call
-[`load_llama_settings`][] or [`configure_from_environ`][] at process startup in
+[`load_llama_settings`][typevet.adapters.inbound.load_llama_settings] or [`configure_from_environ`][typevet.adapters.diagnostics.configure_from_environ] at process startup in
 the inbound layer.
 
 ## llama.cpp router
 
-[`LlamaSettings`][] holds connection options. [`load_llama_settings`][] reads
-the mapping below. [`llama_cpp_adapter`][] passes the values into
+[`LlamaSettings`][typevet.adapters.inbound.LlamaSettings] holds connection options. [`load_llama_settings`][typevet.adapters.inbound.load_llama_settings] reads
+the mapping below. [`llama_cpp_adapter`][typevet.adapters.inbound.llama_cpp_adapter] passes the values into
 `LlamaCppGenerationAdapter` without the adapter touching `os.environ`.
 
 | Environment name | Field | Type | Default | Notes |
@@ -51,7 +51,7 @@ helpers.
 
 ## Backend selection
 
-[`generation_adapter`][] reads `TYPEVET_BACKEND` and builds one generation
+[`generation_adapter`][typevet.adapters.inbound.generation_adapter] reads `TYPEVET_BACKEND` and builds one generation
 adapter.
 
 | Environment name | Values | Default | Notes |
@@ -59,12 +59,12 @@ adapter.
 | `TYPEVET_BACKEND` | `llama_cpp`, `vllm` | `llama_cpp` | Other values raise `ValueError` |
 
 `llama_cpp` builds `llama_cpp_adapter(load_llama_settings())`. `vllm` builds a
-`VllmGenerationAdapter` on the [`vllm_http_client`][] client. Closing that
+`VllmGenerationAdapter` on the [`vllm_http_client`][typevet.adapters.inbound.vllm_http_client] client. Closing that
 adapter closes its client.
 
 ## vLLM server
 
-[`VllmSettings`][] holds connection options. [`load_vllm_settings`][] reads the
+[`VllmSettings`][typevet.adapters.inbound.VllmSettings] holds connection options. [`load_vllm_settings`][typevet.adapters.inbound.load_vllm_settings] reads the
 mapping below.
 
 | Environment name | Field | Type | Default | Notes |

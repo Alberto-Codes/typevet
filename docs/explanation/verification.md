@@ -16,7 +16,7 @@ local generation on llama.cpp.
 ## Three layers, three scopes
 
 The [testing pyramid](../reference/glossary.md#terms) is law in
-[CLAUDE.md](../../CLAUDE.md) and [AGENTS.md](../../AGENTS.md). Default pytest
+[CLAUDE.md](https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md) and [AGENTS.md](https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md). Default pytest
 runs `unit` and `contract` only. It excludes `live`. Coverage on that default
 suite must stay at or above 90. A live pass does not replace unit or contract.
 
@@ -85,7 +85,7 @@ model or error path.
 ## Related pages
 
 - [Testing pyramid](../reference/glossary.md#terms) (glossary entry)
-- [Testing pyramid law](../../CLAUDE.md) (non-negotiables table)
+- [Testing pyramid law](https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md) (non-negotiables table)
 - [Run Gemma 4 on llama.cpp](../how-to/run-gemma4-llamacpp.md) (live opt-in path)
 - judgevet: [verification](https://github.com/Alberto-Codes/judgevet/blob/main/docs/explanation/verification.md),
   [judgments](https://github.com/Alberto-Codes/judgevet/blob/main/docs/explanation/judgments.md)

@@ -38,6 +38,16 @@ dev = [
     "ruff>=0.16.8",
     "ty>=0.0.82",
 ]
+docs = [
+    "mkdocs>=1.6.1,<2",
+    "mkdocs-material>=9.7.7",
+    "mkdocstrings[python]>=1.0.6",
+    "pymdown-extensions>=12.1",
+]
+
+[tool.uv]
+# The docs group installs by default: the unit suite builds the site (#241).
+default-groups = ["dev", "docs"]
 
 [tool.ruff]
 line-length = 88
