@@ -90,6 +90,8 @@ nav:
       - Run the CORD expense smoke: how-to/run-the-cord-expense-smoke.md
       - Run the PSAI vision smoke: how-to/run-the-psai-vision-smoke.md
   - Explanation:
+      - How typevet works with Gemma 4: explanation/how-typevet-works-with-gemma-4.md
+      - Gemma 4 multimodal judgments: explanation/gemma-4-multimodal-judgments.md
       - Library-first architecture: explanation/library-first-architecture.md
       - Native typed judgments: explanation/native-typed-judgments.md
       - TypeLLM, Jev and judgevet: explanation/typellm-and-judgevet.md

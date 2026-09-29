@@ -13,6 +13,8 @@ answers a question, and a reference gives facts.
 
 ## Explanation
 
+- [How typevet works with Gemma 4](explanation/how-typevet-works-with-gemma-4.md):
+  typed judgment and schema-bound generation on llama.cpp and vLLM, with receipts.
 - [TypeLLM, Jev and judgevet](explanation/typellm-and-judgevet.md): why
   grammar-JSON is the transport floor, which TypeLLM decision ideas typevet
   ships (compiler, candidate scoring, `JudgmentPort`), and what stays unproven.
@@ -27,6 +29,7 @@ answers a question, and a reference gives facts.
 - [Native typed judgments](explanation/native-typed-judgments.md): what typevet
   owns after M2 — questions → Gemma judgments → TPJEP eight-task smoke; validity
   vs calibration; control-token binding.
+- [Gemma 4 multimodal judgments](explanation/gemma-4-multimodal-judgments.md): how images reach Gemma 4 on llama.cpp and vLLM, what the receipts prove, and the limits.
 
 ## Tutorials
 
