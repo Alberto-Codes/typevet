@@ -11,6 +11,7 @@ Examples:
 See Also:
     - [typevet.ports.generation][]: GenerationPort protocol
     - [typevet.ports.async_generation][]: AsyncGenerationPort protocol
+    - [typevet.ports.framing][]: ModelFramingPort protocol
     - [typevet.adapters.outbound][]: Adapters that implement the port
 
 Attributes:
@@ -18,10 +19,12 @@ Attributes:
     GenerationPort (type): Structural protocol for typed generation.
     JudgmentPort (type): Structural protocol for System One-shaped judgment.
     CandidateScoringPort (type): Structural protocol for candidate logprobs.
+    ModelFramingPort (type): Structural protocol for model turn framing.
     ScoringPort (type): Alias for ``CandidateScoringPort``.
 """
 
 from typevet.ports.async_generation import AsyncGenerationPort
+from typevet.ports.framing import ModelFramingPort
 from typevet.ports.generation import GenerationPort
 from typevet.ports.judgment import JudgmentPort
 from typevet.ports.scoring import CandidateScoringPort, ScoringPort
@@ -31,5 +34,6 @@ __all__ = [
     "CandidateScoringPort",
     "GenerationPort",
     "JudgmentPort",
+    "ModelFramingPort",
     "ScoringPort",
 ]

@@ -2,7 +2,8 @@
 
 A native served family wraps every prefix, with or without media; Gemma 3 and
 Gemma 4 turns both qualify (#171, #179). Without one, text-only prefixes use
-degraded ChatML and media fails closed (#157).
+degraded ChatML and media fails closed (#157). An injected ``ModelFramingPort``
+replaces that served-template choice for every prefix (#174).
 
 Examples:
     ```python
@@ -19,6 +20,7 @@ See Also:
     - [typevet.ports.judgment][]: JudgmentPort protocol
     - [typevet.domain.judgment_normalize][]: Normalize and control bind
     - [typevet.domain.media][]: Images the keyword-only ``media`` argument takes
+    - [typevet.ports.framing][]: ModelFramingPort protocol
 """
 
 from __future__ import annotations
@@ -51,8 +53,9 @@ from typevet.domain.judgment_normalize import (
 )
 from typevet.domain.judgment_questions import Choice, Noul, Question, Score
 from typevet.domain.judgment_response import JudgmentResponse, TokenUsage
-from typevet.domain.media import MEDIA_MARKER, ImageInput
+from typevet.domain.media import MEDIA_MARKER, ImageInput, count_media_markers
 from typevet.field_prompt import compose_scoring_prefix, render_field_instructions
+from typevet.ports.framing import ModelFramingPort
 from typevet.ports.scoring import CandidateScoringPort
 
 _NATIVE_TURN_FAMILIES: Final[frozenset[ServedTemplateClass]] = frozenset(
@@ -237,6 +240,8 @@ class ScoringJudgmentAdapter:
             every prefix; ``None`` when unknown.
         _pinned_model (str | None): When set, ``judge`` rejects other model ids
             before tokenization or scoring IO.
+        _framing (ModelFramingPort | None): When set, composes every prefix in
+            place of the served-template choice.
     """
 
     def __init__(
@@ -247,13 +252,55 @@ class ScoringJudgmentAdapter:
         temperature: float = 1.0,
         served_template: ServedTemplateClass | None = None,
         pinned_model: str | None = None,
+        framing: ModelFramingPort | None = None,
     ) -> None:
-        """Wire scoring port, tokenizer hook, temperature, served family and pin."""
+        """Wire scoring port, tokenizer, temperature, family, pin and framing."""
         self._port = scoring_port
         self._tokenize = tokenize_content
         self._temperature = temperature
         self._served_template = served_template
         self._pinned_model = pinned_model
+        self._framing = framing
+
+    def _field_prefix(
+        self, context: str, field_block: str, media: tuple[ImageInput, ...]
+    ) -> str:
+        """Compose one field prefix with the framing, else the served family.
+
+        With a framing, ``served_template`` is not read. The framing prefix
+        must keep one media marker per image; a mismatch fails closed here,
+        before any scoring IO.
+
+        Args:
+            context: Rendered state context, media markers included.
+            field_block: Rendered field instructions.
+            media: Images the prefix marks.
+
+        Returns:
+            Scoring prefix ending at the answer boundary.
+
+        Raises:
+            JudgmentValidationError: Framing prefix media-marker count differs
+                from ``len(media)``, or a ``_compose_prefix`` rejection.
+        """
+        if self._framing is None:
+            return _compose_prefix(
+                context=context,
+                field_block=field_block,
+                media=media,
+                served_template=self._served_template,
+            )
+        prefix = self._framing.compose_prefix(
+            context=context, field_block=field_block, media=media
+        )
+        markers = count_media_markers(prefix)
+        if markers != len(media):
+            msg = (
+                f"framing prefix holds {markers} {MEDIA_MARKER} media marker(s) "
+                f"but {len(media)} image(s) were supplied"
+            )
+            raise JudgmentValidationError(msg)
+        return prefix
 
     def judge(
         self,
@@ -271,6 +318,7 @@ class ScoringJudgmentAdapter:
         empty. When ``media`` is non-empty, every prefix carries one
         ``MEDIA_MARKER`` per image and every scoring request carries the same
         image tuple. Without a native family, text-only prefixes use ChatML.
+        An injected framing composes every prefix instead.
 
         Args:
             state: Content under evaluation (text or JSON-serializable value).
@@ -283,9 +331,9 @@ class ScoringJudgmentAdapter:
 
         Raises:
             JudgmentValidationError: Invalid or mismatched model, wire shape,
-                question payload, unsupported served template, or media without
-                a native Gemma 3 or Gemma 4 served template, before any scoring
-                IO.
+                question payload, unsupported served template, media without
+                a native Gemma 3 or Gemma 4 served template, or a framing prefix
+                with the wrong media-marker count, before any scoring IO.
         """
         if not model.strip():
             raise JudgmentValidationError("model must be non-empty")
@@ -310,12 +358,7 @@ class ScoringJudgmentAdapter:
                 choice_criteria=criteria,
                 original_labels=originals,
             )
-            prefix = _compose_prefix(
-                context=context,
-                field_block=field_block,
-                media=images,
-                served_template=self._served_template,
-            )
+            prefix = self._field_prefix(context, field_block, images)
             prepared.append((name, raw, decision, candidates, prefix))
 
         answers: dict[str, Answer] = {}
