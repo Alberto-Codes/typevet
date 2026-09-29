@@ -2,7 +2,8 @@
 
 Each runner takes the shared ``RunState`` and its set result mapping from
 ``typevet.evaluation.vllm_acceptance``. The sets are generation (#168 P10/P11
-and the frozen llama.cpp ``SCHEMA``), PSAI (#180 rev2 visual Choice matrix plus
+and the frozen llama.cpp ``SCHEMA``; since #226 the adapter rejects the P10
+schema with ``ValueError`` before any POST), PSAI (#180 rev2 visual Choice matrix plus
 four text regressions), CORD (text, image-only and combined arms), order (the
 CORD combined arm with the label order reversed) and concurrency (8 generation
 calls, 4 in parallel, with a KV-cache read while calls are in flight).
@@ -87,6 +88,10 @@ DEVIATIONS: Final[tuple[str, ...]] = (
     (
         "PSAI C10 swapped arm uses the repaired #180 donor "
         "cmcc8u6yd00wr1p1yj7aot3ae from c10_repair, not the first pin."
+    ),
+    (
+        "Generation P10 expects ValueError from the typevet schema check with "
+        "0 POSTs (#226), not BackendHttpError after 1 POST."
     ),
 )
 _RECORD_LOCK = threading.Lock()
@@ -186,7 +191,8 @@ def _generate(run: RunState, out: dict, request: GenerationRequest) -> dict[str,
     value, error = None, None
     try:
         value = dict(run.generator.generate(request).value)
-    except GenerationError as exc:
+    except (GenerationError, ValueError) as exc:
+        # ValueError: the adapter rejects a malformed schema before any POST.
         error = f"{type(exc).__name__}: {exc}"
     seconds = round(perf_counter() - started, 3)
     posts = run.counter.calls["model"] - before
@@ -213,9 +219,9 @@ def _generation_set(run: RunState, out: dict[str, Any]) -> None:
         )
         rows.append(_generate(run, out, request))
     invalid = rows[2]
-    rejected = str(invalid["error"]).startswith("BackendHttpError")
+    rejected = str(invalid["error"]).startswith("ValueError")
     valid = rows[0]["error"] is None and rows[1]["error"] is None
-    out["passed"] = valid and rejected and invalid["posts"] == 1
+    out["passed"] = valid and rejected and invalid["posts"] == 0
 
 
 def _gold(raw: Any) -> str:

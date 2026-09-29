@@ -148,20 +148,30 @@ def test_async_vllm_generation_agrees_with_async_fake_on_shared_fixtures(
 
 
 @pytest.mark.contract
-def test_vllm_generation_p10_invalid_schema_raises_backend_http_error() -> None:
+def test_vllm_generation_p10_invalid_schema_is_rejected_before_the_request() -> None:
     probe = _probe("http400_invalid_schema")
     recorder = _Recorder(status=probe["http_status"], payload=probe["response"])
     schema = probe["request"]["structured_outputs"]["json"]
 
-    with pytest.raises(BackendHttpError) as caught:
+    with pytest.raises(ValueError, match=r"^schema is not a valid JSON Schema: "):
         _adapter(recorder).generate(_request(schema))
+
+    assert recorder.bodies == []
+
+
+@pytest.mark.contract
+def test_vllm_generation_p10_http_400_reply_raises_backend_http_error() -> None:
+    probe = _probe("http400_invalid_schema")
+    recorder = _Recorder(status=probe["http_status"], payload=probe["response"])
+
+    with pytest.raises(BackendHttpError) as caught:
+        _adapter(recorder).generate(_request())
 
     exc = caught.value
     assert exc.status_code == 400
     assert probe["response"]["error"]["message"] in exc.body_snippet
     assert str(exc).startswith("vLLM HTTP 400: ")
     assert len(recorder.bodies) == 1
-    assert recorder.bodies[0]["structured_outputs"] == {"json": schema}
 
 
 @pytest.mark.contract
@@ -262,3 +272,14 @@ def test_vllm_generation_injected_client_stays_open() -> None:
         pass
     assert not client.is_closed
     client.close()
+
+
+@pytest.mark.contract
+def test_vllm_generation_rejects_malformed_schema_before_any_request() -> None:
+    recorder = _Recorder(payload=_content_reply('{"answer": 7}'))
+    schema = {"type": "object", "properties": {"answer": {"type": "not-a-type"}}}
+
+    with pytest.raises(ValueError, match=r"^schema is not a valid JSON Schema: "):
+        _adapter(recorder).generate(_request(schema))
+
+    assert recorder.bodies == []

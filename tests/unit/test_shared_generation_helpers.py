@@ -1,20 +1,26 @@
 """Unit tests for the shared generation helpers (#214).
 
-The chat completion parser, the schema check, the HTTP error constants and the
-vLLM body builder live in neutral modules. Each backend keeps its own error
-messages and its own JSON-body parse exception class.
+The chat completion parser, the schema check, the request schema check (#226),
+the HTTP error constants and the vLLM body builder live in neutral modules.
+Each backend keeps its own error messages and its own JSON-body parse exception class.
 """
 
 from __future__ import annotations
 
 import json
+import uuid
 from typing import Any
 
 import httpx
+import jsonschema
 import pytest
 
 from typevet.adapters.outbound import llama_cpp_http, vllm_http
-from typevet.adapters.outbound.chat_completion import extract_content, validated_value
+from typevet.adapters.outbound.chat_completion import (
+    check_request_schema,
+    extract_content,
+    validated_value,
+)
 from typevet.adapters.outbound.http_errors import (
     BODY_SNIPPET_MAX,
     HTTP_ERROR_STATUS,
@@ -123,3 +129,61 @@ def test_generation_body_text_and_image() -> None:
     content = with_image["messages"][0]["content"]
     assert isinstance(content, list)
     assert json.dumps(content).count("image_url") >= 1
+
+
+def _bad_schema(title: str) -> dict[str, Any]:
+    return {
+        "type": "object",
+        "title": title,
+        "properties": {"n": {"type": "not-a-type"}},
+    }
+
+
+@pytest.mark.unit
+def test_check_request_schema_raises_value_error_on_a_malformed_schema() -> None:
+    with pytest.raises(
+        ValueError, match=r"^schema is not a valid JSON Schema: "
+    ) as caught:
+        check_request_schema(_bad_schema("malformed"))
+    assert type(caught.value) is ValueError
+    assert caught.value.__cause__ is None
+    assert caught.value.__suppress_context__ is True
+
+
+@pytest.mark.unit
+def test_check_request_schema_rejects_a_schema_json_cannot_encode() -> None:
+    schema = {"type": "object", "title": "not-json", "default": {1, 2}}
+    with pytest.raises(ValueError, match=r"^schema is not a valid JSON Schema: "):
+        check_request_schema(schema)
+
+
+@pytest.mark.unit
+def test_check_request_schema_runs_the_meta_schema_check_once_per_schema(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[object] = []
+    real = jsonschema.Draft202012Validator.check_schema
+
+    def spy(schema: Any, *args: Any, **kwargs: Any) -> None:
+        calls.append(schema)
+        real(schema, *args, **kwargs)
+
+    monkeypatch.setattr(jsonschema.Draft202012Validator, "check_schema", spy)
+    # A fresh title keeps an earlier in-process run from filling the cache.
+    schema = {**_SCHEMA, "title": f"spy-once-{uuid.uuid4()}"}
+    check_request_schema(schema)
+    check_request_schema(dict(reversed(list(schema.items()))))
+    assert len(calls) == 1
+
+
+@pytest.mark.unit
+def test_check_request_schema_accepts_number_bounds_and_multiple_of() -> None:
+    schema = {
+        "type": "object",
+        "title": "bounds",
+        "properties": {
+            "n": {"type": "integer", "minimum": 0, "maximum": 9, "multipleOf": 3},
+            "x": {"type": "number", "exclusiveMinimum": 0.5, "multipleOf": 0.25},
+        },
+    }
+    check_request_schema(schema)

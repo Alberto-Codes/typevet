@@ -2,11 +2,13 @@
 
 The request asks vLLM for structured output through
 ``structured_outputs: {"json": <schema>}``. The server applies the served chat
-template to one user message and does not start a thinking turn. The adapter
-makes one POST. It does not retry and does not fall back to unconstrained
-generation. Status, transport and non-JSON body failures go through
-``vllm_http``. A request with images sends the content as ``text`` and
-``image_url`` blocks from ``vllm_content``; a text request sends a string.
+template to one user message and does not start a thinking turn. Before the
+request, ``chat_completion.check_request_schema`` rejects a malformed schema
+with ``ValueError``; no request is sent. The adapter makes one POST. It does
+not retry and does not fall back to unconstrained generation. Status,
+transport and non-JSON body failures go through ``vllm_http``. A request with
+images sends the content as ``text`` and ``image_url`` blocks from
+``vllm_content``; a text request sends a string.
 
 Examples:
     ```python
@@ -32,7 +34,11 @@ from urllib.parse import urljoin
 
 import httpx
 
-from typevet.adapters.outbound.chat_completion import extract_content, validated_value
+from typevet.adapters.outbound.chat_completion import (
+    check_request_schema,
+    extract_content,
+    validated_value,
+)
 from typevet.adapters.outbound.vllm_content import content_blocks
 from typevet.adapters.outbound.vllm_http import post_json
 from typevet.domain.models import GenerationRequest, GenerationResult
@@ -105,8 +111,11 @@ class VllmGenerationAdapter:
             GenerationError: On a non-JSON body, bad shape or non-JSON content.
             SchemaValidationError: When the value is not an object, is
                 non-finite or fails the schema.
+            ValueError: When the request schema is not a valid JSON Schema.
+                No request is sent.
         """
         schema_obj = dict(request.schema)
+        check_request_schema(schema_obj)
         body = generation_body(request, schema_obj)
         url = urljoin(self._base_url, "v1/chat/completions")
         payload = post_json(self._ensure_client(), url, body)

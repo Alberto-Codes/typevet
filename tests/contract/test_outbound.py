@@ -94,3 +94,29 @@ def test_llama_cpp_adapter_http_error() -> None:
         adapter.generate(GenerationRequest(prompt="x", schema=SCHEMA, model="m"))
     assert exc_info.value.status_code == 500
     assert exc_info.value.body_snippet == "boom"
+
+
+_BAD_SCHEMA = {"type": "object", "properties": {"answer": {"type": "not-a-type"}}}
+
+
+def _reply_answer(_request: httpx.Request) -> httpx.Response:
+    content = '{"answer": 7}'
+    return httpx.Response(
+        200, json={"choices": [{"message": {"role": "assistant", "content": content}}]}
+    )
+
+
+@pytest.mark.contract
+def test_llama_cpp_adapter_rejects_malformed_schema_before_any_request() -> None:
+    sent: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        sent.append(request)
+        return _reply_answer(request)
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    adapter = LlamaCppGenerationAdapter(base_url="http://test", client=client)
+    request = GenerationRequest(prompt="x", schema=_BAD_SCHEMA, model="m")
+    with pytest.raises(ValueError, match=r"^schema is not a valid JSON Schema: "):
+        adapter.generate(request)
+    assert sent == []

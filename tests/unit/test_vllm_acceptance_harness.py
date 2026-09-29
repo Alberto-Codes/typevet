@@ -2,7 +2,8 @@
 
 The mock server answers with the redacted vLLM v0.30.0 probe files from #168:
 P4 (``image_three_way``) is the template for every scoring reply, P10
-(``http400_invalid_schema``) is the invalid-schema reply and P11
+(``http400_invalid_schema``) is the invalid-schema reply (since #226 the
+adapter rejects that schema before any POST) and P11
 (``generation_enum_image``) is the image generation reply. ``/tokenize``
 replies come from ``tokenize_ordinals``. ``/version``, ``/v1/models`` and
 ``/metrics`` replies are synthetic. The answers need not be correct; the
@@ -190,14 +191,15 @@ def test_offline_run_writes_a_receipt_with_every_set(tmp_path: Path) -> None:
     assert set(receipt["sets"]) == _SETS
     assert receipt["stopped"] is None
     assert receipt["deviations"] == list(DEVIATIONS)
-    assert len(receipt["deviations"]) == 6
+    assert len(receipt["deviations"]) == 7
     assert any("60-minute" in note for note in receipt["deviations"])
     assert any("cmcc8u6yd00wr1p1yj7aot3ae" in note for note in receipt["deviations"])
     assert receipt["tokenizer_memo_hits"] > 0
     assert receipt["calls"] == {
         kind: server.count(kind) for kind in ("model", "tokenizer", "metadata")
     }
-    assert receipt["calls"]["model"] == 3 + 16 + 43 + 18 + 8
+    # Generation posts 2 of its 3 asks; P10 stops before the POST (#226).
+    assert receipt["calls"]["model"] == 2 + 16 + 43 + 18 + 8
     assert receipt["calls"]["metadata"] == 4
     assert receipt["calls"]["tokenizer"] <= CallCaps().tokenizer
     assert hashlib.sha256(path.read_bytes()).hexdigest() == digest
@@ -218,8 +220,9 @@ def test_offline_receipt_records_pins_and_set_details(tmp_path: Path) -> None:
     assert pins["kv_cache_usage"] == 0.125
     sets = receipt["sets"]
     invalid = sets["generation"]["rows"][2]
-    assert invalid["error"].startswith("BackendHttpError")
-    assert invalid["posts"] == 1
+    assert invalid["error"].startswith("ValueError: schema is not a valid JSON Schema:")
+    assert invalid["posts"] == 0
+    assert invalid["value"] is None
     assert sets["generation"]["passed"] is True
     assert len(sets["psai"]["rows"]) == 16
     assert sets["psai"]["coverage"] == {"calls": 16, "covered": 16}

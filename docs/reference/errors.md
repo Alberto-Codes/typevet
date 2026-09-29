@@ -61,6 +61,12 @@ errors, not `GenerationError`:
 | `schema.type` is set and not `"object"` | `ValueError` |
 | A `media` item is not an `ImageInput` | `TypeError` |
 | Count of `MEDIA_MARKER` in `prompt` differs from `len(media)` | `ValueError` |
+| `schema` fails the JSON Schema Draft 2020-12 meta-schema, or `json.dumps` cannot encode it (adapter check) | `ValueError` (`schema is not a valid JSON Schema:`) |
+
+The last row comes from `check_request_schema` in
+[`chat_completion.py`](../../src/typevet/adapters/outbound/chat_completion.py).
+The llama.cpp and vLLM generation adapters, sync and async, call it before the
+request, so no request is sent. The check runs once for each distinct schema.
 
 Fix the request; do not treat these as retryable generation failures.
 

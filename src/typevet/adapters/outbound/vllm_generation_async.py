@@ -1,8 +1,9 @@
 """Async vLLM ``/v1/chat/completions`` adapter with a per-adapter POST limit.
 
 The request body comes from ``vllm_generation.generation_body``, the builder
-that ``VllmGenerationAdapter`` also uses. The error mapping and the result
-validation are the same as for the sync adapter. An ``asyncio.Semaphore`` limits the number of
+that ``VllmGenerationAdapter`` also uses. The schema check before the
+request, the error mapping and the result validation are the same as for the
+sync adapter. An ``asyncio.Semaphore`` limits the number of
 POSTs that one adapter has in flight; the default of 1 sends requests one at a
 time. The limit holds per event loop: when a call runs on a new loop, the
 adapter makes a new semaphore for that loop, and it keeps a weak reference to
@@ -51,7 +52,11 @@ from urllib.parse import urljoin
 
 import httpx
 
-from typevet.adapters.outbound.chat_completion import extract_content, validated_value
+from typevet.adapters.outbound.chat_completion import (
+    check_request_schema,
+    extract_content,
+    validated_value,
+)
 from typevet.adapters.outbound.vllm_generation import generation_body
 from typevet.adapters.outbound.vllm_http import (
     ensure_success_status,
@@ -163,9 +168,12 @@ class AsyncVllmGenerationAdapter:
             GenerationError: On a non-JSON body, bad shape or non-JSON content.
             SchemaValidationError: When the value is not an object, is
                 non-finite or fails the schema.
+            ValueError: When the request schema is not a valid JSON Schema.
+                No request is sent.
         """
         self._check_client_loop()
         schema_obj = dict(request.schema)
+        check_request_schema(schema_obj)
         body = generation_body(request, schema_obj)
         url = urljoin(self._base_url, "v1/chat/completions")
         client = self._ensure_client()

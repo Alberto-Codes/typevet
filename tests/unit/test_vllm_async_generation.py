@@ -314,3 +314,18 @@ def test_owned_client_adapter_refuses_a_second_event_loop_before_any_request(
         asyncio.run(adapter.generate(_request()))
     assert len(seen) == 1
     asyncio.run(adapter.close())
+
+
+@pytest.mark.unit
+def test_async_vllm_rejects_malformed_schema_before_any_request() -> None:
+    sent: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        sent.append(request)
+        return _reply()
+
+    schema = {"type": "object", "properties": {"n": {"type": "not-a-type"}}}
+    request = GenerationRequest(prompt="count", schema=schema, model=_MODEL)
+    with pytest.raises(ValueError, match=r"^schema is not a valid JSON Schema: "):
+        asyncio.run(_adapter(handler).generate(request))
+    assert sent == []

@@ -69,6 +69,18 @@ Same prompt once with `response_format` and once without. Constrained output
 should differ. Matching unconstrained prose usually means a too-old server or
 wrong wire shape, not a typevet bug.
 
+### Number bounds and `multipleOf`
+
+On the pinned build `b11243-fc07d781e`, the grammar does not enforce number
+`minimum`, `maximum` or `multipleOf`
+([#129 receipt](https://github.com/Alberto-Codes/typevet/issues/129#issuecomment-5892208050)).
+The server can return a number outside the bounds, or no content for
+`multipleOf`. typevet validates each reply with `jsonschema` on the client, so
+the adapter raises `SchemaValidationError` for these values. Before the
+request, the adapter also checks the schema against the JSON Schema meta-schema
+and raises `ValueError` for a malformed schema. No request is sent. These
+results apply to this build only.
+
 ## Call typevet
 
 ```bash

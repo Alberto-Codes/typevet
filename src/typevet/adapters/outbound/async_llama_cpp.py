@@ -1,5 +1,8 @@
 """Async llama.cpp OpenAI-compat adapter for constrained JSON Schema generation.
 
+Before the request, ``chat_completion.check_request_schema`` rejects a
+malformed schema with ``ValueError``; no request is sent.
+
 Examples:
     ```python
     from typevet.adapters.outbound.async_llama_cpp import AsyncLlamaCppGenerationAdapter
@@ -24,7 +27,11 @@ from urllib.parse import urljoin
 
 import httpx
 
-from typevet.adapters.outbound.chat_completion import extract_content, validated_value
+from typevet.adapters.outbound.chat_completion import (
+    check_request_schema,
+    extract_content,
+    validated_value,
+)
 from typevet.adapters.outbound.llama_cpp import LlamaCppGenerationAdapter
 from typevet.adapters.outbound.llama_cpp_http import (
     ensure_success_status,
@@ -105,9 +112,12 @@ class AsyncLlamaCppGenerationAdapter:
             GenerationUnsupportedCapabilityError: When the request carries
                 images; no HTTP call is made.
             SchemaValidationError: When the payload is non-finite or fails schema.
+            ValueError: When the request schema is not a valid JSON Schema.
+                No request is sent.
         """
         LlamaCppGenerationAdapter._reject_media(request)
         schema_obj = dict(request.schema)
+        check_request_schema(schema_obj)
         body: dict[str, Any] = {
             "model": request.model,
             "messages": [

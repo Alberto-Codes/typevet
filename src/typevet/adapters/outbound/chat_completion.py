@@ -1,16 +1,24 @@
-"""Read a chat completion reply and validate its content against a schema.
+"""Check a request schema, read a chat completion reply and validate it.
 
-The llama.cpp and vLLM generation adapters, sync and async, use these two
-steps after the HTTP call. ``extract_content`` names the backend in its error
-messages. ``validated_value`` messages do not name a backend.
+The llama.cpp and vLLM generation adapters, sync and async, call
+``check_request_schema`` before the HTTP call and the other two steps after
+it. ``extract_content`` names the backend in its error messages.
+``validated_value`` and ``check_request_schema`` messages do not name a
+backend.
+
+Attributes:
+    SCHEMA_CHECK_CACHE_SIZE (int): Most passing schemas that
+        ``check_request_schema`` remembers.
 
 Examples:
     ```python
     from typevet.adapters.outbound.chat_completion import (
+        check_request_schema,
         extract_content,
         validated_value,
     )
 
+    check_request_schema({"type": "object"})
     payload = {"choices": [{"message": {"content": '{"n": 1}'}}]}
     raw = extract_content(payload, "vLLM")
     validated_value(raw, {"type": "object"})
@@ -25,13 +33,61 @@ See Also:
 
 from __future__ import annotations
 
+import functools
 import json
+from collections.abc import Mapping
 from typing import Any
 
 import jsonschema
 
 from typevet.adapters.outbound.generation_finite import reject_non_finite_numbers
 from typevet.domain.errors import GenerationError, SchemaValidationError
+
+SCHEMA_CHECK_CACHE_SIZE = 256
+_SCHEMA_ERROR_PREFIX = "schema is not a valid JSON Schema: "
+
+
+def check_request_schema(schema: Mapping[str, Any]) -> None:
+    """Reject a request schema that is not a valid JSON Schema.
+
+    The Draft 2020-12 meta-schema check runs once per distinct schema. The
+    cache key is the schema as JSON with sorted keys, so key order does not
+    matter. The cache holds at most ``SCHEMA_CHECK_CACHE_SIZE`` passing
+    schemas and is safe to share between threads. A failing schema is not
+    cached. A schema that ``json.dumps`` cannot encode (a set, keys of
+    mixed types, ``NaN``) cannot be sent either, so it fails the check.
+
+    Args:
+        schema: JSON Schema object from the request.
+
+    Raises:
+        ValueError: When the schema fails the meta-schema or is not
+            JSON-encodable. The message starts with
+            ``schema is not a valid JSON Schema:``.
+    """
+    try:
+        key = json.dumps(dict(schema), sort_keys=True, allow_nan=False)
+    except (TypeError, ValueError) as exc:
+        msg = f"{_SCHEMA_ERROR_PREFIX}not JSON-encodable ({exc})"
+        raise ValueError(msg) from None
+    _check_schema_json(key)
+
+
+@functools.lru_cache(maxsize=SCHEMA_CHECK_CACHE_SIZE)
+def _check_schema_json(key: str) -> None:
+    """Run the meta-schema check on one encoded schema.
+
+    Args:
+        key: Schema encoded as JSON with sorted keys.
+
+    Raises:
+        ValueError: When the schema fails the Draft 2020-12 meta-schema.
+    """
+    try:
+        jsonschema.Draft202012Validator.check_schema(json.loads(key))
+    except jsonschema.SchemaError as exc:
+        msg = f"{_SCHEMA_ERROR_PREFIX}{exc.message}"
+        raise ValueError(msg) from None
 
 
 def extract_content(payload: Any, backend: str) -> str:
