@@ -3,7 +3,9 @@ r"""Fingerprints that distinguish evaluation smoke runs ([#186][i186]).
 Captures repo baseline, working-tree drift, prompt bundles, pinned code and
 fixture bytes, runtime labels and per-arm call counts. Every run gets a unique
 ``run_id``; the ``identity_digest`` excludes it so two prompt variants at the
-same commit stay distinguishable.
+same commit stay distinguishable. The baseline reader resolves ``HEAD`` in a
+plain checkout or a linked worktree, from loose refs or ``packed-refs``
+([#209][i209]), without a git subprocess.
 
 Examples:
     ```python
@@ -42,18 +44,21 @@ See Also:
     - tests/live/test_cord_expense_smoke_live.py: live receipt wiring
 
 [i186]: https://github.com/Alberto-Codes/typevet/issues/186
+[i209]: https://github.com/Alberto-Codes/typevet/issues/209
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import re
 import uuid
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
 _PORCELAIN_PREFIX_LEN = 4
+_COMMIT_HEX = re.compile(r"[0-9a-f]{40}(?:[0-9a-f]{24})?")
 
 
 def _sha256_text(text: str) -> str:
@@ -314,23 +319,76 @@ class ExperimentIdentityRequest:
     working_tree: WorkingTreeState
 
 
+def _read(path: Path) -> str | None:
+    try:
+        return path.read_text(encoding="utf-8").strip()
+    except (OSError, UnicodeDecodeError):
+        return None
+
+
+def _resolve_gitdir(repo_root: Path) -> Path | None:
+    dot_git = repo_root / ".git"
+    if dot_git.is_dir():
+        return dot_git
+    text = _read(dot_git)
+    if text is None or not text.startswith("gitdir:"):
+        return None
+    return repo_root / text.removeprefix("gitdir:").strip()
+
+
+def _ref_search_dirs(gitdir: Path) -> list[Path] | None:
+    commondir = gitdir / "commondir"
+    if not commondir.exists():
+        return [gitdir]
+    common = _read(commondir)
+    return None if common is None else [gitdir, gitdir / common]
+
+
+def _packed_ref(git_dir: Path, ref: str) -> str | None:
+    packed = git_dir / "packed-refs"
+    text = _read(packed) if packed.exists() else ""
+    if text is None:
+        return "unknown"
+    for line in text.splitlines():
+        sha, _, name = line.partition(" ")
+        if not line.startswith(("#", "^")) and name.strip() == ref:
+            return sha.strip()
+    return None
+
+
+def _resolve_head(gitdir: Path) -> str | None:
+    head = _read(gitdir / "HEAD")
+    if head is None or not head.startswith("ref:"):
+        return head
+    ref = head.removeprefix("ref:").strip()
+    if not ref.startswith("refs/") or ".." in ref.split("/"):
+        return None
+    for git_dir in _ref_search_dirs(gitdir) or []:
+        loose = git_dir / ref
+        if loose.exists():
+            return _read(loose)
+        packed = _packed_ref(git_dir, ref)
+        if packed is not None:
+            return packed
+    return None
+
+
 def read_baseline_commit(repo_root: Path) -> str:
-    """Return ``HEAD`` commit hex from ``.git`` without a subprocess.
+    """Return ``HEAD`` commit hex from git metadata without a subprocess.
+
+    Handles a ``.git`` directory or a linked-worktree ``.git`` file
+    (``gitdir: <path>``). A branch ref under ``refs/`` resolves as a loose ref
+    or from ``packed-refs``, in the gitdir first and then in the ``commondir``.
 
     Returns:
-        Commit hex, or ``unknown`` when ``.git/HEAD`` is missing or unreadable.
+        Lowercase 40- or 64-hex commit, or ``unknown`` when ``HEAD`` or its
+        ref cannot be read or resolved, or the value is not a commit hex.
     """
-    head_path = repo_root / ".git" / "HEAD"
-    if not head_path.is_file():
+    gitdir = _resolve_gitdir(repo_root)
+    commit = None if gitdir is None else _resolve_head(gitdir)
+    if commit is None or not _COMMIT_HEX.fullmatch(commit):
         return "unknown"
-    head = head_path.read_text(encoding="utf-8").strip()
-    if head.startswith("ref:"):
-        ref = head.split(" ", 1)[1].strip()
-        ref_path = repo_root / ".git" / ref
-        if not ref_path.is_file():
-            return "unknown"
-        return ref_path.read_text(encoding="utf-8").strip()
-    return head
+    return commit
 
 
 def _porcelain_path(line: str) -> str | None:
