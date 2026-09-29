@@ -11,6 +11,7 @@ were added in [#30](https://github.com/Alberto-Codes/typevet/issues/30).
 | Layer | Reads environment | Module |
 |---|---|---|
 | Composition root | yes | [typevet.adapters.inbound.settings][] |
+| Composition root | yes | [typevet.adapters.inbound.backend_settings][] |
 | Outbound adapter | no | [typevet.adapters.outbound.llama_cpp][] |
 | Diagnostics | yes (stderr only) | [typevet.adapters.diagnostics.settings][] |
 
@@ -47,6 +48,42 @@ Typer). When a CLI lands, it should:
 
 Until then, scripts and live tests act as the composition root using the same
 helpers.
+
+## Backend selection
+
+[`generation_adapter`][] reads `TYPEVET_BACKEND` and builds one generation
+adapter.
+
+| Environment name | Values | Default | Notes |
+|---|---|---|---|
+| `TYPEVET_BACKEND` | `llama_cpp`, `vllm` | `llama_cpp` | Other values raise `ValueError` |
+
+`llama_cpp` builds `llama_cpp_adapter(load_llama_settings())`. `vllm` builds a
+`VllmGenerationAdapter` on the [`vllm_http_client`][] client. Closing that
+adapter closes its client.
+
+## vLLM server
+
+[`VllmSettings`][] holds connection options. [`load_vllm_settings`][] reads the
+mapping below.
+
+| Environment name | Field | Type | Default | Notes |
+|---|---|---|---|---|
+| `TYPEVET_VLLM__BASE_URL` | `base_url` | URL string | none | Required; trailing slash stripped |
+| `TYPEVET_VLLM__MODEL` | `model` | string | none | Required; served model name |
+| `TYPEVET_VLLM__TIMEOUT` | `timeout` | float, seconds | `300` | Must be positive |
+| `TYPEVET_VLLM__API_KEY` | `api_key` | string or empty | none | Sent as `Authorization: Bearer <key>` |
+
+The key does not appear in `repr(VllmSettings)`. The client is built the same
+way with or without a key. Only the `Authorization` header differs. So
+`HTTPS_PROXY` and the other proxy variables apply in both cases. The key must
+be ASCII. The adapter
+from `generation_adapter` masks the key in errors. It checks each generation
+error and its cause for the raw or JSON-escaped key. On a match, it raises the
+same error type again. The new error shows `***` for the key and has no cause. A server that echoes
+the `Authorization` header therefore cannot put the key into a
+`BackendHttpError` message. Successful results are not changed. Error messages
+name the variable, not its value.
 
 ## Diagnostic logging
 

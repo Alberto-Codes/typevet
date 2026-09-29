@@ -17,6 +17,7 @@ See Also:
     - [typevet.adapters.inbound.api][]: ``generate`` helper
     - [typevet.adapters.inbound.helpers][]: ``run_sync`` helper
     - [typevet.adapters.inbound.settings][]: ``TYPEVET_LLAMA__*`` composition root
+    - [typevet.adapters.inbound.backend_settings][]: ``TYPEVET_BACKEND`` selection
     - [typevet.ports.generation][]: GenerationPort
 
 Attributes:
@@ -25,9 +26,21 @@ Attributes:
     LlamaSettings (type): llama.cpp connection settings for composition roots.
     load_llama_settings (function): Read ``TYPEVET_LLAMA__*`` from the environment.
     llama_cpp_adapter (function): Build ``LlamaCppGenerationAdapter`` from settings.
+    VllmSettings (type): vLLM connection settings; ``api_key`` is not in ``repr``.
+    load_backend (function): Read ``TYPEVET_BACKEND``.
+    load_vllm_settings (function): Read ``TYPEVET_VLLM__*`` from the environment.
+    vllm_http_client (function): Build the shared vLLM ``httpx.Client``.
+    generation_adapter (function): Build the adapter ``TYPEVET_BACKEND`` selects.
 """
 
 from typevet.adapters.inbound.api import generate
+from typevet.adapters.inbound.backend_settings import (
+    VllmSettings,
+    generation_adapter,
+    load_backend,
+    load_vllm_settings,
+    vllm_http_client,
+)
 from typevet.adapters.inbound.helpers import run_sync
 from typevet.adapters.inbound.settings import (
     LlamaSettings,
@@ -37,8 +50,13 @@ from typevet.adapters.inbound.settings import (
 
 __all__ = [
     "LlamaSettings",
+    "VllmSettings",
     "generate",
+    "generation_adapter",
     "llama_cpp_adapter",
+    "load_backend",
     "load_llama_settings",
+    "load_vllm_settings",
     "run_sync",
+    "vllm_http_client",
 ]
