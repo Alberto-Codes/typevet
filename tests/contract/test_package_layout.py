@@ -2,7 +2,8 @@
 
 The root library shims and the root ``eval_*`` shims are removed, and
 ``question_schema`` lives in ``typevet.domain``. The llama.cpp modules live in
-the ``typevet.adapters.outbound.llama_cpp`` package. Each old path must not
+the ``typevet.adapters.outbound.llama_cpp`` package, and the vLLM modules live
+in the ``typevet.adapters.outbound.vllm`` package. Each old path must not
 resolve, and each new path must import.
 """
 
@@ -60,6 +61,12 @@ REMOVED_OUTBOUND_MODULES: tuple[str, ...] = (
     "typevet.adapters.outbound.llama_cpp_http",
     "typevet.adapters.outbound.llama_cpp_multimodal",
     "typevet.adapters.outbound.llama_cpp_scoring",
+    "typevet.adapters.outbound.vllm_content",
+    "typevet.adapters.outbound.vllm_generation",
+    "typevet.adapters.outbound.vllm_generation_async",
+    "typevet.adapters.outbound.vllm_http",
+    "typevet.adapters.outbound.vllm_judgment_factory",
+    "typevet.adapters.outbound.vllm_scoring",
 )
 
 NEW_MODULES: tuple[str, ...] = (
@@ -70,12 +77,35 @@ NEW_MODULES: tuple[str, ...] = (
     "typevet.adapters.outbound.llama_cpp.http_mapping",
     "typevet.adapters.outbound.llama_cpp.multimodal",
     "typevet.adapters.outbound.llama_cpp.scoring",
+    "typevet.adapters.outbound.vllm.content",
+    "typevet.adapters.outbound.vllm.generation",
+    "typevet.adapters.outbound.vllm.generation_async",
+    "typevet.adapters.outbound.vllm.http_mapping",
+    "typevet.adapters.outbound.vllm.judgment_factory",
+    "typevet.adapters.outbound.vllm.scoring",
 )
 
 LLAMA_CPP_EXPORTS: dict[str, str] = {
     "AsyncLlamaCppGenerationAdapter": "generation_async",
     "LlamaCppCandidateScoringAdapter": "scoring",
     "LlamaCppGenerationAdapter": "generation",
+}
+
+VLLM_EXPORTS: dict[str, str] = {
+    "AsyncVllmGenerationAdapter": "generation_async",
+    "ChatContentFraming": "scoring",
+    "VllmCandidateScoringAdapter": "scoring",
+    "VllmGenerationAdapter": "generation",
+}
+
+BACKEND_PACKAGES: dict[str, dict[str, str]] = {
+    "typevet.adapters.outbound.llama_cpp": LLAMA_CPP_EXPORTS,
+    "typevet.adapters.outbound.vllm": VLLM_EXPORTS,
+}
+
+INIT_EXCLUDED_MODULES: dict[str, str] = {
+    "typevet.adapters.outbound.llama_cpp": "gemma_native_vision_factory",
+    "typevet.adapters.outbound.vllm": "judgment_factory",
 }
 
 QUESTION_SCHEMA_NAMES: tuple[str, ...] = (
@@ -95,24 +125,39 @@ def test_removed_outbound_module_does_not_resolve(old_name: str) -> None:
     assert importlib.util.find_spec(old_name) is None
 
 
-def test_llama_cpp_is_a_package() -> None:
-    spec = importlib.util.find_spec("typevet.adapters.outbound.llama_cpp")
+@pytest.mark.parametrize("package_name", sorted(BACKEND_PACKAGES))
+def test_backend_is_a_package(package_name: str) -> None:
+    spec = importlib.util.find_spec(package_name)
     assert spec is not None
     assert spec.submodule_search_locations is not None
 
 
-@pytest.mark.parametrize(("name", "submodule"), sorted(LLAMA_CPP_EXPORTS.items()))
-def test_llama_cpp_package_reexports_adapters(name: str, submodule: str) -> None:
-    package = importlib.import_module("typevet.adapters.outbound.llama_cpp")
-    module = importlib.import_module(f"typevet.adapters.outbound.llama_cpp.{submodule}")
+@pytest.mark.parametrize(
+    ("package_name", "name", "submodule"),
+    [
+        (package_name, name, submodule)
+        for package_name, exports in sorted(BACKEND_PACKAGES.items())
+        for name, submodule in sorted(exports.items())
+    ],
+)
+def test_backend_package_reexports_adapters(
+    package_name: str, name: str, submodule: str
+) -> None:
+    package = importlib.import_module(package_name)
+    module = importlib.import_module(f"{package_name}.{submodule}")
     outbound = importlib.import_module("typevet.adapters.outbound")
-    assert sorted(package.__all__) == sorted(LLAMA_CPP_EXPORTS)
+    assert sorted(package.__all__) == sorted(BACKEND_PACKAGES[package_name])
     assert getattr(package, name) is getattr(module, name)
     assert getattr(outbound, name) is getattr(module, name)
 
 
-def test_llama_cpp_init_does_not_import_the_factory() -> None:
-    spec = importlib.util.find_spec("typevet.adapters.outbound.llama_cpp")
+@pytest.mark.parametrize(
+    ("package_name", "excluded"), sorted(INIT_EXCLUDED_MODULES.items())
+)
+def test_backend_init_does_not_import_the_factory(
+    package_name: str, excluded: str
+) -> None:
+    spec = importlib.util.find_spec(package_name)
     assert spec is not None
     assert spec.origin is not None
     init = Path(spec.origin)
@@ -127,7 +172,7 @@ def test_llama_cpp_init_does_not_import_the_factory() -> None:
         for alias in node.names
     }
     assert imported
-    assert not [name for name in imported if "gemma_native_vision_factory" in name]
+    assert not [name for name in imported if excluded in name]
 
 
 @pytest.mark.parametrize("new_name", NEW_MODULES)

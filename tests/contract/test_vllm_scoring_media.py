@@ -16,7 +16,7 @@ import httpx
 import pytest
 
 from tests.fixtures.synthetic_images import solid_image
-from typevet.adapters.outbound.vllm_scoring import (
+from typevet.adapters.outbound.vllm.scoring import (
     ChatContentFraming,
     VllmCandidateScoringAdapter,
 )

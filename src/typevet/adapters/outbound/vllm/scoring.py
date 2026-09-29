@@ -9,7 +9,7 @@ generated position. A request with images sends the content as a list of
 
 Examples:
     ```python
-    from typevet.adapters.outbound.vllm_scoring import (
+    from typevet.adapters.outbound.vllm.scoring import (
         VllmCandidateScoringAdapter,
     )
     from typevet.domain.candidate_scoring_request import (
@@ -28,7 +28,7 @@ Examples:
 
 See Also:
     - [typevet.adapters.outbound.llama_cpp.scoring][]: llama.cpp counterpart
-    - [typevet.adapters.outbound.vllm_content][]: Image content blocks
+    - [typevet.adapters.outbound.vllm.content][]: Image content blocks
     - [typevet.domain.candidate_scoring_validate][]: Fail-closed result assembly
     - [typevet.ports.framing][]: ModelFramingPort protocol
     - [typevet.ports.scoring][]: CandidateScoringPort protocol
@@ -46,8 +46,8 @@ from urllib.parse import urljoin
 
 import httpx
 
-from typevet.adapters.outbound.vllm_content import content_blocks
-from typevet.adapters.outbound.vllm_http import post_json
+from typevet.adapters.outbound.vllm.content import content_blocks
+from typevet.adapters.outbound.vllm.http_mapping import post_json
 from typevet.domain.candidate_scoring_validate import build_and_validate_result
 from typevet.domain.errors import (
     GenerationError,

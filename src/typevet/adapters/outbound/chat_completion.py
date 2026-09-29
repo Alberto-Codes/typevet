@@ -27,7 +27,7 @@ Examples:
 See Also:
     - [typevet.adapters.outbound.generation_finite][]: Non-finite float guard
     - [typevet.adapters.outbound.llama_cpp][]: llama.cpp consumer
-    - [typevet.adapters.outbound.vllm_generation][]: vLLM consumer
+    - [typevet.adapters.outbound.vllm.generation][]: vLLM consumer
     - [typevet.domain.errors][]: GenerationError, SchemaValidationError
 """
 

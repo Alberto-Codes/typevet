@@ -16,7 +16,7 @@ Examples:
     ```python
     import httpx
 
-    from typevet.adapters.outbound.vllm_judgment_factory import open_vllm_judgment
+    from typevet.adapters.outbound.vllm.judgment_factory import open_vllm_judgment
 
     with (
         httpx.Client(base_url="http://127.0.0.1:8000") as client,
@@ -26,9 +26,9 @@ Examples:
     ```
 
 See Also:
-    - [typevet.adapters.outbound.vllm_scoring][]: Scoring adapter and framing
+    - [typevet.adapters.outbound.vllm.scoring][]: Scoring adapter and framing
     - [typevet.adapters.outbound.judgment_scoring][]: ``ScoringJudgmentAdapter``
-    - [typevet.adapters.outbound.vllm_http][]: Error mapping
+    - [typevet.adapters.outbound.vllm.http_mapping][]: Error mapping
     - [typevet.runtime][]: Public re-exports for library callers
 
 [i169]: https://github.com/Alberto-Codes/typevet/issues/169
@@ -43,8 +43,8 @@ from dataclasses import dataclass
 import httpx
 
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
-from typevet.adapters.outbound.vllm_http import post_json
-from typevet.adapters.outbound.vllm_scoring import (
+from typevet.adapters.outbound.vllm.http_mapping import post_json
+from typevet.adapters.outbound.vllm.scoring import (
     ChatContentFraming,
     VllmCandidateScoringAdapter,
 )
@@ -64,7 +64,7 @@ class VllmJudgmentSession:
 
     Examples:
         ```python
-        from typevet.adapters.outbound.vllm_judgment_factory import (
+        from typevet.adapters.outbound.vllm.judgment_factory import (
             VllmJudgmentSession,
         )
 

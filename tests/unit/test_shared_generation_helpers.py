@@ -15,7 +15,6 @@ import httpx
 import jsonschema
 import pytest
 
-from typevet.adapters.outbound import vllm_http
 from typevet.adapters.outbound.chat_completion import (
     check_request_schema,
     extract_content,
@@ -27,7 +26,8 @@ from typevet.adapters.outbound.http_errors import (
     body_snippet,
 )
 from typevet.adapters.outbound.llama_cpp import http_mapping
-from typevet.adapters.outbound.vllm_generation import generation_body
+from typevet.adapters.outbound.vllm import http_mapping as vllm_http
+from typevet.adapters.outbound.vllm.generation import generation_body
 from typevet.domain.errors import GenerationError, SchemaValidationError
 from typevet.domain.media import MEDIA_MARKER, ImageInput
 from typevet.domain.models import GenerationRequest

@@ -43,6 +43,7 @@ _CONTRACT_NAMES = (
     "Domain is IO-free",
     "The library does not import the evals",
     "Model framing stays off the serving backends",
+    "Serving backends stay independent",
 )
 
 
@@ -88,6 +89,16 @@ _EDGES = (
         "Model framing stays off the serving backends",
         "adapters/outbound/gemma/served_template.py",
         "import typevet.adapters.outbound.llama_cpp",
+    ),
+    _Edge(
+        "Model framing stays off the serving backends",
+        "adapters/outbound/gemma/served_template.py",
+        "import typevet.adapters.outbound.vllm",
+    ),
+    _Edge(
+        "Serving backends stay independent",
+        "adapters/outbound/vllm/http_mapping.py",
+        "import typevet.adapters.outbound.llama_cpp.http_mapping",
     ),
 )
 

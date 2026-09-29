@@ -21,8 +21,8 @@ from typevet.adapters.outbound import (
     FakeGenerationAdapter,
     LlamaCppGenerationAdapter,
 )
-from typevet.adapters.outbound.vllm_generation import VllmGenerationAdapter
-from typevet.adapters.outbound.vllm_generation_async import AsyncVllmGenerationAdapter
+from typevet.adapters.outbound.vllm.generation import VllmGenerationAdapter
+from typevet.adapters.outbound.vllm.generation_async import AsyncVllmGenerationAdapter
 from typevet.domain.errors import (
     BackendHttpError,
     GenerationError,

@@ -18,7 +18,7 @@ import pytest
 
 from tests.fixtures.synthetic_images import solid_png
 from typevet.adapters import outbound
-from typevet.adapters.outbound.vllm_scoring import (
+from typevet.adapters.outbound.vllm.scoring import (
     ChatContentFraming,
     VllmCandidateScoringAdapter,
 )

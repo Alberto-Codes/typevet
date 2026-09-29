@@ -23,7 +23,7 @@ from typevet.adapters.outbound.llama_cpp.generation import LlamaCppGenerationAda
 from typevet.adapters.outbound.llama_cpp.generation_async import (
     AsyncLlamaCppGenerationAdapter,
 )
-from typevet.adapters.outbound.vllm_generation import VllmGenerationAdapter
+from typevet.adapters.outbound.vllm.generation import VllmGenerationAdapter
 from typevet.domain import errors as domain_errors
 from typevet.domain.media import MEDIA_MARKER, ImageInput
 from typevet.domain.models import GenerationRequest

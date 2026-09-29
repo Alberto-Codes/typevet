@@ -11,14 +11,14 @@ Examples:
     ```python
     import httpx
 
-    from typevet.adapters.outbound.vllm_http import post_json
+    from typevet.adapters.outbound.vllm.http_mapping import post_json
 
     with httpx.Client() as client:
         payload = post_json(client, "http://127.0.0.1:8000/v1/models", {})
     ```
 
 See Also:
-    - [typevet.adapters.outbound.vllm_scoring][]: Scoring adapter consumer
+    - [typevet.adapters.outbound.vllm.scoring][]: Scoring adapter consumer
     - [typevet.adapters.outbound.http_errors][]: Shared status and snippet limits
     - [typevet.adapters.outbound.llama_cpp.http_mapping][]: llama.cpp counterpart
     - [typevet.domain.errors][]: Transport and backend error types

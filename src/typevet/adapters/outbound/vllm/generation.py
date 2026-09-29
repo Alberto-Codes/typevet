@@ -6,13 +6,13 @@ template to one user message and does not start a thinking turn. Before the
 request, ``chat_completion.check_request_schema`` rejects a malformed schema
 with ``ValueError``; no request is sent. The adapter makes one POST. It does
 not retry and does not fall back to unconstrained generation. Status,
-transport and non-JSON body failures go through ``vllm_http``. A request with
+transport and non-JSON body failures go through ``http_mapping``. A request with
 images sends the content as ``text`` and ``image_url`` blocks from
-``vllm_content``; a text request sends a string.
+``content``; a text request sends a string.
 
 Examples:
     ```python
-    from typevet.adapters.outbound.vllm_generation import VllmGenerationAdapter
+    from typevet.adapters.outbound.vllm.generation import VllmGenerationAdapter
 
     with VllmGenerationAdapter("http://127.0.0.1:8000") as port:
         pass  # call port.generate(...)
@@ -21,8 +21,8 @@ Examples:
 See Also:
     - [typevet.adapters.outbound.llama_cpp][]: llama.cpp counterpart
     - [typevet.adapters.outbound.chat_completion][]: Content and schema checks
-    - [typevet.adapters.outbound.vllm_content][]: Image content blocks
-    - [typevet.adapters.outbound.vllm_http][]: Shared vLLM HTTP error mapping
+    - [typevet.adapters.outbound.vllm.content][]: Image content blocks
+    - [typevet.adapters.outbound.vllm.http_mapping][]: Shared vLLM HTTP error mapping
     - [typevet.domain.errors][]: GenerationError, SchemaValidationError
     - [typevet.domain.models][]: GenerationRequest
 """
@@ -39,8 +39,8 @@ from typevet.adapters.outbound.chat_completion import (
     extract_content,
     validated_value,
 )
-from typevet.adapters.outbound.vllm_content import content_blocks
-from typevet.adapters.outbound.vllm_http import post_json
+from typevet.adapters.outbound.vllm.content import content_blocks
+from typevet.adapters.outbound.vllm.http_mapping import post_json
 from typevet.domain.models import GenerationRequest, GenerationResult
 
 

@@ -163,6 +163,13 @@ modules. Its `__all__` is the three llama.cpp adapters above. The package does
 not import the Gemma native vision factory. Import the factory from
 `typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory`.
 
+`typevet.adapters.outbound.vllm` groups the vLLM serving-backend modules. Its
+`__all__` is `VllmGenerationAdapter`, `AsyncVllmGenerationAdapter`,
+`VllmCandidateScoringAdapter` and `ChatContentFraming`. The package does not
+import the vLLM judgment factory. Import the factory from
+`typevet.adapters.outbound.vllm.judgment_factory`, or import
+`open_vllm_judgment` from `typevet.runtime`.
+
 `typevet.adapters.outbound.gemma` exports Gemma and ChatML served-template
 constants, template classification, and answer-binding helpers. Import from
 that subpackage when you need them. Its `__all__` is the list of supported names.
@@ -237,6 +244,18 @@ first release (#256). The five old module files do not resolve.
 | `typevet.adapters.outbound.llama_cpp_multimodal` | `typevet.adapters.outbound.llama_cpp.multimodal` |
 | `typevet.adapters.outbound.llama_cpp_scoring` | `typevet.adapters.outbound.llama_cpp.scoring` |
 | `typevet.adapters.outbound.gemma_native_vision_factory` | `typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory` |
+
+typevet also moved the vLLM outbound modules into one package before its first
+release (#256). The six old module files do not resolve.
+
+| Removed module | Current home |
+|---|---|
+| `typevet.adapters.outbound.vllm_content` | `typevet.adapters.outbound.vllm.content` |
+| `typevet.adapters.outbound.vllm_generation` | `typevet.adapters.outbound.vllm.generation` |
+| `typevet.adapters.outbound.vllm_generation_async` | `typevet.adapters.outbound.vllm.generation_async` |
+| `typevet.adapters.outbound.vllm_http` | `typevet.adapters.outbound.vllm.http_mapping` |
+| `typevet.adapters.outbound.vllm_scoring` | `typevet.adapters.outbound.vllm.scoring` |
+| `typevet.adapters.outbound.vllm_judgment_factory` | `typevet.adapters.outbound.vllm.judgment_factory` |
 
 ## Command-line entry
 

@@ -7,7 +7,7 @@ generation adapters share this builder.
 
 Examples:
     ```python
-    from typevet.adapters.outbound.vllm_content import content_blocks
+    from typevet.adapters.outbound.vllm.content import content_blocks
     from typevet.domain.media import MEDIA_MARKER, ImageInput
 
     image = ImageInput(data=b"png", mime_type="image/png")
@@ -17,8 +17,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.adapters.outbound.vllm_scoring][]: Candidate scoring adapter
-    - [typevet.adapters.outbound.vllm_generation][]: Typed generation adapter
+    - [typevet.adapters.outbound.vllm.scoring][]: Candidate scoring adapter
+    - [typevet.adapters.outbound.vllm.generation][]: Typed generation adapter
     - [typevet.domain.media][]: MEDIA_MARKER and ImageInput
 """
 

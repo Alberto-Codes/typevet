@@ -18,10 +18,7 @@ Examples:
 See Also:
     - [typevet.adapters.outbound.llama_cpp][]: llama.cpp router adapters
     - [typevet.adapters.outbound.fake][]: Offline validating fake
-    - [typevet.adapters.outbound.vllm_scoring][]: vLLM chat logprob scorer
-    - [typevet.adapters.outbound.vllm_generation][]: vLLM structured generation
-    - [typevet.adapters.outbound.vllm_generation_async][]: Async vLLM generation
-    - [typevet.adapters.outbound.vllm_http][]: vLLM HTTP error mapping
+    - [typevet.adapters.outbound.vllm][]: vLLM generation and scoring adapters
     - [typevet.adapters.outbound.chat_completion][]: Shared content and schema checks
     - [typevet.adapters.outbound.http_errors][]: Shared HTTP error limits
 
@@ -44,11 +41,11 @@ from typevet.adapters.outbound.llama_cpp import (
     LlamaCppCandidateScoringAdapter,
     LlamaCppGenerationAdapter,
 )
-from typevet.adapters.outbound.vllm_generation import VllmGenerationAdapter
-from typevet.adapters.outbound.vllm_generation_async import AsyncVllmGenerationAdapter
-from typevet.adapters.outbound.vllm_scoring import (
+from typevet.adapters.outbound.vllm import (
+    AsyncVllmGenerationAdapter,
     ChatContentFraming,
     VllmCandidateScoringAdapter,
+    VllmGenerationAdapter,
 )
 
 __all__ = [

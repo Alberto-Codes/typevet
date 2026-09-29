@@ -16,7 +16,7 @@ Examples:
 
 See Also:
     - [typevet.adapters.outbound.llama_cpp.http_mapping][]: llama.cpp error mapping
-    - [typevet.adapters.outbound.vllm_http][]: vLLM error mapping
+    - [typevet.adapters.outbound.vllm.http_mapping][]: vLLM error mapping
     - [typevet.domain.errors][]: BackendHttpError
 """
 

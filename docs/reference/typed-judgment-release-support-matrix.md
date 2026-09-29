@@ -72,10 +72,10 @@ Do not attribute a result difference to the backend.
 
 | Behaviour | Scope | Source |
 |---|---|---|
-| Schema check before any request | All four generation adapters. A schema that fails the Draft 2020-12 meta-schema raises `ValueError`. No request is sent. | `chat_completion.check_request_schema`, called in `llama_cpp/generation.py`, `llama_cpp/generation_async.py`, `vllm_generation.py` and `vllm_generation_async.py` |
-| Thinking off in generation | llama.cpp and vLLM generation send `"chat_template_kwargs": {"enable_thinking": false}` | `llama_cpp/generation.py`, `llama_cpp/generation_async.py`, `vllm_generation.py`, `vllm_generation_async.py` (through `generation_body`) |
+| Schema check before any request | All four generation adapters. A schema that fails the Draft 2020-12 meta-schema raises `ValueError`. No request is sent. | `chat_completion.check_request_schema`, called in `llama_cpp/generation.py`, `llama_cpp/generation_async.py`, `vllm/generation.py` and `vllm/generation_async.py` |
+| Thinking off in generation | llama.cpp and vLLM generation send `"chat_template_kwargs": {"enable_thinking": false}` | `llama_cpp/generation.py`, `llama_cpp/generation_async.py`, `vllm/generation.py`, `vllm/generation_async.py` (through `generation_body`) |
 | Value check after generation | The returned JSON is validated against the request schema. A failure raises `SchemaValidationError`. | `chat_completion.validated_value` |
-| Images in generation | vLLM generation sends images as `image_url` blocks. llama.cpp generation refuses a request with images before any HTTP call. | `vllm_content.py`, `LlamaCppGenerationAdapter._reject_media` |
+| Images in generation | vLLM generation sends images as `image_url` blocks. llama.cpp generation refuses a request with images before any HTTP call. | `vllm/content.py`, `LlamaCppGenerationAdapter._reject_media` |
 | Native `Choice` capacity | The tokenizer sets the limit. Controls `"0"`, `"1"`, … must each be one token. | `bind_control_candidates` in `domain/judgment_normalize.py` ([#234](https://github.com/Alberto-Codes/typevet/issues/234)) |
 | Async vLLM generation | One factory-built adapter per event loop. A call on a second loop raises `RuntimeError` before any request. | `async_vllm_generation_adapter`, `AsyncVllmGenerationAdapter` ([#224](https://github.com/Alberto-Codes/typevet/issues/224)) |
 

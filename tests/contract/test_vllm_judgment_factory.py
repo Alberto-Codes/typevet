@@ -24,7 +24,7 @@ import typevet.runtime
 from tests.fixtures.synthetic_images import solid_image
 from typevet.adapters.inbound import backend_settings
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
-from typevet.adapters.outbound.vllm_scoring import ChatContentFraming
+from typevet.adapters.outbound.vllm.scoring import ChatContentFraming
 from typevet.domain.candidate_scoring_request import CandidateScoringRequest
 from typevet.domain.candidate_scoring_response import CandidateScoringResult
 from typevet.domain.errors import (

@@ -1,6 +1,6 @@
 """Async vLLM ``/v1/chat/completions`` adapter with a per-adapter POST limit.
 
-The request body comes from ``vllm_generation.generation_body``, the builder
+The request body comes from ``generation.generation_body``, the builder
 that ``VllmGenerationAdapter`` also uses. The schema check before the
 request, the error mapping and the result validation are the same as for the
 sync adapter. An ``asyncio.Semaphore`` limits the number of
@@ -27,7 +27,7 @@ to unconstrained generation.
 
 Examples:
     ```python
-    from typevet.adapters.outbound.vllm_generation_async import (
+    from typevet.adapters.outbound.vllm.generation_async import (
         AsyncVllmGenerationAdapter,
     )
 
@@ -36,10 +36,10 @@ Examples:
     ```
 
 See Also:
-    - [typevet.adapters.outbound.vllm_generation][]: Sync adapter and body builder
+    - [typevet.adapters.outbound.vllm.generation][]: Sync adapter and body builder
     - [typevet.adapters.outbound.chat_completion][]: Content and schema checks
     - [typevet.adapters.outbound.llama_cpp.generation_async][]: llama.cpp async counterpart
-    - [typevet.adapters.outbound.vllm_http][]: Shared vLLM HTTP error mapping
+    - [typevet.adapters.outbound.vllm.http_mapping][]: Shared vLLM HTTP error mapping
     - [typevet.ports.async_generation][]: AsyncGenerationPort
 """
 
@@ -57,8 +57,8 @@ from typevet.adapters.outbound.chat_completion import (
     extract_content,
     validated_value,
 )
-from typevet.adapters.outbound.vllm_generation import generation_body
-from typevet.adapters.outbound.vllm_http import (
+from typevet.adapters.outbound.vllm.generation import generation_body
+from typevet.adapters.outbound.vllm.http_mapping import (
     ensure_success_status,
     map_transport_error,
     parse_json_response,
@@ -85,7 +85,7 @@ class AsyncVllmGenerationAdapter:
 
     Examples:
         ```python
-        from typevet.adapters.outbound.vllm_generation_async import (
+        from typevet.adapters.outbound.vllm.generation_async import (
             AsyncVllmGenerationAdapter,
         )
 

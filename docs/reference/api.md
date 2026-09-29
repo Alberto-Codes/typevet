@@ -46,5 +46,6 @@ module source.
 - [](){#typevet.adapters.inbound.backend_settings} [`typevet.adapters.inbound.backend_settings`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/inbound/backend_settings.py)
 - [](){#typevet.adapters.outbound} [`typevet.adapters.outbound`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/__init__.py)
 - [](){#typevet.adapters.outbound.llama_cpp} [`typevet.adapters.outbound.llama_cpp`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/llama_cpp/__init__.py)
+- [](){#typevet.adapters.outbound.vllm} [`typevet.adapters.outbound.vllm`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/vllm/__init__.py)
 - [](){#typevet.adapters.diagnostics.settings} [`typevet.adapters.diagnostics.settings`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/settings.py)
 - [](){#typevet.adapters.diagnostics.configure_from_environ} [`typevet.adapters.diagnostics.configure_from_environ`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/diagnostics/logs.py)

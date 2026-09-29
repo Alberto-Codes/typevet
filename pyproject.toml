@@ -203,7 +203,18 @@ forbidden_modules = ["typevet.evaluation"]
 name = "Model framing stays off the serving backends"
 type = "forbidden"
 source_modules = ["typevet.adapters.outbound.gemma"]
-forbidden_modules = ["typevet.adapters.outbound.llama_cpp"]
+forbidden_modules = [
+    "typevet.adapters.outbound.llama_cpp",
+    "typevet.adapters.outbound.vllm",
+]
+
+[[tool.importlinter.contracts]]
+name = "Serving backends stay independent"
+type = "independence"
+modules = [
+    "typevet.adapters.outbound.llama_cpp",
+    "typevet.adapters.outbound.vllm",
+]
 
 [[tool.importlinter.contracts]]
 name = "Fakes stay off the adapters"

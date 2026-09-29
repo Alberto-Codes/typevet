@@ -30,7 +30,7 @@ from tests.fixtures.generation_contract import (
     sync_vllm_adapter,
 )
 from typevet.adapters import outbound
-from typevet.adapters.outbound.vllm_generation import VllmGenerationAdapter
+from typevet.adapters.outbound.vllm.generation import VllmGenerationAdapter
 from typevet.domain.errors import (
     BackendHttpError,
     GenerationError,

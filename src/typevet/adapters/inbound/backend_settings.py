@@ -43,9 +43,9 @@ See Also:
     - [typevet.adapters.inbound.settings][]: ``TYPEVET_LLAMA__*`` settings
     - [typevet.adapters.outbound.llama_cpp][]: llama.cpp adapters and the Gemma
       native vision factory module
-    - [typevet.adapters.outbound.vllm_generation][]: vLLM generation adapter
-    - [typevet.adapters.outbound.vllm_generation_async][]: Async vLLM adapter
-    - [typevet.adapters.outbound.vllm_judgment_factory][]: vLLM judgment factory
+    - [typevet.adapters.outbound.vllm.generation][]: vLLM generation adapter
+    - [typevet.adapters.outbound.vllm.generation_async][]: Async vLLM adapter
+    - [typevet.adapters.outbound.vllm.judgment_factory][]: vLLM judgment factory
     - [typevet.adapters.diagnostics.redaction][]: ``REDACTED`` (``***``) mask
     - docs/reference/configuration.md: Environment variable reference
 """
@@ -68,9 +68,9 @@ from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
     open_gemma_native_vision_judgment,
 )
 from typevet.adapters.outbound.llama_cpp.generation import LlamaCppGenerationAdapter
-from typevet.adapters.outbound.vllm_generation import VllmGenerationAdapter
-from typevet.adapters.outbound.vllm_generation_async import AsyncVllmGenerationAdapter
-from typevet.adapters.outbound.vllm_judgment_factory import (
+from typevet.adapters.outbound.vllm.generation import VllmGenerationAdapter
+from typevet.adapters.outbound.vllm.generation_async import AsyncVllmGenerationAdapter
+from typevet.adapters.outbound.vllm.judgment_factory import (
     VllmJudgmentSession,
     open_vllm_judgment,
 )

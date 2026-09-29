@@ -17,8 +17,8 @@ import pytest
 
 from typevet.adapters import outbound
 from typevet.adapters.inbound.backend_settings import VllmSettings, load_vllm_settings
-from typevet.adapters.outbound.vllm_generation import generation_body
-from typevet.adapters.outbound.vllm_generation_async import AsyncVllmGenerationAdapter
+from typevet.adapters.outbound.vllm.generation import generation_body
+from typevet.adapters.outbound.vllm.generation_async import AsyncVllmGenerationAdapter
 from typevet.domain.errors import GenerationError, TransportError
 from typevet.domain.media import MEDIA_MARKER, ImageInput
 from typevet.domain.models import GenerationRequest
@@ -305,7 +305,7 @@ def test_owned_client_adapter_refuses_a_second_event_loop_before_any_request(
         return real_client(transport=httpx.MockTransport(handler), **kwargs)
 
     monkeypatch.setattr(
-        "typevet.adapters.outbound.vllm_generation_async.httpx.AsyncClient",
+        "typevet.adapters.outbound.vllm.generation_async.httpx.AsyncClient",
         mocked_client,
     )
     adapter = AsyncVllmGenerationAdapter("http://vllm.test:8000/")
