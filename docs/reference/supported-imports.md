@@ -86,7 +86,7 @@ compiler types, judgment types, and scoring types, import from
 | `build_and_validate_result` | Fail-closed result assembly for scoring |
 | `CategoricalExecutionResult` | Greedy categorical execute outcome |
 | `DecisionExecutionError` | Categorical execute rejected inputs |
-| `execute_categorical_decision` | IO-free Choice/Bool execution |
+| `execute_categorical_decision` | Choice/Bool execution; calls the injected scoring port and performs no I/O itself |
 | `bind_control_candidates`, `judgment_original_labels` | Control-token binding for native questions |
 | `normalize_noul`, `normalize_choice`, `normalize_score`, `normalize_question` | Native question → ``Decision`` |
 

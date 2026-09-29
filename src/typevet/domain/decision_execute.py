@@ -1,4 +1,7 @@
-"""IO-free categorical execution for closed Choice and Bool decisions.
+"""Categorical execution for closed Choice and Bool decisions.
+
+The module performs no I/O itself. It calls the injected
+``CandidateScoringPort``, so the effects are those of that port.
 
 M1 execute rejects compiled ``permutations`` other than ``1`` before any
 scoring IO (permutation averaging is out of scope). The port result is checked

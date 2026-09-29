@@ -51,7 +51,8 @@ Attributes:
     ScoringError (type): Base failure for a candidate-scoring call.
     compile_json_schema (callable): Compile object schema to decisions.
     dependency_layers (callable): Topological layers for decision dependencies.
-    execute_categorical_decision (callable): IO-free Choice/Bool execution.
+    execute_categorical_decision (callable): Choice/Bool execution
+        through the injected scoring port; no I/O of its own.
     bind_control_candidates (callable): Ordinal control tokens for native labels.
     judgment_original_labels (callable): Ordered labels for a native question.
     normalize_question (callable): Native question to executable Decision.

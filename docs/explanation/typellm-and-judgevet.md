@@ -77,8 +77,9 @@ How typevet’s native questions map to decisions today:
 - `GenerationPort.generate(request)` → validated object via llama.cpp
   `response_format` / `json_schema`, with fail-fast schema validation after
   parse. Offline fake plus a live Gemma 4 proof on the local router.
-- `compile_json_schema` and `execute_categorical_decision`: the IO-free
-  TypeLLM compiler and categorical executor in `typevet.domain`.
+- `compile_json_schema` and `execute_categorical_decision`: the TypeLLM
+  compiler and categorical executor in `typevet.domain`. Neither performs I/O
+  itself; the executor calls the injected scoring port.
 - `CandidateScoringPort` and `LlamaCppCandidateScoringAdapter`: pre-sampling
   candidate logprobs from llama.cpp `/completion`.
 - `JudgmentPort` with `Noul`, `Choice`, and `Score` questions, and
