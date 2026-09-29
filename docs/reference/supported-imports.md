@@ -110,6 +110,18 @@ Thin orchestration facades over domain, ports, and outbound adapters
 | `judge_with_scoring` | One-shot helper wrapping the adapter |
 | `decide_categorical` | M1 categorical decision via injected scoring port |
 | `compose_scoring_prefix` | Degraded ChatML scoring prefix composition |
+| `open_vllm_judgment` | Context manager: judgment port over vLLM chat-completions scoring |
+| `VllmJudgmentSession` | Session that `open_vllm_judgment` yields (`port`, `client`, `model`) |
+| `vllm_tokenize` | Hook factory for vLLM `/tokenize` without special tokens |
+
+`open_vllm_judgment` takes keyword `client`, `model`, and optional `base_url`,
+`tokenize_content` and `scoring_port_wrapper`. It sends no template probe.
+Scoring and `/tokenize` requests go to `base_url`, or to the client
+`base_url` when `base_url` is not set. The caller owns the client.
+
+`typevet.adapters.inbound.backend_settings.open_judgment` selects the session
+from `TYPEVET_BACKEND`: the Gemma native vision factory for `llama_cpp` (the
+default), or `open_vllm_judgment` on the `TYPEVET_VLLM__*` client for `vllm`.
 
 ## `typevet.adapters.inbound`
 

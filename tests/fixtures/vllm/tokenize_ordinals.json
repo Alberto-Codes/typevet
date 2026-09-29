@@ -1,0 +1,13 @@
+{
+  "probe": "synthetic",
+  "purpose": "/tokenize replies for the ordinal control strings; ids from #168 finding 4",
+  "path": "/tokenize",
+  "source": "vLLM v0.30.0 vllm/entrypoints/serve/tokenize/protocol.py (TokenizeCompletionRequest, TokenizeResponse)",
+  "request": {"model": "gemma-4-31b-it", "prompt": "<control>", "add_special_tokens": false},
+  "responses": {
+    "0": {"count": 1, "max_model_len": 262144, "tokens": [236771], "token_strs": null},
+    "1": {"count": 1, "max_model_len": 262144, "tokens": [236770], "token_strs": null},
+    "2": {"count": 1, "max_model_len": 262144, "tokens": [236778], "token_strs": null},
+    "3": {"count": 1, "max_model_len": 262144, "tokens": [236800], "token_strs": null}
+  }
+}

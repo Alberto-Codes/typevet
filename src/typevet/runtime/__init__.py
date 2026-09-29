@@ -17,6 +17,9 @@ Attributes:
     GemmaNativeVisionSession (type): Live session from ``open_gemma_native_vision_judgment``.
     open_gemma_native_vision_judgment (callable): Gemma native vision factory context manager.
     probe_gemma_native_vision_support (callable): Router probe without a long-lived port.
+    VllmJudgmentSession (type): Session from ``open_vllm_judgment``.
+    open_vllm_judgment (callable): vLLM chat-completions judgment context manager.
+    vllm_tokenize (callable): vLLM ``/tokenize`` hook factory.
 """
 
 from typevet.runtime.categorical import decide_categorical
@@ -27,13 +30,21 @@ from typevet.runtime.llama_cpp_gemma_vision import (
     probe_gemma_native_vision_support,
 )
 from typevet.runtime.scoring_prefix import compose_scoring_prefix
+from typevet.runtime.vllm_judgment import (
+    VllmJudgmentSession,
+    open_vllm_judgment,
+    vllm_tokenize,
+)
 
 __all__ = [
     "GemmaNativeVisionSession",
     "ScoringJudgmentAdapter",
+    "VllmJudgmentSession",
     "compose_scoring_prefix",
     "decide_categorical",
     "judge_with_scoring",
     "open_gemma_native_vision_judgment",
+    "open_vllm_judgment",
     "probe_gemma_native_vision_support",
+    "vllm_tokenize",
 ]
