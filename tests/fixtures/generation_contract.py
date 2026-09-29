@@ -3,8 +3,8 @@
 Each fixture is a **synthetic** labeled case: the author defines the request,
 the mocked HTTP stimulus (when used), and the fake configuration. A green
 contract test shows the offline fake and ``LlamaCppGenerationAdapter`` (or
-``VllmGenerationAdapter``) driven through ``httpx.MockTransport`` agree on value
-or error type for that case.
+``VllmGenerationAdapter`` and its async counterpart) driven through
+``httpx.MockTransport`` agree on value or error type for that case.
 """
 
 from __future__ import annotations
@@ -22,6 +22,7 @@ from typevet.adapters.outbound import (
     LlamaCppGenerationAdapter,
 )
 from typevet.adapters.outbound.vllm_generation import VllmGenerationAdapter
+from typevet.adapters.outbound.vllm_generation_async import AsyncVllmGenerationAdapter
 from typevet.domain.errors import (
     BackendHttpError,
     GenerationError,
@@ -252,6 +253,19 @@ def async_llama_adapter(fixture: dict[str, Any]) -> AsyncLlamaCppGenerationAdapt
         base_url="http://test",
     )
     return AsyncLlamaCppGenerationAdapter(base_url="http://test", client=client)
+
+
+def async_vllm_adapter(fixture: dict[str, Any]) -> AsyncVllmGenerationAdapter:
+    """Build ``AsyncVllmGenerationAdapter`` with injected mock transport.
+
+    Returns:
+        Adapter whose async client replays the fixture through the vLLM transport.
+    """
+    client = httpx.AsyncClient(
+        transport=vllm_mock_transport_for(fixture),
+        base_url="http://test",
+    )
+    return AsyncVllmGenerationAdapter(base_url="http://test", client=client)
 
 
 def exc_type_from_name(name: str) -> type[GenerationError]:

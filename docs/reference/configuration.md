@@ -73,6 +73,7 @@ mapping below.
 | `TYPEVET_VLLM__MODEL` | `model` | string | none | Required; served model name |
 | `TYPEVET_VLLM__TIMEOUT` | `timeout` | float, seconds | `300` | Must be positive |
 | `TYPEVET_VLLM__API_KEY` | `api_key` | string or empty | none | Sent as `Authorization: Bearer <key>` |
+| `TYPEVET_VLLM__MAX_CONCURRENCY` | `max_concurrency` | integer | `1` | Must be a positive integer; POST limit for one `AsyncVllmGenerationAdapter` |
 
 The key does not appear in `repr(VllmSettings)`. The client is built the same
 way with or without a key. Only the `Authorization` header differs. So
@@ -84,6 +85,14 @@ same error type again. The new error shows `***` for the key and has no cause. A
 the `Authorization` header therefore cannot put the key into a
 `BackendHttpError` message. Successful results are not changed. Error messages
 name the variable, not its value.
+
+`generation_adapter` builds the sync adapter and does not read
+`max_concurrency`. Pass `settings.max_concurrency` to
+`AsyncVllmGenerationAdapter(max_concurrency=...)`. The limit applies to one
+adapter only. Two adapters do not share it. With the default of `1`, the
+adapter sends one request at a time. Build the async adapter's
+`httpx.AsyncClient` yourself. The key masking above applies only to the
+adapter from `generation_adapter`.
 
 ## Diagnostic logging
 

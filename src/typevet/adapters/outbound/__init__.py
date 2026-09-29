@@ -5,6 +5,7 @@ Examples:
     from typevet.adapters.outbound import (
         AsyncFakeGenerationAdapter,
         AsyncLlamaCppGenerationAdapter,
+        AsyncVllmGenerationAdapter,
         ChatContentFraming,
         FakeGenerationAdapter,
         LlamaCppCandidateScoringAdapter,
@@ -19,11 +20,13 @@ See Also:
     - [typevet.adapters.outbound.fake][]: Offline validating fake
     - [typevet.adapters.outbound.vllm_scoring][]: vLLM chat logprob scorer
     - [typevet.adapters.outbound.vllm_generation][]: vLLM structured generation
+    - [typevet.adapters.outbound.vllm_generation_async][]: Async vLLM generation
     - [typevet.adapters.outbound.vllm_http][]: vLLM HTTP error mapping
 
 Attributes:
     AsyncFakeGenerationAdapter (type): Offline async validating fake.
     AsyncLlamaCppGenerationAdapter (type): Async OpenAI-compat llama.cpp adapter.
+    AsyncVllmGenerationAdapter (type): Async vLLM generation with a POST limit.
     ChatContentFraming (type): Plain chat content framing for vLLM scoring.
     FakeGenerationAdapter (type): Offline adapter that validates a fixed value.
     LlamaCppCandidateScoringAdapter (type): Pre-sampling ``/completion`` scorer.
@@ -38,6 +41,7 @@ from typevet.adapters.outbound.fake import FakeGenerationAdapter
 from typevet.adapters.outbound.llama_cpp import LlamaCppGenerationAdapter
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
 from typevet.adapters.outbound.vllm_generation import VllmGenerationAdapter
+from typevet.adapters.outbound.vllm_generation_async import AsyncVllmGenerationAdapter
 from typevet.adapters.outbound.vllm_scoring import (
     ChatContentFraming,
     VllmCandidateScoringAdapter,
@@ -46,6 +50,7 @@ from typevet.adapters.outbound.vllm_scoring import (
 __all__ = [
     "AsyncFakeGenerationAdapter",
     "AsyncLlamaCppGenerationAdapter",
+    "AsyncVllmGenerationAdapter",
     "ChatContentFraming",
     "FakeGenerationAdapter",
     "LlamaCppCandidateScoringAdapter",

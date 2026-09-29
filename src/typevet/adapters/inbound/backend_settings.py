@@ -2,8 +2,10 @@
 
 ``TYPEVET_BACKEND`` selects ``llama_cpp`` (the default) or ``vllm``. The vLLM
 branch reads ``TYPEVET_VLLM__*`` variables and builds one ``httpx.Client``
-that carries the base URL, timeout and optional bearer key. Outbound adapters
-never read the environment.
+that carries the base URL, timeout and optional bearer key.
+``TYPEVET_VLLM__MAX_CONCURRENCY`` sets ``VllmSettings.max_concurrency``, the
+POST limit for an ``AsyncVllmGenerationAdapter``. Outbound adapters never read
+the environment.
 
 The configured key never reaches the caller in clear text. ``VllmSettings``
 leaves it out of ``repr``. The adapter that ``generation_adapter`` returns
@@ -86,6 +88,7 @@ class VllmSettings:
         model (str): Served model name.
         timeout (float): HTTP request timeout in seconds.
         api_key (str | None): Bearer key, or ``None``. Excluded from ``repr``.
+        max_concurrency (int): Maximum POSTs in flight for one async adapter.
 
     Examples:
         ```python
@@ -99,6 +102,7 @@ class VllmSettings:
     model: str
     timeout: float = _DEFAULT_TIMEOUT
     api_key: str | None = field(default=None, repr=False)
+    max_concurrency: int = 1
 
 
 def _masked(text: str, needles: tuple[str, ...]) -> str:
@@ -279,6 +283,20 @@ def _read_timeout(source: Mapping[str, str], name: str) -> float:
     return timeout
 
 
+def _read_max_concurrency(source: Mapping[str, str], name: str) -> int:
+    raw = source.get(name, "").strip()
+    if not raw:
+        return 1
+    msg = f"{name} must be a positive integer"
+    try:
+        limit = int(raw)
+    except ValueError:
+        raise ValueError(msg) from None
+    if limit < 1:
+        raise ValueError(msg)
+    return limit
+
+
 def _read_required(source: Mapping[str, str], name: str) -> str:
     value = source.get(name, "").strip()
     if not value:
@@ -322,7 +340,8 @@ def load_vllm_settings(environ: Mapping[str, str] | None = None) -> VllmSettings
     Raises:
         ValueError: When ``TYPEVET_VLLM__BASE_URL`` or ``TYPEVET_VLLM__MODEL``
             is missing, ``TYPEVET_VLLM__TIMEOUT`` is not a positive number,
-            or ``TYPEVET_VLLM__API_KEY`` holds a non-ASCII character.
+            ``TYPEVET_VLLM__MAX_CONCURRENCY`` is not a positive integer, or
+            ``TYPEVET_VLLM__API_KEY`` holds a non-ASCII character.
     """
     source = os.environ if environ is None else environ
     api_key = source.get("TYPEVET_VLLM__API_KEY", "").strip()
@@ -334,6 +353,7 @@ def load_vllm_settings(environ: Mapping[str, str] | None = None) -> VllmSettings
         model=_read_required(source, "TYPEVET_VLLM__MODEL"),
         timeout=_read_timeout(source, "TYPEVET_VLLM__TIMEOUT"),
         api_key=api_key or None,
+        max_concurrency=_read_max_concurrency(source, "TYPEVET_VLLM__MAX_CONCURRENCY"),
     )
 
 

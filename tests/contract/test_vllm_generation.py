@@ -2,11 +2,13 @@
 
 The HTTP 400 fixture ``http400_invalid_schema`` is the redacted vLLM v0.30.0
 P10 response from the #168 probe. Shared ``generation_contract`` fixtures
-prove parity with ``FakeGenerationAdapter``.
+prove parity with ``FakeGenerationAdapter`` and, for the async adapter
+(#169E), with ``AsyncFakeGenerationAdapter``.
 """
 
 from __future__ import annotations
 
+import asyncio
 import json
 from pathlib import Path
 from typing import Any
@@ -20,6 +22,8 @@ from tests.contract._generation_port_assertions import (
 )
 from tests.fixtures.generation_contract import (
     CONTRACT_SCHEMA,
+    async_fake_adapter,
+    async_vllm_adapter,
     generation_request,
     get_fixtures,
     sync_fake_adapter,
@@ -122,6 +126,24 @@ def test_vllm_generation_agrees_with_fake_on_shared_fixtures(
         fixture=fixture,
         fake_generate=lambda: fake.generate(request),
         real_generate=lambda: real.generate(request),
+    )
+
+
+@pytest.mark.contract
+@pytest.mark.parametrize("fixture", get_fixtures(), ids=lambda row: row["name"])
+def test_async_vllm_generation_agrees_with_async_fake_on_shared_fixtures(
+    fixture: dict[str, Any],
+) -> None:
+    request = generation_request(fixture)
+    fake = async_fake_adapter(fixture)
+    real = async_vllm_adapter(fixture)
+    runner = run_success_contract
+    if fixture["expect"]["kind"] == "error":
+        runner = run_error_contract
+    runner(
+        fixture=fixture,
+        fake_generate=lambda: asyncio.run(fake.generate(request)),
+        real_generate=lambda: asyncio.run(real.generate(request)),
     )
 
 
