@@ -217,11 +217,23 @@ def bind_control_candidates(
 
     Raises:
         JudgmentValidationError: Duplicate or empty labels, or multi-token controls.
+            When leading controls are single tokens and a later one is not, the
+            message states the tokenizer capacity: ``native Choice supports N
+            options on this tokenizer; got M``. The capacity message applies
+            only when at least one control bound; a failure at control ``"0"``
+            keeps the per-control message.
     """
     specs: list[CandidateTokenSpec] = []
-    for control, label in control_binding_pairs(original_labels):
+    pairs = control_binding_pairs(original_labels)
+    for control, label in pairs:
         token_ids = tuple(tokenize_content(control))
         if len(token_ids) != 1:
+            if specs:
+                msg = (
+                    f"native Choice supports {len(specs)} options "
+                    f"on this tokenizer; got {len(pairs)}"
+                )
+                raise JudgmentValidationError(msg)
             msg = (
                 f"control string {control!r} for label {label!r} "
                 "must tokenize to exactly one token"
