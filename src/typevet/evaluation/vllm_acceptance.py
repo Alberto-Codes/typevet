@@ -6,13 +6,12 @@ The runners live in ``typevet.evaluation.vllm_acceptance_sets``, which imports
 this module; this module never imports it. Every request passes through
 ``CountingTransport``, which counts model, tokenizer and metadata calls and
 raises ``CallCapReached`` before a request that would pass a cap. The run then
-stops and still returns a receipt. Identical ``/tokenize`` bodies are answered
-from a per-run memo, because the tokenizer is fixed for one served model. The
-harness makes no transport retry. The receipt keeps the CORD ``cases`` and
-``combined`` rows at the top level, so ``cord_semantic_acceptance_cli`` reads
-the receipt file directly. ``kv_cache_usage`` parses the whole ``/metrics``
-text for the ``vllm:kv_cache_usage_perc`` gauge; ``CountingTransport.wait_for``
-lets a runner read it while requests are in flight (#216).
+stops and still returns a receipt. The harness makes no transport retry. The
+receipt keeps the CORD ``cases`` and ``combined`` rows at the top level, so
+``cord_semantic_acceptance_cli`` reads the receipt file directly. The call
+caps, ``CountingTransport``, ``CallCapReached`` and ``kv_cache_usage`` live
+in ``typevet.evaluation.vllm_acceptance_transport``; this module re-exports
+all of them except ``CallCapReached`` (#229).
 
 Examples:
     ```python
@@ -33,6 +32,8 @@ Examples:
 
 See Also:
     - [typevet.evaluation.vllm_acceptance_sets][]: the five set runners
+    - [typevet.evaluation.vllm_acceptance_transport][]: call caps and
+      ``/metrics`` read
     - [typevet.adapters.inbound.backend_settings][]: backend selection
     - [typevet.evaluation.cord_semantic_acceptance][]: CORD floors
 
@@ -45,8 +46,6 @@ import hashlib
 import json
 import math
 import os
-import re
-import threading
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -64,13 +63,17 @@ from typevet.adapters.inbound.backend_settings import (
 from typevet.evaluation.cord_semantic_acceptance import accept_combined_receipt
 from typevet.evaluation.experiment_identity import read_baseline_commit
 from typevet.evaluation.runner.live_gate import require_live_enabled
+from typevet.evaluation.vllm_acceptance_transport import (
+    AcceptanceStoppedError,
+    CallCaps,
+    CountingTransport,
+    kv_cache_usage,
+)
 
 ATTACHMENT_DELTA_FLOOR: Final[int] = 50
 SWAP_MARGIN_FLOOR: Final[float] = 0.10
 PSAI_CASES: Final[int] = 4
 SWAP_PASS_FLOOR: Final[int] = 3
-_KINDS: Final[tuple[str, ...]] = ("model", "tokenizer", "metadata")
-_METADATA: Final[tuple[str, ...]] = ("/version", "/v1/models", "/metrics")
 _DENIED: Final[frozenset[int | None]] = frozenset({401, 403})
 _NOT_VLLM: Final = "TYPEVET_BACKEND must be vllm for the vLLM acceptance run"
 _GATED: Final[tuple[str, ...]] = ("generation", "psai", "cord")
@@ -78,27 +81,6 @@ OMITTED_RULE: Final[str] = (
     "An omitted row counts in omitted_credited when its answer equals the "
     "gold key; no omitted row is added to the present, swapped or text counts."
 )
-_KV_GAUGE: Final = re.compile(r"(?m)^vllm:kv_cache_usage_perc(?:\{[^}\n]*\})? +(\S+)")
-
-
-@dataclass(frozen=True, slots=True)
-class CallCaps:
-    """Hard call limits per request kind.
-
-    Attributes:
-        model (int): Chat-completions calls.
-        tokenizer (int): ``/tokenize`` and ``/detokenize`` calls.
-        metadata (int): ``/version``, ``/v1/models`` and ``/metrics`` calls.
-
-    Examples:
-        ```python
-        CallCaps(model=5)
-        ```
-    """
-
-    model: int = 100
-    tokenizer: int = 128
-    metadata: int = 10
 
 
 @dataclass(frozen=True, slots=True)
@@ -117,114 +99,6 @@ class AcceptanceInputs:
 
     fixtures_root: Path
     repo_root: Path
-
-
-class AcceptanceStoppedError(RuntimeError):
-    """A stop rule fired; the run ends and still returns a receipt.
-
-    Examples:
-        ```python
-        AcceptanceStoppedError("preflight denied")
-        ```
-    """
-
-
-class CallCapReached(AcceptanceStoppedError):
-    """A request would pass its call cap; the run stops before sending it.
-
-    Examples:
-        ```python
-        CallCapReached("model call cap 100 reached")
-        ```
-    """
-
-
-class CountingTransport(httpx.BaseTransport):
-    """Transport wrapper that counts calls, enforces caps and memoizes tokenize.
-
-    A condition guards the counters. Each counted request notifies it, so
-    ``wait_for`` can block until a number of requests were sent.
-
-    Attributes:
-        caps (CallCaps): Limits per request kind.
-        calls (dict[str, int]): Requests sent to the server per kind.
-        tokenizer_memo_hits (int): ``/tokenize`` answers served from the memo.
-
-    Examples:
-        ```python
-        CountingTransport(httpx.HTTPTransport(), CallCaps())
-        ```
-    """
-
-    def __init__(self, inner: httpx.BaseTransport, caps: CallCaps) -> None:
-        """Wrap ``inner`` with counters for ``caps`` and their condition.
-
-        Args:
-            inner: Transport that sends requests; the caller closes it.
-            caps: Limits per request kind.
-        """
-        self._inner = inner
-        self.caps = caps
-        self.calls = dict.fromkeys(_KINDS, 0)
-        self.tokenizer_memo_hits = 0
-        self._memo: dict[bytes, bytes] = {}
-        self._lock = threading.Condition()
-
-    def handle_request(self, request: httpx.Request) -> httpx.Response:
-        """Count and forward one request, or answer it from the tokenize memo.
-
-        Each counted request notifies the threads that ``wait_for`` blocks.
-
-        Args:
-            request: Outgoing request.
-
-        Returns:
-            The server response, or a memoized ``/tokenize`` reply.
-
-        Raises:
-            CallCapReached: When the request kind is at its cap.
-        """
-        kind = _kind(request.url.path)
-        key = request.url.path.encode() + request.read() if kind == "tokenizer" else b""
-        with self._lock:
-            if key in self._memo:
-                self.tokenizer_memo_hits += 1
-                return httpx.Response(200, content=self._memo[key], request=request)
-            limit = getattr(self.caps, kind)
-            if self.calls[kind] >= limit:
-                msg = f"{kind} call cap {limit} reached"
-                raise CallCapReached(msg)
-            self.calls[kind] += 1
-            self._lock.notify_all()
-        response = self._inner.handle_request(request)
-        if key and response.status_code == httpx.codes.OK:
-            content = response.read()
-            with self._lock:
-                self._memo[key] = content
-        return response
-
-    def wait_for(self, kind: str, count: int, timeout: float) -> bool:
-        """Block until ``count`` requests of ``kind`` were sent, or ``timeout``.
-
-        Args:
-            kind: Request kind: ``model``, ``tokenizer`` or ``metadata``.
-            count: Number of sent requests to wait for.
-            timeout: Most seconds to wait.
-
-        Returns:
-            ``True`` when the count was reached, ``False`` on timeout.
-        """
-        with self._lock:
-            return self._lock.wait_for(lambda: self.calls[kind] >= count, timeout)
-
-    def close(self) -> None:
-        """Leave the inner transport open; the caller owns it."""
-
-
-def _kind(path: str) -> str:
-    if path.endswith(("/tokenize", "/detokenize")):
-        return "tokenizer"
-    return "metadata" if path.endswith(_METADATA) else "model"
 
 
 @dataclass(slots=True)
@@ -465,26 +339,6 @@ def _preflight(pins: Mapping[str, Any]) -> None:
         reason = "preflight: /v1/models does not list TYPEVET_VLLM__MODEL"
     if reason is not None:
         raise AcceptanceStoppedError(reason)
-
-
-def kv_cache_usage(client: httpx.Client) -> float | str:
-    """Read the KV-cache usage gauge from ``/metrics`` (one metadata call).
-
-    The whole ``/metrics`` text is parsed. Only the vLLM v0.30.0 gauge
-    ``vllm:kv_cache_usage_perc`` (1 means 100 percent) matches (#216).
-
-    Args:
-        client: Session client.
-
-    Returns:
-        The first gauge value, or ``unknown`` when it is absent, unreadable
-        or the request fails.
-    """
-    try:
-        match = _KV_GAUGE.search(client.get("/metrics").text)
-        return float(match.group(1)) if match else "unknown"
-    except (httpx.HTTPError, ValueError):
-        return "unknown"
 
 
 def run_acceptance(
