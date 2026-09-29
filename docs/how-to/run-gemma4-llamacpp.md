@@ -81,6 +81,16 @@ request, the adapter also checks the schema against the JSON Schema meta-schema
 and raises `ValueError` for a malformed schema. No request is sent. These
 results apply to this build only.
 
+### Thinking setting
+
+The generation adapters send `"chat_template_kwargs": {"enable_thinking": false}`
+with each request, as the vLLM adapters do. The value is a JSON boolean. On
+build `b11243-fc07d781e`, the string `"false"` gets HTTP 400
+([local probe](https://github.com/Alberto-Codes/typevet/issues/226#issuecomment-5897063440)).
+That probe used one prompt on one Q2_K model file. There, the setting removed
+the default thinking turn from the template. The probe does not prove that the
+hidden completion tokens in the #129 receipt came from thinking.
+
 ## Call typevet
 
 ```bash

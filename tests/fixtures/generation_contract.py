@@ -200,6 +200,8 @@ def mock_transport_for(fixture: dict[str, Any]) -> httpx.MockTransport:
         assert request.url.path.endswith("/v1/chat/completions")
         body = json.loads(request.content.decode())
         assert body["response_format"]["type"] == "json_schema"
+        assert body["chat_template_kwargs"] == {"enable_thinking": False}
+        assert body["chat_template_kwargs"]["enable_thinking"] is False
         return _replay(fixture)
 
     return httpx.MockTransport(handler)

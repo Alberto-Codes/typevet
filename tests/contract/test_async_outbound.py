@@ -46,6 +46,8 @@ def test_async_llama_cpp_adapter_parses_and_validates() -> None:
         assert request.url.path.endswith("/v1/chat/completions")
         body = json.loads(request.content.decode())
         assert body["response_format"]["type"] == "json_schema"
+        assert body["chat_template_kwargs"] == {"enable_thinking": False}
+        assert body["chat_template_kwargs"]["enable_thinking"] is False
         return httpx.Response(
             200,
             json={

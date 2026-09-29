@@ -96,6 +96,9 @@ class AsyncLlamaCppGenerationAdapter:
     async def generate(self, request: GenerationRequest) -> GenerationResult:
         """POST chat completions with a JSON Schema response format.
 
+        The body sets ``chat_template_kwargs`` ``enable_thinking`` to the JSON
+        boolean ``false``, as the vLLM adapters do.
+
         ``chat_completion.extract_content`` reads the reply and
         ``chat_completion.validated_value`` checks it against the schema.
 
@@ -134,6 +137,7 @@ class AsyncLlamaCppGenerationAdapter:
                     "schema": schema_obj,
                 },
             },
+            "chat_template_kwargs": {"enable_thinking": False},
         }
         url = urljoin(self._base_url, "v1/chat/completions")
         client = await self._ensure_client()
