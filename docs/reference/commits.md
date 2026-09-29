@@ -48,7 +48,7 @@ close issues by hand with `gh issue close` when a commit can close them.
 
 ## Worker trailers
 
-See [worker runs](worker-runs.md). `Generated-By` and `Specified-By` are
+See [worker runs](https://github.com/Alberto-Codes/typevet/blob/main/docs/reference/worker-runs.md). `Generated-By` and `Specified-By` are
 evidence. Never use `Co-Authored-By` for a model.
 
 ## Gate

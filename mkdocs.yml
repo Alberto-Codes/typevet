@@ -70,6 +70,9 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - toc:
       permalink: true
+exclude_docs: |
+  /reference/worker-runs.md
+  /maintainers/
 validation:
   omitted_files: warn
   links:
@@ -109,7 +112,6 @@ nav:
       - PSAI vision Choice probability evidence: reference/psai-vision-choice-probability-evidence.md
       - Testing pyramid: reference/testing.md
       - LOC gate: reference/loc-gate.md
-      - Worker runs: reference/worker-runs.md
       - Writing system: reference/writing-system.md
       - Commit messages: reference/commits.md
       - Evaluation:
@@ -133,10 +135,3 @@ nav:
   - ADRs:
       - Index: adr/README.md
       - "0001: Runtime orchestration": adr/0001-runtime-orchestration.md
-  - Maintainers:
-      - Groom worker issues: maintainers/groom-worker-issues.md
-      - Delegate work: maintainers/delegate-work.md
-      - Verify package: maintainers/verify-package.md
-      - Instruction-variant consumer protocol: maintainers/consumer-instruction-variant-protocol.md
-      - Consumer live protocol rev 2: maintainers/consumer-live-protocol-rev2.md
-      - Issue 177 handoff: maintainers/issue-177-handoff.md

@@ -38,7 +38,7 @@ Source comment:
 
 Per-row Choice, unauthorized noul, urgency, and broad flags are in the #133
 comment table. Full probability maps were stored in
-`scratchpad/finvet6/post152_receipt.json` (gitignored on the recording machine).
+`scratchpad/finvet6/post152_receipt.json` (gitignored).
 
 ### What this receipt does not prove
 

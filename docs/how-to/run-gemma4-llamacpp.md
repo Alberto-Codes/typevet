@@ -197,20 +197,19 @@ with LlamaCppGenerationAdapter() as port:
 print(result.value)
 ```
 
-## Optional alternate: bazzite router preset
+## Optional alternate: a router preset
 
-On Fedora/Bazzite machines you may use the
-[bazzite-dotfiles llama.cpp router](https://github.com/Alberto-Codes/bazzite-dotfiles/tree/main/podman/llama-cpp)
-instead of hand-running `llama-server`. It serves GGUFs under `~/models` on
-`127.0.0.1:8090` with `--jinja` and operator presets. See
-`../bazzite-dotfiles/podman/llama-cpp/README.md` for install and tuning.
+You may use an operator-managed llama.cpp server instead of hand-running
+`llama-server`. Such a router serves GGUF files from `<path>` on
+`127.0.0.1:8090` with `--jinja` and operator presets. Refer to the
+documentation of that server for install and tuning.
 
 The preset id `gemma-4-31b-24gib-kv11-decoder` is a **VRAM-fit quant alias**
 (same HTTP contract as any other Gemma 4 GGUF on the router). It is **not**
 required for typevet and is not a grammar patch.
 
 ```bash
-systemctl --user status llama-cpp-tuned.service
+systemctl --user status <router-service>
 TYPEVET_LLAMA__DEFAULT_MODEL=gemma-4-31b-24gib-kv11-decoder \
   uv run pytest -m live -q
 ```

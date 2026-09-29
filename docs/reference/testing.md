@@ -100,6 +100,6 @@ contracts in `pyproject.toml` are unrelated to pytest ``contract`` markers.
 ## Related pages
 
 - [Glossary — testing pyramid](glossary.md#terms)
-- [Worker runs](worker-runs.md) (launch evidence)
+- [Worker runs](https://github.com/Alberto-Codes/typevet/blob/main/docs/reference/worker-runs.md) (launch evidence)
 - Parent tracking: [issue #28](https://github.com/Alberto-Codes/typevet/issues/28),
   [issue #89](https://github.com/Alberto-Codes/typevet/issues/89)

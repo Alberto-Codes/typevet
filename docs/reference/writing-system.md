@@ -43,7 +43,7 @@ Record the actual historical authority and evidence. Do not invent a human appro
 
 Record an already locked decision without expanding its scope.
 ADRs preserve decisions. GitHub issues retain contracts, handoffs and acceptance evidence.
-See [groom worker issues](../maintainers/groom-worker-issues.md) for the issue procedure.
+See [groom worker issues](https://github.com/Alberto-Codes/typevet/blob/main/docs/maintainers/groom-worker-issues.md) for the issue procedure.
 
 ## Conventional Commits is law
 

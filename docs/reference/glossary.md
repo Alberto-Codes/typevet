@@ -57,9 +57,8 @@ future consumer of typevet if typevet exposes a compatible judgment surface.
 TypeLLM is explicitly inspired by it. typevet aims at a local open path to
 similar guarantees.
 
-**Copilot.** GitHub Copilot CLI (`copilot`). Present on this operator
-machine. For typevet worker dispatches, request `--model auto` only. Named
-Copilot models (including Fable) are out.
+**Copilot.** GitHub Copilot CLI (`copilot`). For typevet worker dispatches,
+request `--model auto` only. Named Copilot models (including Fable) are out.
 
 **flat module.** One concern in one `.py` file at the package level. Prefer
 `domain/models.py` over a nested `domain/models/` package. Package
@@ -70,7 +69,7 @@ so agents and callers can discover names from the init.
 concept. The writing system binds prose to it.
 
 **harness.** The program that runs a model and gives it tools. Orthogonal to
-role and to model weight. The [worker run contract](worker-runs.md#harness-boundary) lists receipt-backed use and launch evidence.
+role and to model weight. The [worker run contract](https://github.com/Alberto-Codes/typevet/blob/main/docs/reference/worker-runs.md#harness-boundary) lists receipt-backed use and launch evidence.
 
 **issue bus.** GitHub issues as the durable record for asks, triage,
 contracts, handoffs and acceptance across sessions and harnesses. Chat is not
@@ -87,7 +86,7 @@ Orthogonal to harness. A light model may run on Claude, Cursor or pi; a heavy
 model likewise. Do not equate weight with a brand name.
 
 **reviewer.** The role that exercises the defining behaviour and reports
-findings under the [shared role](worker-runs.md#acceptance-reviewer).
+findings under the [shared role](https://github.com/Alberto-Codes/typevet/blob/main/docs/reference/worker-runs.md#acceptance-reviewer).
 A model name alone does not make a review independent.
 
 **specifier.** The role that writes a definition of ready and done for one

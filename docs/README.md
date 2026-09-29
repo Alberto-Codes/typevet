@@ -96,7 +96,7 @@ answers a question, and a reference gives facts.
 - [Typed-judgment release support matrix](reference/typed-judgment-release-support-matrix.md)
   (reference): supported sync APIs, Gemma 4 native vision pins, evidence
   commands, and release exclusions ([#191](https://github.com/Alberto-Codes/typevet/issues/191)).
-- [Worker runs](reference/worker-runs.md) (reference): the launch evidence and
+- [Worker runs](https://github.com/Alberto-Codes/typevet/blob/main/docs/reference/worker-runs.md) (reference): the launch evidence and
   commit trailers for each worker.
 - [Writing system](reference/writing-system.md) (reference): Diátaxis,
   ASD-STE100 local profile and prose modes.
@@ -107,10 +107,10 @@ answers a question, and a reference gives facts.
 
 - [CLAUDE.md](https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md) (reference and how-to, for agents): start-here for
   fresh sessions, issue bus, non-negotiables and commit rules.
-- [Groom worker issues](maintainers/groom-worker-issues.md) (how-to): file,
+- [Groom worker issues](https://github.com/Alberto-Codes/typevet/blob/main/docs/maintainers/groom-worker-issues.md) (how-to): file,
   triage, size and split work on GitHub before delegation.
-- [Delegate a bounded change](maintainers/delegate-work.md) (how-to): brief,
+- [Delegate a bounded change](https://github.com/Alberto-Codes/typevet/blob/main/docs/maintainers/delegate-work.md) (how-to): brief,
   harness, model weight and acceptance after a contract exists.
-- [Verify package typing and version](maintainers/verify-package.md) (how-to):
+- [Verify package typing and version](https://github.com/Alberto-Codes/typevet/blob/main/docs/maintainers/verify-package.md) (how-to):
   wheel `py.typed` marker, isolated consumer, and `__version__` checks before
   publish.

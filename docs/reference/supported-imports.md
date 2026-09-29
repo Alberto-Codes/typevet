@@ -249,7 +249,7 @@ reason and exits `0`. See [live eval runner](eval-live-runner.md).
   module docstrings checked by docvet.
 - Version string authority is `[project].version` in `pyproject.toml`.
   `typevet.__version__` reads it back from distribution metadata. See
-  [verify package typing and version](../maintainers/verify-package.md).
+  [verify package typing and version](https://github.com/Alberto-Codes/typevet/blob/main/docs/maintainers/verify-package.md).
 
 ## 0.1.0 compatibility assessment
 
