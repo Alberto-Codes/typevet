@@ -12,7 +12,7 @@ Examples:
 
 See Also:
     - [typevet_evals.cord.semantic_acceptance][]: offline acceptance floors
-    - [typevet.evaluation.datasets.cord_expense][]: gold verdict vocabulary
+    - [typevet_evals.datasets.cord_expense][]: gold verdict vocabulary
 
 [i184]: https://github.com/Alberto-Codes/typevet/issues/184
 """
@@ -22,7 +22,7 @@ from __future__ import annotations
 from collections import Counter
 from collections.abc import Mapping
 
-from typevet.evaluation.datasets.cord_expense import INSUFFICIENT, SUPPORTED, VERDICTS
+from typevet_evals.datasets.cord_expense import INSUFFICIENT, SUPPORTED, VERDICTS
 
 
 def semantic_metrics(

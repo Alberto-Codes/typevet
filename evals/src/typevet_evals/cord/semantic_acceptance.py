@@ -21,7 +21,7 @@ Examples:
 
 See Also:
     - [typevet_evals.cord.semantic_metrics][]: shared confusion metrics
-    - [typevet.evaluation.datasets.cord_expense][]: routing from judge labels
+    - [typevet_evals.datasets.cord_expense][]: routing from judge labels
 
 [i161]: https://github.com/Alberto-Codes/typevet/issues/161
 [i184]: https://github.com/Alberto-Codes/typevet/issues/184
@@ -35,7 +35,8 @@ from enum import Enum, auto
 from math import isfinite
 from typing import Any, Final
 
-from typevet.evaluation.datasets.cord_expense import (
+from typevet_evals.cord.semantic_metrics import semantic_metrics
+from typevet_evals.datasets.cord_expense import (
     CONTRADICTED,
     INSUFFICIENT,
     LABEL_ORDER,
@@ -43,7 +44,6 @@ from typevet.evaluation.datasets.cord_expense import (
     VERDICTS,
     route,
 )
-from typevet_evals.cord.semantic_metrics import semantic_metrics
 
 ANSWERABLE_ACCURACY_FLOOR: Final[float] = 0.67
 CONTRADICTED_RECALL_FLOOR: Final[float] = 0.5

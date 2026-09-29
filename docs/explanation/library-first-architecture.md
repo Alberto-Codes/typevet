@@ -40,7 +40,7 @@ Import direction follows the layers contract in `pyproject.toml`, enforced by
 
 ```
 typevet.runtime
-typevet.evaluation  |  typevet.adapters.inbound   (independent siblings)
+typevet.adapters.inbound
 typevet.adapters.outbound
 typevet.adapters.diagnostics
 typevet.testing
@@ -51,6 +51,8 @@ typevet.domain      (no httpx, jsonschema, structlog, logging, or filesystem I/O
 Two forbidden contracts add to the order: `typevet.testing` never imports
 `typevet.adapters`, and `typevet.domain` never imports I/O or transport
 libraries.
+The library also never imports `typevet_evals`, the workspace member that
+holds the evaluation code.
 
 **Domain** holds generation requests and results, judgment questions and
 answers, scoring requests and results, errors, and the TypeLLM decision

@@ -10,11 +10,11 @@ docs [#74](https://github.com/Alberto-Codes/typevet/issues/74); loader
 
 | Piece | Module / path |
 |---|---|
-| ``plus`` train loader | `typevet.evaluation.datasets.clinc` (`load_plus_split`) |
-| Row mapping | `typevet.evaluation.datasets.clinc_rows` |
-| Domain catalog and schemas | `typevet.evaluation.datasets.clinc_shard` |
-| HF JSONL stream | `typevet.evaluation.datasets.clinc_download` |
-| Domain intent map | `src/typevet/evaluation/datasets/clinc_domains.json` (upstream `domains.json`) |
+| ``plus`` train loader | `typevet_evals.datasets.clinc` (`load_plus_split`) |
+| Row mapping | `typevet_evals.datasets.clinc_rows` |
+| Domain catalog and schemas | `typevet_evals.datasets.clinc_shard` |
+| HF JSONL stream | `typevet_evals.datasets.clinc_download` |
+| Domain intent map | `evals/src/typevet_evals/datasets/clinc_domains.json` (upstream `domains.json`) |
 | Primary Choice | `intent` (15-enum per domain param) |
 | Optional OOS Noul | `in_scope` (`yes` / `no`) when `include_oos=True` |
 | Versioned Choice schema (banking default) | `evals/fixtures/clinc_banking_intent_choice_schema_v1.json` |

@@ -21,10 +21,18 @@ _MOVED = {
 }
 
 
+def _resolves(name: str) -> bool:
+    """Return whether ``name`` resolves; a removed parent package means no."""
+    try:
+        return importlib.util.find_spec(name) is not None
+    except ModuleNotFoundError:
+        return False
+
+
 @pytest.mark.unit
 @pytest.mark.parametrize(("old", "new"), sorted(_MOVED.items()))
 def test_family_module_moved_to_the_member(old: str, new: str) -> None:
-    assert importlib.util.find_spec(old) is None
+    assert not _resolves(old)
     assert importlib.import_module(new).__doc__
 
 

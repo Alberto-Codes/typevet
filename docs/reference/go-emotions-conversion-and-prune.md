@@ -116,7 +116,7 @@ not replace JevBench ([#24](https://github.com/Alberto-Codes/typevet/issues/24))
 
 ## Loader status
 
-Implemented in `typevet.evaluation.datasets.go_emotions` ([#79](https://github.com/Alberto-Codes/typevet/issues/79)).
+Implemented in `typevet_evals.datasets.go_emotions` ([#79](https://github.com/Alberto-Codes/typevet/issues/79)).
 See [go_emotions loader and emotion Choice fixture](eval-go-emotions-loader.md).
 The complementary manifest YAML may still say `not_implemented` until a manifest
 update issue lands; loader code and tests are the runtime source of truth.

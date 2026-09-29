@@ -53,7 +53,7 @@ def _request(
         repo_root=_REPO,
         prompts=prompts,
         code_paths={
-            "cord_expense": _REPO / "src/typevet/evaluation/datasets/cord_expense.py"
+            "cord_expense": _REPO / "evals/src/typevet_evals/datasets/cord_expense.py"
         },
         fixture_paths={
             "manifest": _REPO / "tests/fixtures/cord/expense_smoke/manifest.json"
@@ -95,7 +95,7 @@ def test_dirty_working_tree_changes_identity_digest() -> None:
     dirty = WorkingTreeState(
         "c" * 40,
         True,
-        ("src/typevet/evaluation/datasets/cord_expense.py",),
+        ("evals/src/typevet_evals/datasets/cord_expense.py",),
         "abc",
     )
     prompt = PromptSpec(

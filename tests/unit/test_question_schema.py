@@ -15,25 +15,25 @@ from typevet.domain.question_schema import (
     question_record_to_property,
     question_records_to_json_schema,
 )
-from typevet.evaluation.datasets.boolq import (
+from typevet_evals.datasets.boolq import (
     BOOLQ_ANSWER_NOUL_SCHEMA,
     PRIMARY_NOUL_NAME,
 )
-from typevet.evaluation.datasets.boolq import (
+from typevet_evals.datasets.boolq import (
     questions_payload as boolq_questions,
 )
-from typevet.evaluation.datasets.clinc_shard import (
+from typevet_evals.datasets.clinc_shard import (
     IN_SCOPE_NOUL_SCHEMA,
     choice_schema_for_domain,
 )
-from typevet.evaluation.datasets.hyperpartisan import (
+from typevet_evals.datasets.hyperpartisan import (
     HYPERPARTISAN_NOUL_SCHEMA,
 )
-from typevet.evaluation.datasets.hyperpartisan import (
+from typevet_evals.datasets.hyperpartisan import (
     questions_payload as hyperpartisan_questions,
 )
-from typevet.evaluation.datasets.psai import questions_payload as psai_questions
-from typevet.evaluation.datasets.psai_schema import METADATA_DECISIONS_SCHEMA
+from typevet_evals.datasets.psai import questions_payload as psai_questions
+from typevet_evals.datasets.psai_schema import METADATA_DECISIONS_SCHEMA
 
 GO_EMOTION_SCHEMA_PATH = (
     Path(__file__).resolve().parents[2]

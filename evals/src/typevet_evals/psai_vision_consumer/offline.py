@@ -20,6 +20,8 @@ Examples:
 
 See Also:
     - [typevet_evals.psai_vision_consumer.harness][]: receipt orchestration
+    - [typevet_evals.datasets.psai_vision][]: PSAI screenshot fixtures
+    - [typevet_evals.datasets.psai_vision_controls][]: image control matrix
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
 """
@@ -39,13 +41,15 @@ from typevet.domain import ImageInput, JudgmentValidationError
 from typevet.domain.candidate_scoring_request import CandidateScoringRequest
 from typevet.domain.candidate_scoring_response import CandidateScoringResult
 from typevet.domain.judgment_response import JudgmentResponse
-from typevet.evaluation.datasets.psai_vision import (
+from typevet.ports.judgment import JudgmentPort
+from typevet.testing import ScriptedScoringFake
+from typevet_evals.datasets.psai_vision import (
     VisionSmokeFixture,
     example_image_input,
     load_vision_smoke,
     vision_smoke_manifest_path,
 )
-from typevet.evaluation.datasets.psai_vision_controls import (
+from typevet_evals.datasets.psai_vision_controls import (
     VISUAL_QUESTION_NAME,
     VisualControl,
     annotation_questions,
@@ -53,8 +57,6 @@ from typevet.evaluation.datasets.psai_vision_controls import (
     control_matrix,
     visual_question,
 )
-from typevet.ports.judgment import JudgmentPort
-from typevet.testing import ScriptedScoringFake
 from typevet_evals.psai_vision_consumer.accounting import (
     FROZEN_CONSUMER_CASE_UIDS,
     TEXT_ANNOTATION_JUDGE_UIDS,

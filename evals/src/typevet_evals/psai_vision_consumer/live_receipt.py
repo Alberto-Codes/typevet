@@ -11,6 +11,7 @@ Examples:
 
 See Also:
     - [typevet_evals.psai_vision_consumer.live][]: orchestration
+    - [typevet_evals.datasets.psai_vision_controls][]: image control matrix
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
 """
@@ -23,7 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from typevet.evaluation.datasets.psai_vision_controls import PairedOrdering
+from typevet_evals.datasets.psai_vision_controls import PairedOrdering
 from typevet_evals.psai_vision_consumer.accounting import (
     ANNOTATION_QUESTIONS_PER_JUDGE_CALL,
     ConsumerCallCounts,

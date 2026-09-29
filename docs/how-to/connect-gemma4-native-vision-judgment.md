@@ -4,7 +4,7 @@ Kind: how-to.
 
 Use one public runtime factory to compose `LlamaCppCandidateScoringAdapter` and
 `ScoringJudgmentAdapter` for Gemma 4 native-turn vision. The factory lives in
-`typevet.runtime` and does not import `typevet.evaluation`.
+`typevet.runtime` and does not import `typevet_evals`.
 
 ## Prerequisites
 

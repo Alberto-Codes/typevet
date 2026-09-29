@@ -8,7 +8,6 @@ from typing import Any
 
 import pytest
 
-from typevet.evaluation.datasets.cord_expense import load_expense_cases
 from typevet_evals.cord.semantic_acceptance import (
     ABSTENTION_CHECK,
     ABSTENTION_FLOOR,
@@ -27,6 +26,7 @@ from typevet_evals.cord.semantic_acceptance import (
     accept_combined_receipt,
     accept_semantic_outcome,
 )
+from typevet_evals.datasets.cord_expense import load_expense_cases
 
 pytestmark = pytest.mark.unit
 

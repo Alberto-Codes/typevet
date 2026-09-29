@@ -3,7 +3,7 @@
 ``core`` holds the run, the gates and the receipt writer. ``sets`` holds the
 five pre-registered set runners and imports ``core``. ``transport`` holds the
 call caps, the counting transport and the ``/metrics`` read. The modules moved
-here from ``typevet.evaluation`` (#256).
+here from the library (#256).
 Module constants stay on their modules, except the two run tables below.
 
 Attributes:

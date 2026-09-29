@@ -8,7 +8,7 @@ loader issue [#59](https://github.com/Alberto-Codes/typevet/issues/59).
 
 | Piece | Module / path |
 |---|---|
-| Test-split loader | `typevet.evaluation.datasets.difraud` |
+| Test-split loader | `typevet_evals.datasets.difraud` |
 | Primary Noul | `is_scam` (boolean + `return_probabilities`) |
 | Versioned JSON Schema | `evals/fixtures/difraud_is_scam_noul_schema_v1.json` |
 | CI JSONL subset | `tests/fixtures/difraud/sms_test_subset.jsonl` |
@@ -27,7 +27,7 @@ The Hugging Face card ships separate test JSONL files per config:
 | `phishing` | `phishing/test.jsonl` | optional |
 | `job_scams` | `job_scams/test.jsonl` | optional |
 
-`typevet.evaluation.datasets.difraud.load_test_split` defaults to `domain="sms"`. Pass
+`typevet_evals.datasets.difraud.load_test_split` defaults to `domain="sms"`. Pass
 `phishing` or `job_scams` for cross-domain regression; keep SMS as the primary
 documented path until a judgment issue promotes another domain.
 

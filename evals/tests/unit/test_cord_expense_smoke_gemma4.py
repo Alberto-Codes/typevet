@@ -20,7 +20,6 @@ from typing import Any
 
 import pytest
 
-from typevet.evaluation.datasets.cord_expense import load_expense_cases
 from typevet_evals.cord.expense_smoke import (
     GEMMA4_DIRECT_RECEIPT_MODEL,
     GEMMA4_NATIVE_TURN,
@@ -37,6 +36,7 @@ from typevet_evals.cord.semantic_acceptance import (
     CheckStatus,
     accept_combined_receipt,
 )
+from typevet_evals.datasets.cord_expense import load_expense_cases
 
 pytestmark = pytest.mark.unit
 

@@ -28,7 +28,7 @@ Examples:
 
 See Also:
     - [typevet_evals.cord.expense_receipt_requirement][]: receipt gate
-    - [typevet.evaluation.datasets.cord_expense][]: cases, question and routing
+    - [typevet_evals.datasets.cord_expense][]: cases, question and routing
 
 [i183]: https://github.com/Alberto-Codes/typevet/issues/183
 """
@@ -56,7 +56,15 @@ from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.adapters.outbound.llama_cpp.multimodal import fetch_media_capability
 from typevet.adapters.outbound.llama_cpp.scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.media import ImageInput
-from typevet.evaluation.datasets.cord_expense import (
+from typevet_evals.cord.expense_call_accounting import (
+    cord_expense_smoke_request_totals,
+)
+from typevet_evals.cord.expense_live_harness import (
+    orchestrate_cord_expense_live_smoke,
+)
+from typevet_evals.cord.expense_receipt_requirement import judge_cord_expense_arm
+from typevet_evals.cord.expense_smoke import assert_cord_expense_attachment
+from typevet_evals.datasets.cord_expense import (
     INSUFFICIENT,
     INSUFFICIENT_EVIDENCE,
     LABEL_ORDER,
@@ -67,14 +75,6 @@ from typevet.evaluation.datasets.cord_expense import (
     load_expense_cases,
     route,
 )
-from typevet_evals.cord.expense_call_accounting import (
-    cord_expense_smoke_request_totals,
-)
-from typevet_evals.cord.expense_live_harness import (
-    orchestrate_cord_expense_live_smoke,
-)
-from typevet_evals.cord.expense_receipt_requirement import judge_cord_expense_arm
-from typevet_evals.cord.expense_smoke import assert_cord_expense_attachment
 from typevet_evals.experiment_identity import (
     EvaluatedInputsSnapshot,
     PromptSpec,
@@ -532,7 +532,7 @@ def _snapshot_evaluated_inputs_before_scoring() -> EvaluatedInputsSnapshot:
         prompts=(_prompt_spec_from_expense_question(),),
         code_paths={
             "cord_expense": _REPO_ROOT
-            / "src/typevet/evaluation/datasets/cord_expense.py",
+            / "evals/src/typevet_evals/datasets/cord_expense.py",
             "cord_expense_smoke_live": Path(__file__).resolve(),
         },
         fixture_paths=_cord_expense_evaluated_fixture_paths(),

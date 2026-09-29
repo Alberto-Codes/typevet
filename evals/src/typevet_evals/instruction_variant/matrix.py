@@ -20,6 +20,8 @@ Examples:
 See Also:
     - [typevet_evals.instruction_variant.offline][]: orchestration
     - [typevet_evals.psai_vision_consumer.offline][]: consumer fixture helpers
+    - [typevet_evals.datasets.psai_vision][]: PSAI screenshot fixtures
+    - [typevet_evals.datasets.psai_vision_controls][]: image control matrix
 """
 
 from __future__ import annotations
@@ -38,19 +40,19 @@ from typevet.domain.errors import JudgmentValidationError
 from typevet.domain.judgment_questions import Noul
 from typevet.domain.judgment_response import JudgmentResponse
 from typevet.domain.media import ImageInput
-from typevet.evaluation.datasets.psai_vision import (
+from typevet.ports.judgment import JudgmentPort
+from typevet.ports.scoring import CandidateScoringPort
+from typevet_evals.datasets.psai_vision import (
     VisionSmokeFixture,
     example_image_input,
 )
-from typevet.evaluation.datasets.psai_vision_controls import (
+from typevet_evals.datasets.psai_vision_controls import (
     CONDITION_PRESENT,
     VISUAL_QUESTION_NAME,
     VisualControl,
     control_matrix,
     visual_question,
 )
-from typevet.ports.judgment import JudgmentPort
-from typevet.ports.scoring import CandidateScoringPort
 from typevet_evals.instruction_variant.protocol import (
     FROZEN_VARIANT_CASE_UIDS,
     VariantDispatchLedger,

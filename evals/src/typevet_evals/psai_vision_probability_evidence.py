@@ -18,7 +18,7 @@ Examples:
 
 See Also:
     - [docs.reference.psai-vision-choice-probability-evidence][]: reporting
-    - [typevet.evaluation.datasets.psai_vision_controls][]: omitted non-credit
+    - [typevet_evals.datasets.psai_vision_controls][]: omitted non-credit
 
 [i180]: https://github.com/Alberto-Codes/typevet/issues/180
 """

@@ -11,6 +11,8 @@ Examples:
 
 See Also:
     - [typevet_evals.psai_vision_consumer.receipt][]: acceptance wrapper
+    - [typevet_evals.datasets.psai_vision][]: PSAI screenshot fixtures
+    - [typevet_evals.datasets.psai_vision_controls][]: image control matrix
 
 Gold replay resolves the committed fixture from receipt identity pins
 (``manifest_sha256``, ``frozen_case_image_digests``) when ``fixture_root``
@@ -26,12 +28,12 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from typevet.evaluation.datasets.psai_vision import (
+from typevet_evals.datasets.psai_vision import (
     VisionSmokeFixture,
     load_vision_smoke,
     vision_smoke_manifest_path,
 )
-from typevet.evaluation.datasets.psai_vision_controls import (
+from typevet_evals.datasets.psai_vision_controls import (
     VISUAL_QUESTION_NAME,
     VisualControl,
     control_matrix,

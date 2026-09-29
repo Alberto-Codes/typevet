@@ -18,8 +18,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.datasets.banking77][]: Banking77 loader
-    - [typevet.evaluation.datasets.boolq][]: BoolQ loader
+    - [typevet_evals.datasets.banking77][]: Banking77 loader
+    - [typevet_evals.datasets.boolq][]: BoolQ loader
 """
 
 from __future__ import annotations
@@ -28,19 +28,19 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, Final, Literal
 
-from typevet.evaluation.datasets.banking77 import (
+from typevet_evals.datasets.banking77 import (
     PRIMARY_NOUL_NAME as B77_NOUL,
 )
-from typevet.evaluation.datasets.banking77 import (
+from typevet_evals.datasets.banking77 import (
     REPORTS_UNAUTHORIZED_NOUL_SCHEMA,
     load_test_split,
 )
-from typevet.evaluation.datasets.boolq import (
+from typevet_evals.datasets.boolq import (
     BOOLQ_ANSWER_NOUL_SCHEMA,
     load_validation_split,
     serialize_boolq_state,
 )
-from typevet.evaluation.datasets.boolq import (
+from typevet_evals.datasets.boolq import (
     PRIMARY_NOUL_NAME as BOOLQ_NOUL,
 )
 

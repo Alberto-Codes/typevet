@@ -29,11 +29,19 @@ PUBLIC_CALLABLES: dict[str, tuple[str, ...]] = {
 }
 
 
+def _resolves(name: str) -> bool:
+    """Return whether ``name`` resolves; a removed parent package means no."""
+    try:
+        return importlib.util.find_spec(name) is not None
+    except ModuleNotFoundError:
+        return False
+
+
 @pytest.mark.parametrize(("old_name", "new_name"), sorted(MOVED_MODULES.items()))
 def test_old_library_path_is_gone_and_member_path_imports(
     old_name: str, new_name: str
 ) -> None:
-    assert importlib.util.find_spec(old_name) is None
+    assert not _resolves(old_name)
     importlib.import_module(new_name)
 
 

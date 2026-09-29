@@ -14,7 +14,7 @@ Examples:
 
 The factory pins ``session.model`` on ``session.port``; other model ids fail
 before tokenization. Optional ``tokenize_content`` and ``scoring_port_wrapper``
-hooks support consumer dispatch ledgers without importing ``typevet.evaluation``.
+hooks support consumer dispatch ledgers without importing ``typevet_evals``.
 
 See Also:
     - [typevet.adapters.outbound.judgment_scoring][]: ``ScoringJudgmentAdapter``

@@ -15,7 +15,7 @@ Examples:
         enforce_consumer_call_budget,
         plan_frozen_consumer_calls,
     )
-    from typevet.evaluation.datasets.psai_vision_controls import (
+    from typevet_evals.datasets.psai_vision_controls import (
         TEXT_NOUL_UIDS,
         control_matrix,
     )
@@ -29,7 +29,7 @@ Examples:
 
 See Also:
     - [typevet_evals.psai_vision_consumer.harness][]: receipt writer
-    - [typevet.evaluation.datasets.psai_vision_controls][]: control matrix
+    - [typevet_evals.datasets.psai_vision_controls][]: control matrix
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
 
@@ -47,7 +47,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from typevet.evaluation.datasets.psai_vision_controls import annotation_questions
+from typevet_evals.datasets.psai_vision_controls import annotation_questions
 
 ANNOTATION_QUESTIONS_PER_JUDGE_CALL: int = len(annotation_questions())
 

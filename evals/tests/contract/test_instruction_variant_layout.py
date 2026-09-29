@@ -47,9 +47,17 @@ MOVED_MODULES: dict[str, str] = {
 }
 
 
+def _resolves(name: str) -> bool:
+    """Return whether ``name`` resolves; a removed parent package means no."""
+    try:
+        return importlib.util.find_spec(name) is not None
+    except ModuleNotFoundError:
+        return False
+
+
 @pytest.mark.parametrize("old_name", sorted(MOVED_MODULES))
 def test_old_module_path_does_not_resolve(old_name: str) -> None:
-    assert importlib.util.find_spec(old_name) is None
+    assert not _resolves(old_name)
 
 
 @pytest.mark.parametrize("new_name", sorted(MOVED_MODULES.values()))

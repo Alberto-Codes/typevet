@@ -19,6 +19,7 @@ Examples:
 
 See Also:
     - [typevet_evals.experiment_identity][]: snapshot helpers
+    - [typevet_evals.datasets.psai_vision][]: PSAI screenshot fixtures
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
 """
@@ -30,7 +31,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from typevet.evaluation.datasets.psai_vision import (
+from typevet_evals.datasets.psai_vision import (
     VisionSmokeFixture,
     vision_smoke_manifest_path,
 )

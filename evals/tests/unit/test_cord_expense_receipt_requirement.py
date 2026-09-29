@@ -7,7 +7,7 @@ Examples:
 
 See Also:
     - [typevet_evals.cord.expense_receipt_requirement][]: mode gate
-    - [typevet.evaluation.datasets.cord_expense][]: three-label question
+    - [typevet_evals.datasets.cord_expense][]: three-label question
 
 [i183]: https://github.com/Alberto-Codes/typevet/issues/183
 """
@@ -21,16 +21,16 @@ import pytest
 from typevet.domain.judgment_answers import ChoiceAnswer
 from typevet.domain.judgment_response import JudgmentResponse, TokenUsage
 from typevet.domain.media import ImageInput
-from typevet.evaluation.datasets.cord_expense import (
-    INSUFFICIENT_EVIDENCE,
-    MATCH,
-    MISMATCH,
-    expense_question,
-)
 from typevet_evals.cord.expense_receipt_requirement import (
     DETERMINISTIC_MISSING_RECEIPT,
     MODEL_ROUTING,
     judge_cord_expense_arm,
+)
+from typevet_evals.datasets.cord_expense import (
+    INSUFFICIENT_EVIDENCE,
+    MATCH,
+    MISMATCH,
+    expense_question,
 )
 
 pytestmark = pytest.mark.unit

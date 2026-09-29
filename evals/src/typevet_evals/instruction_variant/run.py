@@ -20,6 +20,7 @@ Examples:
 See Also:
     - [typevet_evals.instruction_variant.matrix][]: matrix helpers
     - [typevet_evals.psai_vision_consumer.offline][]: frozen consumer fixture
+    - [typevet_evals.datasets.psai_vision_controls][]: image control matrix
 """
 
 from __future__ import annotations
@@ -31,8 +32,8 @@ from typing import Any
 
 from typevet.adapters.outbound.gemma import ServedTemplateClass
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
-from typevet.evaluation.datasets.psai_vision_controls import VisualControl
 from typevet.testing import ScriptedScoringFake
+from typevet_evals.datasets.psai_vision_controls import VisualControl
 from typevet_evals.instruction_variant.matrix import (
     build_offline_variant_port,
     probe_invalid_model,

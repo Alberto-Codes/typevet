@@ -22,10 +22,10 @@ element is a mapping with:
 | ``permutations`` | no | Copied for enum fields when present |
 
 Examples live in
-[``typevet.evaluation.datasets.boolq``](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/evaluation/datasets/boolq.py)
+[``typevet_evals.datasets.boolq``](https://github.com/Alberto-Codes/typevet/blob/main/evals/src/typevet_evals/datasets/boolq.py)
 (``questions_payload``),
-[``typevet.evaluation.datasets.hyperpartisan``](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/evaluation/datasets/hyperpartisan.py),
-and [``typevet.evaluation.datasets.psai``](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/evaluation/datasets/psai.py).
+[``typevet_evals.datasets.hyperpartisan``](https://github.com/Alberto-Codes/typevet/blob/main/evals/src/typevet_evals/datasets/hyperpartisan.py),
+and [``typevet_evals.datasets.psai``](https://github.com/Alberto-Codes/typevet/blob/main/evals/src/typevet_evals/datasets/psai.py).
 
 ## Mapping rules
 

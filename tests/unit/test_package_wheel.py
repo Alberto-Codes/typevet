@@ -47,7 +47,18 @@ def test_built_wheel_contains_py_typed_marker(tmp_path: Path) -> None:
         assert "typevet/py.typed" in wheel.namelist()
 
 
-def test_built_wheel_ships_clinc_json_resources(tmp_path: Path) -> None:
+# Evaluation code that moved to the ``typevet-evals`` member (#256). The
+# library wheel must hold none of it.
+_EVALUATION_PREFIXES = ("typevet/evaluation/", "typevet_evals/", "typevet/eval_")
+_MOVED_MODULE_PATHS = (
+    "typevet/adapters/inbound/eval_cli.py",
+    "typevet/adapters/inbound/cord_semantic_acceptance_cli.py",
+    "typevet/cord_semantic_acceptance_cli.py",
+    "typevet/testing/wheel_isolated.py",
+)
+
+
+def test_built_wheel_holds_no_evaluation_code(tmp_path: Path) -> None:
     try:
         build_wheel_to_directory(tmp_path)
     except RuntimeError as exc:
@@ -58,5 +69,10 @@ def test_built_wheel_ships_clinc_json_resources(tmp_path: Path) -> None:
     assert len(wheels) == 1
     with zipfile.ZipFile(wheels[0]) as wheel:
         names = wheel.namelist()
-    assert "typevet/evaluation/datasets/clinc_domains.json" in names
-    assert "typevet/evaluation/datasets/clinc_plus_intent_names.json" in names
+    assert "typevet/__init__.py" in names
+    offenders = [
+        name
+        for name in names
+        if name.startswith(_EVALUATION_PREFIXES) or name in _MOVED_MODULE_PATHS
+    ]
+    assert offenders == []

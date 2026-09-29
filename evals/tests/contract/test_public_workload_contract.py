@@ -25,7 +25,7 @@ import httpx
 import pytest
 
 from evals.tests.unit.test_collections_throughput import FakeVllm, env
-from typevet.evaluation.datasets import banking77
+from typevet_evals.datasets import banking77
 from typevet_evals.throughput.collections_throughput import run_throughput
 from typevet_evals.throughput.public_workload import (
     BANKING77_BASELINE,

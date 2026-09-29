@@ -199,21 +199,6 @@ Use for fast unit doubles and offline typed-judgment tutorials from an installed
 wheel. Use `FakeGenerationAdapter` when tests must exercise schema validation
 like production outbound code.
 
-## `typevet.evaluation`
-
-Evaluation harnesses drive the library from the outside
-([#147](https://github.com/Alberto-Codes/typevet/issues/147)). The
-`typevet.evaluation` package itself has no `__all__` exports. The eval runner
-and the TPJEP runner are in the `typevet-evals` workspace member
-(`typevet_evals.runner` and `typevet_evals.tpjep`), not in the wheel.
-
-| Package | Surface |
-|---|---|
-| `typevet.evaluation.datasets` | No `__all__`. Import one dataset submodule, for example `typevet.evaluation.datasets.boolq` |
-
-See [live eval runner](eval-live-runner.md) and
-[TPJEP v0 eight-task runner](eval-tpjep-runner.md).
-
 ## `typevet.adapters`
 
 Organizational package only. It has no `__all__` exports. Import from
@@ -231,7 +216,7 @@ re-exported names from their current home. Import from the current home.
 | `typevet.cord_semantic_acceptance_cli` | `typevet_evals.cli.cord_semantic_acceptance` (workspace member, not in the wheel) |
 | `typevet.eval_runner`, `typevet.eval_runner_datasets`, `typevet.eval_runner_live_gate`, `typevet.eval_runner_report` | `typevet_evals.runner` (workspace member, not in the wheel) |
 | `typevet.eval_tpjep_loader`, `typevet.eval_tpjep_outcome`, `typevet.eval_tpjep_records`, `typevet.eval_tpjep_runner` | `typevet_evals.tpjep` (workspace member, not in the wheel) |
-| Other `typevet.eval_*` loaders, download helpers, and guards | One submodule of `typevet.evaluation.datasets` |
+| Other `typevet.eval_*` loaders, download helpers, and guards | One submodule of `typevet_evals.datasets` (workspace member, not in the wheel) |
 
 typevet also moved the llama.cpp outbound modules into one package before its
 first release (#256). The five old module files do not resolve.
@@ -272,6 +257,8 @@ does not hold them, and the old paths do not resolve.
 | `typevet.evaluation.runner` and its 4 modules | `typevet_evals.runner` (same module names) |
 | `typevet.evaluation.tpjep` and its 4 modules | `typevet_evals.tpjep` (same module names) |
 | `typevet.evaluation.experiment_identity` | `typevet_evals.experiment_identity` |
+| `typevet.evaluation.datasets` and its 22 modules, with the `clinc_*.json` data files | `typevet_evals.datasets` (same module names) |
+| `typevet.evaluation` | No replacement. The package is removed; each evaluation family is a `typevet_evals` subpackage or module |
 
 ## Command-line entry
 

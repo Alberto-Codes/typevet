@@ -20,6 +20,9 @@ Examples:
 See Also:
     - [typevet_evals.vllm_acceptance.core][]: caps, gates and receipt
     - [typevet_evals.cord.expense_receipt_requirement][]: CORD arm rows
+    - [typevet_evals.datasets.cord_expense][]: CORD expense claim cases
+    - [typevet_evals.datasets.psai_vision][]: PSAI screenshot fixtures
+    - [typevet_evals.datasets.psai_vision_controls][]: image control matrix
 
 [i170]: https://github.com/Alberto-Codes/typevet/issues/170
 """
@@ -38,22 +41,22 @@ from typevet.domain.judgment_answers import NoulAnswer
 from typevet.domain.judgment_questions import Choice, Question
 from typevet.domain.media import MEDIA_MARKER, ImageInput
 from typevet.domain.models import GenerationRequest
-from typevet.evaluation.datasets.cord_expense import (
+from typevet_evals.cord.expense_receipt_requirement import judge_cord_expense_arm
+from typevet_evals.datasets.cord_expense import (
     LABEL_ORDER,
     ExpenseCase,
     expense_question,
     load_expense_cases,
 )
-from typevet.evaluation.datasets.psai_vision import (
+from typevet_evals.datasets.psai_vision import (
     example_image_input,
     load_vision_smoke,
 )
-from typevet.evaluation.datasets.psai_vision_controls import (
+from typevet_evals.datasets.psai_vision_controls import (
     annotation_questions,
     annotation_state,
     noul_polarity,
 )
-from typevet_evals.cord.expense_receipt_requirement import judge_cord_expense_arm
 from typevet_evals.vllm_acceptance.core import (
     RunState,
     cord_acceptance,

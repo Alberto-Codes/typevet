@@ -16,7 +16,7 @@ from unittest.mock import patch
 
 import pytest
 
-from typevet.evaluation.datasets.psai_vision_controls import paired_image_ordering
+from typevet_evals.datasets.psai_vision_controls import paired_image_ordering
 from typevet_evals.psai_vision_consumer.dispatch import ConsumerDispatchLedger
 from typevet_evals.psai_vision_consumer.harness import run_offline_consumer_proof
 from typevet_evals.psai_vision_consumer.live import run_live_consumer_proof

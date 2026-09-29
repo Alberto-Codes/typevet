@@ -9,7 +9,7 @@ Kind: reference. Public MIT gold subset for three-way biomedical QA. Parent epic
 
 | Piece | Module / path |
 |---|---|
-| ``pqa_labeled`` loader | `typevet.evaluation.datasets.pubmedqa` |
+| ``pqa_labeled`` loader | `typevet_evals.datasets.pubmedqa` |
 | Primary Choice | `answer` (enum `yes`, `no`, `maybe`) |
 | Versioned JSON Schema | `evals/fixtures/pubmedqa_answer_choice_schema_v1.json` |
 | CI JSONL subset | `tests/fixtures/pubmedqa/pqa_labeled_subset.jsonl` |

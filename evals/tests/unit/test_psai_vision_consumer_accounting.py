@@ -7,7 +7,7 @@ import math
 import pytest
 
 from tests.fixtures.judgment_scoring_contract import adapter_for
-from typevet.evaluation.datasets.psai_vision_controls import annotation_questions
+from typevet_evals.datasets.psai_vision_controls import annotation_questions
 from typevet_evals.psai_vision_consumer.accounting import (
     ANNOTATION_QUESTIONS_PER_JUDGE_CALL,
     ConsumerCallBudgetError,

@@ -11,8 +11,8 @@ research [#64](https://github.com/Alberto-Codes/typevet/issues/64); design
 
 | Piece | Module / path |
 |---|---|
-| Validation-split loader + export | `typevet.evaluation.datasets.boolq` |
-| HF validation JSONL stream | `typevet.evaluation.datasets.boolq_download` |
+| Validation-split loader + export | `typevet_evals.datasets.boolq` |
+| HF validation JSONL stream | `typevet_evals.datasets.boolq_download` |
 | Primary Noul | `answer` (`no` / `yes` + `return_probabilities`) |
 | Versioned JSON Schema | `evals/fixtures/boolq_answer_noul_schema_v1.json` |
 | Seeded tier manifest | `evals/fixtures/boolq_tier_manifest_v1.yaml` |

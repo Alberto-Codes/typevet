@@ -121,7 +121,7 @@ not JevBench substitution.
 
 ## typevet loader ([#58](https://github.com/Alberto-Codes/typevet/issues/58))
 
-The loader is `typevet.evaluation.datasets.banking77`. It has the
+The loader is `typevet_evals.datasets.banking77`. It has the
 six-intent `FRAUD_INTENTS` collapse from finvet, test-split CSV parsing, optional
 `balanced_sample` / `load_test_split(..., balanced=True)`, and
 `REPORTS_UNAUTHORIZED_NOUL_SCHEMA` for the primary v1 Noul fixture. CI uses

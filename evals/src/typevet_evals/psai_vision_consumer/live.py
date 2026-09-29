@@ -19,6 +19,8 @@ See Also:
     - [scripts.psai_vision_consumer_wheel_proof][]: isolated wheel entry
     - [typevet_evals.runner.live_gate][]: require-live switch
     - [typevet_evals.experiment_identity][]: receipt identity helpers
+    - [typevet_evals.datasets.psai_vision][]: PSAI screenshot fixtures
+    - [typevet_evals.datasets.psai_vision_controls][]: image control matrix
 
 Live proof snapshots router identity before the matrix, enforces
 independent judgment/scoring/auxiliary budgets via a dispatch ledger,
@@ -43,8 +45,8 @@ import httpx
 
 from typevet.adapters.inbound.settings import LlamaSettings, load_llama_settings
 from typevet.domain.errors import GenerationError, JudgmentError
-from typevet.evaluation.datasets.psai_vision import VisionSmokeFixture
-from typevet.evaluation.datasets.psai_vision_controls import (
+from typevet_evals.datasets.psai_vision import VisionSmokeFixture
+from typevet_evals.datasets.psai_vision_controls import (
     VisualControl,
     paired_image_ordering,
 )

@@ -5,12 +5,12 @@ runners, dataset loaders, acceptance harnesses and wheel proofs. It imports
 ``typevet``; ``typevet`` never imports it (import-linter contract "The library
 does not import the evals"). The distribution is never uploaded.
 
-The evaluation families move here from ``typevet.evaluation`` in later
-children of #256. Until then the package exports no names.
+Every evaluation family lives in a subpackage or module listed below. The
+package itself exports no names; import the family you need.
 
 Attributes:
-    __all__ (list[str]): Public names of the package. Empty until the
-        evaluation families move in.
+    __all__ (list[str]): Public names of the package. Empty, because each
+        family is imported from its own subpackage or module.
 
 Examples:
     ```python
@@ -23,7 +23,7 @@ See Also:
     - [typevet][]: The library that this package evaluates
     - [typevet_evals.throughput][]: Throughput sweep and its workloads
     - [typevet_evals.vllm_acceptance][]: The #170 vLLM acceptance run
-    - [typevet.evaluation][]: Evaluation code that has not moved yet
+    - [typevet_evals.datasets][]: Dataset loaders and the partner data guard
     - [typevet_evals.cli][]: Module-entry commands, such as the eval runner
     - [typevet_evals.wheel_isolated][]: Isolated wheel build and run helpers
     - [typevet_evals.gemma_native_vision_wheel_smoke][]: Factory wheel smoke

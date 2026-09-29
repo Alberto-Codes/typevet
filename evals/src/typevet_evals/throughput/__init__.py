@@ -1,7 +1,7 @@
 """Throughput runs over served judgments: workloads, sweep and ``/metrics`` (#236).
 
 The collections workload, the public-dataset workloads, the concurrency sweep
-and the vLLM ``/metrics`` deltas moved here from ``typevet.evaluation`` (#256).
+and the vLLM ``/metrics`` deltas moved here from the library (#256).
 The module names did not change. Module constants stay on their modules; this
 package re-exports the classes and functions.
 

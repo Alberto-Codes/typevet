@@ -17,7 +17,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.datasets.cord_expense][]: ``expense_question``
+    - [typevet_evals.datasets.cord_expense][]: ``expense_question``
     - [evals.tests.live.test_cord_expense_smoke_live][]: live wiring
 
 [i183]: https://github.com/Alberto-Codes/typevet/issues/183
@@ -32,7 +32,7 @@ from typing import Any, Final, Protocol
 
 from typevet.domain.judgment_response import JudgmentResponse
 from typevet.domain.media import ImageInput
-from typevet.evaluation.datasets.cord_expense import (
+from typevet_evals.datasets.cord_expense import (
     INSUFFICIENT_EVIDENCE,
     LABEL_ORDER,
     expense_question,

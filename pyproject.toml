@@ -131,7 +131,7 @@ convention = "google"
 ]
 "evals/src/typevet_evals/wheel_isolated.py" = ["S603"]
 "scripts/check_commit_msg.py" = ["S603"]
-"src/typevet/evaluation/datasets/partner_guard.py" = ["S603", "S607"]
+"evals/src/typevet_evals/datasets/partner_guard.py" = ["S603", "S607"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["typevet", "typevet_evals"]
@@ -177,9 +177,7 @@ name = "Hexagonal layers"
 type = "layers"
 layers = [
     "typevet.runtime",
-    # Evaluation sits beside the inbound adapters: the eval CLI is an inbound
-    # adapter over evaluation, and the live gate reads inbound settings.
-    "typevet.evaluation : typevet.adapters.inbound",
+    "typevet.adapters.inbound",
     "typevet.adapters.outbound",
     "typevet.adapters.diagnostics",
     "typevet.testing",
@@ -194,10 +192,17 @@ source_modules = ["typevet"]
 forbidden_modules = ["typevet_evals"]
 
 [[tool.importlinter.contracts]]
-name = "runtime_must_not_import_evaluation"
-type = "forbidden"
-source_modules = ["typevet.runtime"]
-forbidden_modules = ["typevet.evaluation"]
+name = "Evaluation families"
+type = "layers"
+layers = [
+    "typevet_evals.cli",
+    "typevet_evals.throughput",
+    "typevet_evals.vllm_acceptance",
+    "typevet_evals.instruction_variant | typevet_evals.cord",
+    "typevet_evals.psai_vision_consumer | typevet_evals.outcome_replay_metrics",
+    "typevet_evals.runner | typevet_evals.tpjep | typevet_evals.experiment_identity",
+    "typevet_evals.datasets",
+]
 
 [[tool.importlinter.contracts]]
 name = "Model framing stays off the serving backends"

@@ -24,7 +24,7 @@ import pytest
 
 from evals.tests.unit.test_collections_throughput import FakeVllm, env, records
 from typevet.domain.judgment_questions import Choice, Noul
-from typevet.evaluation.datasets import banking77, difraud
+from typevet_evals.datasets import banking77, difraud
 from typevet_evals.throughput import public_workload
 from typevet_evals.throughput.collections_throughput import run_throughput
 from typevet_evals.throughput.collections_workload import (

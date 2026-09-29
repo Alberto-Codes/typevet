@@ -116,7 +116,7 @@ def test_capture_experiment_identity_still_matches_snapshot_finalize() -> None:
         repo_root=_REPO,
         prompts=(prompt,),
         code_paths={
-            "cord_expense": _REPO / "src/typevet/evaluation/datasets/cord_expense.py"
+            "cord_expense": _REPO / "evals/src/typevet_evals/datasets/cord_expense.py"
         },
         fixture_paths={
             "manifest": _REPO / "tests/fixtures/cord/expense_smoke/manifest.json"

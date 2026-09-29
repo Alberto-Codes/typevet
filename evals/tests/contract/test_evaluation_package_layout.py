@@ -1,4 +1,4 @@
-"""Contract tests for the ``typevet.evaluation`` package (#147, #256).
+"""Contract tests for the removed root ``eval_*`` shims (#147, #256).
 
 The root ``eval_*`` shims are removed before 0.1.0 (#256). Each old root path
 must not resolve, and each current home must import.
@@ -14,8 +14,8 @@ from pathlib import Path
 
 import pytest
 
-from typevet.evaluation.datasets import clinc_shard
 from typevet_evals.cli import eval_runner as eval_cli
+from typevet_evals.datasets import clinc_shard
 from typevet_evals.runner import (
     SUPPORTED_DATASETS,
     EvalRunReport,
@@ -46,26 +46,26 @@ REMOVED_SHIM_HOMES: dict[str, str] = {
     "typevet.eval_runner_live_gate": "typevet_evals.runner.live_gate",
     "typevet.eval_runner_report": "typevet_evals.runner.report",
     "typevet.eval_runner_cli": "typevet_evals.cli.eval_runner",
-    "typevet.eval_banking77": "typevet.evaluation.datasets.banking77",
-    "typevet.eval_boolq": "typevet.evaluation.datasets.boolq",
-    "typevet.eval_boolq_download": "typevet.evaluation.datasets.boolq_download",
-    "typevet.eval_civil_comments": "typevet.evaluation.datasets.civil_comments",
-    "typevet.eval_clinc": "typevet.evaluation.datasets.clinc",
-    "typevet.eval_clinc_download": "typevet.evaluation.datasets.clinc_download",
-    "typevet.eval_clinc_rows": "typevet.evaluation.datasets.clinc_rows",
-    "typevet.eval_clinc_shard": "typevet.evaluation.datasets.clinc_shard",
-    "typevet.eval_difraud": "typevet.evaluation.datasets.difraud",
-    "typevet.eval_go_emotions": "typevet.evaluation.datasets.go_emotions",
+    "typevet.eval_banking77": "typevet_evals.datasets.banking77",
+    "typevet.eval_boolq": "typevet_evals.datasets.boolq",
+    "typevet.eval_boolq_download": "typevet_evals.datasets.boolq_download",
+    "typevet.eval_civil_comments": "typevet_evals.datasets.civil_comments",
+    "typevet.eval_clinc": "typevet_evals.datasets.clinc",
+    "typevet.eval_clinc_download": "typevet_evals.datasets.clinc_download",
+    "typevet.eval_clinc_rows": "typevet_evals.datasets.clinc_rows",
+    "typevet.eval_clinc_shard": "typevet_evals.datasets.clinc_shard",
+    "typevet.eval_difraud": "typevet_evals.datasets.difraud",
+    "typevet.eval_go_emotions": "typevet_evals.datasets.go_emotions",
     "typevet.eval_go_emotions_download": (
-        "typevet.evaluation.datasets.go_emotions_download"
+        "typevet_evals.datasets.go_emotions_download"
     ),
-    "typevet.eval_hyperpartisan": "typevet.evaluation.datasets.hyperpartisan",
-    "typevet.eval_partner_guard": "typevet.evaluation.datasets.partner_guard",
-    "typevet.eval_psai": "typevet.evaluation.datasets.psai",
-    "typevet.eval_psai_download": "typevet.evaluation.datasets.psai_download",
-    "typevet.eval_psai_schema": "typevet.evaluation.datasets.psai_schema",
-    "typevet.eval_psai_stream": "typevet.evaluation.datasets.psai_stream",
-    "typevet.eval_pubmedqa": "typevet.evaluation.datasets.pubmedqa",
+    "typevet.eval_hyperpartisan": "typevet_evals.datasets.hyperpartisan",
+    "typevet.eval_partner_guard": "typevet_evals.datasets.partner_guard",
+    "typevet.eval_psai": "typevet_evals.datasets.psai",
+    "typevet.eval_psai_download": "typevet_evals.datasets.psai_download",
+    "typevet.eval_psai_schema": "typevet_evals.datasets.psai_schema",
+    "typevet.eval_psai_stream": "typevet_evals.datasets.psai_stream",
+    "typevet.eval_pubmedqa": "typevet_evals.datasets.pubmedqa",
 }
 
 # Legacy symbols callers depend on, per current home of a removed shim.
@@ -99,11 +99,11 @@ LEGACY_SYMBOLS: dict[str, tuple[str, ...]] = {
         "merge_reports",
     ),
     "typevet_evals.cli.eval_runner": ("main",),
-    "typevet.evaluation.datasets.clinc_shard": (
+    "typevet_evals.datasets.clinc_shard": (
         "domain_intent_map",
         "plus_intent_names",
     ),
-    "typevet.evaluation.datasets.partner_guard": ("scan_tree_paths",),
+    "typevet_evals.datasets.partner_guard": ("scan_tree_paths",),
 }
 
 

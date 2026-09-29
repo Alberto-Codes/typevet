@@ -58,9 +58,9 @@ text as literal strings.
 ## Run the offline tests
 
 ```bash
-uv run pytest tests/unit/test_psai_vision_fixtures.py \
-  tests/unit/test_psai_vision_controls.py \
-  tests/contract/test_psai_vision_smoke_contract.py -q
+uv run pytest evals/tests/unit/test_psai_vision_fixtures.py \
+  evals/tests/unit/test_psai_vision_controls.py \
+  evals/tests/contract/test_psai_vision_smoke_contract.py -q
 ```
 
 These check fixture digests, gold placement, the leakage ban and the control
@@ -71,7 +71,7 @@ matrix shape against a fake scorer. They need no network and no model.
 ```bash
 TYPEVET_LLAMA__MULTIMODAL_MODEL=gemma-3-4b-it-q4km-mm \
   TYPEVET_LLAMA__TIMEOUT=900 \
-  uv run pytest tests/live/test_psai_vision_smoke_live.py -m live -q
+  uv run pytest evals/tests/live/test_psai_vision_smoke_live.py -m live -q
 ```
 
 The smoke writes a receipt to `scratchpad/psai-vision/live_receipt.json`. See

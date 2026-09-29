@@ -10,9 +10,9 @@ design [#56](https://github.com/Alberto-Codes/typevet/issues/56); research
 
 | Piece | Module / path |
 |---|---|
-| Metadata loader + export | `typevet.evaluation.datasets.psai` |
-| Parquet streaming (column projection) | `typevet.evaluation.datasets.psai_download` |
-| Dedupe / shuffle / JSONL | `typevet.evaluation.datasets.psai_stream` |
+| Metadata loader + export | `typevet_evals.datasets.psai` |
+| Parquet streaming (column projection) | `typevet_evals.datasets.psai_download` |
+| Dedupe / shuffle / JSONL | `typevet_evals.datasets.psai_stream` |
 | Combined Decision JSON Schema | `evals/fixtures/psai_metadata_decisions_schema_v1.json` |
 | Manifest | `evals/fixtures/psai_metadata_manifest_v1.yaml` |
 | CI smoke JSONL (12 rows) | `tests/fixtures/psai/metadata_smoke.jsonl` |

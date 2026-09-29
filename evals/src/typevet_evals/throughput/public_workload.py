@@ -29,8 +29,8 @@ Examples:
 
 See Also:
     - [typevet_evals.throughput.collections_throughput][]: the runner
-    - [typevet.evaluation.datasets.banking77][]: Banking77 loader
-    - [typevet.evaluation.datasets.difraud][]: DIFrauD loader
+    - [typevet_evals.datasets.banking77][]: Banking77 loader
+    - [typevet_evals.datasets.difraud][]: DIFrauD loader
 
 [i236]: https://github.com/Alberto-Codes/typevet/issues/236
 """
@@ -45,7 +45,7 @@ from typing import Final
 import httpx
 
 from typevet.domain.judgment_questions import Choice, Noul
-from typevet.evaluation.datasets import banking77, difraud
+from typevet_evals.datasets import banking77, difraud
 from typevet_evals.throughput.collections_workload import Baseline
 
 PUBLIC_DATASET_ENV: Final[str] = "TYPEVET_PUBLIC_DATASET"
