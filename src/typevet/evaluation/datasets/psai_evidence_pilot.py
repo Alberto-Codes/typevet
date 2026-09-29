@@ -9,16 +9,20 @@ the JSON schema first, then the cross-row rules below, and raises one
 | Rule | Check |
 |---|---|
 | ``schema`` | The manifest matches ``schema.json``. |
+| ``case_id_unique`` | No ``case_id`` is used twice. |
 | ``split_counts`` | Each split holds 8 baseline, 8 claim_axis, 4 swap, 4 crop. |
 | ``split_isolation`` | A host or donor belongs to one split only. |
 | ``fixture_overlap`` | No ``unique_data_id`` is in other PSAI fixtures. |
+| ``rejected_items`` | A rejected ID is unique, is not a row ID, is not in PSAI fixtures. |
+| ``task_inventory`` | 8 tasks per split, each with one baseline, claim_axis, image row. |
 | ``gold_per_class`` | Each split holds at least 4 gold per class. |
 | ``human_decision`` | Final, swap and crop rows carry a human decision. |
 | ``verified_agreement`` | A non-human label has Gemma, construction and Qwen agreement. |
 | ``input_leak`` | No host or ``task_name`` text is in a model-input field. |
+| ``gold_label_leak`` | No model-input field holds the row's gold label as a whole word. |
 
 Rejected items sit in their own list with reason codes. They are not rows and
-no rule counts them.
+no count rule counts them. A task is one ``unique_data_id`` in one split.
 
 [i192]: https://github.com/Alberto-Codes/typevet/issues/192
 [r4]: https://github.com/Alberto-Codes/typevet/issues/189#issuecomment-5875661660
@@ -47,11 +51,13 @@ Attributes:
     SPLIT_KIND_COUNTS (dict[str, int]): Required rows per kind in each split.
     MIN_GOLD_PER_CLASS (int): Smallest gold count per class in each split.
     QWEN_MAJORITY (int): Qwen runs that must agree with a non-human label.
+    TASKS_PER_SPLIT (int): Distinct ``unique_data_id`` values in each split.
 """
 
 from __future__ import annotations
 
 import json
+import re
 from collections import Counter, defaultdict
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
@@ -67,9 +73,11 @@ LABELS: Final = ("supported", "contradicted", "insufficient_evidence")
 SPLIT_KIND_COUNTS: Final = {"baseline": 8, "claim_axis": 8, "swap": 4, "crop": 4}
 MIN_GOLD_PER_CLASS: Final = 4
 QWEN_MAJORITY: Final = 4
+TASKS_PER_SPLIT: Final = 8
 
 _TEXT_SUFFIXES: Final = frozenset({".json", ".jsonl", ".txt", ".csv", ".md"})
 _HUMAN_KINDS: Final = frozenset({"swap", "crop"})
+_TASK_ROLES: Final = {"baseline": 1, "claim_axis": 1, "image": 1}
 
 Row = dict[str, Any]
 
@@ -130,12 +138,15 @@ class PilotManifest:
 def load_manifest(path: Path, *, pilot_root: Path | None = None) -> PilotManifest:
     """Load a pilot manifest and check the schema and every cross-row rule.
 
+    The rules run in the order of the module rule table. The PSAI fixture
+    tree is read once and shared by ``fixture_overlap`` and ``rejected_items``.
+
     Args:
         path: The manifest JSON file.
         pilot_root: The ``evidence_pilot_v1`` directory that holds
             ``schema.json``. Its parent is the PSAI fixture tree that the
-            ``fixture_overlap`` rule scans. Defaults to the nearest ancestor
-            of ``path`` with that name.
+            ``fixture_overlap`` and ``rejected_items`` rules scan. Defaults
+            to the nearest ancestor of ``path`` with that name.
 
     Returns:
         The rows and rejected items.
@@ -152,14 +163,20 @@ def load_manifest(path: Path, *, pilot_root: Path | None = None) -> PilotManifes
         where = "/".join(str(part) for part in error.absolute_path)
         raise ManifestError("schema", f"at /{where}: {error.message}")
     rows: list[Row] = data["rows"]
+    rejected: list[Row] = data["rejected"]
+    _check_case_id_unique(rows)
     _check_split_counts(rows)
     _check_split_isolation(rows)
-    _check_fixture_overlap(rows, root)
+    fixture_text = _fixture_text(root.resolve().parent, root.resolve())
+    _check_fixture_overlap(rows, fixture_text)
+    _check_rejected_items(rows, rejected, fixture_text)
+    _check_task_inventory(rows)
     _check_gold_per_class(rows)
     _check_human_decision(rows)
     _check_verified_agreement(rows)
     _check_input_leak(rows)
-    return PilotManifest(rows=tuple(rows), rejected=tuple(data["rejected"]))
+    _check_gold_label_leak(rows)
+    return PilotManifest(rows=tuple(rows), rejected=tuple(rejected))
 
 
 def _find_pilot_root(path: Path) -> Path:
@@ -195,6 +212,67 @@ def _check_split_counts(rows: list[Row]) -> None:
             raise ManifestError(
                 "split_counts", f"{split} has {dict(kinds)}, need {SPLIT_KIND_COUNTS}"
             )
+
+
+def _check_case_id_unique(rows: list[Row]) -> None:
+    """Require each ``case_id`` to name one row only.
+
+    Args:
+        rows: Manifest rows that passed the schema.
+
+    Raises:
+        ManifestError: With rule ``case_id_unique`` when a case ID repeats.
+    """
+    counts = Counter(row["case_id"] for row in rows)
+    repeated = sorted(case_id for case_id, count in counts.items() if count > 1)
+    if repeated:
+        raise ManifestError("case_id_unique", f"{repeated[0]} is used twice")
+
+
+def _task_roles(rows: list[Row], split: str) -> dict[str, dict[str, int]]:
+    """Count the role of each row per task in one split.
+
+    Args:
+        rows: Manifest rows that passed the schema.
+        split: One of ``SPLITS``.
+
+    Returns:
+        Role counts keyed by ``unique_data_id``. A ``swap`` or ``crop`` row
+        counts as role ``image``.
+    """
+    tasks: defaultdict[str, Counter[str]] = defaultdict(Counter)
+    for row in rows:
+        if row["split"] == split:
+            kind = row["row_kind"]
+            tasks[row["unique_data_id"]]["image" if kind in _HUMAN_KINDS else kind] += 1
+    return {source_id: dict(roles) for source_id, roles in tasks.items()}
+
+
+def _check_task_inventory(rows: list[Row]) -> None:
+    """Require 8 tasks per split, each with one row of each role.
+
+    A task is one ``unique_data_id`` in one split. Its roles are one
+    ``baseline``, one ``claim_axis`` and one image row (``swap`` or ``crop``).
+
+    Args:
+        rows: Manifest rows that passed the schema.
+
+    Raises:
+        ManifestError: With rule ``task_inventory`` when a split has another
+            task count or a task has another role mix.
+    """
+    for split in SPLITS:
+        tasks = _task_roles(rows, split)
+        if len(tasks) != TASKS_PER_SPLIT:
+            raise ManifestError(
+                "task_inventory",
+                f"{split} has {len(tasks)} tasks, need {TASKS_PER_SPLIT}",
+            )
+        for source_id, roles in sorted(tasks.items()):
+            if roles != _TASK_ROLES:
+                raise ManifestError(
+                    "task_inventory", f"{split} {source_id} has {roles}"
+                )
 
 
 def _check_split_isolation(rows: list[Row]) -> None:
@@ -264,23 +342,52 @@ def _source_ids(rows: list[Row]) -> Iterator[tuple[str, str]]:
             yield row["case_id"], row["donor"]["unique_data_id"]
 
 
-def _check_fixture_overlap(rows: list[Row], pilot_root: Path) -> None:
+def _check_fixture_overlap(rows: list[Row], fixture_text: str) -> None:
     """Reject a source ID that already appears in ``tests/fixtures/psai``.
 
     Args:
         rows: Manifest rows that passed the schema.
-        pilot_root: The pilot directory; its parent is scanned without it.
+        fixture_text: PSAI fixture names and text outside the pilot, from
+            ``_fixture_text``.
 
     Raises:
         ManifestError: With rule ``fixture_overlap`` when an ID is found.
     """
-    root = pilot_root.resolve()
-    text = _fixture_text(root.parent, root)
     for case_id, source_id in _source_ids(rows):
-        if source_id in text:
+        if source_id in fixture_text:
             raise ManifestError(
-                "fixture_overlap", f"{case_id} uses {source_id} from {root.parent}"
+                "fixture_overlap", f"{case_id} uses {source_id} from PSAI fixtures"
             )
+
+
+def _check_rejected_items(
+    rows: list[Row], rejected: list[Row], fixture_text: str
+) -> None:
+    """Keep each rejected ID apart from rows, other rejects and PSAI fixtures.
+
+    Args:
+        rows: Manifest rows that passed the schema.
+        rejected: Rejected items that passed the schema.
+        fixture_text: PSAI fixture names and text outside the pilot, from
+            ``_fixture_text``.
+
+    Raises:
+        ManifestError: With rule ``rejected_items`` when a rejected ID is a
+            row ID, repeats in ``rejected`` or is in the PSAI fixtures.
+    """
+    row_ids = {row["unique_data_id"] for row in rows}
+    seen: set[str] = set()
+    for item in rejected:
+        source_id = item["unique_data_id"]
+        if source_id in row_ids:
+            raise ManifestError("rejected_items", f"rejected {source_id} is a row ID")
+        if source_id in seen:
+            raise ManifestError("rejected_items", f"rejected {source_id} appears twice")
+        if source_id in fixture_text:
+            raise ManifestError(
+                "rejected_items", f"rejected {source_id} is in PSAI fixtures"
+            )
+        seen.add(source_id)
 
 
 def _check_gold_per_class(rows: list[Row]) -> None:
@@ -382,4 +489,36 @@ def _check_input_leak(rows: list[Row]) -> None:
             if any(secret.casefold() in text for secret in secrets):
                 raise ManifestError(
                     "input_leak", f"{row['case_id']} {field} holds host or task text"
+                )
+
+
+def _gold_pattern(label: str) -> re.Pattern[str]:
+    """Match ``label`` as a whole word, with ``_`` also matched as a space.
+
+    Args:
+        label: One of ``LABELS``.
+
+    Returns:
+        A pattern for the label, to search in case-folded text.
+    """
+    body = "[_ ]".join(re.escape(part) for part in label.split("_"))
+    return re.compile(rf"\b{body}\b")
+
+
+def _check_gold_label_leak(rows: list[Row]) -> None:
+    """Keep each row's gold label out of its model-input fields.
+
+    Args:
+        rows: Manifest rows that passed the schema.
+
+    Raises:
+        ManifestError: With rule ``gold_label_leak`` when a field holds the
+            gold label as a whole word.
+    """
+    for row in rows:
+        pattern = _gold_pattern(row["gold_label"])
+        for field, value in row["model_input"].items():
+            if pattern.search(str(value).casefold()):
+                raise ManifestError(
+                    "gold_label_leak", f"{row['case_id']} {field} holds its gold label"
                 )

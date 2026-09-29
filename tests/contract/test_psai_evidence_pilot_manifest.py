@@ -143,7 +143,66 @@ def _case_id_is_source_id(m: Manifest) -> None:
     m["rows"][DEV]["case_id"] = m["rows"][DEV]["unique_data_id"]
 
 
+def _case_id_twice(m: Manifest) -> None:
+    m["rows"][FINAL + 1]["case_id"] = m["rows"][DEV]["case_id"]
+
+
+def _gold_label_word_in_claim(m: Manifest) -> None:
+    row = m["rows"][DEV]
+    assert row["gold_label"] == "supported"
+    row["model_input"]["claim"] = "The claim is SUPPORTED by the page."
+
+
+def _gold_label_spaced_in_claim(m: Manifest) -> None:
+    row = m["rows"][DEV + 20]
+    assert row["gold_label"] == "insufficient_evidence"
+    row["model_input"]["claim"] = "The page gives Insufficient Evidence here."
+
+
+def _gold_label_underscored_in_claim(m: Manifest) -> None:
+    row = m["rows"][DEV + 20]
+    row["model_input"]["claim"] = "Answer: insufficient_evidence."
+
+
+def _rejected_is_row_id(m: Manifest) -> None:
+    m["rejected"][0]["unique_data_id"] = m["rows"][PROMPT + 2]["unique_data_id"]
+
+
+def _rejected_twice(m: Manifest) -> None:
+    m["rejected"][1]["unique_data_id"] = m["rejected"][0]["unique_data_id"]
+
+
+def _rejected_in_fixtures(m: Manifest) -> None:
+    m["rejected"][1]["unique_data_id"] = FIXTURE_UID
+
+
+def _task_without_claim_axis(m: Manifest) -> None:
+    # dev-01 loses its claim_axis row; dev-08 gains a second one.
+    m["rows"][DEV + 8]["unique_data_id"] = m["rows"][DEV + 7]["unique_data_id"]
+
+
+def _task_with_two_image_rows(m: Manifest) -> None:
+    # dev-01 gains the crop row of dev-08 beside its own swap row.
+    m["rows"][DEV + 23]["unique_data_id"] = m["rows"][DEV]["unique_data_id"]
+
+
+def _seven_tasks_in_split(m: Manifest) -> None:
+    # Fold task dev-01 (no donor refers to it) into dev-02: 7 distinct IDs.
+    for offset in (0, 8, 16):
+        m["rows"][DEV + offset]["unique_data_id"] = m["rows"][DEV + 1]["unique_data_id"]
+
+
 MUTATIONS: list[tuple[str, FunctionType]] = [
+    ("case_id_unique", _case_id_twice),
+    ("gold_label_leak", _gold_label_word_in_claim),
+    ("gold_label_leak", _gold_label_spaced_in_claim),
+    ("gold_label_leak", _gold_label_underscored_in_claim),
+    ("rejected_items", _rejected_is_row_id),
+    ("rejected_items", _rejected_twice),
+    ("rejected_items", _rejected_in_fixtures),
+    ("task_inventory", _task_without_claim_axis),
+    ("task_inventory", _task_with_two_image_rows),
+    ("task_inventory", _seven_tasks_in_split),
     ("split_isolation", _host_from_other_split),
     ("split_isolation", _donor_from_other_split),
     ("split_isolation", _donor_shares_host),
@@ -219,3 +278,38 @@ def test_manifest_outside_a_pilot_root_needs_an_explicit_root(tmp_path: Path):
         load_manifest(_write(tmp_path, _valid()))
 
     assert caught.value.rule == "pilot_root"
+
+
+@pytest.mark.parametrize(
+    ("mutate", "expected"),
+    [
+        (_task_without_claim_axis, "dev synthetic-dev-01 has"),
+        (_task_with_two_image_rows, "dev synthetic-dev-01 has"),
+        (_seven_tasks_in_split, "dev has 7 tasks"),
+        (_rejected_is_row_id, "is a row ID"),
+        (_rejected_twice, "twice"),
+        (_rejected_in_fixtures, f"rejected {FIXTURE_UID} is in"),
+    ],
+    ids=lambda value: getattr(value, "__name__", "detail").lstrip("_"),
+)
+def test_each_clause_names_its_own_failure(
+    tmp_path: Path, mutate: Callable[[Manifest], None], expected: str
+):
+    """Each clause of a multi-clause rule reports its own cause."""
+    manifest = _valid()
+    mutate(manifest)
+
+    with pytest.raises(ManifestError) as caught:
+        load_manifest(_write(tmp_path, manifest), pilot_root=PILOT_ROOT)
+
+    assert expected in str(caught.value)
+
+
+def test_label_inside_a_longer_word_is_not_a_gold_label_leak(tmp_path: Path):
+    """``unsupported`` does not hold the whole word ``supported``."""
+    manifest = _valid()
+    manifest["rows"][DEV]["model_input"]["claim"] = "The button is unsupported."
+
+    loaded = load_manifest(_write(tmp_path, manifest), pilot_root=PILOT_ROOT)
+
+    assert loaded.rows[DEV]["model_input"]["claim"] == "The button is unsupported."
