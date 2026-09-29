@@ -15,6 +15,7 @@ Examples:
 
 See Also:
     - [typevet.domain.errors][]: Failures raised around these values
+    - [typevet.domain.media][]: ImageInput and the media marker
 """
 
 from __future__ import annotations
@@ -22,6 +23,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
+
+from typevet.domain.media import MEDIA_MARKER, ImageInput, count_media_markers
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,6 +35,8 @@ class GenerationRequest:
         prompt (str): Natural-language instruction for the model.
         schema (Mapping[str, Any]): JSON Schema object as a mapping.
         model (str): Backend model id or alias.
+        media (tuple[ImageInput, ...]): Images the prompt marks, one
+            ``MEDIA_MARKER`` each, in marker order. Empty for a text ask.
 
     Examples:
         ```python
@@ -48,12 +53,14 @@ class GenerationRequest:
     prompt: str
     schema: Mapping[str, Any]
     model: str
+    media: tuple[ImageInput, ...] = ()
 
     def __post_init__(self) -> None:
-        """Reject empty prompt or model and a non-object schema root.
+        """Reject a blank field, a non-object schema root or a marker mismatch.
 
         Raises:
-            ValueError: When prompt or model is blank, or schema type is not object.
+            ValueError: When prompt or model is blank, schema type is not
+                object, or the media marker count differs from ``len(media)``.
             TypeError: When schema is not a mapping.
         """
         if not self.prompt.strip():
@@ -68,6 +75,13 @@ class GenerationRequest:
         schema_type = self.schema.get("type")
         if schema_type is not None and schema_type != "object":
             msg = "schema root type must be object when set"
+            raise ValueError(msg)
+        markers = count_media_markers(self.prompt)
+        if markers != len(self.media):
+            msg = (
+                f"prompt holds {markers} {MEDIA_MARKER} media marker(s) "
+                f"but media has {len(self.media)} image(s)"
+            )
             raise ValueError(msg)
 
 

@@ -5,7 +5,8 @@ The request asks vLLM for structured output through
 template to one user message and does not start a thinking turn. The adapter
 makes one POST. It does not retry and does not fall back to unconstrained
 generation. Status, transport and non-JSON body failures go through
-``vllm_http``.
+``vllm_http``. A request with images sends the content as ``text`` and
+``image_url`` blocks from ``vllm_content``; a text request sends a string.
 
 Examples:
     ```python
@@ -18,6 +19,7 @@ Examples:
 See Also:
     - [typevet.adapters.outbound.llama_cpp][]: llama.cpp counterpart
     - [typevet.adapters.outbound.generation_finite][]: Non-finite float guard
+    - [typevet.adapters.outbound.vllm_content][]: Image content blocks
     - [typevet.adapters.outbound.vllm_http][]: Shared vLLM HTTP error mapping
     - [typevet.domain.errors][]: GenerationError, SchemaValidationError
     - [typevet.domain.models][]: GenerationRequest
@@ -33,6 +35,7 @@ import httpx
 import jsonschema
 
 from typevet.adapters.outbound.generation_finite import reject_non_finite_numbers
+from typevet.adapters.outbound.vllm_content import content_blocks
 from typevet.adapters.outbound.vllm_http import post_json
 from typevet.domain.errors import GenerationError, SchemaValidationError
 from typevet.domain.models import GenerationRequest, GenerationResult
@@ -91,7 +94,7 @@ class VllmGenerationAdapter:
         """POST one constrained chat completion and validate the result.
 
         Args:
-            request: Prompt, schema and served model name.
+            request: Prompt, schema, served model name and optional images.
 
         Returns:
             Validated structured value.
@@ -104,9 +107,12 @@ class VllmGenerationAdapter:
                 non-finite or fails the schema.
         """
         schema_obj = dict(request.schema)
+        content: str | list[dict[str, Any]] = request.prompt
+        if request.media:
+            content = content_blocks(request.prompt, request.media)
         body: dict[str, Any] = {
             "model": request.model,
-            "messages": [{"role": "user", "content": request.prompt}],
+            "messages": [{"role": "user", "content": content}],
             "temperature": 0,
             "structured_outputs": {"json": schema_obj},
             "add_generation_prompt": True,

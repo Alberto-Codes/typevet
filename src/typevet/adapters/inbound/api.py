@@ -19,6 +19,7 @@ Examples:
     ```
 
 See Also:
+    - [typevet.domain.media][]: ImageInput and the media marker
     - [typevet.domain.models][]: GenerationRequest
     - [typevet.ports.generation][]: GenerationPort
 """
@@ -26,10 +27,13 @@ See Also:
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from typevet.domain.models import GenerationRequest, GenerationResult
 from typevet.ports.generation import GenerationPort
+
+if TYPE_CHECKING:
+    from typevet.domain.media import ImageInput
 
 
 def generate(
@@ -38,6 +42,7 @@ def generate(
     prompt: str,
     schema: Mapping[str, Any],
     model: str,
+    media: tuple[ImageInput, ...] = (),
 ) -> GenerationResult:
     """Build a request and invoke the generation port.
 
@@ -46,9 +51,11 @@ def generate(
         prompt: Natural-language instruction.
         schema: JSON Schema object as a mapping.
         model: Backend model id or alias.
+        media: Images the prompt marks, one ``MEDIA_MARKER`` each, in
+            marker order. Empty for a text ask.
 
     Returns:
         Validated generation result from the port.
     """
-    request = GenerationRequest(prompt=prompt, schema=schema, model=model)
+    request = GenerationRequest(prompt=prompt, schema=schema, model=model, media=media)
     return port.generate(request)

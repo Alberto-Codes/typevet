@@ -12,7 +12,8 @@ See Also:
     - [typevet.adapters.outbound.fake][]: Offline fake for tests
     - [typevet.adapters.outbound.generation_finite][]: Non-finite float guard
     - [typevet.adapters.outbound.llama_cpp_http][]: Shared HTTP error mapping
-    - [typevet.domain.errors][]: TransportError, BackendHttpError
+    - [typevet.domain.errors][]: TransportError, BackendHttpError,
+      GenerationUnsupportedCapabilityError
     - [typevet.domain.models][]: GenerationRequest
 """
 
@@ -31,12 +32,19 @@ from typevet.adapters.outbound.llama_cpp_http import (
     map_transport_error,
     parse_json_response,
 )
-from typevet.domain.errors import GenerationError, SchemaValidationError
+from typevet.domain.errors import (
+    GenerationError,
+    GenerationUnsupportedCapabilityError,
+    SchemaValidationError,
+)
 from typevet.domain.models import GenerationRequest, GenerationResult
 
 
 class LlamaCppGenerationAdapter:
     """Call a local llama.cpp router with ``response_format`` json_schema.
+
+    The adapter sends text only. It refuses a request with images before any
+    HTTP call and never drops an image silently.
 
     Attributes:
         _base_url (str): Router root with trailing slash.
@@ -98,8 +106,11 @@ class LlamaCppGenerationAdapter:
             TransportError: When the HTTP client fails before a response.
             BackendHttpError: When llama.cpp returns HTTP status 400 or above.
             GenerationError: On other parse or response-shape failure.
+            GenerationUnsupportedCapabilityError: When the request carries
+                images; no HTTP call is made.
             SchemaValidationError: When the payload is non-finite or fails schema.
         """
+        self._reject_media(request)
         schema_obj = dict(request.schema)
         body: dict[str, Any] = {
             "model": request.model,
@@ -164,6 +175,24 @@ class LlamaCppGenerationAdapter:
         if self._client is None:
             self._client = httpx.Client(timeout=self._timeout)
         return self._client
+
+    @staticmethod
+    def _reject_media(request: GenerationRequest) -> None:
+        """Refuse a request with images, which this adapter does not send.
+
+        Args:
+            request: The generation ask to check before any HTTP call.
+
+        Raises:
+            GenerationUnsupportedCapabilityError: When ``request.media`` is
+                not empty.
+        """
+        if request.media:
+            msg = (
+                "llama.cpp generation adapters do not send images; "
+                f"request has {len(request.media)} image(s)"
+            )
+            raise GenerationUnsupportedCapabilityError(msg)
 
     @staticmethod
     def _extract_content(payload: dict[str, Any]) -> str:

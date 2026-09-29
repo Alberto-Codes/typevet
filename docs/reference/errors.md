@@ -42,6 +42,7 @@ Export from `typevet` (package root) or `typevet.domain.errors`:
 | `TransportError` | `GenerationError` | The HTTP client failed before a usable response (`status_code` and `body_snippet` are `None`). |
 | `BackendHttpError` | `GenerationError` | llama.cpp returned HTTP status 400 or above; carries `status_code` and truncated `body_snippet` (500 chars max). |
 | `SchemaValidationError` | `GenerationError` | Parsed output failed JSON Schema validation. Optional `payload` holds the rejected value. |
+| `GenerationUnsupportedCapabilityError` | `GenerationError` | The adapter cannot send a part of the request, such as images. Raised before any HTTP call. Import from `typevet.domain` or `typevet.domain.errors`. |
 
 `SchemaValidationError` stores the message in standard exception `args`. When
 set, `payload` is the parsed object or mapping that failed validation (see
@@ -57,6 +58,7 @@ errors, not `GenerationError`:
 | Blank `prompt` or `model` | `ValueError` |
 | `schema` is not a mapping | `TypeError` |
 | `schema.type` is set and not `"object"` | `ValueError` |
+| Count of `MEDIA_MARKER` in `prompt` differs from `len(media)` | `ValueError` |
 
 Fix the request; do not treat these as retryable generation failures.
 
@@ -85,6 +87,7 @@ POSTs to `v1/chat/completions` with `response_format` `json_schema`. HTTP status
 
 | Condition | Raised type | Typical message prefix |
 |---|---|---|
+| Request has `media` (images) | `GenerationUnsupportedCapabilityError` | `llama.cpp generation adapters do not send images` (no HTTP call) |
 | `httpx.HTTPError` on POST | `TransportError` | `llama.cpp request failed:` |
 | HTTP status ≥ 400 | `BackendHttpError` | `llama.cpp HTTP {status}:` (`body_snippet` truncated to 500 chars) |
 | Response body is not JSON | `GenerationError` | `llama.cpp returned non-JSON HTTP body` |
@@ -123,6 +126,7 @@ Use these boundaries when a caller adds retries:
 | `TransportError`, `BackendHttpError` (5xx) | Optional caller policy | Not implemented in-repo; a supervisor may retry with backoff outside the adapter. |
 | `BackendHttpError` (4xx) | Usually no | Router config, model id, or request the backend rejects. |
 | `GenerationError` (bad JSON shape on 2xx) | Usually no | Non-recoverable response shape from the model or router. |
+| `GenerationUnsupportedCapabilityError` | No | Use an adapter that supports the request, or remove the images. |
 | `SchemaError`, `NotImplementedError` | No | Fix or narrow the schema before calling generation. |
 | `GenerationRequest` `ValueError` / `TypeError` | No | Fix the request object. |
 

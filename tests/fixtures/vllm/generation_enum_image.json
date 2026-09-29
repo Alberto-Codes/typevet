@@ -1,0 +1,88 @@
+{
+  "probe": "P11",
+  "purpose": "valid schema generation, image",
+  "path": "/v1/chat/completions",
+  "request": {
+    "model": "gemma-4-31b-it",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "<data:image/png;base64 of R03.png, 570652 bytes>"
+            }
+          },
+          {
+            "type": "text",
+            "text": "Expense claim for this receipt: total 2,352,460.\n\nverdict: Does the receipt image support the expense claim?\n\nOptions:\nControl 0 → supported\nControl 1 → contradicted\nControl 2 → insufficient\n\nAnswer with exactly one control string (the digit shown), not the original label text."
+          }
+        ]
+      }
+    ],
+    "max_tokens": 40,
+    "temperature": 0,
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    },
+    "structured_outputs": {
+      "json": {
+        "type": "object",
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "0",
+              "1",
+              "2"
+            ]
+          }
+        },
+        "required": [
+          "verdict"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "http_status": 200,
+  "response": {
+    "object": "chat.completion",
+    "model": "gemma-4-31b-it",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"verdict\": \"0\"\n}",
+          "refusal": null,
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "reasoning": null
+        },
+        "logprobs": null,
+        "finish_reason": "stop",
+        "stop_reason": 106,
+        "token_ids": null,
+        "routed_experts": null
+      }
+    ],
+    "service_tier": null,
+    "system_fingerprint": "vllm-0.30.0-2d965b6e",
+    "usage": {
+      "prompt_tokens": 349,
+      "total_tokens": 362,
+      "completion_tokens": 13,
+      "prompt_tokens_details": null,
+      "completion_tokens_details": null
+    },
+    "prompt_logprobs": null,
+    "prompt_token_ids": null,
+    "prompt_text": null,
+    "kv_transfer_params": null,
+    "ec_transfer_params": null,
+    "metrics": null
+  }
+}

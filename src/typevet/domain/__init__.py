@@ -37,6 +37,7 @@ Attributes:
     DecisionExecutionError (type): Categorical execute rejected inputs.
     GemmaTemplateError (type): Gemma served-template or answer-prefix violation.
     GenerationError (type): Base failure for a generation call.
+    GenerationUnsupportedCapabilityError (type): Backend cannot honor the ask.
     TransportError (type): HTTP client failure before a response.
     GenerationRequest (type): Prompt, schema and model ask.
     GenerationResult (type): Validated structured value.
@@ -83,6 +84,7 @@ from typevet.domain.errors import (
     DecisionExecutionError,
     GemmaTemplateError,
     GenerationError,
+    GenerationUnsupportedCapabilityError,
     JudgmentError,
     JudgmentValidationError,
     SchemaValidationError,
@@ -141,6 +143,7 @@ __all__ = [
     "GenerationError",
     "GenerationRequest",
     "GenerationResult",
+    "GenerationUnsupportedCapabilityError",
     "ImageInput",
     "JudgmentError",
     "JudgmentResponse",

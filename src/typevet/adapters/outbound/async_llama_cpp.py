@@ -13,7 +13,8 @@ See Also:
     - [typevet.adapters.outbound.generation_finite][]: Non-finite float guard
     - [typevet.adapters.outbound.llama_cpp_http][]: Shared HTTP error mapping
     - [typevet.adapters.outbound.async_fake][]: Offline fake for tests
-    - [typevet.domain.errors][]: TransportError, BackendHttpError
+    - [typevet.domain.errors][]: TransportError, BackendHttpError,
+      GenerationUnsupportedCapabilityError
 """
 
 from __future__ import annotations
@@ -101,8 +102,11 @@ class AsyncLlamaCppGenerationAdapter:
             TransportError: When the HTTP client fails before a response.
             BackendHttpError: When llama.cpp returns HTTP status 400 or above.
             GenerationError: On other parse or response-shape failure.
+            GenerationUnsupportedCapabilityError: When the request carries
+                images; no HTTP call is made.
             SchemaValidationError: When the payload is non-finite or fails schema.
         """
+        LlamaCppGenerationAdapter._reject_media(request)
         schema_obj = dict(request.schema)
         body: dict[str, Any] = {
             "model": request.model,

@@ -28,6 +28,7 @@ Examples:
 
 See Also:
     - [typevet.adapters.outbound.llama_cpp_scoring][]: llama.cpp counterpart
+    - [typevet.adapters.outbound.vllm_content][]: Image content blocks
     - [typevet.domain.candidate_scoring_validate][]: Fail-closed result assembly
     - [typevet.ports.framing][]: ModelFramingPort protocol
     - [typevet.ports.scoring][]: CandidateScoringPort protocol
@@ -39,13 +40,13 @@ Attributes:
 
 from __future__ import annotations
 
-import base64
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, Self
 from urllib.parse import urljoin
 
 import httpx
 
+from typevet.adapters.outbound.vllm_content import content_blocks
 from typevet.adapters.outbound.vllm_http import post_json
 from typevet.domain.candidate_scoring_validate import build_and_validate_result
 from typevet.domain.errors import (
@@ -54,7 +55,6 @@ from typevet.domain.errors import (
     ScoringValidationError,
 )
 from typevet.domain.judgment_response import TokenUsage
-from typevet.domain.media import MEDIA_MARKER
 from typevet.domain.scoring_stage import ScoreStage
 
 if TYPE_CHECKING:
@@ -229,36 +229,10 @@ def _ensure_supported(request: CandidateScoringRequest) -> None:
             raise ScoringUnsupportedCapabilityError(msg)
 
 
-def _content_blocks(prefix: str, media: tuple[ImageInput, ...]) -> list[dict[str, Any]]:
-    """Split a prefix at its media markers into chat content blocks.
-
-    Each marker becomes one ``image_url`` block, in ``media`` order. The text
-    between markers becomes ``text`` blocks, verbatim except that one newline
-    directly after a marker is dropped. Empty text blocks are left out.
-
-    Args:
-        prefix: Scoring prefix that holds one ``MEDIA_MARKER`` per image.
-        media: Images the markers stand for, in marker order.
-
-    Returns:
-        Content blocks in prefix order.
-    """
-    parts = prefix.split(MEDIA_MARKER)
-    blocks: list[dict[str, Any]] = []
-    if parts[0]:
-        blocks.append({"type": "text", "text": parts[0]})
-    for image, part in zip(media, parts[1:], strict=True):
-        encoded = base64.b64encode(image.data).decode("ascii")
-        url = f"data:{image.mime_type};base64,{encoded}"
-        blocks.append({"type": "image_url", "image_url": {"url": url}})
-        text = part.removeprefix("\n")
-        if text:
-            blocks.append({"type": "text", "text": text})
-    return blocks
-
-
 def _request_body(request: CandidateScoringRequest) -> dict[str, Any]:
     """Build the chat completions body for one scoring ask.
+
+    A request with images sends content blocks from ``content_blocks``.
 
     Args:
         request: A supported scoring ask; its media marker count matches
@@ -269,7 +243,7 @@ def _request_body(request: CandidateScoringRequest) -> dict[str, Any]:
     """
     content: str | list[dict[str, Any]] = request.prefix
     if request.media:
-        content = _content_blocks(request.prefix, request.media)
+        content = content_blocks(request.prefix, request.media)
     return {
         "model": request.model,
         "messages": [{"role": "user", "content": content}],

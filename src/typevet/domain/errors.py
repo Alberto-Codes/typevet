@@ -15,6 +15,7 @@ See Also:
 Attributes:
     BackendHttpError (type): llama.cpp HTTP status 400 or above.
     GenerationError (type): Base failure for a generation call.
+    GenerationUnsupportedCapabilityError (type): Backend cannot honor the ask.
     JudgmentError (type): Base failure for a judgment call.
     JudgmentValidationError (type): Answer failed judgment shape rules.
     GemmaTemplateError (type): Gemma served-template or answer-prefix violation.
@@ -152,6 +153,22 @@ class DecisionExecutionError(GenerationError):
         from typevet.domain.errors import DecisionExecutionError
 
         raise DecisionExecutionError("nullable categorical decisions are unsupported")
+        ```
+    """
+
+
+class GenerationUnsupportedCapabilityError(GenerationError):
+    """The generation backend cannot honor a part of the request.
+
+    An adapter raises it before any HTTP call, for example when a request
+    carries images the backend adapter cannot send. The adapter never drops
+    the unsupported part silently.
+
+    Examples:
+        ```python
+        from typevet.domain.errors import GenerationUnsupportedCapabilityError
+
+        raise GenerationUnsupportedCapabilityError("images are not supported")
         ```
     """
 
