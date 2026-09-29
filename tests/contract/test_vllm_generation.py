@@ -166,7 +166,10 @@ def test_vllm_generation_p10_invalid_schema_raises_backend_http_error() -> None:
 
 @pytest.mark.contract
 def test_vllm_generation_transport_failure_raises_transport_error() -> None:
+    posts: list[httpx.Request] = []
+
     def fail(request: httpx.Request) -> httpx.Response:
+        posts.append(request)
         raise httpx.ConnectError("refused", request=request)
 
     client = httpx.Client(transport=httpx.MockTransport(fail))
@@ -174,6 +177,19 @@ def test_vllm_generation_transport_failure_raises_transport_error() -> None:
 
     with pytest.raises(TransportError, match="vLLM request failed"):
         adapter.generate(_request())
+    assert len(posts) == 1
+
+
+@pytest.mark.contract
+def test_vllm_generation_http_500_raises_backend_http_error_after_one_post() -> None:
+    recorder = _Recorder(status=500, text="engine crashed")
+
+    with pytest.raises(BackendHttpError) as caught:
+        _adapter(recorder).generate(_request())
+
+    assert caught.value.status_code == 500
+    assert str(caught.value) == "vLLM HTTP 500: engine crashed"
+    assert len(recorder.bodies) == 1
 
 
 @pytest.mark.contract

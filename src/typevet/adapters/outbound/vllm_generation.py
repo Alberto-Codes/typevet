@@ -18,7 +18,7 @@ Examples:
 
 See Also:
     - [typevet.adapters.outbound.llama_cpp][]: llama.cpp counterpart
-    - [typevet.adapters.outbound.generation_finite][]: Non-finite float guard
+    - [typevet.adapters.outbound.chat_completion][]: Content and schema checks
     - [typevet.adapters.outbound.vllm_content][]: Image content blocks
     - [typevet.adapters.outbound.vllm_http][]: Shared vLLM HTTP error mapping
     - [typevet.domain.errors][]: GenerationError, SchemaValidationError
@@ -27,17 +27,14 @@ See Also:
 
 from __future__ import annotations
 
-import json
 from typing import Any, Self
 from urllib.parse import urljoin
 
 import httpx
-import jsonschema
 
-from typevet.adapters.outbound.generation_finite import reject_non_finite_numbers
+from typevet.adapters.outbound.chat_completion import extract_content, validated_value
 from typevet.adapters.outbound.vllm_content import content_blocks
 from typevet.adapters.outbound.vllm_http import post_json
-from typevet.domain.errors import GenerationError, SchemaValidationError
 from typevet.domain.models import GenerationRequest, GenerationResult
 
 
@@ -93,6 +90,9 @@ class VllmGenerationAdapter:
     def generate(self, request: GenerationRequest) -> GenerationResult:
         """POST one constrained chat completion and validate the result.
 
+        ``generation_body`` builds the request. ``chat_completion`` helpers
+        read the reply and check it against the schema.
+
         Args:
             request: Prompt, schema, served model name and optional images.
 
@@ -107,21 +107,11 @@ class VllmGenerationAdapter:
                 non-finite or fails the schema.
         """
         schema_obj = dict(request.schema)
-        content: str | list[dict[str, Any]] = request.prompt
-        if request.media:
-            content = content_blocks(request.prompt, request.media)
-        body: dict[str, Any] = {
-            "model": request.model,
-            "messages": [{"role": "user", "content": content}],
-            "temperature": 0,
-            "structured_outputs": {"json": schema_obj},
-            "add_generation_prompt": True,
-            "chat_template_kwargs": {"enable_thinking": False},
-        }
+        body = generation_body(request, schema_obj)
         url = urljoin(self._base_url, "v1/chat/completions")
         payload = post_json(self._ensure_client(), url, body)
-        raw_text = _extract_content(payload)
-        value = _validated_value(raw_text, schema_obj)
+        raw_text = extract_content(payload, "vLLM")
+        value = validated_value(raw_text, schema_obj)
         return GenerationResult(value=value, model=request.model, raw_text=raw_text)
 
     def _ensure_client(self) -> httpx.Client:
@@ -135,58 +125,30 @@ class VllmGenerationAdapter:
         return self._client
 
 
-def _extract_content(payload: Any) -> str:
-    """Pull the assistant message content from a chat completion body.
+def generation_body(
+    request: GenerationRequest, schema: dict[str, Any]
+) -> dict[str, Any]:
+    """Build the vLLM structured-output chat completion body.
+
+    The sync and async adapters both send this body.
 
     Args:
-        payload: Parsed chat completion JSON value.
-
-    Returns:
-        Non-empty assistant message content string.
-
-    Raises:
-        GenerationError: When the payload shape is wrong or content is empty.
-    """
-    try:
-        content = payload["choices"][0]["message"]["content"]
-    except (KeyError, IndexError, TypeError) as exc:
-        msg = "vLLM response missing choices[0].message.content"
-        raise GenerationError(msg) from exc
-    if not isinstance(content, str) or not content.strip():
-        msg = "vLLM returned empty message content"
-        raise GenerationError(msg)
-    return content
-
-
-def _validated_value(raw_text: str, schema: dict[str, Any]) -> dict[str, Any]:
-    """Parse model content and validate it against the request schema.
-
-    Args:
-        raw_text: Assistant message content.
+        request: Prompt, served model name and optional images.
         schema: JSON Schema object from the request.
 
     Returns:
-        Parsed JSON object that satisfies the schema.
-
-    Raises:
-        GenerationError: When the content is not valid JSON.
-        SchemaValidationError: When the root is not an object, a number is
-            non-finite or the value fails the schema.
+        JSON body with the model, one user message, ``temperature`` 0, the
+        ``structured_outputs`` schema, ``add_generation_prompt`` and
+        ``chat_template_kwargs`` that turn thinking off.
     """
-    try:
-        value = json.loads(raw_text)
-    except json.JSONDecodeError as exc:
-        msg = "model content was not valid JSON"
-        raise GenerationError(msg) from exc
-    if not isinstance(value, dict):
-        msg = "model JSON root must be an object"
-        raise SchemaValidationError(msg, payload=value)
-    reject_non_finite_numbers(value)
-    try:
-        jsonschema.validate(instance=value, schema=schema)
-    except jsonschema.ValidationError as exc:
-        raise SchemaValidationError(
-            f"output failed schema: {exc.message}",
-            payload=value,
-        ) from exc
-    return value
+    content: str | list[dict[str, Any]] = request.prompt
+    if request.media:
+        content = content_blocks(request.prompt, request.media)
+    return {
+        "model": request.model,
+        "messages": [{"role": "user", "content": content}],
+        "temperature": 0,
+        "structured_outputs": {"json": schema},
+        "add_generation_prompt": True,
+        "chat_template_kwargs": {"enable_thinking": False},
+    }

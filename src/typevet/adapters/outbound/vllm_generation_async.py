@@ -1,7 +1,8 @@
 """Async vLLM ``/v1/chat/completions`` adapter with a per-adapter POST limit.
 
-The request body, the error mapping and the result validation are the same as
-for ``VllmGenerationAdapter``. An ``asyncio.Semaphore`` limits the number of
+The request body comes from ``vllm_generation.generation_body``, the builder
+that ``VllmGenerationAdapter`` also uses. The error mapping and the result
+validation are the same as for the sync adapter. An ``asyncio.Semaphore`` limits the number of
 POSTs that one adapter has in flight; the default of 1 sends requests one at a
 time. The limit holds per event loop: when a call runs on a new loop, the
 adapter makes a new semaphore for that loop, and it keeps a weak reference to
@@ -29,9 +30,9 @@ Examples:
     ```
 
 See Also:
-    - [typevet.adapters.outbound.vllm_generation][]: Sync adapter and validation
+    - [typevet.adapters.outbound.vllm_generation][]: Sync adapter and body builder
+    - [typevet.adapters.outbound.chat_completion][]: Content and schema checks
     - [typevet.adapters.outbound.async_llama_cpp][]: llama.cpp async counterpart
-    - [typevet.adapters.outbound.vllm_content][]: Image content blocks
     - [typevet.adapters.outbound.vllm_http][]: Shared vLLM HTTP error mapping
     - [typevet.ports.async_generation][]: AsyncGenerationPort
 """
@@ -45,11 +46,8 @@ from urllib.parse import urljoin
 
 import httpx
 
-from typevet.adapters.outbound.vllm_content import content_blocks
-from typevet.adapters.outbound.vllm_generation import (
-    _extract_content,
-    _validated_value,
-)
+from typevet.adapters.outbound.chat_completion import extract_content, validated_value
+from typevet.adapters.outbound.vllm_generation import generation_body
 from typevet.adapters.outbound.vllm_http import (
     ensure_success_status,
     map_transport_error,
@@ -133,7 +131,9 @@ class AsyncVllmGenerationAdapter:
 
         The call waits for a free slot of the running loop's semaphore before
         the POST and releases the slot when the POST ends, fails or is
-        cancelled.
+        cancelled. ``generation_body`` builds the request, and the
+        ``chat_completion`` helpers read the reply and check it against the
+        schema.
 
         Args:
             request: Prompt, schema, served model name and optional images.
@@ -150,13 +150,13 @@ class AsyncVllmGenerationAdapter:
                 non-finite or fails the schema.
         """
         schema_obj = dict(request.schema)
-        body = _request_body(request, schema_obj)
+        body = generation_body(request, schema_obj)
         url = urljoin(self._base_url, "v1/chat/completions")
         client = self._ensure_client()
         async with self._loop_slots():
             payload = await _post_json(client, url, body)
-        raw_text = _extract_content(payload)
-        value = _validated_value(raw_text, schema_obj)
+        raw_text = extract_content(payload, "vLLM")
+        value = validated_value(raw_text, schema_obj)
         return GenerationResult(value=value, model=request.model, raw_text=raw_text)
 
     def _loop_slots(self) -> asyncio.Semaphore:
@@ -186,29 +186,6 @@ class AsyncVllmGenerationAdapter:
         if self._client is None:
             self._client = httpx.AsyncClient(timeout=self._timeout)
         return self._client
-
-
-def _request_body(request: GenerationRequest, schema: dict[str, Any]) -> dict[str, Any]:
-    """Build the vLLM structured-output chat completion body.
-
-    Args:
-        request: Prompt, served model name and optional images.
-        schema: JSON Schema object from the request.
-
-    Returns:
-        JSON body with the same keys that ``VllmGenerationAdapter`` sends.
-    """
-    content: str | list[dict[str, Any]] = request.prompt
-    if request.media:
-        content = content_blocks(request.prompt, request.media)
-    return {
-        "model": request.model,
-        "messages": [{"role": "user", "content": content}],
-        "temperature": 0,
-        "structured_outputs": {"json": schema},
-        "add_generation_prompt": True,
-        "chat_template_kwargs": {"enable_thinking": False},
-    }
 
 
 async def _post_json(client: httpx.AsyncClient, url: str, body: dict[str, Any]) -> Any:

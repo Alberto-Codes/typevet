@@ -17,6 +17,7 @@ import pytest
 
 from typevet.adapters import outbound
 from typevet.adapters.inbound.backend_settings import VllmSettings, load_vllm_settings
+from typevet.adapters.outbound.vllm_generation import generation_body
 from typevet.adapters.outbound.vllm_generation_async import AsyncVllmGenerationAdapter
 from typevet.domain.errors import GenerationError, TransportError
 from typevet.domain.media import MEDIA_MARKER, ImageInput
@@ -192,6 +193,26 @@ def test_async_body_matches_sync_contract_and_sends_images() -> None:
     assert {key: val for key, val in image_body.items() if key != "messages"} == {
         key: val for key, val in text_body.items() if key != "messages"
     }
+
+
+@pytest.mark.unit
+def test_async_body_equals_sync_generation_body_for_text_and_image() -> None:
+    bodies: list[dict[str, Any]] = []
+    image = ImageInput(data=b"\x89PNG-two", mime_type="image/png")
+    requests = (_request(), _request(f"{MEDIA_MARKER}\nlook", (image,)))
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        bodies.append(json.loads(request.content.decode()))
+        return _reply()
+
+    async def run() -> None:
+        adapter = _adapter(handler)
+        for request in requests:
+            await adapter.generate(request)
+
+    asyncio.run(run())
+    expected = [generation_body(r, dict(r.schema)) for r in requests]
+    assert bodies == json.loads(json.dumps(expected))
 
 
 @pytest.mark.unit

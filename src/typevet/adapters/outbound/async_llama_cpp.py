@@ -10,7 +10,7 @@ Examples:
 
 See Also:
     - [typevet.adapters.outbound.llama_cpp][]: Sync adapter
-    - [typevet.adapters.outbound.generation_finite][]: Non-finite float guard
+    - [typevet.adapters.outbound.chat_completion][]: Content and schema checks
     - [typevet.adapters.outbound.llama_cpp_http][]: Shared HTTP error mapping
     - [typevet.adapters.outbound.async_fake][]: Offline fake for tests
     - [typevet.domain.errors][]: TransportError, BackendHttpError,
@@ -19,21 +19,18 @@ See Also:
 
 from __future__ import annotations
 
-import json
 from typing import Any, Self
 from urllib.parse import urljoin
 
 import httpx
-import jsonschema
 
-from typevet.adapters.outbound.generation_finite import reject_non_finite_numbers
+from typevet.adapters.outbound.chat_completion import extract_content, validated_value
 from typevet.adapters.outbound.llama_cpp import LlamaCppGenerationAdapter
 from typevet.adapters.outbound.llama_cpp_http import (
     ensure_success_status,
     map_transport_error,
     parse_json_response,
 )
-from typevet.domain.errors import GenerationError, SchemaValidationError
 from typevet.domain.models import GenerationRequest, GenerationResult
 
 
@@ -92,6 +89,9 @@ class AsyncLlamaCppGenerationAdapter:
     async def generate(self, request: GenerationRequest) -> GenerationResult:
         """POST chat completions with a JSON Schema response format.
 
+        ``chat_completion.extract_content`` reads the reply and
+        ``chat_completion.validated_value`` checks it against the schema.
+
         Args:
             request: Prompt, schema and model alias on the router.
 
@@ -135,27 +135,8 @@ class AsyncLlamaCppGenerationAdapter:
         ensure_success_status(response)
         payload = parse_json_response(response)
 
-        raw_text = LlamaCppGenerationAdapter._extract_content(payload)
-        try:
-            value = json.loads(raw_text)
-        except json.JSONDecodeError as exc:
-            msg = "model content was not valid JSON"
-            raise GenerationError(msg) from exc
-
-        if not isinstance(value, dict):
-            msg = "model JSON root must be an object"
-            raise SchemaValidationError(msg, payload=value)
-
-        reject_non_finite_numbers(value)
-
-        try:
-            jsonschema.validate(instance=value, schema=schema_obj)
-        except jsonschema.ValidationError as exc:
-            raise SchemaValidationError(
-                f"output failed schema: {exc.message}",
-                payload=value,
-            ) from exc
-
+        raw_text = extract_content(payload, "llama.cpp")
+        value = validated_value(raw_text, schema_obj)
         return GenerationResult(
             value=value,
             model=request.model,

@@ -1,5 +1,8 @@
 """Map httpx and llama.cpp HTTP outcomes to domain generation errors.
 
+The module also exports ``HTTP_ERROR_STATUS``, ``BODY_SNIPPET_MAX`` and
+``body_snippet`` from ``http_errors`` for callers that import them here.
+
 Examples:
     ```python
     from typevet.adapters.outbound.llama_cpp_http import (
@@ -10,6 +13,7 @@ Examples:
 
 See Also:
     - [typevet.adapters.outbound.llama_cpp][]: Sync adapter consumer
+    - [typevet.adapters.outbound.http_errors][]: Shared status and snippet limits
     - [typevet.domain.errors][]: Transport and backend error types
 """
 
@@ -20,22 +24,22 @@ from typing import Any
 
 import httpx
 
+from typevet.adapters.outbound.http_errors import (
+    BODY_SNIPPET_MAX,
+    HTTP_ERROR_STATUS,
+    body_snippet,
+)
 from typevet.domain.errors import BackendHttpError, GenerationError, TransportError
 
-HTTP_ERROR_STATUS = 400
-BODY_SNIPPET_MAX = 500
-
-
-def body_snippet(text: str) -> str:
-    """Return a bounded snippet of response text for error metadata.
-
-    Args:
-        text: Full HTTP response body text.
-
-    Returns:
-        At most ``BODY_SNIPPET_MAX`` characters from ``text``.
-    """
-    return text[:BODY_SNIPPET_MAX]
+__all__ = [
+    "BODY_SNIPPET_MAX",
+    "HTTP_ERROR_STATUS",
+    "body_snippet",
+    "ensure_success_status",
+    "map_http_status",
+    "map_transport_error",
+    "parse_json_response",
+]
 
 
 def map_transport_error(exc: httpx.HTTPError) -> TransportError:

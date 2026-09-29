@@ -22,6 +22,8 @@ See Also:
     - [typevet.adapters.outbound.vllm_generation][]: vLLM structured generation
     - [typevet.adapters.outbound.vllm_generation_async][]: Async vLLM generation
     - [typevet.adapters.outbound.vllm_http][]: vLLM HTTP error mapping
+    - [typevet.adapters.outbound.chat_completion][]: Shared content and schema checks
+    - [typevet.adapters.outbound.http_errors][]: Shared HTTP error limits
 
 Attributes:
     AsyncFakeGenerationAdapter (type): Offline async validating fake.

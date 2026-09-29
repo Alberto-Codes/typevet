@@ -19,6 +19,7 @@ Examples:
 
 See Also:
     - [typevet.adapters.outbound.vllm_scoring][]: Scoring adapter consumer
+    - [typevet.adapters.outbound.http_errors][]: Shared status and snippet limits
     - [typevet.adapters.outbound.llama_cpp_http][]: llama.cpp counterpart
     - [typevet.domain.errors][]: Transport and backend error types
 """
@@ -29,7 +30,7 @@ from typing import Any
 
 import httpx
 
-from typevet.adapters.outbound.llama_cpp_http import HTTP_ERROR_STATUS, body_snippet
+from typevet.adapters.outbound.http_errors import HTTP_ERROR_STATUS, body_snippet
 from typevet.domain.errors import BackendHttpError, GenerationError, TransportError
 
 
