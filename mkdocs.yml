@@ -143,3 +143,4 @@ nav:
   - ADRs:
       - Index: adr/README.md
       - "0001: Runtime orchestration": adr/0001-runtime-orchestration.md
+      - "0002: Package layout": adr/0002-package-layout.md

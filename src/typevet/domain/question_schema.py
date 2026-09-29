@@ -7,15 +7,19 @@ Choice, Score), ``instructions``, and optional ``labels`` /
 
 Examples:
     ```python
-    from typevet_evals.datasets.boolq import (
-        BOOLQ_ANSWER_NOUL_SCHEMA,
-        questions_payload,
-    )
     from typevet.domain.question_schema import question_records_to_json_schema
 
-    assert question_records_to_json_schema(questions_payload()) == (
-        BOOLQ_ANSWER_NOUL_SCHEMA
-    )
+    records = [
+        {"name": "answer", "syntax": "Noul", "instructions": "Is it yes?"},
+    ]
+    assert question_records_to_json_schema(records) == {
+        "type": "object",
+        "properties": {
+            "answer": {"instructions": "Is it yes?", "type": "boolean"},
+        },
+        "required": ["answer"],
+        "additionalProperties": False,
+    }
     ```
 
 See Also:

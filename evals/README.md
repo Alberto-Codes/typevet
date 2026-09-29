@@ -2,9 +2,19 @@
 
 Kind: reference (index).
 
-This directory holds **versioned eval inventory** for typevet — licenses,
-Decision shapes, split notes, and exclusions — so future loaders do not
-re-litigate dataset research.
+This directory holds the **versioned eval inventory** for typevet: licenses,
+Decision shapes, split notes and exclusions. Future loaders then do not repeat
+the dataset research.
+
+It is also the `typevet-evals` uv workspace member. Its import package is
+`typevet_evals`, under `src/`, and its tests are under `tests/`. The member
+holds the eval runner, the dataset loaders, the evaluation harnesses and the
+wheel proof tools. It is never published, and the library wheel does not hold
+it. The library never imports `typevet_evals`. See
+[ADR 0002](../docs/adr/0002-package-layout.md) and
+[supported imports](../docs/reference/supported-imports.md#not-in-the-wheel).
+
+The manifests and `fixtures/` stay tracked, but they are not package data.
 
 ## Files
 
@@ -28,7 +38,7 @@ re-litigate dataset research.
 Human-readable commentary and epic links:
 [Eval complementary manifest](../docs/reference/eval-complementary-manifest.md).
 
-Loader reference pages (Python modules under ``src/typevet/``):
+Loader reference pages (Python modules under `src/typevet_evals/datasets/`):
 
 | Corpus | Doc |
 |---|---|

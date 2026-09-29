@@ -128,6 +128,21 @@ _EDGES = (
         "typevet_evals/cord/semantic_metrics.py",
         "import typevet_evals.instruction_variant",
     ),
+    _Edge(
+        "Evaluation families",
+        "typevet_evals/datasets/boolq.py",
+        "import typevet_evals.wheel_isolated",
+    ),
+    _Edge(
+        "Evaluation families",
+        "typevet_evals/runner/core.py",
+        "import typevet_evals.gemma_native_vision_wheel_smoke",
+    ),
+    _Edge(
+        "Evaluation families",
+        "typevet_evals/psai_vision_consumer/harness.py",
+        "import typevet_evals.psai_vision_probability_evidence",
+    ),
 )
 
 

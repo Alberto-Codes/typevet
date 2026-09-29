@@ -204,7 +204,7 @@ repeated context. Explicit user scope and required gates still govern.
 ## Architecture
 
 Hex layers are fixed for the MVP (`domain` / `ports` / `adapters` /
-`testing`). Within a layer, prefer **flat modules**:
+`runtime` / `testing`). Within a layer, prefer **flat modules**:
 
 - One concern → one module file at that package level
   (`domain/models.py`, not `domain/models/request.py`).
@@ -215,6 +215,14 @@ Hex layers are fixed for the MVP (`domain` / `ports` / `adapters` /
   re-exports of the public names. Do not leave empty or one-line inits.
 - Public imports prefer the package path (`from typevet.domain import …`)
   so agents and callers discover the surface from the init.
+  [Supported imports](docs/reference/supported-imports.md) lists each
+  `__all__`; a contract test keeps the page and the code equal.
+- Each serving backend is one outbound package
+  (`adapters/outbound/llama_cpp/`, `adapters/outbound/vllm/`). Its
+  `__init__` does not import the factory module.
+- Evaluation code lives in the `evals/` workspace member (`typevet_evals`),
+  not in the library wheel. `src/typevet` never imports `typevet_evals`;
+  root tests may. See [ADR 0002](docs/adr/0002-package-layout.md).
 
 Record lasting decisions in docs, ADRs or issue contracts, not only in chat.
 

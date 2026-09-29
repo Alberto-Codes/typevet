@@ -195,7 +195,7 @@ forbidden_modules = ["typevet_evals"]
 name = "Evaluation families"
 type = "layers"
 layers = [
-    "typevet_evals.cli",
+    "typevet_evals.cli | typevet_evals.gemma_native_vision_wheel_smoke | typevet_evals.psai_vision_probability_evidence | typevet_evals.wheel_isolated",
     "typevet_evals.throughput",
     "typevet_evals.vllm_acceptance",
     "typevet_evals.instruction_variant | typevet_evals.cord",

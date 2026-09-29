@@ -65,6 +65,7 @@ compiler types, judgment types, and scoring types, import from
 | `Decision` | One compiled TypeLLM field from JSON Schema |
 | `GenerationError` | Base generation failure |
 | `BackendHttpError`, `TransportError` | Generation failures raised by HTTP adapters |
+| `GenerationUnsupportedCapabilityError` | The backend cannot honor the generation ask |
 | `GemmaTemplateError` | Served template output is not a known Gemma or ChatML shape |
 | `GenerationRequest` | Prompt, schema, and model ask |
 | `GenerationResult` | Validated structured value |
@@ -99,6 +100,7 @@ compiler types, judgment types, and scoring types, import from
 | `AsyncGenerationPort` | Structural protocol for async typed generation |
 | `JudgmentPort` | Structural protocol for System One-shaped judgment |
 | `CandidateScoringPort`, `ScoringPort` | Structural protocol for candidate logprobs (`ScoringPort` is an alias) |
+| `ModelFramingPort` | Structural protocol for model turn framing |
 
 ## `typevet.runtime`
 
@@ -114,6 +116,9 @@ Thin orchestration facades over domain, ports, and outbound adapters
 | `open_vllm_judgment` | Context manager: judgment port over vLLM chat-completions scoring |
 | `VllmJudgmentSession` | Session that `open_vllm_judgment` yields (`port`, `client`, `model`) |
 | `vllm_tokenize` | Hook factory for vLLM `/tokenize` without special tokens |
+| `open_gemma_native_vision_judgment` | Context manager: judgment port over the llama.cpp Gemma native vision factory |
+| `GemmaNativeVisionSession` | Session that `open_gemma_native_vision_judgment` yields |
+| `probe_gemma_native_vision_support` | Router probe for Gemma native vision support, without a long-lived port |
 
 `open_vllm_judgment` takes keyword `client`, `model`, and optional `base_url`,
 `tokenize_content` and `scoring_port_wrapper`. It sends no template probe.
@@ -133,6 +138,12 @@ default), or `open_vllm_judgment` on the `TYPEVET_VLLM__*` client for `vllm`.
 | `LlamaSettings` | Frozen llama.cpp connection settings for composition roots |
 | `load_llama_settings` | Read `TYPEVET_LLAMA__*` (and legacy aliases) from the environment |
 | `llama_cpp_adapter` | Construct `LlamaCppGenerationAdapter` from `LlamaSettings` |
+| `VllmSettings` | Frozen vLLM connection settings; `api_key` is not in `repr` |
+| `load_vllm_settings` | Read `TYPEVET_VLLM__*` from the environment |
+| `vllm_http_client` | Build the shared vLLM `httpx.Client` |
+| `async_vllm_generation_adapter` | Construct `AsyncVllmGenerationAdapter` from `VllmSettings` |
+| `load_backend` | Read `TYPEVET_BACKEND` |
+| `generation_adapter` | Construct the generation adapter that `TYPEVET_BACKEND` selects |
 
 Environment names and CLI hookup notes live in
 [configuration.md](configuration.md).
@@ -142,8 +153,8 @@ Prefer `generate` for library entry when you already hold a `GenerationPort`.
 Prefer `run_sync(port.generate(request))` for `AsyncGenerationPort` in scripts
 instead of duplicating sync wrappers on each adapter.
 
-The eval runner command is the module `typevet_evals.cli.eval_runner` in the
-`typevet-evals` workspace member. It is not in the wheel. See [Command-line entry](#command-line-entry).
+The inbound package holds no command-line module. The eval runner command is
+in the `typevet-evals` workspace member. See [Not in the wheel](#not-in-the-wheel).
 
 ## `typevet.adapters.outbound`
 
@@ -154,25 +165,62 @@ The eval runner command is the module `typevet_evals.cli.eval_runner` in the
 | `LlamaCppGenerationAdapter` | OpenAI-compat llama.cpp router adapter |
 | `AsyncLlamaCppGenerationAdapter` | Async OpenAI-compat llama.cpp router adapter |
 | `LlamaCppCandidateScoringAdapter` | Pre-sampling ``/completion`` candidate scorer |
+| `VllmGenerationAdapter` | vLLM structured-output generation adapter |
+| `AsyncVllmGenerationAdapter` | Async vLLM generation adapter with a POST limit |
+| `VllmCandidateScoringAdapter` | vLLM chat-completions logprob scorer |
+| `ChatContentFraming` | Plain chat content framing for vLLM scoring |
 
 Constructors take explicit arguments only (no settings module on the adapter).
 See [library-first architecture](../explanation/library-first-architecture.md).
 
-`typevet.adapters.outbound.llama_cpp` groups the llama.cpp serving-backend
-modules. Its `__all__` is the three llama.cpp adapters above. The package does
-not import the Gemma native vision factory. Import the factory from
-`typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory`.
+### `typevet.adapters.outbound.llama_cpp`
 
-`typevet.adapters.outbound.vllm` groups the vLLM serving-backend modules. Its
-`__all__` is `VllmGenerationAdapter`, `AsyncVllmGenerationAdapter`,
-`VllmCandidateScoringAdapter` and `ChatContentFraming`. The package does not
-import the vLLM judgment factory. Import the factory from
+This package groups the llama.cpp serving-backend modules.
+
+| Name | Role |
+|---|---|
+| `LlamaCppGenerationAdapter` | OpenAI-compat llama.cpp router adapter |
+| `AsyncLlamaCppGenerationAdapter` | Async OpenAI-compat llama.cpp router adapter |
+| `LlamaCppCandidateScoringAdapter` | Pre-sampling ``/completion`` candidate scorer |
+
+The package does not import the Gemma native vision factory. Import the factory
+from `typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory`.
+
+### `typevet.adapters.outbound.vllm`
+
+This package groups the vLLM serving-backend modules.
+
+| Name | Role |
+|---|---|
+| `VllmGenerationAdapter` | vLLM structured-output generation adapter |
+| `AsyncVllmGenerationAdapter` | Async vLLM generation adapter with a POST limit |
+| `VllmCandidateScoringAdapter` | vLLM chat-completions logprob scorer |
+| `ChatContentFraming` | Plain chat content framing for vLLM scoring |
+
+The package does not import the vLLM judgment factory. Import the factory from
 `typevet.adapters.outbound.vllm.judgment_factory`, or import
 `open_vllm_judgment` from `typevet.runtime`.
 
-`typevet.adapters.outbound.gemma` exports Gemma and ChatML served-template
-constants, template classification, and answer-binding helpers. Import from
-that subpackage when you need them. Its `__all__` is the list of supported names.
+### `typevet.adapters.outbound.gemma`
+
+This package holds Gemma and ChatML served-template constants, template
+classification and answer-binding helpers. It imports no serving backend.
+
+| Name | Role |
+|---|---|
+| `CHATML_ASSISTANT_HEADER`, `CHATML_IM_START`, `CHATML_IM_END` | ChatML turn control strings |
+| `GEMMA3_START_OF_TURN`, `GEMMA3_END_OF_TURN`, `GEMMA3_MODEL_TURN_HEADER` | Gemma 3 turn control strings |
+| `GEMMA4_TURN_OPEN`, `GEMMA4_TURN_CLOSE`, `GEMMA4_MODEL_TURN_HEADER` | Gemma 4 turn control strings |
+| `GEMMA4_CHANNEL_CLOSE`, `GEMMA4_THINK_TRIGGER`, `GEMMA4_NO_THINKING_PREFILL`, `GEMMA4_TOOL_RESPONSE` | Gemma 4 channel, thinking and tool control strings |
+| `ServedTemplateClass` | Served-template family enum |
+| `classify_served_template` | Classify `/apply-template` output |
+| `stop_markers_for` | Stop-marker substrings for one template class |
+| `label_embeds_control_fragment` | Tell whether a label embeds a reserved control fragment |
+| `ThinkingDisposition` | Thinking-channel disposition enum |
+| `AnswerAnchor`, `resolve_answer_anchor` | Byte and token boundary before the first candidate token, and its resolver |
+| `bind_enum_label`, `bind_enum_labels` | Bind enum labels to exact token ids and `CandidateTokenSpec` rows |
+| `termination_kind` | Classify how an assistant completion ends |
+| `compose_scoring_prefix`, `compose_media_scoring_prefix` | Scoring prefix text: degraded ChatML, or native turns with media |
 
 ## `typevet.adapters.diagnostics`
 
@@ -205,6 +253,27 @@ Organizational package only. It has no `__all__` exports. Import from
 `typevet.adapters.inbound`, `typevet.adapters.outbound`, or
 `typevet.adapters.diagnostics`.
 
+## Not in the wheel
+
+The `typevet-evals` workspace member in `evals/` holds the evaluation code.
+Its import package is `typevet_evals`. The member is never published: its
+classifier is `Private :: Do Not Upload`. The library wheel holds only
+`typevet`. The member has no compatibility promise. Import it by submodule.
+
+| Module | Contents |
+|---|---|
+| `typevet_evals.cli` | Module entries `eval_runner` and `cord_semantic_acceptance` |
+| `typevet_evals.datasets` | Dataset loaders, download helpers and the partner guard |
+| `typevet_evals.runner`, `typevet_evals.tpjep` | Eval runner and TPJEP records, loader and runner |
+| `typevet_evals.cord`, `typevet_evals.psai_vision_consumer`, `typevet_evals.instruction_variant` | Evaluation harness families |
+| `typevet_evals.throughput`, `typevet_evals.vllm_acceptance` | Throughput and vLLM acceptance harnesses |
+| `typevet_evals.experiment_identity`, `typevet_evals.outcome_replay_metrics`, `typevet_evals.psai_vision_probability_evidence` | Shared evaluation modules |
+| `typevet_evals.wheel_isolated`, `typevet_evals.gemma_native_vision_wheel_smoke` | Wheel proof tooling |
+
+The library never imports `typevet_evals`. An import-linter contract enforces
+this rule. The root library tests may import `typevet_evals`. See
+[ADR 0002](../adr/0002-package-layout.md).
+
 ## Removed before 0.1.0
 
 typevet removed these root modules before its first release (#256). They only
@@ -219,8 +288,9 @@ re-exported names from their current home. Import from the current home.
 | Other `typevet.eval_*` loaders, download helpers, and guards | One submodule of `typevet_evals.datasets` (workspace member, not in the wheel) |
 
 typevet also moved the llama.cpp outbound modules into one package before its
-first release (#256). The five old module files do not resolve.
-`typevet.adapters.outbound.llama_cpp` still resolves: it is now a package that re-exports the three adapters.
+first release (#256). The six old module files are removed, and five of the
+old paths do not resolve. `typevet.adapters.outbound.llama_cpp` still resolves:
+it is now a package that re-exports the three adapters.
 
 | Removed module | Current home |
 |---|---|
@@ -250,6 +320,13 @@ does not hold them, and the old paths do not resolve.
 | Removed module | Current home (workspace member, not in the wheel) |
 |---|---|
 | `typevet.adapters.inbound.cord_semantic_acceptance_cli` | `typevet_evals.cli.cord_semantic_acceptance` |
+| `typevet.adapters.inbound.eval_cli` | `typevet_evals.cli.eval_runner` |
+| `typevet.testing.wheel_isolated` | `typevet_evals.wheel_isolated` |
+| `typevet.evaluation.gemma_native_vision_wheel_smoke` | `typevet_evals.gemma_native_vision_wheel_smoke` |
+| `typevet.evaluation.instruction_variant_consumer_*` (8 modules) | `typevet_evals.instruction_variant.*`, with the prefix removed (for example `…_offline` → `offline`) |
+| `typevet.evaluation.outcome_replay_metrics` | `typevet_evals.outcome_replay_metrics` |
+| `typevet.evaluation.collections_metrics`, `…collections_throughput`, `…collections_workload`, `…public_workload` | `typevet_evals.throughput` (same module names) |
+| `typevet.evaluation.vllm_acceptance`, `…vllm_acceptance_sets`, `…vllm_acceptance_transport` | `typevet_evals.vllm_acceptance.core`, `.sets`, `.transport` |
 | `typevet.evaluation.psai_vision_consumer_*` (12 modules) | `typevet_evals.psai_vision_consumer.*`, with the prefix removed (for example `…_harness` → `harness`) |
 | `typevet.evaluation.consumer_http_accounting` | `typevet_evals.psai_vision_consumer.http_accounting` |
 | `typevet.evaluation.psai_vision_probability_evidence` | `typevet_evals.psai_vision_probability_evidence` |
@@ -291,8 +368,8 @@ reason and exits `0`. See [live eval runner](eval-live-runner.md).
 
 | Surface | Assessment | Notes |
 |---|---|---|
-| Library | Initial public hex surface | Root, domain, ports, runtime, inbound, outbound, diagnostics, testing |
-| Evaluation | Shipped, research harness | Dataset loaders by submodule. The eval runner and TPJEP runner are in the `typevet-evals` workspace member, not in the wheel |
+| Library | Initial public hex surface | Root, domain, ports, runtime, inbound, outbound (with `llama_cpp`, `vllm` and `gemma`), diagnostics, testing |
+| Evaluation | Not shipped | All evaluation code is in the `typevet-evals` workspace member. See [Not in the wheel](#not-in-the-wheel) |
 | CLI | Not shipped | No console script and no module entry in the wheel. In a checkout: `python -m typevet_evals.cli.eval_runner` and `python -m typevet_evals.cli.cord_semantic_acceptance`. The `cli` extra lists Typer only and no module imports it |
 | MCP | Not shipped | No extra or entry point |
 | Dependencies | `httpx`, `jsonschema`, `structlog` | Locked via `uv.lock` in development |

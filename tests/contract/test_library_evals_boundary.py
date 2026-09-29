@@ -47,11 +47,23 @@ def test_library_must_not_import_evals_contract_configured() -> None:
 
 @pytest.mark.contract
 def test_evaluation_families_contract_configured() -> None:
-    """A layers contract orders every evaluation family, datasets at the base."""
+    """A layers contract orders every evaluation family, datasets at the base.
+
+    The leaf modules share the top layer with ``cli``: no family imports them.
+    """
     match = _contract("Evaluation families")
     assert match["type"] == "layers"
     layers: list[str] = match["layers"]
-    assert layers[0] == f"{_EVALS}.cli"
+    top = {name.strip() for name in layers[0].split("|")}
+    assert top == {
+        f"{_EVALS}.{leaf}"
+        for leaf in (
+            "cli",
+            "gemma_native_vision_wheel_smoke",
+            "psai_vision_probability_evidence",
+            "wheel_isolated",
+        )
+    }
     assert layers[-1] == f"{_EVALS}.datasets"
     listed = {name.strip() for layer in layers for name in layer.split("|")}
     for family in (
