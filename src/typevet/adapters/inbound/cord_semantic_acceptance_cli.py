@@ -1,5 +1,9 @@
 r"""Operator CLI for offline CORD combined receipt semantic acceptance (#184).
 
+A receipt with a top-level ``stopped`` string reports the stop and exits 1
+with no floor table. A ``stopped`` value that is not a string or ``null`` is
+a malformed receipt and exits 2 (#216).
+
 Examples:
     ```console
     $ uv run python -m typevet.adapters.inbound.cord_semantic_acceptance_cli \\
@@ -61,16 +65,36 @@ def _load_receipt(path: Path) -> dict[str, Any]:
     return parsed
 
 
+def _stopped_exit(stopped: object) -> int | None:
+    if stopped is None:
+        return None
+    if not isinstance(stopped, str):
+        msg = "error: malformed receipt: stopped must be a string or null"
+        print(msg, file=sys.stderr)
+        return _EXIT_USAGE_OR_MALFORMED
+    print(f"stopped: {stopped.strip() or '<unspecified>'}", file=sys.stderr)
+    return _EXIT_REJECT
+
+
 def main(argv: list[str] | None = None) -> int:
     """Load a receipt path, print the floor table, return a process exit code.
 
     Args:
         argv: CLI args; defaults to ``sys.argv[1:]`` (one receipt path).
 
+    The top-level ``stopped`` value selects one of four cases:
+
+    - Missing or ``null``: the floor table is evaluated and printed.
+    - A string with text: ``stopped: <reason>`` on stderr, exit ``1``, no
+      floor table.
+    - An empty or whitespace-only string: ``stopped: <unspecified>`` on
+      stderr, exit ``1``, no floor table.
+    - Any other value (for example ``true``, an object or a number): a
+      malformed-receipt error on stderr, exit ``2``, no floor table.
+
     Returns:
-        ``0`` when ``accepted`` is true, ``1`` when checks fail or the
-        top-level ``stopped`` is a non-empty string (``stopped: <reason>`` on
-        stderr, no floor table), ``2`` on usage errors, malformed receipts, or
+        ``0`` when ``accepted`` is true, ``1`` when checks fail or the run
+        stopped, ``2`` on usage errors, malformed receipts, or
         ``ValueError`` / ``TypeError`` from parsing.
     """
     parser = _build_parser()
@@ -95,10 +119,9 @@ def main(argv: list[str] | None = None) -> int:
     except (ValueError, TypeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return _EXIT_USAGE_OR_MALFORMED
-    stopped = receipt.get("stopped")
-    if isinstance(stopped, str) and stopped:
-        print(f"stopped: {stopped}", file=sys.stderr)
-        return _EXIT_REJECT
+    stopped_code = _stopped_exit(receipt.get("stopped"))
+    if stopped_code is not None:
+        return stopped_code
     try:
         outcome = evaluate_combined_receipt(receipt)
     except (ValueError, TypeError) as exc:

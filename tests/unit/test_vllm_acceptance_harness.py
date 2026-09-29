@@ -16,6 +16,8 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import threading
+import time
 import zlib
 from pathlib import Path
 from typing import Any
@@ -29,7 +31,7 @@ from typevet.adapters.inbound.backend_settings import (
     vllm_http_client,
 )
 from typevet.adapters.inbound.cord_semantic_acceptance_cli import main as cord_cli
-from typevet.evaluation import vllm_acceptance
+from typevet.evaluation import vllm_acceptance, vllm_acceptance_sets
 from typevet.evaluation.datasets.cord_expense import load_expense_cases
 from typevet.evaluation.experiment_identity import read_baseline_commit
 from typevet.evaluation.vllm_acceptance import (
@@ -524,3 +526,76 @@ def test_swap_needs_a_correct_present_answer_to_count_as_moved() -> None:
     }
     swapped = {"label": "false", "probabilities": {"true": 0.4, "false": 0.6}}
     assert vllm_acceptance._swap_ok(present, swapped) is False
+
+
+_GC_PREAMBLE = "".join(
+    f"# HELP python_gc_objects_collected_total Objects collected in gen {n}.\n"
+    f"# TYPE python_gc_objects_collected_total counter\n"
+    f'python_gc_objects_collected_total{{generation="{n}"}} {n}.0\n'
+    for n in range(3)
+)
+_KV_LINE = 'vllm:kv_cache_usage_perc{engine="0",model_name="m"} 0.25\n'
+
+
+def test_kv_cache_usage_reads_the_gauge_after_a_long_preamble() -> None:
+    assert len(_GC_PREAMBLE) > 200
+    body = _GC_PREAMBLE + _KV_LINE
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, text=body)
+
+    transport = httpx.MockTransport(handler)
+    with httpx.Client(transport=transport, base_url="http://vllm.test") as client:
+        assert vllm_acceptance.kv_cache_usage(client) == 0.25
+
+
+class _HeldChat(_Vllm):
+    """Stub that holds chat replies until ``/metrics`` arrives (5 s timeout)."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._lock = threading.Lock()
+        self._metrics = threading.Event()
+        self.in_flight = 0
+        self.in_flight_at_metrics: int | None = None
+
+    def __call__(self, request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/metrics":
+            with self._lock:
+                if self.in_flight_at_metrics is None:
+                    self.in_flight_at_metrics = self.in_flight
+            self._metrics.set()
+            self.requests.append(request)
+            return httpx.Response(200, text=_GC_PREAMBLE + _KV_LINE)
+        if request.url.path != "/v1/chat/completions":
+            return super().__call__(request)
+        with self._lock:
+            self.in_flight += 1
+        self._metrics.wait(timeout=5.0)
+        try:
+            return super().__call__(request)
+        finally:
+            with self._lock:
+                self.in_flight -= 1
+
+
+def test_concurrency_reads_kv_cache_while_requests_are_in_flight(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original = vllm_acceptance_sets._generate
+
+    def delayed(*args: Any) -> dict[str, Any]:
+        time.sleep(0.2)
+        return original(*args)
+
+    monkeypatch.setattr(vllm_acceptance_sets, "_generate", delayed)
+    server = _HeldChat()
+    runners = [("concurrency", vllm_acceptance_sets._concurrency_set)]
+    receipt = run_acceptance(
+        _env(), _inputs(), transport=httpx.MockTransport(server), runners=runners
+    )
+    assert receipt["stopped"] is None
+    assert server.in_flight_at_metrics is not None
+    assert server.in_flight_at_metrics >= 1
+    assert receipt["sets"]["concurrency"]["kv_cache_in_flight"] == 0.25
+    assert receipt["calls"]["metadata"] == 4

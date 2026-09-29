@@ -5,7 +5,8 @@ Each runner takes the shared ``RunState`` and its set result mapping from
 and the frozen llama.cpp ``SCHEMA``), PSAI (#180 rev2 visual Choice matrix plus
 four text regressions), CORD (text, image-only and combined arms), order (the
 CORD combined arm with the label order reversed) and concurrency (8 generation
-calls, 4 in parallel). ``DEVIATIONS`` records how this wiring differs from the
+calls, 4 in parallel, with a KV-cache read while calls are in flight).
+``DEVIATIONS`` records how this wiring differs from the
 pre-registered protocol; the receipt keeps it.
 
 Examples:
@@ -150,6 +151,7 @@ IMAGE_ONLY_STATE: Final[str] = (
 
 CONCURRENT_CALLS: Final[int] = 8
 PARALLEL: Final[int] = 4
+KV_WAIT_SECONDS: Final[float] = 5.0
 
 
 _CORD: Final[str] = "cord/expense_smoke"
@@ -342,12 +344,22 @@ def _order_set(run: RunState, out: dict[str, Any]) -> None:
 
 
 def _concurrency_set(run: RunState, out: dict[str, Any]) -> None:
+    """Send 8 generation calls, 4 in parallel, and read the KV cache in flight.
+
+    The ``/metrics`` read waits until ``PARALLEL`` requests entered the
+    counting transport, or ``KV_WAIT_SECONDS`` passed; it reads on timeout.
+
+    Args:
+        run: Shared run state.
+        out: Concurrency set result mapping.
+    """
     request = GenerationRequest(prompt=TEXT_PROMPT, schema=TEXT_SCHEMA, model=run.model)
-    started = perf_counter()
+    started, target = perf_counter(), run.counter.calls["model"] + PARALLEL
     with ThreadPoolExecutor(max_workers=PARALLEL) as pool:
         futures = [
             pool.submit(_generate, run, out, request) for _ in range(CONCURRENT_CALLS)
         ]
+        run.counter.wait_for("model", target, KV_WAIT_SECONDS)
         out["kv_cache_in_flight"] = kv_cache_usage(run.client)
         rows = [future.result() for future in futures]
     out.update(

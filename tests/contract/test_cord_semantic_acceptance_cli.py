@@ -121,3 +121,33 @@ def test_cli_null_stopped_keeps_the_floor_table(
     path.write_text(json.dumps({**receipt, "stopped": None}), encoding="utf-8")
     assert main([str(path)]) == 0
     assert "accepted: true" in capsys.readouterr().out
+
+
+def _pass_receipt_with(tmp_path: Path, stopped: object) -> Path:
+    source = FIXTURE_DIR / "labeled_synthetic_pass.json"
+    receipt = json.loads(source.read_text(encoding="utf-8"))
+    path = tmp_path / "stopped_variant.json"
+    path.write_text(json.dumps({**receipt, "stopped": stopped}), encoding="utf-8")
+    return path
+
+
+@pytest.mark.parametrize("stopped", [True, {"r": "x"}, 5])
+def test_cli_rejects_a_non_string_stopped_as_malformed(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], stopped: object
+) -> None:
+    code = main([str(_pass_receipt_with(tmp_path, stopped))])
+    captured = capsys.readouterr()
+    assert code == 2
+    assert "malformed receipt" in captured.err
+    assert captured.out == ""
+
+
+@pytest.mark.parametrize("stopped", ["", "   "])
+def test_cli_reports_a_blank_stopped_as_unspecified(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], stopped: str
+) -> None:
+    code = main([str(_pass_receipt_with(tmp_path, stopped))])
+    captured = capsys.readouterr()
+    assert code == 1
+    assert captured.err.strip() == "stopped: <unspecified>"
+    assert captured.out == ""

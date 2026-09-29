@@ -10,7 +10,9 @@ stops and still returns a receipt. Identical ``/tokenize`` bodies are answered
 from a per-run memo, because the tokenizer is fixed for one served model. The
 harness makes no transport retry. The receipt keeps the CORD ``cases`` and
 ``combined`` rows at the top level, so ``cord_semantic_acceptance_cli`` reads
-the receipt file directly.
+the receipt file directly. ``kv_cache_usage`` parses the whole ``/metrics``
+text for the ``vllm:kv_cache_usage_perc`` gauge; ``CountingTransport.wait_for``
+lets a runner read it while requests are in flight (#216).
 
 Examples:
     ```python
@@ -43,6 +45,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import threading
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass
@@ -75,7 +78,7 @@ OMITTED_RULE: Final[str] = (
     "An omitted row counts in omitted_credited when its answer equals the "
     "gold key; no omitted row is added to the present, swapped or text counts."
 )
-_KV_METRICS: Final = ("vllm:kv_cache_usage_perc", "vllm:gpu_cache_usage_perc")
+_KV_GAUGE: Final = re.compile(r"(?m)^vllm:kv_cache_usage_perc(?:\{[^}\n]*\})? +(\S+)")
 
 
 @dataclass(frozen=True, slots=True)
@@ -139,6 +142,9 @@ class CallCapReached(AcceptanceStoppedError):
 class CountingTransport(httpx.BaseTransport):
     """Transport wrapper that counts calls, enforces caps and memoizes tokenize.
 
+    A condition guards the counters. Each counted request notifies it, so
+    ``wait_for`` can block until a number of requests were sent.
+
     Attributes:
         caps (CallCaps): Limits per request kind.
         calls (dict[str, int]): Requests sent to the server per kind.
@@ -151,7 +157,7 @@ class CountingTransport(httpx.BaseTransport):
     """
 
     def __init__(self, inner: httpx.BaseTransport, caps: CallCaps) -> None:
-        """Wrap ``inner`` with counters for ``caps``.
+        """Wrap ``inner`` with counters for ``caps`` and their condition.
 
         Args:
             inner: Transport that sends requests; the caller closes it.
@@ -162,10 +168,12 @@ class CountingTransport(httpx.BaseTransport):
         self.calls = dict.fromkeys(_KINDS, 0)
         self.tokenizer_memo_hits = 0
         self._memo: dict[bytes, bytes] = {}
-        self._lock = threading.Lock()
+        self._lock = threading.Condition()
 
     def handle_request(self, request: httpx.Request) -> httpx.Response:
         """Count and forward one request, or answer it from the tokenize memo.
+
+        Each counted request notifies the threads that ``wait_for`` blocks.
 
         Args:
             request: Outgoing request.
@@ -187,12 +195,27 @@ class CountingTransport(httpx.BaseTransport):
                 msg = f"{kind} call cap {limit} reached"
                 raise CallCapReached(msg)
             self.calls[kind] += 1
+            self._lock.notify_all()
         response = self._inner.handle_request(request)
         if key and response.status_code == httpx.codes.OK:
             content = response.read()
             with self._lock:
                 self._memo[key] = content
         return response
+
+    def wait_for(self, kind: str, count: int, timeout: float) -> bool:
+        """Block until ``count`` requests of ``kind`` were sent, or ``timeout``.
+
+        Args:
+            kind: Request kind: ``model``, ``tokenizer`` or ``metadata``.
+            count: Number of sent requests to wait for.
+            timeout: Most seconds to wait.
+
+        Returns:
+            ``True`` when the count was reached, ``False`` on timeout.
+        """
+        with self._lock:
+            return self._lock.wait_for(lambda: self.calls[kind] >= count, timeout)
 
     def close(self) -> None:
         """Leave the inner transport open; the caller owns it."""
@@ -447,18 +470,20 @@ def _preflight(pins: Mapping[str, Any]) -> None:
 def kv_cache_usage(client: httpx.Client) -> float | str:
     """Read the KV-cache usage gauge from ``/metrics`` (one metadata call).
 
+    The whole ``/metrics`` text is parsed. Only the vLLM v0.30.0 gauge
+    ``vllm:kv_cache_usage_perc`` (1 means 100 percent) matches (#216).
+
     Args:
         client: Session client.
 
     Returns:
-        The gauge value, or ``unknown`` when it is absent or unreadable.
+        The first gauge value, or ``unknown`` when it is absent, unreadable
+        or the request fails.
     """
-    body = _get(client, "/metrics")["body"]
-    lines = body.splitlines() if isinstance(body, str) else []
-    values = [line.rsplit(" ", 1)[-1] for line in lines if line.startswith(_KV_METRICS)]
     try:
-        return float(values[0])
-    except (IndexError, ValueError):
+        match = _KV_GAUGE.search(client.get("/metrics").text)
+        return float(match.group(1)) if match else "unknown"
+    except (httpx.HTTPError, ValueError):
         return "unknown"
 
 
