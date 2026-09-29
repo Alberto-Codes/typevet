@@ -273,7 +273,7 @@ Accepted on [#66](https://github.com/Alberto-Codes/typevet/issues/66#issuecommen
 | Label ontology | **15** slug intents **per domain** | **77** PolyAI intent names |
 | typevet Decision on corpus | **Choice** (in-domain) | **Noul-primary** proxy on `reports_unauthorized` ([#53](https://github.com/Alberto-Codes/typevet/issues/53)) |
 | Fraud signal | No fraud proxy; `report_fraud` is **one banking intent among 14 others** | Six-intent collapse to **`FRAUD_INTENTS`** → binary proxy |
-| Shared loader or enum | **No** — separate loaders ([#58](https://github.com/Alberto-Codes/typevet/issues/58) vs Banking77) | `typevet.eval_banking77` when implemented |
+| Shared loader or enum | **No** — separate loaders ([#58](https://github.com/Alberto-Codes/typevet/issues/58) vs Banking77) | `typevet.evaluation.datasets.banking77` when implemented |
 | ID or name alignment | **No** row-level or intent-level map between CLINC slugs and Banking77 categories | Do not reuse Banking77 Choice specs for CLINC shards |
 | Thematic overlap | `banking` domain utterances **sound like** bank chat | Overlap is **not** license to merge labels or reuse `fraud_type` enums |
 

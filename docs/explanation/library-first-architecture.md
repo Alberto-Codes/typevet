@@ -70,9 +70,9 @@ gate reads inbound settings. **Runtime** holds thin orchestration facades
 `compose_scoring_prefix`) over the layers below
 ([#148](https://github.com/Alberto-Codes/typevet/issues/148)).
 
-Root modules such as `typevet.eval_runner` are
-compatibility shims that re-export from these layers. See
-[supported imports](../reference/supported-imports.md#root-compatibility-shims).
+The root `eval_*` compatibility shims were removed
+before 0.1.0. Import from the layers above. See
+[supported imports](../reference/supported-imports.md#removed-before-010).
 
 That split matches judgevet’s “ports separate callers from HTTP” story.
 `JudgmentPort` sits beside `GenerationPort` in `typevet.ports`. The llama.cpp

@@ -1,8 +1,13 @@
-"""Contract tests for the ``typevet.evaluation`` package and root eval shims (#147)."""
+"""Contract tests for the ``typevet.evaluation`` package (#147, #256).
+
+The root ``eval_*`` shims are removed before 0.1.0 (#256). Each old root path
+must not resolve, and each current home must import.
+"""
 
 from __future__ import annotations
 
 import importlib
+import importlib.util
 import runpy
 import sys
 from pathlib import Path
@@ -30,8 +35,8 @@ from typevet.evaluation.tpjep import (
     summarize_tpjep_records,
 )
 
-# Old root module -> new home. Every entry must keep working as an import path.
-SHIM_TARGETS: dict[str, str] = {
+# Removed root module -> current home. The old path must not resolve.
+REMOVED_SHIM_HOMES: dict[str, str] = {
     "typevet.eval_tpjep_loader": "typevet.evaluation.tpjep.loader",
     "typevet.eval_tpjep_outcome": "typevet.evaluation.tpjep.outcome",
     "typevet.eval_tpjep_records": "typevet.evaluation.tpjep.records",
@@ -63,35 +68,42 @@ SHIM_TARGETS: dict[str, str] = {
     "typevet.eval_pubmedqa": "typevet.evaluation.datasets.pubmedqa",
 }
 
-# Legacy symbols callers depend on, per root shim module.
+# Legacy symbols callers depend on, per current home of a removed shim.
 LEGACY_SYMBOLS: dict[str, tuple[str, ...]] = {
-    "typevet.eval_tpjep_loader": (
+    "typevet.evaluation.tpjep.loader": (
         "TPJEP_DATASET_GIT_COMMIT",
         "TPJEP_MANIFEST_HASH",
         "TpjepScheduledTask",
         "load_eight_task_fixture",
         "model_inputs_for_task",
     ),
-    "typevet.eval_tpjep_outcome": ("outcome_from_answer", "prob_valid"),
-    "typevet.eval_tpjep_records": (
+    "typevet.evaluation.tpjep.outcome": ("outcome_from_answer", "prob_valid"),
+    "typevet.evaluation.tpjep.records": (
         "TPJEP_PROTOCOL_V0",
         "TpjepAttemptRecord",
         "TpjepRunSummary",
         "summarize_tpjep_records",
     ),
-    "typevet.eval_tpjep_runner": (
+    "typevet.evaluation.tpjep.runner": (
         "TpjepRunConfig",
         "TpjepRunReceipt",
         "run_tpjep_tasks",
         "run_tpjep_with_receipt",
     ),
-    "typevet.eval_runner": ("run_eval_tasks",),
-    "typevet.eval_runner_datasets": ("SUPPORTED_DATASETS", "load_eval_tasks"),
-    "typevet.eval_runner_live_gate": ("live_skip_reason",),
-    "typevet.eval_runner_report": ("EvalRunReport", "format_report", "merge_reports"),
-    "typevet.eval_runner_cli": ("main",),
-    "typevet.eval_clinc_shard": ("domain_intent_map", "plus_intent_names"),
-    "typevet.eval_partner_guard": ("scan_tree_paths",),
+    "typevet.evaluation.runner.core": ("run_eval_tasks",),
+    "typevet.evaluation.runner.datasets": ("SUPPORTED_DATASETS", "load_eval_tasks"),
+    "typevet.evaluation.runner.live_gate": ("live_skip_reason",),
+    "typevet.evaluation.runner.report": (
+        "EvalRunReport",
+        "format_report",
+        "merge_reports",
+    ),
+    "typevet.adapters.inbound.eval_cli": ("main",),
+    "typevet.evaluation.datasets.clinc_shard": (
+        "domain_intent_map",
+        "plus_intent_names",
+    ),
+    "typevet.evaluation.datasets.partner_guard": ("scan_tree_paths",),
 }
 
 
@@ -123,37 +135,32 @@ def test_eval_cli_lives_under_inbound_adapters() -> None:
 
 
 @pytest.mark.contract
-@pytest.mark.parametrize(("old_name", "new_name"), sorted(SHIM_TARGETS.items()))
-def test_root_shim_reexports_new_module(old_name: str, new_name: str) -> None:
-    shim = importlib.import_module(old_name)
-    target = importlib.import_module(new_name)
-    exported = getattr(shim, "__all__", None)
-    assert exported, f"{old_name} must declare __all__"
-    for name in exported:
-        assert getattr(shim, name) is getattr(target, name), (
-            f"{old_name}.{name} must be {new_name}.{name}"
-        )
+@pytest.mark.parametrize(("old_name", "new_name"), sorted(REMOVED_SHIM_HOMES.items()))
+def test_root_shim_is_removed_and_home_imports(old_name: str, new_name: str) -> None:
+    assert importlib.util.find_spec(old_name) is None
+    importlib.import_module(new_name)
 
 
 @pytest.mark.contract
-@pytest.mark.parametrize(("old_name", "symbols"), sorted(LEGACY_SYMBOLS.items()))
-def test_root_shim_keeps_legacy_symbols(
-    old_name: str, symbols: tuple[str, ...]
+@pytest.mark.parametrize(("module_name", "symbols"), sorted(LEGACY_SYMBOLS.items()))
+def test_current_home_keeps_legacy_symbols(
+    module_name: str, symbols: tuple[str, ...]
 ) -> None:
-    shim = importlib.import_module(old_name)
+    module = importlib.import_module(module_name)
     for name in symbols:
-        assert hasattr(shim, name), f"{old_name} lost {name}"
+        assert hasattr(module, name), f"{module_name} lost {name}"
 
 
 @pytest.mark.contract
-def test_eval_runner_cli_module_still_runs_as_main(
+def test_eval_cli_module_runs_as_main(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    monkeypatch.setattr("sys.argv", ["typevet.eval_runner_cli", "--limit", "0"])
-    monkeypatch.delitem(sys.modules, "typevet.eval_runner_cli", raising=False)
+    module_name = "typevet.adapters.inbound.eval_cli"
+    monkeypatch.setattr("sys.argv", [module_name, "--limit", "0"])
+    monkeypatch.delitem(sys.modules, module_name, raising=False)
     with pytest.raises(SystemExit) as exit_info:
-        runpy.run_module("typevet.eval_runner_cli", run_name="__main__")
+        runpy.run_module(module_name, run_name="__main__")
     assert exit_info.value.code == 2
     assert "--limit must be positive" in capsys.readouterr().err
 

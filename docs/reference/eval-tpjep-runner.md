@@ -14,9 +14,9 @@ values never enter model inputs.
 
 | Piece | Location |
 |---|---|
-| Loader + pins | ``typevet.eval_tpjep_loader`` |
-| Runner + receipt metadata | ``typevet.eval_tpjep_runner`` |
-| Answer → record scoring | ``typevet.eval_tpjep_outcome`` |
+| Loader + pins | ``typevet.evaluation.tpjep.loader`` |
+| Runner + receipt metadata | ``typevet.evaluation.tpjep.runner`` |
+| Answer → record scoring | ``typevet.evaluation.tpjep.outcome`` |
 | Eight-row fixture | ``tests/fixtures/tpjep/eight_task_smoke.jsonl`` |
 | Provenance | ``tests/fixtures/tpjep/PROVENANCE.md`` |
 

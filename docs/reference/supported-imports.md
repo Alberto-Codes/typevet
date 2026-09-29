@@ -208,16 +208,16 @@ Organizational package only. It has no `__all__` exports. Import from
 `typevet.adapters.inbound`, `typevet.adapters.outbound`, or
 `typevet.adapters.diagnostics`.
 
-## Root compatibility shims
+## Removed before 0.1.0
 
-These root modules re-export names from their current home so pinned imports
-and commands keep working. New code imports from the current home.
+typevet removed these root modules before its first release (#256). They only
+re-exported names from their current home. Import from the current home.
 
-| Shim module | Current home |
+| Removed module | Current home |
 |---|---|
 | `typevet.eval_runner_cli` | `typevet.adapters.inbound.eval_cli` |
 | `typevet.eval_runner`, `typevet.eval_runner_datasets`, `typevet.eval_runner_live_gate`, `typevet.eval_runner_report` | `typevet.evaluation.runner` |
-| `typevet.eval_tpjep_*` | `typevet.evaluation.tpjep` |
+| `typevet.eval_tpjep_loader`, `typevet.eval_tpjep_outcome`, `typevet.eval_tpjep_records`, `typevet.eval_tpjep_runner` | `typevet.evaluation.tpjep` |
 | Other `typevet.eval_*` loaders, download helpers, and guards | One submodule of `typevet.evaluation.datasets` |
 
 ## Command-line entry
@@ -232,8 +232,7 @@ The one command is a Python module entry:
 uv run python -m typevet.adapters.inbound.eval_cli --help
 ```
 
-`python -m typevet.eval_runner_cli` runs the same `main` through the root
-shim. Without `TYPEVET_LLAMA__*` router settings, the command prints a skip
+Without `TYPEVET_LLAMA__*` router settings, the command prints a skip
 reason and exits `0`. See [live eval runner](eval-live-runner.md).
 
 ## Typing and packaging

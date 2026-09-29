@@ -9,7 +9,6 @@ loader issue [#59](https://github.com/Alberto-Codes/typevet/issues/59).
 | Piece | Module / path |
 |---|---|
 | Test-split loader | `typevet.evaluation.datasets.difraud` |
-| Compatibility shim | `typevet.eval_difraud` (re-exports the same names; prefer the path above in new code) |
 | Primary Noul | `is_scam` (boolean + `return_probabilities`) |
 | Versioned JSON Schema | `evals/fixtures/difraud_is_scam_noul_schema_v1.json` |
 | CI JSONL subset | `tests/fixtures/difraud/sms_test_subset.jsonl` |

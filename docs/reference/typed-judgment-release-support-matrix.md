@@ -175,7 +175,7 @@ export TYPEVET_REQUIRE_LIVE=1
 uv run pytest tests/live/test_eval_runner_live.py -m live -q
 ```
 
-Equivalent CLI flag: `--require-live` on `typevet.eval_runner_cli` — see
+Equivalent CLI flag: `--require-live` on `typevet.adapters.inbound.eval_cli` — see
 [Live eval runner](eval-live-runner.md). Other live modules honor the same env
 via [tests/live/gate.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/live/gate.py).
 

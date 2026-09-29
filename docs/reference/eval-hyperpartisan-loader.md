@@ -9,7 +9,7 @@ research [#68](https://github.com/Alberto-Codes/typevet/issues/68); loader
 
 | Piece | Module / path |
 |---|---|
-| Byarticle loader + export | `typevet.eval_hyperpartisan` |
+| Byarticle loader + export | `typevet.evaluation.datasets.hyperpartisan` |
 | Primary Noul | `hyperpartisan` (boolean + `return_probabilities`) |
 | Versioned JSON Schema | `evals/fixtures/hyperpartisan_hyperpartisan_noul_schema_v1.json` |
 | Holdout manifest | `evals/fixtures/hyperpartisan_holdout_manifest_v1.yaml` |

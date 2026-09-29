@@ -100,7 +100,7 @@ answers a question, and a reference gives facts.
 - [Python API reference](reference/api.md) (reference): the public package
   docstrings in the site build.
 - [Supported imports](reference/supported-imports.md) (reference): package
-  `__all__` surfaces, root compatibility shims, and the module command entry.
+  `__all__` surfaces, modules removed before 0.1.0, and the module command entry.
 - [Typed-judgment release support matrix](reference/typed-judgment-release-support-matrix.md)
   (reference): supported sync APIs, Gemma 4 native vision pins, evidence
   commands, and release exclusions ([#191](https://github.com/Alberto-Codes/typevet/issues/191)).

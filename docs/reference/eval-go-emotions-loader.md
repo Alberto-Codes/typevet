@@ -10,8 +10,8 @@ Parent epic: [#51](https://github.com/Alberto-Codes/typevet/issues/51); loader
 
 | Piece | Module / path |
 |---|---|
-| ``simplified`` train loader | `typevet.eval_go_emotions` |
-| HF datasets-server download | `typevet.eval_go_emotions_download` |
+| ``simplified`` train loader | `typevet.evaluation.datasets.go_emotions` |
+| HF datasets-server download | `typevet.evaluation.datasets.go_emotions_download` |
 | Primary Choice | `emotion` (24-enum Hub order minus prune) |
 | Versioned JSON Schema | `evals/fixtures/go_emotions_emotion_choice_schema_v1.json` |
 | CI JSONL subset | `tests/fixtures/go_emotions/simplified_train_subset.jsonl` |

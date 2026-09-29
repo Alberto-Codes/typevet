@@ -8,7 +8,7 @@ Examples:
     from typevet.domain.judgment_answers import NoulAnswer
     from typevet.evaluation.tpjep.outcome import outcome_from_answer
 
-    # task from eval_tpjep_loader ...
+    # task from typevet.evaluation.tpjep.loader ...
     predicted, probs, correct = outcome_from_answer(task, NoulAnswer(noul=0.2))
     ```
 

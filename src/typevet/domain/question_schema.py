@@ -7,7 +7,10 @@ Choice, Score), ``instructions``, and optional ``labels`` /
 
 Examples:
     ```python
-    from typevet.eval_boolq import BOOLQ_ANSWER_NOUL_SCHEMA, questions_payload
+    from typevet.evaluation.datasets.boolq import (
+        BOOLQ_ANSWER_NOUL_SCHEMA,
+        questions_payload,
+    )
     from typevet.domain.question_schema import question_records_to_json_schema
 
     assert question_records_to_json_schema(questions_payload()) == (

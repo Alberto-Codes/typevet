@@ -1,8 +1,8 @@
 """Contract tests for the library package layout before 0.1.0 (#256).
 
-The root library shims are removed, and ``question_schema`` lives in
-``typevet.domain``. Each old root path must not resolve, and each new path
-must import.
+The root library shims and the root ``eval_*`` shims are removed, and
+``question_schema`` lives in ``typevet.domain``. Each old root path must not
+resolve, and each new path must import.
 """
 
 from __future__ import annotations
@@ -17,6 +17,33 @@ pytestmark = pytest.mark.contract
 REMOVED_ROOT_MODULES: tuple[str, ...] = (
     "typevet.cord_semantic_acceptance_cli",
     "typevet.decide_categorical",
+    "typevet.eval_banking77",
+    "typevet.eval_boolq",
+    "typevet.eval_boolq_download",
+    "typevet.eval_civil_comments",
+    "typevet.eval_clinc",
+    "typevet.eval_clinc_download",
+    "typevet.eval_clinc_rows",
+    "typevet.eval_clinc_shard",
+    "typevet.eval_difraud",
+    "typevet.eval_go_emotions",
+    "typevet.eval_go_emotions_download",
+    "typevet.eval_hyperpartisan",
+    "typevet.eval_partner_guard",
+    "typevet.eval_psai",
+    "typevet.eval_psai_download",
+    "typevet.eval_psai_schema",
+    "typevet.eval_psai_stream",
+    "typevet.eval_pubmedqa",
+    "typevet.eval_runner",
+    "typevet.eval_runner_cli",
+    "typevet.eval_runner_datasets",
+    "typevet.eval_runner_live_gate",
+    "typevet.eval_runner_report",
+    "typevet.eval_tpjep_loader",
+    "typevet.eval_tpjep_outcome",
+    "typevet.eval_tpjep_records",
+    "typevet.eval_tpjep_runner",
     "typevet.field_prompt",
     "typevet.gemma_answer_binding",
     "typevet.gemma_served_template",

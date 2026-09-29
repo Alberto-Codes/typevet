@@ -9,7 +9,7 @@ research [#65](https://github.com/Alberto-Codes/typevet/issues/65); loader
 
 | Piece | Module / path |
 |---|---|
-| Test-split loader | `typevet.eval_civil_comments` |
+| Test-split loader | `typevet.evaluation.datasets.civil_comments` |
 | Primary Noul | `is_toxic` (boolean + `return_probabilities`) |
 | Versioned JSON Schema | `evals/fixtures/civil_comments_is_toxic_noul_schema_v1.json` |
 | Seeded tier manifest | `evals/fixtures/civil_comments_tier_manifest_v1.yaml` |

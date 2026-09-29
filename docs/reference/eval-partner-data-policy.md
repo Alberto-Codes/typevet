@@ -40,9 +40,9 @@ workflow stays outside this repo.
 
 ## Forbidden markers (machine check)
 
-CI runs `typevet.eval_partner_guard` via pytest. A tracked path or packaging
-line must not contain any marker below, except in the allowlisted guard and
-policy files named in that module.
+CI runs `typevet.evaluation.datasets.partner_guard` via pytest. A tracked
+path or packaging line must not contain any marker below. The exceptions are
+the allowlisted guard and policy files named in that module.
 
 | Marker | Meaning |
 |---|---|
