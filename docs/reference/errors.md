@@ -34,7 +34,8 @@ other `GenerationError` parse failures, and fail-fast `SchemaValidationError`.
 
 ## Generation failures
 
-Export from `typevet` (package root) or `typevet.domain.errors`:
+The package root `typevet` exports only the first four types.
+`typevet.domain.errors` exports all of them:
 
 | Type | Parent | Meaning |
 |---|---|---|
@@ -58,6 +59,7 @@ errors, not `GenerationError`:
 | Blank `prompt` or `model` | `ValueError` |
 | `schema` is not a mapping | `TypeError` |
 | `schema.type` is set and not `"object"` | `ValueError` |
+| A `media` item is not an `ImageInput` | `TypeError` |
 | Count of `MEDIA_MARKER` in `prompt` differs from `len(media)` | `ValueError` |
 
 Fix the request; do not treat these as retryable generation failures.

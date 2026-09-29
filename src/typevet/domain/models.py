@@ -58,10 +58,13 @@ class GenerationRequest:
     def __post_init__(self) -> None:
         """Reject a blank field, a non-object schema root or a marker mismatch.
 
+        Stores ``media`` as a tuple, so a list input becomes immutable.
+
         Raises:
             ValueError: When prompt or model is blank, schema type is not
                 object, or the media marker count differs from ``len(media)``.
-            TypeError: When schema is not a mapping.
+            TypeError: When schema is not a mapping, or a media item is not
+                an ``ImageInput``.
         """
         if not self.prompt.strip():
             msg = "prompt must be non-empty"
@@ -76,6 +79,11 @@ class GenerationRequest:
         if schema_type is not None and schema_type != "object":
             msg = "schema root type must be object when set"
             raise ValueError(msg)
+        object.__setattr__(self, "media", tuple(self.media))
+        for index, item in enumerate(self.media):
+            if not isinstance(item, ImageInput):
+                msg = f"media[{index}] must be ImageInput, got {type(item).__name__}"
+                raise TypeError(msg)
         markers = count_media_markers(self.prompt)
         if markers != len(self.media):
             msg = (

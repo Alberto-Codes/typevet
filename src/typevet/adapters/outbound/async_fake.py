@@ -46,6 +46,9 @@ AsyncResponder = Callable[[GenerationRequest], Mapping[str, Any]]
 class AsyncFakeGenerationAdapter:
     """Return a fixed or callable mapping and validate it against the schema.
 
+    The fake itself does not read ``request.media``; a responder
+    receives the full request.
+
     Attributes:
         _value (Mapping[str, Any] | None): Fixed mapping when set.
         _responder (AsyncResponder | None): Callable producer when set.

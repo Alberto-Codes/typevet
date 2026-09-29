@@ -47,6 +47,7 @@ class StaticGenerationFake:
     Callers that need schema validation should use
     ``typevet.adapters.outbound.FakeGenerationAdapter`` in contract tests.
     This fake is for inbound unit tests that only need a port double.
+    It ignores ``request.media``: images do not change the result.
 
     Attributes:
         _value (dict[str, Any]): Stored mapping returned from generate.
