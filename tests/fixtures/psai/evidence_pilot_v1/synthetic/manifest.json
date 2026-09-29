@@ -1,0 +1,2394 @@
+{
+  "manifest_version": 1,
+  "issue": 192,
+  "parent_issue": 189,
+  "dataset_id": "anaisleila/computer-use-data-psai",
+  "license": "MIT",
+  "attribution": "PSAI computer-use data (anaisleila/computer-use-data-psai), MIT licence.",
+  "synthetic": true,
+  "rows": [
+    {
+      "case_id": "pev1-001",
+      "unique_data_id": "synthetic-dev-01",
+      "screenshot_index": 1,
+      "png_sha256": "73cc2d56894f73bea5a183c3dd59838f1812733aa8c7a873092f1ec9dcd391a2",
+      "host": "dev-site1.example",
+      "task_name": "Synthetic task 1 for the dev split on site 1.",
+      "split": "dev",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a search field."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-002",
+      "unique_data_id": "synthetic-dev-02",
+      "screenshot_index": 2,
+      "png_sha256": "94b42dc188f9895b478dcb387430b3c2b7b7cc4b57ac5ed7cb700e0f83411f2c",
+      "host": "dev-site2.example",
+      "task_name": "Synthetic task 2 for the dev split on site 2.",
+      "split": "dev",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a login button."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-003",
+      "unique_data_id": "synthetic-dev-03",
+      "screenshot_index": 0,
+      "png_sha256": "30efb724a341408932691ac1948103c68f47698f9d3da6b97c420f55409e4c26",
+      "host": "dev-site3.example",
+      "task_name": "Synthetic task 3 for the dev split on site 3.",
+      "split": "dev",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a price list."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-004",
+      "unique_data_id": "synthetic-dev-04",
+      "screenshot_index": 1,
+      "png_sha256": "352ae4e9dda4c1583f972983a9d553274679a0b49bf198aee689b79727253ed7",
+      "host": "dev-site4.example",
+      "task_name": "Synthetic task 4 for the dev split on site 4.",
+      "split": "dev",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a map panel."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-005",
+      "unique_data_id": "synthetic-dev-05",
+      "screenshot_index": 2,
+      "png_sha256": "92b458c557b85d36266e47ca105cd9f87a290d910e942826b902f6a9980eabee",
+      "host": "dev-site5.example",
+      "task_name": "Synthetic task 5 for the dev split on site 5.",
+      "split": "dev",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a news headline."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-006",
+      "unique_data_id": "synthetic-dev-06",
+      "screenshot_index": 0,
+      "png_sha256": "83de373bce9fd0ac56f4527a7f69339d2c6baab66aff3405014b9ffa4e50a1a4",
+      "host": "dev-site6.example",
+      "task_name": "Synthetic task 6 for the dev split on site 6.",
+      "split": "dev",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a results table."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-007",
+      "unique_data_id": "synthetic-dev-07",
+      "screenshot_index": 1,
+      "png_sha256": "b6c22f101f26fb96bd1652961e6092d3aaa1fcdc34f5bdd1fb01c8858c356221",
+      "host": "dev-site7.example",
+      "task_name": "Synthetic task 7 for the dev split on site 7.",
+      "split": "dev",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a sign-up form."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-008",
+      "unique_data_id": "synthetic-dev-08",
+      "screenshot_index": 2,
+      "png_sha256": "fb10b4cb4af4375fcca6972de15a41fd53c8e4be3fc20b8358dd419728fb50bf",
+      "host": "dev-site8.example",
+      "task_name": "Synthetic task 8 for the dev split on site 8.",
+      "split": "dev",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a cart icon."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-009",
+      "unique_data_id": "synthetic-dev-01",
+      "screenshot_index": 1,
+      "png_sha256": "54b677e3a5124a58e2ff8750379aee8d8c4bf42fa0b093e6bedb6cfa6d195e49",
+      "host": "dev-site1.example",
+      "task_name": "Synthetic task 1 for the dev split on site 1.",
+      "split": "dev",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a search field."
+      },
+      "gold_label": "contradicted",
+      "label_source": "construction",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.18,
+            "contradicted": 0.72,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 0.8,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-010",
+      "unique_data_id": "synthetic-dev-02",
+      "screenshot_index": 2,
+      "png_sha256": "090567d139c3f342639a9505a407a6b310febdc1eb974a0c2f80298bf8283da1",
+      "host": "dev-site2.example",
+      "task_name": "Synthetic task 2 for the dev split on site 2.",
+      "split": "dev",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a login button."
+      },
+      "gold_label": "contradicted",
+      "label_source": "construction",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.9,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-011",
+      "unique_data_id": "synthetic-dev-03",
+      "screenshot_index": 0,
+      "png_sha256": "bdd477bf5f087fa5facb54a61c0a4f7584e0bf4ae96ec19ae5ed6784aa90495a",
+      "host": "dev-site3.example",
+      "task_name": "Synthetic task 3 for the dev split on site 3.",
+      "split": "dev",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a price list."
+      },
+      "gold_label": "contradicted",
+      "label_source": "construction",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.9,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-012",
+      "unique_data_id": "synthetic-dev-04",
+      "screenshot_index": 1,
+      "png_sha256": "444616e57ac9683e6c736ff7699c0b7dd6ea23ad118ff0040da767f677f3906a",
+      "host": "dev-site4.example",
+      "task_name": "Synthetic task 4 for the dev split on site 4.",
+      "split": "dev",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a map panel."
+      },
+      "gold_label": "insufficient_evidence",
+      "label_source": "construction",
+      "votes": {
+        "construction": "insufficient_evidence",
+        "gemma_draft": "insufficient_evidence",
+        "qwen_dom": {
+          "run_labels": [
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.9
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-013",
+      "unique_data_id": "synthetic-dev-05",
+      "screenshot_index": 2,
+      "png_sha256": "f297096ba2d55475b91d8e85e1c0247470b1999bcbc510fe7f75fa41d1facbc1",
+      "host": "dev-site5.example",
+      "task_name": "Synthetic task 5 for the dev split on site 5.",
+      "split": "dev",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a news headline."
+      },
+      "gold_label": "contradicted",
+      "label_source": "construction",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.9,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-014",
+      "unique_data_id": "synthetic-dev-06",
+      "screenshot_index": 0,
+      "png_sha256": "fdc982ffe11a4f2b4f2c773aceb11b94c134fbbbe3251c977243255b233ff5a5",
+      "host": "dev-site6.example",
+      "task_name": "Synthetic task 6 for the dev split on site 6.",
+      "split": "dev",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a results table."
+      },
+      "gold_label": "contradicted",
+      "label_source": "construction",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.9,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-015",
+      "unique_data_id": "synthetic-dev-07",
+      "screenshot_index": 1,
+      "png_sha256": "dd2ec784566d202284577ec5ebbdd2f1c7929e3d209a3a6988fd67ee5e48c92b",
+      "host": "dev-site7.example",
+      "task_name": "Synthetic task 7 for the dev split on site 7.",
+      "split": "dev",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a sign-up form."
+      },
+      "gold_label": "insufficient_evidence",
+      "label_source": "construction",
+      "votes": {
+        "construction": "insufficient_evidence",
+        "gemma_draft": "insufficient_evidence",
+        "qwen_dom": {
+          "run_labels": [
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.9
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-016",
+      "unique_data_id": "synthetic-dev-08",
+      "screenshot_index": 2,
+      "png_sha256": "691dc3c1227ca356b124c2e655e4ff6e894a5e50a16fc9dd92a742ed4dec2b16",
+      "host": "dev-site8.example",
+      "task_name": "Synthetic task 8 for the dev split on site 8.",
+      "split": "dev",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a cart icon."
+      },
+      "gold_label": "contradicted",
+      "label_source": "human",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.18,
+            "contradicted": 0.72,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 0.8,
+          "spread": 0.05
+        },
+        "human": "contradicted"
+      }
+    },
+    {
+      "case_id": "pev1-017",
+      "unique_data_id": "synthetic-dev-01",
+      "screenshot_index": 1,
+      "png_sha256": "30a1629e8178fc9a815291b3710e654e466ac166eb9f528f417974173e458ae1",
+      "host": "dev-site1.example",
+      "task_name": "Synthetic task 1 for the dev split on site 1.",
+      "split": "dev",
+      "row_kind": "swap",
+      "donor": {
+        "unique_data_id": "synthetic-dev-05",
+        "host": "dev-site5.example",
+        "screenshot_index": 2,
+        "png_sha256": "92b458c557b85d36266e47ca105cd9f87a290d910e942826b902f6a9980eabee"
+      },
+      "model_input": {
+        "claim": "The page shows a search field."
+      },
+      "gold_label": "contradicted",
+      "label_source": "human",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": null,
+        "human": "contradicted"
+      }
+    },
+    {
+      "case_id": "pev1-018",
+      "unique_data_id": "synthetic-dev-02",
+      "screenshot_index": 2,
+      "png_sha256": "2d900b78af9a5d11ddb2ca90b44861d8969d80c2b352fa7846dffd0d248d089a",
+      "host": "dev-site2.example",
+      "task_name": "Synthetic task 2 for the dev split on site 2.",
+      "split": "dev",
+      "row_kind": "swap",
+      "donor": {
+        "unique_data_id": "synthetic-dev-06",
+        "host": "dev-site6.example",
+        "screenshot_index": 0,
+        "png_sha256": "83de373bce9fd0ac56f4527a7f69339d2c6baab66aff3405014b9ffa4e50a1a4"
+      },
+      "model_input": {
+        "claim": "The page shows a login button."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-019",
+      "unique_data_id": "synthetic-dev-03",
+      "screenshot_index": 0,
+      "png_sha256": "0321afeaa3352719261ffc12d2ce78068d25d04cbd1cb7f4079c460b09316378",
+      "host": "dev-site3.example",
+      "task_name": "Synthetic task 3 for the dev split on site 3.",
+      "split": "dev",
+      "row_kind": "swap",
+      "donor": {
+        "unique_data_id": "synthetic-dev-07",
+        "host": "dev-site7.example",
+        "screenshot_index": 1,
+        "png_sha256": "b6c22f101f26fb96bd1652961e6092d3aaa1fcdc34f5bdd1fb01c8858c356221"
+      },
+      "model_input": {
+        "claim": "The page shows a price list."
+      },
+      "gold_label": "contradicted",
+      "label_source": "human",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": null,
+        "human": "contradicted"
+      }
+    },
+    {
+      "case_id": "pev1-020",
+      "unique_data_id": "synthetic-dev-04",
+      "screenshot_index": 1,
+      "png_sha256": "64cb6dd8bc347bdbc71611ffab002980b2e6ac5aa20010465f7709c76cc307b1",
+      "host": "dev-site4.example",
+      "task_name": "Synthetic task 4 for the dev split on site 4.",
+      "split": "dev",
+      "row_kind": "swap",
+      "donor": {
+        "unique_data_id": "synthetic-dev-08",
+        "host": "dev-site8.example",
+        "screenshot_index": 2,
+        "png_sha256": "fb10b4cb4af4375fcca6972de15a41fd53c8e4be3fc20b8358dd419728fb50bf"
+      },
+      "model_input": {
+        "claim": "The page shows a map panel."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-021",
+      "unique_data_id": "synthetic-dev-05",
+      "screenshot_index": 2,
+      "png_sha256": "3f6a740ffeb01f30160a520901a22802651c35bd354628d4f06c938b11eeef0a",
+      "host": "dev-site5.example",
+      "task_name": "Synthetic task 5 for the dev split on site 5.",
+      "split": "dev",
+      "row_kind": "crop",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a news headline."
+      },
+      "gold_label": "insufficient_evidence",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "insufficient_evidence"
+      }
+    },
+    {
+      "case_id": "pev1-022",
+      "unique_data_id": "synthetic-dev-06",
+      "screenshot_index": 0,
+      "png_sha256": "76360d4cd03629152bfe009e9f3e90fc6dc04df89b2456bf9353c865b93501e1",
+      "host": "dev-site6.example",
+      "task_name": "Synthetic task 6 for the dev split on site 6.",
+      "split": "dev",
+      "row_kind": "crop",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a results table."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-023",
+      "unique_data_id": "synthetic-dev-07",
+      "screenshot_index": 1,
+      "png_sha256": "2ec978a76acdc97f56359be2a41336f3bd2e2a156c5c82579996aeb56092d767",
+      "host": "dev-site7.example",
+      "task_name": "Synthetic task 7 for the dev split on site 7.",
+      "split": "dev",
+      "row_kind": "crop",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a sign-up form."
+      },
+      "gold_label": "insufficient_evidence",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "insufficient_evidence"
+      }
+    },
+    {
+      "case_id": "pev1-024",
+      "unique_data_id": "synthetic-dev-08",
+      "screenshot_index": 2,
+      "png_sha256": "501b538aba25d55323dcbe62932f7f5120fee213d07c72f28e8f0e9bbb6be962",
+      "host": "dev-site8.example",
+      "task_name": "Synthetic task 8 for the dev split on site 8.",
+      "split": "dev",
+      "row_kind": "crop",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a cart icon."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-025",
+      "unique_data_id": "synthetic-prompt_selection-01",
+      "screenshot_index": 1,
+      "png_sha256": "675305e3be1274e7a5a1fe6c23c8351568184cc35cb9afa5f0d1afb830ce7071",
+      "host": "prompt-selection-site1.example",
+      "task_name": "Synthetic task 1 for the prompt_selection split on site 1.",
+      "split": "prompt_selection",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a search field."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-026",
+      "unique_data_id": "synthetic-prompt_selection-02",
+      "screenshot_index": 2,
+      "png_sha256": "e2432d3ab0f229d075133737113f33a35d53766c35679923cf8405b865cd16a6",
+      "host": "prompt-selection-site2.example",
+      "task_name": "Synthetic task 2 for the prompt_selection split on site 2.",
+      "split": "prompt_selection",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a login button."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-027",
+      "unique_data_id": "synthetic-prompt_selection-03",
+      "screenshot_index": 0,
+      "png_sha256": "267868363f976a8cdbc7a46188bc170e903373b30058f581b106e39c629a1b27",
+      "host": "prompt-selection-site3.example",
+      "task_name": "Synthetic task 3 for the prompt_selection split on site 3.",
+      "split": "prompt_selection",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a price list."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-028",
+      "unique_data_id": "synthetic-prompt_selection-04",
+      "screenshot_index": 1,
+      "png_sha256": "dac490a3523af2fe27cf4427d683a66d0df55da9eb02a90ca27bb22333845054",
+      "host": "prompt-selection-site4.example",
+      "task_name": "Synthetic task 4 for the prompt_selection split on site 4.",
+      "split": "prompt_selection",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a map panel."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-029",
+      "unique_data_id": "synthetic-prompt_selection-05",
+      "screenshot_index": 2,
+      "png_sha256": "fbf217ac4ae6158cd44180f6d5153833caa585dddcca287f2c728406f1f2f543",
+      "host": "prompt-selection-site5.example",
+      "task_name": "Synthetic task 5 for the prompt_selection split on site 5.",
+      "split": "prompt_selection",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a news headline."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-030",
+      "unique_data_id": "synthetic-prompt_selection-06",
+      "screenshot_index": 0,
+      "png_sha256": "a97548d7a490ba92ac7686b0d8ac54e75f1d2827a74df5165dc0873e68800c9b",
+      "host": "prompt-selection-site6.example",
+      "task_name": "Synthetic task 6 for the prompt_selection split on site 6.",
+      "split": "prompt_selection",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a results table."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-031",
+      "unique_data_id": "synthetic-prompt_selection-07",
+      "screenshot_index": 1,
+      "png_sha256": "4def737c43ade3fd10056090f7a1bf612d29d88e299330775e5561cbfc94bf1a",
+      "host": "prompt-selection-site7.example",
+      "task_name": "Synthetic task 7 for the prompt_selection split on site 7.",
+      "split": "prompt_selection",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a sign-up form."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-032",
+      "unique_data_id": "synthetic-prompt_selection-08",
+      "screenshot_index": 2,
+      "png_sha256": "35a9f50a77f2b9474571606c41882f92e47d2464568b5b4bdbea4d918a969f5c",
+      "host": "prompt-selection-site8.example",
+      "task_name": "Synthetic task 8 for the prompt_selection split on site 8.",
+      "split": "prompt_selection",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a cart icon."
+      },
+      "gold_label": "supported",
+      "label_source": "gemma_draft",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-033",
+      "unique_data_id": "synthetic-prompt_selection-01",
+      "screenshot_index": 1,
+      "png_sha256": "38002efa03bc1ba1fd56d487bdd8c41badb6790bc94f27dd77389557840198fa",
+      "host": "prompt-selection-site1.example",
+      "task_name": "Synthetic task 1 for the prompt_selection split on site 1.",
+      "split": "prompt_selection",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a search field."
+      },
+      "gold_label": "contradicted",
+      "label_source": "construction",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.18,
+            "contradicted": 0.72,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 0.8,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-034",
+      "unique_data_id": "synthetic-prompt_selection-02",
+      "screenshot_index": 2,
+      "png_sha256": "ab7e5179f7787f00cab80ae5070ca694d46826fb2b86b5ca620655405c34523f",
+      "host": "prompt-selection-site2.example",
+      "task_name": "Synthetic task 2 for the prompt_selection split on site 2.",
+      "split": "prompt_selection",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a login button."
+      },
+      "gold_label": "contradicted",
+      "label_source": "construction",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.9,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-035",
+      "unique_data_id": "synthetic-prompt_selection-03",
+      "screenshot_index": 0,
+      "png_sha256": "6fa37bcbdcf089952fb6a47f035f2186bec01f151c7a8778951303e6381fd4ef",
+      "host": "prompt-selection-site3.example",
+      "task_name": "Synthetic task 3 for the prompt_selection split on site 3.",
+      "split": "prompt_selection",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a price list."
+      },
+      "gold_label": "contradicted",
+      "label_source": "construction",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.9,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-036",
+      "unique_data_id": "synthetic-prompt_selection-04",
+      "screenshot_index": 1,
+      "png_sha256": "0198d441f89f81c76b3d7bc0536f022f757c1dd21cff18455d70f6bd9cf6c3d5",
+      "host": "prompt-selection-site4.example",
+      "task_name": "Synthetic task 4 for the prompt_selection split on site 4.",
+      "split": "prompt_selection",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a map panel."
+      },
+      "gold_label": "insufficient_evidence",
+      "label_source": "construction",
+      "votes": {
+        "construction": "insufficient_evidence",
+        "gemma_draft": "insufficient_evidence",
+        "qwen_dom": {
+          "run_labels": [
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.9
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-037",
+      "unique_data_id": "synthetic-prompt_selection-05",
+      "screenshot_index": 2,
+      "png_sha256": "fc38b64321ee9b3c5e62a8365ac5d95bdb2e2a07a14a928b6ac2a59ac25505d0",
+      "host": "prompt-selection-site5.example",
+      "task_name": "Synthetic task 5 for the prompt_selection split on site 5.",
+      "split": "prompt_selection",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a news headline."
+      },
+      "gold_label": "contradicted",
+      "label_source": "construction",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.9,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-038",
+      "unique_data_id": "synthetic-prompt_selection-06",
+      "screenshot_index": 0,
+      "png_sha256": "8c1f21da92794e5137136ec88f0d8706bca783d1430bb06a716fc32710d5e9ea",
+      "host": "prompt-selection-site6.example",
+      "task_name": "Synthetic task 6 for the prompt_selection split on site 6.",
+      "split": "prompt_selection",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a results table."
+      },
+      "gold_label": "contradicted",
+      "label_source": "construction",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.9,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-039",
+      "unique_data_id": "synthetic-prompt_selection-07",
+      "screenshot_index": 1,
+      "png_sha256": "847e821fdc8d13c2c6f38b70da6f6a94a308c1ad85814a2a7c317ff9fb23b5cf",
+      "host": "prompt-selection-site7.example",
+      "task_name": "Synthetic task 7 for the prompt_selection split on site 7.",
+      "split": "prompt_selection",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a sign-up form."
+      },
+      "gold_label": "insufficient_evidence",
+      "label_source": "construction",
+      "votes": {
+        "construction": "insufficient_evidence",
+        "gemma_draft": "insufficient_evidence",
+        "qwen_dom": {
+          "run_labels": [
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.9
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": null
+      }
+    },
+    {
+      "case_id": "pev1-040",
+      "unique_data_id": "synthetic-prompt_selection-08",
+      "screenshot_index": 2,
+      "png_sha256": "24f04dc96cb2fa3eccf13ec849b6fd1e2e9dada8c11610131038cf88eb915665",
+      "host": "prompt-selection-site8.example",
+      "task_name": "Synthetic task 8 for the prompt_selection split on site 8.",
+      "split": "prompt_selection",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a cart icon."
+      },
+      "gold_label": "contradicted",
+      "label_source": "human",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.18,
+            "contradicted": 0.72,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 0.8,
+          "spread": 0.05
+        },
+        "human": "contradicted"
+      }
+    },
+    {
+      "case_id": "pev1-041",
+      "unique_data_id": "synthetic-prompt_selection-01",
+      "screenshot_index": 1,
+      "png_sha256": "92b819078c157bcd3cb9f1276848c58c4fbb77b24f5e66f5e9010841c1aad495",
+      "host": "prompt-selection-site1.example",
+      "task_name": "Synthetic task 1 for the prompt_selection split on site 1.",
+      "split": "prompt_selection",
+      "row_kind": "swap",
+      "donor": {
+        "unique_data_id": "synthetic-prompt_selection-05",
+        "host": "prompt-selection-site5.example",
+        "screenshot_index": 2,
+        "png_sha256": "fbf217ac4ae6158cd44180f6d5153833caa585dddcca287f2c728406f1f2f543"
+      },
+      "model_input": {
+        "claim": "The page shows a search field."
+      },
+      "gold_label": "contradicted",
+      "label_source": "human",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": null,
+        "human": "contradicted"
+      }
+    },
+    {
+      "case_id": "pev1-042",
+      "unique_data_id": "synthetic-prompt_selection-02",
+      "screenshot_index": 2,
+      "png_sha256": "0eb2fa2eb7b86700acbfaa8182d33e384771a5c770e834cc41f388fe09f37537",
+      "host": "prompt-selection-site2.example",
+      "task_name": "Synthetic task 2 for the prompt_selection split on site 2.",
+      "split": "prompt_selection",
+      "row_kind": "swap",
+      "donor": {
+        "unique_data_id": "synthetic-prompt_selection-06",
+        "host": "prompt-selection-site6.example",
+        "screenshot_index": 0,
+        "png_sha256": "a97548d7a490ba92ac7686b0d8ac54e75f1d2827a74df5165dc0873e68800c9b"
+      },
+      "model_input": {
+        "claim": "The page shows a login button."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-043",
+      "unique_data_id": "synthetic-prompt_selection-03",
+      "screenshot_index": 0,
+      "png_sha256": "69b82a82c34aecabf011d4b3ab6ce7731ede05ec9612426be1fefb9de11818ac",
+      "host": "prompt-selection-site3.example",
+      "task_name": "Synthetic task 3 for the prompt_selection split on site 3.",
+      "split": "prompt_selection",
+      "row_kind": "swap",
+      "donor": {
+        "unique_data_id": "synthetic-prompt_selection-07",
+        "host": "prompt-selection-site7.example",
+        "screenshot_index": 1,
+        "png_sha256": "4def737c43ade3fd10056090f7a1bf612d29d88e299330775e5561cbfc94bf1a"
+      },
+      "model_input": {
+        "claim": "The page shows a price list."
+      },
+      "gold_label": "contradicted",
+      "label_source": "human",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": null,
+        "human": "contradicted"
+      }
+    },
+    {
+      "case_id": "pev1-044",
+      "unique_data_id": "synthetic-prompt_selection-04",
+      "screenshot_index": 1,
+      "png_sha256": "422db3a5d467e19ce35acae33d80bb69077491a3724248dd0794608d98d86755",
+      "host": "prompt-selection-site4.example",
+      "task_name": "Synthetic task 4 for the prompt_selection split on site 4.",
+      "split": "prompt_selection",
+      "row_kind": "swap",
+      "donor": {
+        "unique_data_id": "synthetic-prompt_selection-08",
+        "host": "prompt-selection-site8.example",
+        "screenshot_index": 2,
+        "png_sha256": "35a9f50a77f2b9474571606c41882f92e47d2464568b5b4bdbea4d918a969f5c"
+      },
+      "model_input": {
+        "claim": "The page shows a map panel."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-045",
+      "unique_data_id": "synthetic-prompt_selection-05",
+      "screenshot_index": 2,
+      "png_sha256": "b48927c00b2353aaf6825f29233ddb9dffc6152f0d5984e4878b9dbb603c5c8f",
+      "host": "prompt-selection-site5.example",
+      "task_name": "Synthetic task 5 for the prompt_selection split on site 5.",
+      "split": "prompt_selection",
+      "row_kind": "crop",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a news headline."
+      },
+      "gold_label": "insufficient_evidence",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "insufficient_evidence"
+      }
+    },
+    {
+      "case_id": "pev1-046",
+      "unique_data_id": "synthetic-prompt_selection-06",
+      "screenshot_index": 0,
+      "png_sha256": "dd4eb5e2fcc014446eef81e3121fc7b35a692a78d9f83f99cb3ed2910780d233",
+      "host": "prompt-selection-site6.example",
+      "task_name": "Synthetic task 6 for the prompt_selection split on site 6.",
+      "split": "prompt_selection",
+      "row_kind": "crop",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a results table."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-047",
+      "unique_data_id": "synthetic-prompt_selection-07",
+      "screenshot_index": 1,
+      "png_sha256": "84d820f833c5e8da72329767a43cf0b6f58fd2a9856b486ab8e33c87bb847c83",
+      "host": "prompt-selection-site7.example",
+      "task_name": "Synthetic task 7 for the prompt_selection split on site 7.",
+      "split": "prompt_selection",
+      "row_kind": "crop",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a sign-up form."
+      },
+      "gold_label": "insufficient_evidence",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "insufficient_evidence"
+      }
+    },
+    {
+      "case_id": "pev1-048",
+      "unique_data_id": "synthetic-prompt_selection-08",
+      "screenshot_index": 2,
+      "png_sha256": "b36d0fceb7dd89b8800a119a2bb3227c34c2aac5d763b1bf0b4efb52cf5d73c8",
+      "host": "prompt-selection-site8.example",
+      "task_name": "Synthetic task 8 for the prompt_selection split on site 8.",
+      "split": "prompt_selection",
+      "row_kind": "crop",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a cart icon."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-049",
+      "unique_data_id": "synthetic-final-01",
+      "screenshot_index": 1,
+      "png_sha256": "317d26816d6d0d79917f2499a1894836e923ad2217e9e7f567e776387120e0aa",
+      "host": "final-site1.example",
+      "task_name": "Synthetic task 1 for the final split on site 1.",
+      "split": "final",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a search field."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-050",
+      "unique_data_id": "synthetic-final-02",
+      "screenshot_index": 2,
+      "png_sha256": "c7090b4e74c758c1f6180266cb1cae3212822852dcaf8fb58f5266843662979d",
+      "host": "final-site2.example",
+      "task_name": "Synthetic task 2 for the final split on site 2.",
+      "split": "final",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a login button."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-051",
+      "unique_data_id": "synthetic-final-03",
+      "screenshot_index": 0,
+      "png_sha256": "c9ef398e0ffb9ef7e9e78c3a4ce7e3b69d16dc7a31c654f41dd55baf79e712a3",
+      "host": "final-site3.example",
+      "task_name": "Synthetic task 3 for the final split on site 3.",
+      "split": "final",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a price list."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-052",
+      "unique_data_id": "synthetic-final-04",
+      "screenshot_index": 1,
+      "png_sha256": "4205eb864cc5acc361227be75d3e34e148ed6a4be7b3f8424be8500730b60833",
+      "host": "final-site4.example",
+      "task_name": "Synthetic task 4 for the final split on site 4.",
+      "split": "final",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a map panel."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-053",
+      "unique_data_id": "synthetic-final-05",
+      "screenshot_index": 2,
+      "png_sha256": "625058eaec18eb2435e309536f526a403e58b2fca7fb5520b8f4ed2278eb3cec",
+      "host": "final-site5.example",
+      "task_name": "Synthetic task 5 for the final split on site 5.",
+      "split": "final",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a news headline."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-054",
+      "unique_data_id": "synthetic-final-06",
+      "screenshot_index": 0,
+      "png_sha256": "8c8ae19422645cd63b90c9e6ed6c0a3e8fb165d25eb61852afba2c3c7bac87cd",
+      "host": "final-site6.example",
+      "task_name": "Synthetic task 6 for the final split on site 6.",
+      "split": "final",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a results table."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-055",
+      "unique_data_id": "synthetic-final-07",
+      "screenshot_index": 1,
+      "png_sha256": "444c59e90f4504954ea6422fa57caf1a8ebae1f95f287cf14a844d821398c267",
+      "host": "final-site7.example",
+      "task_name": "Synthetic task 7 for the final split on site 7.",
+      "split": "final",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a sign-up form."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-056",
+      "unique_data_id": "synthetic-final-08",
+      "screenshot_index": 2,
+      "png_sha256": "692f32d4b2b84cf2151dd732588ba096f3b0a72986a22527668ba9e7d91ab558",
+      "host": "final-site8.example",
+      "task_name": "Synthetic task 8 for the final split on site 8.",
+      "split": "final",
+      "row_kind": "baseline",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a cart icon."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": {
+          "run_labels": [
+            "supported",
+            "supported",
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "mean_probability": {
+            "supported": 0.9,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-057",
+      "unique_data_id": "synthetic-final-01",
+      "screenshot_index": 1,
+      "png_sha256": "4c3f4ff47437541fdd7600296dc8031909f655fe37d2631f6efb0ebb6fb89139",
+      "host": "final-site1.example",
+      "task_name": "Synthetic task 1 for the final split on site 1.",
+      "split": "final",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a search field."
+      },
+      "gold_label": "contradicted",
+      "label_source": "human",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.9,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "contradicted"
+      }
+    },
+    {
+      "case_id": "pev1-058",
+      "unique_data_id": "synthetic-final-02",
+      "screenshot_index": 2,
+      "png_sha256": "452f8f67d2eb3c8068ad8758d69e57cda71f7e31f66f8002951cc01c81cf9aea",
+      "host": "final-site2.example",
+      "task_name": "Synthetic task 2 for the final split on site 2.",
+      "split": "final",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a login button."
+      },
+      "gold_label": "contradicted",
+      "label_source": "human",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.9,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "contradicted"
+      }
+    },
+    {
+      "case_id": "pev1-059",
+      "unique_data_id": "synthetic-final-03",
+      "screenshot_index": 0,
+      "png_sha256": "e977ab0382955a4c99aa4c9c1bb5d7e925d7e911eee0fbaf95395fd9d96a6193",
+      "host": "final-site3.example",
+      "task_name": "Synthetic task 3 for the final split on site 3.",
+      "split": "final",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a price list."
+      },
+      "gold_label": "contradicted",
+      "label_source": "human",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.9,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "contradicted"
+      }
+    },
+    {
+      "case_id": "pev1-060",
+      "unique_data_id": "synthetic-final-04",
+      "screenshot_index": 1,
+      "png_sha256": "89f43d70c32cd46b5c47a7a9a2d868110da1209e2f91724442734b53606194ac",
+      "host": "final-site4.example",
+      "task_name": "Synthetic task 4 for the final split on site 4.",
+      "split": "final",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a map panel."
+      },
+      "gold_label": "insufficient_evidence",
+      "label_source": "human",
+      "votes": {
+        "construction": "insufficient_evidence",
+        "gemma_draft": "insufficient_evidence",
+        "qwen_dom": {
+          "run_labels": [
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.9
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "insufficient_evidence"
+      }
+    },
+    {
+      "case_id": "pev1-061",
+      "unique_data_id": "synthetic-final-05",
+      "screenshot_index": 2,
+      "png_sha256": "80090685e3cb3c2eac03331ca0335e730c0a60b69ec067bf68ac7fc70b103448",
+      "host": "final-site5.example",
+      "task_name": "Synthetic task 5 for the final split on site 5.",
+      "split": "final",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a news headline."
+      },
+      "gold_label": "contradicted",
+      "label_source": "human",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.9,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "contradicted"
+      }
+    },
+    {
+      "case_id": "pev1-062",
+      "unique_data_id": "synthetic-final-06",
+      "screenshot_index": 0,
+      "png_sha256": "30ba15fe80443aa1749b4d6dbe4e2e5b3bea3b90507d44e47f302abb5d50b25a",
+      "host": "final-site6.example",
+      "task_name": "Synthetic task 6 for the final split on site 6.",
+      "split": "final",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a results table."
+      },
+      "gold_label": "contradicted",
+      "label_source": "human",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.9,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "contradicted"
+      }
+    },
+    {
+      "case_id": "pev1-063",
+      "unique_data_id": "synthetic-final-07",
+      "screenshot_index": 1,
+      "png_sha256": "7166ee481ddaf7bb0cbdda1e13d0d8b34e9aceaeebcd27307bc3f34a072451df",
+      "host": "final-site7.example",
+      "task_name": "Synthetic task 7 for the final split on site 7.",
+      "split": "final",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a sign-up form."
+      },
+      "gold_label": "insufficient_evidence",
+      "label_source": "human",
+      "votes": {
+        "construction": "insufficient_evidence",
+        "gemma_draft": "insufficient_evidence",
+        "qwen_dom": {
+          "run_labels": [
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence",
+            "insufficient_evidence"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.0,
+            "insufficient_evidence": 0.9
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "insufficient_evidence"
+      }
+    },
+    {
+      "case_id": "pev1-064",
+      "unique_data_id": "synthetic-final-08",
+      "screenshot_index": 2,
+      "png_sha256": "7c655b04117653402a7cf853453c0a8cf440033cbbbc7377eda8d8aee41335a5",
+      "host": "final-site8.example",
+      "task_name": "Synthetic task 8 for the final split on site 8.",
+      "split": "final",
+      "row_kind": "claim_axis",
+      "donor": null,
+      "model_input": {
+        "claim": "The page does not show a cart icon."
+      },
+      "gold_label": "contradicted",
+      "label_source": "human",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": {
+          "run_labels": [
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted",
+            "contradicted"
+          ],
+          "mean_probability": {
+            "supported": 0.0,
+            "contradicted": 0.9,
+            "insufficient_evidence": 0.0
+          },
+          "agreement": 1.0,
+          "spread": 0.05
+        },
+        "human": "contradicted"
+      }
+    },
+    {
+      "case_id": "pev1-065",
+      "unique_data_id": "synthetic-final-01",
+      "screenshot_index": 1,
+      "png_sha256": "59a78b89ab9bd50d70d73448e75862de54e19a0dd6d133ba4ba38e8024127563",
+      "host": "final-site1.example",
+      "task_name": "Synthetic task 1 for the final split on site 1.",
+      "split": "final",
+      "row_kind": "swap",
+      "donor": {
+        "unique_data_id": "synthetic-final-05",
+        "host": "final-site5.example",
+        "screenshot_index": 2,
+        "png_sha256": "625058eaec18eb2435e309536f526a403e58b2fca7fb5520b8f4ed2278eb3cec"
+      },
+      "model_input": {
+        "claim": "The page shows a search field."
+      },
+      "gold_label": "contradicted",
+      "label_source": "human",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": null,
+        "human": "contradicted"
+      }
+    },
+    {
+      "case_id": "pev1-066",
+      "unique_data_id": "synthetic-final-02",
+      "screenshot_index": 2,
+      "png_sha256": "92cecaac339ce9ba8f1a5b8dd6f17fdc5f62c4d5e02fdc0340e64329eec7948f",
+      "host": "final-site2.example",
+      "task_name": "Synthetic task 2 for the final split on site 2.",
+      "split": "final",
+      "row_kind": "swap",
+      "donor": {
+        "unique_data_id": "synthetic-final-06",
+        "host": "final-site6.example",
+        "screenshot_index": 0,
+        "png_sha256": "8c8ae19422645cd63b90c9e6ed6c0a3e8fb165d25eb61852afba2c3c7bac87cd"
+      },
+      "model_input": {
+        "claim": "The page shows a login button."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-067",
+      "unique_data_id": "synthetic-final-03",
+      "screenshot_index": 0,
+      "png_sha256": "976fac0b20fb90ccd8803bdc0f7cae1b4206ed75f4045dc829054e23313a45e4",
+      "host": "final-site3.example",
+      "task_name": "Synthetic task 3 for the final split on site 3.",
+      "split": "final",
+      "row_kind": "swap",
+      "donor": {
+        "unique_data_id": "synthetic-final-07",
+        "host": "final-site7.example",
+        "screenshot_index": 1,
+        "png_sha256": "444c59e90f4504954ea6422fa57caf1a8ebae1f95f287cf14a844d821398c267"
+      },
+      "model_input": {
+        "claim": "The page shows a price list."
+      },
+      "gold_label": "contradicted",
+      "label_source": "human",
+      "votes": {
+        "construction": "contradicted",
+        "gemma_draft": "contradicted",
+        "qwen_dom": null,
+        "human": "contradicted"
+      }
+    },
+    {
+      "case_id": "pev1-068",
+      "unique_data_id": "synthetic-final-04",
+      "screenshot_index": 1,
+      "png_sha256": "4f4c3d062b61ce06d31e746f585653ec8a2116a2dc49d90f08c46f571b79128a",
+      "host": "final-site4.example",
+      "task_name": "Synthetic task 4 for the final split on site 4.",
+      "split": "final",
+      "row_kind": "swap",
+      "donor": {
+        "unique_data_id": "synthetic-final-08",
+        "host": "final-site8.example",
+        "screenshot_index": 2,
+        "png_sha256": "692f32d4b2b84cf2151dd732588ba096f3b0a72986a22527668ba9e7d91ab558"
+      },
+      "model_input": {
+        "claim": "The page shows a map panel."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-069",
+      "unique_data_id": "synthetic-final-05",
+      "screenshot_index": 2,
+      "png_sha256": "6201b50d57124d3c53420117a81ad611b59381293a6fd967f7339703e38c81ce",
+      "host": "final-site5.example",
+      "task_name": "Synthetic task 5 for the final split on site 5.",
+      "split": "final",
+      "row_kind": "crop",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a news headline."
+      },
+      "gold_label": "insufficient_evidence",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "insufficient_evidence"
+      }
+    },
+    {
+      "case_id": "pev1-070",
+      "unique_data_id": "synthetic-final-06",
+      "screenshot_index": 0,
+      "png_sha256": "689cf3c51ea1b605ef86ed41dee53cee74e61936d155c686cb4f597222bb572b",
+      "host": "final-site6.example",
+      "task_name": "Synthetic task 6 for the final split on site 6.",
+      "split": "final",
+      "row_kind": "crop",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a results table."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "supported"
+      }
+    },
+    {
+      "case_id": "pev1-071",
+      "unique_data_id": "synthetic-final-07",
+      "screenshot_index": 1,
+      "png_sha256": "642f9e373b36bb7ad305b701d4375375db3c06f012922ff668761b7567738d1a",
+      "host": "final-site7.example",
+      "task_name": "Synthetic task 7 for the final split on site 7.",
+      "split": "final",
+      "row_kind": "crop",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a sign-up form."
+      },
+      "gold_label": "insufficient_evidence",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "insufficient_evidence"
+      }
+    },
+    {
+      "case_id": "pev1-072",
+      "unique_data_id": "synthetic-final-08",
+      "screenshot_index": 2,
+      "png_sha256": "0fe325ddb9f5f594f15df021c8568c98797345b10a7746f1fdf8c0413dd86b71",
+      "host": "final-site8.example",
+      "task_name": "Synthetic task 8 for the final split on site 8.",
+      "split": "final",
+      "row_kind": "crop",
+      "donor": null,
+      "model_input": {
+        "claim": "The page shows a cart icon."
+      },
+      "gold_label": "supported",
+      "label_source": "human",
+      "votes": {
+        "construction": null,
+        "gemma_draft": "supported",
+        "qwen_dom": null,
+        "human": "supported"
+      }
+    }
+  ],
+  "rejected": [
+    {
+      "unique_data_id": "synthetic-rejected-01",
+      "host": "rejected-site1.example",
+      "reason_codes": [
+        "pii_on_screen"
+      ],
+      "note": "Synthetic: user screen found PII."
+    },
+    {
+      "unique_data_id": "synthetic-rejected-02",
+      "host": "rejected-site2.example",
+      "reason_codes": [
+        "dom_not_aligned",
+        "no_human_decision"
+      ],
+      "note": "Synthetic."
+    }
+  ]
+}

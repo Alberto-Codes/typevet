@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Alberto-Codes/typevet/issues/192/psai-evidence-pilot-v1.schema.json",
+  "title": "PSAI evidence pilot v1 manifest",
+  "description": "Rows and rejected items for the claim-about-screen evidence pilot (#189 revision 4). host and task_name are manifest-only; model_input is the only text a model may read.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifest_version", "issue", "dataset_id", "license", "attribution", "rows", "rejected"],
+  "properties": {
+    "manifest_version": {"const": 1},
+    "issue": {"type": "integer"},
+    "parent_issue": {"type": "integer"},
+    "dataset_id": {"const": "anaisleila/computer-use-data-psai"},
+    "license": {"const": "MIT"},
+    "attribution": {"type": "string", "minLength": 1},
+    "synthetic": {"type": "boolean"},
+    "rows": {"type": "array", "items": {"$ref": "#/$defs/row"}},
+    "rejected": {"type": "array", "items": {"$ref": "#/$defs/rejected"}}
+  },
+  "$defs": {
+    "label": {"enum": ["supported", "contradicted", "insufficient_evidence"]},
+    "nullable_label": {"anyOf": [{"$ref": "#/$defs/label"}, {"type": "null"}]},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_id": {"type": "string", "minLength": 1, "not": {"pattern": "^pev1-"}},
+    "screenshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unique_data_id", "host", "screenshot_index", "png_sha256"],
+      "properties": {
+        "unique_data_id": {"$ref": "#/$defs/source_id"},
+        "host": {"type": "string", "minLength": 1},
+        "screenshot_index": {"type": "integer", "minimum": 0},
+        "png_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "qwen_dom": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_labels", "mean_probability", "agreement", "spread"],
+      "properties": {
+        "run_labels": {"type": "array", "items": {"$ref": "#/$defs/label"}, "minItems": 5, "maxItems": 5},
+        "mean_probability": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["supported", "contradicted", "insufficient_evidence"],
+          "properties": {
+            "supported": {"type": "number", "minimum": 0, "maximum": 1},
+            "contradicted": {"type": "number", "minimum": 0, "maximum": 1},
+            "insufficient_evidence": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        },
+        "agreement": {"type": "number", "minimum": 0, "maximum": 1},
+        "spread": {"type": "number", "minimum": 0}
+      }
+    },
+    "votes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["construction", "gemma_draft", "qwen_dom", "human"],
+      "properties": {
+        "construction": {"$ref": "#/$defs/nullable_label"},
+        "gemma_draft": {"$ref": "#/$defs/nullable_label"},
+        "qwen_dom": {"anyOf": [{"$ref": "#/$defs/qwen_dom"}, {"type": "null"}]},
+        "human": {"$ref": "#/$defs/nullable_label"}
+      }
+    },
+    "row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "case_id", "unique_data_id", "screenshot_index", "png_sha256", "host", "task_name",
+        "split", "row_kind", "donor", "model_input", "gold_label", "label_source", "votes"
+      ],
+      "properties": {
+        "case_id": {"type": "string", "pattern": "^pev1-[0-9]{3}$"},
+        "unique_data_id": {"$ref": "#/$defs/source_id"},
+        "screenshot_index": {"type": "integer", "minimum": 0},
+        "png_sha256": {"$ref": "#/$defs/sha256"},
+        "host": {"type": "string", "minLength": 1},
+        "task_name": {"type": "string", "minLength": 1},
+        "split": {"enum": ["dev", "prompt_selection", "final"]},
+        "row_kind": {"enum": ["baseline", "claim_axis", "swap", "crop"]},
+        "donor": {"anyOf": [{"$ref": "#/$defs/screenshot"}, {"type": "null"}]},
+        "model_input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["claim"],
+          "properties": {"claim": {"type": "string", "minLength": 1}}
+        },
+        "gold_label": {"$ref": "#/$defs/label"},
+        "label_source": {"enum": ["construction", "gemma_draft", "qwen_dom", "human"]},
+        "votes": {"$ref": "#/$defs/votes"}
+      },
+      "if": {"properties": {"row_kind": {"const": "swap"}}},
+      "then": {"properties": {"donor": {"$ref": "#/$defs/screenshot"}}},
+      "else": {"properties": {"donor": {"type": "null"}}}
+    },
+    "rejected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unique_data_id", "reason_codes"],
+      "properties": {
+        "unique_data_id": {"$ref": "#/$defs/source_id"},
+        "host": {"type": "string"},
+        "reason_codes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"}
+        },
+        "note": {"type": "string"}
+      }
+    }
+  }
+}
