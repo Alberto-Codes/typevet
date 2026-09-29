@@ -9,8 +9,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from typevet.adapters.inbound.settings import LlamaSettings
-from typevet.evaluation.runner.report import EvalRunReport
 from typevet_evals.cli.eval_runner import _as_dataset, main
+from typevet_evals.runner.report import EvalRunReport
 
 
 @pytest.mark.unit

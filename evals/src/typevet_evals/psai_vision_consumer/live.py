@@ -17,6 +17,8 @@ See Also:
     - [typevet_evals.psai_vision_consumer.live_identity][]: pre-dispatch snapshot
     - [typevet_evals.psai_vision_consumer.live_router][]: router HTTP leg
     - [scripts.psai_vision_consumer_wheel_proof][]: isolated wheel entry
+    - [typevet_evals.runner.live_gate][]: require-live switch
+    - [typevet_evals.experiment_identity][]: receipt identity helpers
 
 Live proof snapshots router identity before the matrix, enforces
 independent judgment/scoring/auxiliary budgets via a dispatch ledger,
@@ -46,13 +48,9 @@ from typevet.evaluation.datasets.psai_vision_controls import (
     VisualControl,
     paired_image_ordering,
 )
-from typevet.evaluation.experiment_identity import (
+from typevet_evals.experiment_identity import (
     ReceiptAlreadyExistsError,
     write_receipt_exclusive,
-)
-from typevet.evaluation.runner.live_gate import (
-    TYPEVET_REQUIRE_LIVE_ENV,
-    require_live_enabled,
 )
 from typevet_evals.psai_vision_consumer.accounting import (
     ConsumerCallBudgetError,
@@ -84,6 +82,10 @@ from typevet_evals.psai_vision_consumer.receipt import (
     consumer_receipt_basename,
     evaluate_consumer_receipt_acceptance,
     resolve_receipt_write_path,
+)
+from typevet_evals.runner.live_gate import (
+    TYPEVET_REQUIRE_LIVE_ENV,
+    require_live_enabled,
 )
 
 _DISPATCH_ERRORS = (

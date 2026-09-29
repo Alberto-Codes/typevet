@@ -18,7 +18,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.experiment_identity][]: snapshot helpers
+    - [typevet_evals.experiment_identity][]: snapshot helpers
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
 """
@@ -34,7 +34,7 @@ from typevet.evaluation.datasets.psai_vision import (
     VisionSmokeFixture,
     vision_smoke_manifest_path,
 )
-from typevet.evaluation.experiment_identity import (
+from typevet_evals.experiment_identity import (
     EvaluatedInputsSnapshot,
     RunIdentityStart,
     RuntimeBuild,

@@ -2,14 +2,14 @@
 
 Examples:
     ```python
-    from typevet.evaluation.tpjep import TpjepRunConfig, load_eight_task_fixture
+    from typevet_evals.tpjep import TpjepRunConfig, load_eight_task_fixture
     ```
 
 See Also:
-    - [typevet.evaluation.tpjep.loader][]: Eight-task fixture and manifest hashes
-    - [typevet.evaluation.tpjep.outcome][]: Answer to outcome mapping
-    - [typevet.evaluation.tpjep.records][]: Attempt records and summaries
-    - [typevet.evaluation.tpjep.runner][]: Offline and live task runs
+    - [typevet_evals.tpjep.loader][]: Eight-task fixture and manifest hashes
+    - [typevet_evals.tpjep.outcome][]: Answer to outcome mapping
+    - [typevet_evals.tpjep.records][]: Attempt records and summaries
+    - [typevet_evals.tpjep.runner][]: Offline and live task runs
 
 Attributes:
     EIGHT_TASK_IDS (tuple): Task ids in the offline eight-task fixture.
@@ -33,7 +33,7 @@ Attributes:
     run_tpjep_with_receipt (function): Run tasks and return a receipt.
 """
 
-from typevet.evaluation.tpjep.loader import (
+from typevet_evals.tpjep.loader import (
     EIGHT_TASK_IDS,
     TPJEP_DATASET_GIT_COMMIT,
     TPJEP_LOCAL_CONCAT_HASH,
@@ -42,15 +42,15 @@ from typevet.evaluation.tpjep.loader import (
     load_eight_task_fixture,
     model_inputs_for_task,
 )
-from typevet.evaluation.tpjep.outcome import outcome_from_answer, prob_valid
-from typevet.evaluation.tpjep.records import (
+from typevet_evals.tpjep.outcome import outcome_from_answer, prob_valid
+from typevet_evals.tpjep.records import (
     TPJEP_PROTOCOL_V0,
     TpjepAttemptRecord,
     TpjepOutcome,
     TpjepRunSummary,
     summarize_tpjep_records,
 )
-from typevet.evaluation.tpjep.runner import (
+from typevet_evals.tpjep.runner import (
     TpjepRunConfig,
     TpjepRunMetadata,
     TpjepRunReceipt,

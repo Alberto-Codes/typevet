@@ -46,7 +46,7 @@ import pytest
 
 from typevet.adapters.inbound.backend_settings import load_vllm_settings
 from typevet.evaluation.datasets import banking77, difraud
-from typevet.evaluation.runner.live_gate import LiveGateAction, live_gate_action
+from typevet_evals.runner.live_gate import LiveGateAction, live_gate_action
 from typevet_evals.throughput.collections_throughput import (
     CAPS,
     RunOptions,

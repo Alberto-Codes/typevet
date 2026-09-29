@@ -19,6 +19,7 @@ See Also:
     - [typevet_evals.psai_vision_consumer.accounting][]: call budgets
     - [typevet_evals.psai_vision_consumer.dispatch][]: dispatch ledger
     - [typevet_evals.psai_vision_consumer.offline][]: matrix runner
+    - [typevet_evals.experiment_identity][]: receipt identity helpers
 
 Offline runs wrap the scoring port with a [ConsumerDispatchLedger][]
 so ``scoring_requests_observed`` and ``failed_attempts`` reflect real
@@ -45,11 +46,11 @@ from typevet.evaluation.datasets.psai_vision_controls import (
     VisualControl,
     paired_image_ordering,
 )
-from typevet.evaluation.experiment_identity import (
+from typevet.ports.judgment import JudgmentPort
+from typevet_evals.experiment_identity import (
     ReceiptAlreadyExistsError,
     write_receipt_exclusive,
 )
-from typevet.ports.judgment import JudgmentPort
 from typevet_evals.psai_vision_consumer.accounting import (
     ANNOTATION_QUESTIONS_PER_JUDGE_CALL,
     ConsumerCallBudgetError,

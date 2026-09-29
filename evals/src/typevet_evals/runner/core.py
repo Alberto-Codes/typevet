@@ -10,8 +10,8 @@ Examples:
     from pathlib import Path
 
     from typevet.adapters.outbound.fake import FakeGenerationAdapter
-    from typevet.evaluation.runner.core import run_eval_tasks
-    from typevet.evaluation.runner.datasets import load_eval_tasks
+    from typevet_evals.runner.core import run_eval_tasks
+    from typevet_evals.runner.datasets import load_eval_tasks
 
     jsonl = Path("tests/fixtures/boolq/validation_smoke.jsonl").read_text()
     tasks = load_eval_tasks("boolq", limit=2, boolq_jsonl_text=jsonl)
@@ -21,8 +21,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.runner.datasets][]: Task loading
-    - [typevet.evaluation.runner.report][]: Result aggregation
+    - [typevet_evals.runner.datasets][]: Task loading
+    - [typevet_evals.runner.report][]: Result aggregation
     - [typevet.ports.generation][]: GenerationPort protocol
 """
 
@@ -32,13 +32,13 @@ from collections.abc import Sequence
 
 from typevet.domain.errors import GenerationError
 from typevet.domain.models import GenerationRequest
-from typevet.evaluation.runner.datasets import EvalTaskSpec
-from typevet.evaluation.runner.report import (
+from typevet.ports.generation import GenerationPort
+from typevet_evals.runner.datasets import EvalTaskSpec
+from typevet_evals.runner.report import (
     DEFAULT_METRIC_EXACT_MATCH,
     DEFAULT_METRIC_NOUL_AGREEMENT,
     EvalRunReport,
 )
-from typevet.ports.generation import GenerationPort
 
 
 def _metric_for_dataset(dataset: str) -> str:
@@ -57,7 +57,7 @@ def run_eval_tasks(
 
     Args:
         port: ``GenerationPort`` implementation (fake or llama.cpp).
-        tasks: Slice from :func:`typevet.evaluation.runner.datasets.load_eval_tasks`.
+        tasks: Slice from :func:`typevet_evals.runner.datasets.load_eval_tasks`.
         model: Model id passed on each ``GenerationRequest``.
 
     Returns:

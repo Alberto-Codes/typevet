@@ -17,10 +17,10 @@ from typevet.domain.judgment_answers import (
 from typevet.domain.judgment_questions import Choice, Noul, Question, Score
 from typevet.domain.judgment_response import JudgmentResponse, TokenUsage
 from typevet.domain.media import ImageInput
-from typevet.evaluation.tpjep.loader import TpjepScheduledTask
-from typevet.evaluation.tpjep.outcome import outcome_from_answer, prob_valid
-from typevet.evaluation.tpjep.runner import TpjepRunConfig, run_tpjep_tasks
 from typevet.ports.judgment import JudgmentPort
+from typevet_evals.tpjep.loader import TpjepScheduledTask
+from typevet_evals.tpjep.outcome import outcome_from_answer, prob_valid
+from typevet_evals.tpjep.runner import TpjepRunConfig, run_tpjep_tasks
 
 _LABELS_AB = ("A", "B")
 

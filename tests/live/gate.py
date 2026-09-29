@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from typevet.adapters.inbound.settings import LlamaSettings
-from typevet.evaluation.runner.live_gate import (
+from typevet_evals.runner.live_gate import (
     LiveGateAction,
     live_gate_action,
     live_skip_reason,

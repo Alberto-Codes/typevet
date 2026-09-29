@@ -16,7 +16,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.tpjep.outcome][]: ``prob_valid`` tolerance rules
+    - [typevet_evals.tpjep.outcome][]: ``prob_valid`` tolerance rules
 
 [i132]: https://github.com/Alberto-Codes/typevet/issues/132
 """
@@ -28,7 +28,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, Final
 
-from typevet.evaluation.tpjep.outcome import prob_valid
+from typevet_evals.tpjep.outcome import prob_valid
 
 _PROB_SUM_TOLERANCE: Final[float] = 0.001
 _LOG_FLOOR: Final[float] = 1e-15

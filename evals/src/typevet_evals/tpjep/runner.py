@@ -7,8 +7,8 @@ Examples:
     ```python
     from tests.fixtures.judgment_contract import ContractJudgmentFake
     from typevet.domain.judgment_answers import NoulAnswer
-    from typevet.evaluation.tpjep.loader import load_eight_task_fixture
-    from typevet.evaluation.tpjep.runner import TpjepRunConfig, run_tpjep_tasks
+    from typevet_evals.tpjep.loader import load_eight_task_fixture
+    from typevet_evals.tpjep.runner import TpjepRunConfig, run_tpjep_tasks
 
     tasks = load_eight_task_fixture(fixture_text)
     fake = ContractJudgmentFake(answers={"answer": NoulAnswer(noul=0.9)})
@@ -17,8 +17,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.tpjep.records][]: JSONL record shape
-    - [typevet.evaluation.tpjep.loader][]: JevBench row loader
+    - [typevet_evals.tpjep.records][]: JSONL record shape
+    - [typevet_evals.tpjep.loader][]: JevBench row loader
 """
 
 from __future__ import annotations
@@ -34,7 +34,8 @@ from typevet.domain.errors import (
     TransportError,
 )
 from typevet.domain.judgment_response import JudgmentResponse
-from typevet.evaluation.tpjep.loader import (
+from typevet.ports.judgment import JudgmentPort
+from typevet_evals.tpjep.loader import (
     TPJEP_DATASET_GIT_COMMIT,
     TPJEP_LOCAL_CONCAT_HASH,
     TPJEP_LOCAL_CONCAT_RECIPE,
@@ -43,15 +44,14 @@ from typevet.evaluation.tpjep.loader import (
     TpjepScheduledTask,
     model_inputs_for_task,
 )
-from typevet.evaluation.tpjep.outcome import outcome_from_answer, prob_valid
-from typevet.evaluation.tpjep.records import (
+from typevet_evals.tpjep.outcome import outcome_from_answer, prob_valid
+from typevet_evals.tpjep.records import (
     TPJEP_PROTOCOL_V0,
     TpjepAttemptRecord,
     TpjepOutcome,
     TpjepRunSummary,
     summarize_tpjep_records,
 )
-from typevet.ports.judgment import JudgmentPort
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,7 +99,7 @@ class TpjepRunMetadata:
 
     Examples:
         ```python
-        from typevet.evaluation.tpjep.runner import run_metadata_from_config
+        from typevet_evals.tpjep.runner import run_metadata_from_config
 
         meta = run_metadata_from_config(TpjepRunConfig(model="m"))
         assert meta.thinking is False

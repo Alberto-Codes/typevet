@@ -20,7 +20,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from typevet.adapters.inbound.settings import load_llama_settings
-from typevet.evaluation.runner.live_gate import (
+from typevet_evals.runner.live_gate import (
     TYPEVET_REQUIRE_LIVE_ENV,
     live_gate_action,
     live_skip_reason,

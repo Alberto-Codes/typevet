@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from typevet.evaluation.runner.live_gate import (
+from typevet_evals.runner.live_gate import (
     TYPEVET_REQUIRE_LIVE_ENV,
     LiveGateAction,
     live_gate_action,

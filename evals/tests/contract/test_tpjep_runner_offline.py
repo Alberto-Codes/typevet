@@ -14,16 +14,17 @@ from typevet.domain.judgment_answers import ChoiceAnswer, NoulAnswer, ScoreAnswe
 from typevet.domain.judgment_questions import Choice, Question
 from typevet.domain.judgment_response import JudgmentResponse
 from typevet.domain.media import ImageInput
-from typevet.evaluation.tpjep.loader import (
+from typevet_evals.tpjep.loader import (
     TPJEP_DATASET_GIT_COMMIT,
     TPJEP_MANIFEST_HASH,
     load_eight_task_fixture,
 )
-from typevet.evaluation.tpjep.records import summarize_tpjep_records
-from typevet.evaluation.tpjep.runner import TpjepRunConfig, run_tpjep_tasks
+from typevet_evals.tpjep.records import summarize_tpjep_records
+from typevet_evals.tpjep.runner import TpjepRunConfig, run_tpjep_tasks
 
 _FIXTURE = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[3]
+    / "tests"
     / "fixtures"
     / "tpjep"
     / "eight_task_smoke.jsonl"

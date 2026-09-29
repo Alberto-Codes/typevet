@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from typevet.domain.judgment_questions import Choice, Noul, Score
-from typevet.evaluation.tpjep.loader import (
+from typevet_evals.tpjep.loader import (
     EIGHT_TASK_IDS,
     jevbench_row_to_scheduled_task,
     load_eight_task_fixture,
@@ -16,7 +16,8 @@ from typevet.evaluation.tpjep.loader import (
 )
 
 _FIXTURE = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[3]
+    / "tests"
     / "fixtures"
     / "tpjep"
     / "eight_task_smoke.jsonl"

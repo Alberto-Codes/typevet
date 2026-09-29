@@ -6,14 +6,14 @@
 Examples:
     ```python
     from typevet.domain.judgment_answers import NoulAnswer
-    from typevet.evaluation.tpjep.outcome import outcome_from_answer
+    from typevet_evals.tpjep.outcome import outcome_from_answer
 
-    # task from typevet.evaluation.tpjep.loader ...
+    # task from typevet_evals.tpjep.loader ...
     predicted, probs, correct = outcome_from_answer(task, NoulAnswer(noul=0.2))
     ```
 
 See Also:
-    - [typevet.evaluation.tpjep.runner][]: Builds attempt records from outcomes
+    - [typevet_evals.tpjep.runner][]: Builds attempt records from outcomes
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ from math import isfinite
 from typing import Final
 
 from typevet.domain.judgment_answers import ChoiceAnswer, NoulAnswer, ScoreAnswer
-from typevet.evaluation.tpjep.loader import TpjepScheduledTask
+from typevet_evals.tpjep.loader import TpjepScheduledTask
 
 _PROB_SUM_TOLERANCE: Final[float] = 0.001
 _NOUL_LABEL_PAIR: Final[int] = 2

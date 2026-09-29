@@ -124,7 +124,7 @@ Task-specific smokes (not a single “release pass”):
 |---|---|---|
 | Missing live config | pytest **skip** or CLI `skip:` stderr | Default; acceptable for dev |
 | Missing live config (strict) | pytest **fail** with router/model reason | `TYPEVET_REQUIRE_LIVE=1` ([#191](https://github.com/Alberto-Codes/typevet/issues/191)) |
-| Router / catalog | Skip or fail: unreachable, empty/invalid catalog, model not listed | [Live gate](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/evaluation/runner/live_gate.py) |
+| Router / catalog | Skip or fail: unreachable, empty/invalid catalog, model not listed | [Live gate](https://github.com/Alberto-Codes/typevet/blob/main/evals/src/typevet_evals/runner/live_gate.py) |
 | Backend settings | `ValueError` for a bad `TYPEVET_BACKEND` or `TYPEVET_VLLM__*` value | Raised when the composition root reads the environment |
 | Request / schema ask | `ValueError` (including `schema is not a valid JSON Schema:`), `TypeError`, `SchemaError` | Before any port call or request — [Errors](errors.md) |
 | Native `Choice` capacity | `JudgmentValidationError`: `native Choice supports N options on this tokenizer; got M` | Before any scoring call ([#234](https://github.com/Alberto-Codes/typevet/issues/234)) |
@@ -172,7 +172,7 @@ evidence that must not skip:
 
 ```bash
 export TYPEVET_REQUIRE_LIVE=1
-uv run pytest tests/live/test_eval_runner_live.py -m live -q
+uv run pytest evals/tests/live/test_eval_runner_live.py -m live -q
 ```
 
 Equivalent CLI flag: `--require-live` on `typevet_evals.cli.eval_runner` — see
@@ -258,8 +258,8 @@ The receipt path must not exist before the run.
 ### Experiment identity ([#186](https://github.com/Alberto-Codes/typevet/issues/186))
 
 ```bash
-uv run pytest -q tests/unit/test_experiment_identity.py \
-  tests/unit/test_experiment_identity_snapshot.py \
+uv run pytest -q evals/tests/unit/test_experiment_identity.py \
+  evals/tests/unit/test_experiment_identity_snapshot.py \
   evals/tests/unit/test_cord_expense_call_accounting.py \
   evals/tests/contract/test_cord_expense_receipt_snapshot.py
 ```

@@ -7,11 +7,12 @@ from pathlib import Path
 import pytest
 
 from tests.fixtures.judgment_contract import ContractJudgmentFake
-from typevet.evaluation.tpjep.loader import EIGHT_TASK_IDS, load_eight_task_fixture
-from typevet.evaluation.tpjep.runner import TpjepRunConfig, run_tpjep_with_receipt
+from typevet_evals.tpjep.loader import EIGHT_TASK_IDS, load_eight_task_fixture
+from typevet_evals.tpjep.runner import TpjepRunConfig, run_tpjep_with_receipt
 
 _FIXTURE = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[3]
+    / "tests"
     / "fixtures"
     / "tpjep"
     / "eight_task_smoke.jsonl"

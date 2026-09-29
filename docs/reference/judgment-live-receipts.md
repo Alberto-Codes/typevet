@@ -50,10 +50,10 @@ comment table. Full probability maps were stored in
 
 | Pin | Value |
 |---|---|
-| Test | `tests/live/test_tpjep_smoke_live.py` |
+| Test | `evals/tests/live/test_tpjep_smoke_live.py` |
 | Fixture | `tests/fixtures/tpjep/eight_task_smoke.jsonl` |
 | Default model | `gemma-4-31b-24gib-kv11-decoder` |
-| Command | `uv run pytest tests/live/test_tpjep_smoke_live.py -m live -q` |
+| Command | `uv run pytest evals/tests/live/test_tpjep_smoke_live.py -m live -q` |
 | Artifacts | `scratchpad/tpjep/live_summary.json`, `live_attempts.jsonl` |
 
 Receipt rules live in `tests/fixtures/tpjep/live_acceptance.py`. See

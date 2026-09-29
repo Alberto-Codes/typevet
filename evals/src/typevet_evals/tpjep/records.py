@@ -5,7 +5,7 @@ One JSON object per scheduled attempt. Skips and transport failures stay in
 
 Examples:
     ```python
-    from typevet.evaluation.tpjep.records import (
+    from typevet_evals.tpjep.records import (
         TpjepAttemptRecord,
         iter_records_jsonl,
         records_to_jsonl,
@@ -40,7 +40,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.runner.report][]: Banking77/BoolQ slice counters (#98)
+    - [typevet_evals.runner.report][]: Banking77/BoolQ slice counters (#98)
 """
 
 from __future__ import annotations
@@ -101,7 +101,7 @@ class TpjepAttemptRecord:
 
     Examples:
         ```python
-        from typevet.evaluation.tpjep.records import (
+        from typevet_evals.tpjep.records import (
             TpjepAttemptRecord,
             TPJEP_PROTOCOL_V0,
         )
@@ -177,7 +177,7 @@ class TpjepRunSummary:
 
     Examples:
         ```python
-        from typevet.evaluation.tpjep.records import summarize_tpjep_records
+        from typevet_evals.tpjep.records import summarize_tpjep_records
 
         summary = summarize_tpjep_records(records)
         assert summary.n_scheduled == len(records)

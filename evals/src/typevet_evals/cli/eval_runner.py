@@ -13,8 +13,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.runner.core][]: core runner
-    - [typevet.evaluation.runner.live_gate][]: skip when router unset
+    - [typevet_evals.runner.core][]: core runner
+    - [typevet_evals.runner.live_gate][]: skip when router unset
 """
 
 from __future__ import annotations
@@ -24,15 +24,15 @@ import sys
 from dataclasses import replace
 
 from typevet.adapters.inbound.settings import llama_cpp_adapter, load_llama_settings
-from typevet.evaluation.runner.core import run_eval_tasks
-from typevet.evaluation.runner.datasets import (
+from typevet.ports.generation import GenerationPort
+from typevet_evals.runner.core import run_eval_tasks
+from typevet_evals.runner.datasets import (
     SUPPORTED_DATASETS,
     EvalDatasetName,
     load_eval_tasks,
 )
-from typevet.evaluation.runner.live_gate import live_skip_reason
-from typevet.evaluation.runner.report import EvalRunReport, format_report
-from typevet.ports.generation import GenerationPort
+from typevet_evals.runner.live_gate import live_skip_reason
+from typevet_evals.runner.report import EvalRunReport, format_report
 
 _EXIT_USAGE = 2
 _EXIT_REQUIRE_LIVE = 1

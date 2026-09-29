@@ -20,6 +20,7 @@ See Also:
     - [typevet_evals.instruction_variant.live][]: receipt orchestration
     - [typevet_evals.psai_vision_consumer.offline][]: frozen consumer fixture
     - [typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory][]: native vision factory
+    - [typevet_evals.runner.live_gate][]: require-live switch
 
 ``run_live_variant_matrix`` opens a scoring-backed judgment port when the live
 gate and native Gemma template class allow; otherwise it returns ``None``.
@@ -40,7 +41,6 @@ from typevet.adapters.inbound.settings import load_llama_settings
 from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
     open_gemma_native_vision_judgment,
 )
-from typevet.evaluation.runner.live_gate import require_live_enabled
 from typevet.ports.judgment import JudgmentPort
 from typevet_evals.instruction_variant.matrix import (
     _LedgerJudgmentPort as LedgerJudgmentPort,
@@ -57,6 +57,7 @@ from typevet_evals.instruction_variant.protocol import (
 from typevet_evals.instruction_variant.run import VariantMatrixRun
 from typevet_evals.psai_vision_consumer.dispatch import wrap_scoring_port
 from typevet_evals.psai_vision_consumer.offline import load_frozen_consumer_fixture
+from typevet_evals.runner.live_gate import require_live_enabled
 
 _MODEL_ENV = ("TYPEVET_GEMMA_MODEL", "TYPEVET_LLAMA__DEFAULT_MODEL")
 

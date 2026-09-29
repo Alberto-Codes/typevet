@@ -9,12 +9,13 @@ import pytest
 
 from tests.live.gate import gate_live
 from typevet.adapters.inbound.settings import llama_cpp_adapter, load_llama_settings
-from typevet.evaluation.runner.core import run_eval_tasks
-from typevet.evaluation.runner.datasets import load_eval_tasks
+from typevet_evals.runner.core import run_eval_tasks
+from typevet_evals.runner.datasets import load_eval_tasks
 
 _LLAMA = load_llama_settings()
 BOOLQ_FIXTURE = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[3]
+    / "tests"
     / "fixtures"
     / "boolq"
     / "validation_smoke.jsonl"

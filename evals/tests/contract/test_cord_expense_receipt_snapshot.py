@@ -8,7 +8,11 @@ from pathlib import Path
 import pytest
 
 from evals.tests.live import test_cord_expense_smoke_live as cord_live
-from typevet.evaluation.experiment_identity import (
+from typevet_evals.cord.expense_call_accounting import (
+    cord_expense_smoke_request_totals,
+    summarize_cord_expense_judgment_calls,
+)
+from typevet_evals.experiment_identity import (
     ReceiptAlreadyExistsError,
     RunIdentityStart,
     RuntimeBuild,
@@ -17,10 +21,6 @@ from typevet.evaluation.experiment_identity import (
     finalize_experiment_identity,
     snapshot_evaluated_inputs,
     write_receipt_exclusive,
-)
-from typevet_evals.cord.expense_call_accounting import (
-    cord_expense_smoke_request_totals,
-    summarize_cord_expense_judgment_calls,
 )
 
 pytestmark = pytest.mark.contract

@@ -14,9 +14,9 @@ values never enter model inputs.
 
 | Piece | Location |
 |---|---|
-| Loader + pins | ``typevet.evaluation.tpjep.loader`` |
-| Runner + receipt metadata | ``typevet.evaluation.tpjep.runner`` |
-| Answer → record scoring | ``typevet.evaluation.tpjep.outcome`` |
+| Loader + pins | ``typevet_evals.tpjep.loader`` |
+| Runner + receipt metadata | ``typevet_evals.tpjep.runner`` |
+| Answer → record scoring | ``typevet_evals.tpjep.outcome`` |
 | Eight-row fixture | ``tests/fixtures/tpjep/eight_task_smoke.jsonl`` |
 | Provenance | ``tests/fixtures/tpjep/PROVENANCE.md`` |
 
@@ -29,13 +29,13 @@ concat hashes on ``TpjepRunMetadata``.
 Offline:
 
 ```bash
-uv run pytest tests/unit/test_eval_tpjep_loader.py tests/contract/test_tpjep_runner_offline.py -q
+uv run pytest evals/tests/unit/test_eval_tpjep_loader.py evals/tests/contract/test_tpjep_runner_offline.py -q
 ```
 
 Live (requires local llama.cpp router; skips are not passes):
 
 ```bash
-uv run pytest tests/live/test_tpjep_smoke_live.py -m live -q
+uv run pytest evals/tests/live/test_tpjep_smoke_live.py -m live -q
 ```
 
 Live JSONL and summary are written under ``scratchpad/tpjep/`` (gitignored).

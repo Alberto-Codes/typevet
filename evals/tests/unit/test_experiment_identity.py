@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from typevet.evaluation.experiment_identity import (
+from typevet_evals.experiment_identity import (
     ExperimentIdentity,
     ExperimentIdentityRequest,
     PromptSpec,
@@ -23,7 +23,7 @@ from typevet.evaluation.experiment_identity import (
 
 pytestmark = pytest.mark.unit
 
-_REPO = Path(__file__).resolve().parents[2]
+_REPO = Path(__file__).resolve().parents[3]
 
 
 def _baseline_tree() -> WorkingTreeState:

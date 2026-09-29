@@ -6,7 +6,7 @@ Examples:
     ```python
     from pathlib import Path
 
-    from typevet.evaluation.runner.datasets import load_eval_tasks
+    from typevet_evals.runner.datasets import load_eval_tasks
 
     csv = Path("tests/fixtures/banking77/test_subset.csv").read_text()
     tasks = load_eval_tasks(
@@ -67,7 +67,7 @@ class EvalTaskSpec:
 
     Examples:
         ```python
-        from typevet.evaluation.runner.datasets import EvalTaskSpec
+        from typevet_evals.runner.datasets import EvalTaskSpec
 
         EvalTaskSpec(
             task_id="boolq:0",

@@ -23,13 +23,13 @@ This path exercises eight vendored JevBench rows through `JudgmentPort`. Gold
 Offline proof first:
 
 ```bash
-uv run pytest tests/unit/test_eval_tpjep_loader.py tests/contract/test_tpjep_runner_offline.py -q
+uv run pytest evals/tests/unit/test_eval_tpjep_loader.py evals/tests/contract/test_tpjep_runner_offline.py -q
 ```
 
 Live run (slow first load):
 
 ```bash
-uv run pytest tests/live/test_tpjep_smoke_live.py -m live -q
+uv run pytest evals/tests/live/test_tpjep_smoke_live.py -m live -q
 ```
 
 Artifacts land under `scratchpad/tpjep/` (gitignored). Details:

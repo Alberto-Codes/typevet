@@ -5,7 +5,7 @@ calibration or ECE ([#50](https://github.com/Alberto-Codes/typevet/issues/50)).
 
 Examples:
     ```python
-    from typevet.evaluation.runner.report import EvalRunReport, merge_reports
+    from typevet_evals.runner.report import EvalRunReport, merge_reports
 
     left = EvalRunReport(
         dataset="boolq",
@@ -20,8 +20,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.runner.core][]: GenerationPort driver
-    - [typevet.evaluation.runner.datasets][]: Banking77 and BoolQ task specs
+    - [typevet_evals.runner.core][]: GenerationPort driver
+    - [typevet_evals.runner.datasets][]: Banking77 and BoolQ task specs
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ class EvalRunReport:
 
     Examples:
         ```python
-        from typevet.evaluation.runner.report import EvalRunReport
+        from typevet_evals.runner.report import EvalRunReport
 
         EvalRunReport(
             dataset="banking77",

@@ -37,7 +37,7 @@ Live runs may download public Hub slices when fixture text is not injected.
 Offline wiring (default CI):
 
 ```bash
-uv run pytest tests/unit/test_eval_runner.py -m unit -q
+uv run pytest evals/tests/unit/test_eval_runner.py -m unit -q
 ```
 
 Opt-in live (router + model required):
@@ -65,7 +65,7 @@ uv run python -m typevet_evals.cli.eval_runner --dataset boolq --dataset banking
 Pytest live marker (BoolQ smoke):
 
 ```bash
-uv run pytest tests/live/test_eval_runner_live.py -m live -q
+uv run pytest evals/tests/live/test_eval_runner_live.py -m live -q
 ```
 
 When ``TYPEVET_LLAMA__DEFAULT_MODEL`` is unset or the router is down, the CLI
@@ -75,7 +75,7 @@ Release evidence runs that must not silently skip live collection:
 
 ```bash
 export TYPEVET_REQUIRE_LIVE=1
-uv run pytest tests/live/test_eval_runner_live.py -m live -q
+uv run pytest evals/tests/live/test_eval_runner_live.py -m live -q
 ```
 
 With ``TYPEVET_REQUIRE_LIVE`` set to a truthy value (``1``, ``true``, ``yes``,
@@ -86,8 +86,8 @@ of skipping. Default behaviour is unchanged. The eval CLI equivalent remains
 ## Library API
 
 ```python
-from typevet.evaluation.runner.core import run_eval_tasks
-from typevet.evaluation.runner.datasets import load_eval_tasks
+from typevet_evals.runner.core import run_eval_tasks
+from typevet_evals.runner.datasets import load_eval_tasks
 
 tasks = load_eval_tasks("boolq", limit=2, boolq_jsonl_text=open("…").read())
 report = run_eval_tasks(port, tasks, model="your-model-id")

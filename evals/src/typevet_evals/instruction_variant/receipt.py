@@ -14,6 +14,7 @@ Examples:
 See Also:
     - [typevet_evals.instruction_variant.offline][]: orchestration
     - [typevet_evals.psai_vision_consumer.offline][]: fixture identity pins
+    - [typevet_evals.experiment_identity][]: exclusive receipt write
 
 Exclusive commits use ``write_receipt_exclusive`` with manifest and image pins
 from ``variant_fixture_identity_pins``. ``persist_variant_receipt`` enriches
@@ -31,7 +32,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from typevet.evaluation.experiment_identity import write_receipt_exclusive
+from typevet_evals.experiment_identity import write_receipt_exclusive
 from typevet_evals.instruction_variant.matrix import gold_labels
 from typevet_evals.instruction_variant.protocol import (
     FROZEN_VARIANT_SCORING_REQUESTS,

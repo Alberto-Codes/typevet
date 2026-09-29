@@ -32,6 +32,9 @@ See Also:
     - [typevet_evals.psai_vision_consumer][]: PSAI vision consumer proof
     - [typevet_evals.psai_vision_probability_evidence][]: Choice mass evidence
     - [typevet_evals.cord][]: CORD expense smoke and semantic acceptance
+    - [typevet_evals.runner][]: Loader eval runner, live gate and reports
+    - [typevet_evals.tpjep][]: TPJEP fixture, records and runner
+    - [typevet_evals.experiment_identity][]: Receipt identity and snapshots
 """
 
 __all__: list[str] = []

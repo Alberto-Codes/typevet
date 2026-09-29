@@ -8,7 +8,7 @@ import httpx
 import pytest
 
 from typevet.adapters.inbound.settings import LlamaSettings
-from typevet.evaluation.runner.live_gate import (
+from typevet_evals.runner.live_gate import (
     LiveGateAction,
     live_gate_action,
     live_skip_reason,
@@ -49,7 +49,7 @@ def test_live_skip_malformed_catalog_returns_invalid_reason(
     payload: object, expected_reason: str
 ) -> None:
     with patch(
-        "typevet.evaluation.runner.live_gate.httpx.get",
+        "typevet_evals.runner.live_gate.httpx.get",
         return_value=_mock_models_response(payload),
     ):
         reason = live_skip_reason(_SETTINGS)
@@ -59,7 +59,7 @@ def test_live_skip_malformed_catalog_returns_invalid_reason(
 @pytest.mark.unit
 def test_live_skip_empty_catalog() -> None:
     with patch(
-        "typevet.evaluation.runner.live_gate.httpx.get",
+        "typevet_evals.runner.live_gate.httpx.get",
         return_value=_mock_models_response({"data": []}),
     ):
         reason = live_skip_reason(_SETTINGS)
@@ -69,7 +69,7 @@ def test_live_skip_empty_catalog() -> None:
 @pytest.mark.unit
 def test_live_skip_missing_model_in_nonempty_catalog() -> None:
     with patch(
-        "typevet.evaluation.runner.live_gate.httpx.get",
+        "typevet_evals.runner.live_gate.httpx.get",
         return_value=_mock_models_response({"data": [{"id": "other"}]}),
     ):
         reason = live_skip_reason(
@@ -81,7 +81,7 @@ def test_live_skip_missing_model_in_nonempty_catalog() -> None:
 @pytest.mark.unit
 def test_live_skip_none_when_model_listed() -> None:
     with patch(
-        "typevet.evaluation.runner.live_gate.httpx.get",
+        "typevet_evals.runner.live_gate.httpx.get",
         return_value=_mock_models_response({"data": [{"id": "gemma"}]}),
     ):
         assert live_skip_reason(_SETTINGS) is None
@@ -90,7 +90,7 @@ def test_live_skip_none_when_model_listed() -> None:
 @pytest.mark.unit
 def test_live_skip_fetches_models_once() -> None:
     with patch(
-        "typevet.evaluation.runner.live_gate.httpx.get",
+        "typevet_evals.runner.live_gate.httpx.get",
         return_value=_mock_models_response({"data": [{"id": "gemma"}]}),
     ) as mock_get:
         assert live_skip_reason(_SETTINGS) is None
@@ -121,7 +121,7 @@ def test_live_gate_action_fails_when_require_live_set(
 def test_live_skip_router_unreachable() -> None:
     settings = LlamaSettings(base_url="http://127.0.0.1:1", default_model="gemma")
     with patch(
-        "typevet.evaluation.runner.live_gate.httpx.get",
+        "typevet_evals.runner.live_gate.httpx.get",
         side_effect=httpx.HTTPError("down"),
     ):
         assert live_skip_reason(settings) == "llama.cpp router not reachable"

@@ -2,14 +2,14 @@
 
 Examples:
     ```python
-    from typevet.evaluation.runner import load_eval_tasks, run_eval_tasks
+    from typevet_evals.runner import load_eval_tasks, run_eval_tasks
     ```
 
 See Also:
-    - [typevet.evaluation.runner.core][]: Run tasks through a generation port
-    - [typevet.evaluation.runner.datasets][]: Supported datasets and task specs
-    - [typevet.evaluation.runner.live_gate][]: Skip reasons for live runs
-    - [typevet.evaluation.runner.report][]: Report shape and formatting
+    - [typevet_evals.runner.core][]: Run tasks through a generation port
+    - [typevet_evals.runner.datasets][]: Supported datasets and task specs
+    - [typevet_evals.runner.live_gate][]: Skip reasons for live runs
+    - [typevet_evals.runner.report][]: Report shape and formatting
 
 Attributes:
     SUPPORTED_DATASETS (tuple): Dataset names the runner can load.
@@ -25,15 +25,15 @@ Attributes:
     merge_reports (function): Add report counts for the same dataset.
 """
 
-from typevet.evaluation.runner.core import run_eval_tasks
-from typevet.evaluation.runner.datasets import (
+from typevet_evals.runner.core import run_eval_tasks
+from typevet_evals.runner.datasets import (
     SUPPORTED_DATASETS,
     EvalDatasetName,
     EvalTaskSpec,
     load_eval_tasks,
 )
-from typevet.evaluation.runner.live_gate import live_skip_reason
-from typevet.evaluation.runner.report import (
+from typevet_evals.runner.live_gate import live_skip_reason
+from typevet_evals.runner.report import (
     DEFAULT_METRIC_EXACT_MATCH,
     DEFAULT_METRIC_NOUL_AGREEMENT,
     EvalRunReport,

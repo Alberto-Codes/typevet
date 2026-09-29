@@ -203,12 +203,12 @@ like production outbound code.
 
 Evaluation harnesses drive the library from the outside
 ([#147](https://github.com/Alberto-Codes/typevet/issues/147)). The
-`typevet.evaluation` package itself has no `__all__` exports.
+`typevet.evaluation` package itself has no `__all__` exports. The eval runner
+and the TPJEP runner are in the `typevet-evals` workspace member
+(`typevet_evals.runner` and `typevet_evals.tpjep`), not in the wheel.
 
 | Package | Surface |
 |---|---|
-| `typevet.evaluation.runner` | `__all__`: loader eval tasks, run reports, live skip gate |
-| `typevet.evaluation.tpjep` | `__all__`: TPJEP eight-task fixture, records, runner, receipts |
 | `typevet.evaluation.datasets` | No `__all__`. Import one dataset submodule, for example `typevet.evaluation.datasets.boolq` |
 
 See [live eval runner](eval-live-runner.md) and
@@ -229,8 +229,8 @@ re-exported names from their current home. Import from the current home.
 |---|---|
 | `typevet.eval_runner_cli` | `typevet_evals.cli.eval_runner` (workspace member, not in the wheel) |
 | `typevet.cord_semantic_acceptance_cli` | `typevet_evals.cli.cord_semantic_acceptance` (workspace member, not in the wheel) |
-| `typevet.eval_runner`, `typevet.eval_runner_datasets`, `typevet.eval_runner_live_gate`, `typevet.eval_runner_report` | `typevet.evaluation.runner` |
-| `typevet.eval_tpjep_loader`, `typevet.eval_tpjep_outcome`, `typevet.eval_tpjep_records`, `typevet.eval_tpjep_runner` | `typevet.evaluation.tpjep` |
+| `typevet.eval_runner`, `typevet.eval_runner_datasets`, `typevet.eval_runner_live_gate`, `typevet.eval_runner_report` | `typevet_evals.runner` (workspace member, not in the wheel) |
+| `typevet.eval_tpjep_loader`, `typevet.eval_tpjep_outcome`, `typevet.eval_tpjep_records`, `typevet.eval_tpjep_runner` | `typevet_evals.tpjep` (workspace member, not in the wheel) |
 | Other `typevet.eval_*` loaders, download helpers, and guards | One submodule of `typevet.evaluation.datasets` |
 
 typevet also moved the llama.cpp outbound modules into one package before its
@@ -269,6 +269,9 @@ does not hold them, and the old paths do not resolve.
 | `typevet.evaluation.consumer_http_accounting` | `typevet_evals.psai_vision_consumer.http_accounting` |
 | `typevet.evaluation.psai_vision_probability_evidence` | `typevet_evals.psai_vision_probability_evidence` |
 | `typevet.evaluation.cord_*` (7 modules) | `typevet_evals.cord.*`, with the `cord_` prefix removed (for example `…_semantic_acceptance` → `semantic_acceptance`) |
+| `typevet.evaluation.runner` and its 4 modules | `typevet_evals.runner` (same module names) |
+| `typevet.evaluation.tpjep` and its 4 modules | `typevet_evals.tpjep` (same module names) |
+| `typevet.evaluation.experiment_identity` | `typevet_evals.experiment_identity` |
 
 ## Command-line entry
 
@@ -302,7 +305,7 @@ reason and exits `0`. See [live eval runner](eval-live-runner.md).
 | Surface | Assessment | Notes |
 |---|---|---|
 | Library | Initial public hex surface | Root, domain, ports, runtime, inbound, outbound, diagnostics, testing |
-| Evaluation | Shipped, research harness | `typevet.evaluation.runner` and `typevet.evaluation.tpjep`; dataset loaders by submodule |
+| Evaluation | Shipped, research harness | Dataset loaders by submodule. The eval runner and TPJEP runner are in the `typevet-evals` workspace member, not in the wheel |
 | CLI | Not shipped | No console script and no module entry in the wheel. In a checkout: `python -m typevet_evals.cli.eval_runner` and `python -m typevet_evals.cli.cord_semantic_acceptance`. The `cli` extra lists Typer only and no module imports it |
 | MCP | Not shipped | No extra or entry point |
 | Dependencies | `httpx`, `jsonschema`, `structlog` | Locked via `uv.lock` in development |

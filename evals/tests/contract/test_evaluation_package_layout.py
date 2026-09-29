@@ -15,7 +15,8 @@ from pathlib import Path
 import pytest
 
 from typevet.evaluation.datasets import clinc_shard
-from typevet.evaluation.runner import (
+from typevet_evals.cli import eval_runner as eval_cli
+from typevet_evals.runner import (
     SUPPORTED_DATASETS,
     EvalRunReport,
     EvalTaskSpec,
@@ -24,7 +25,7 @@ from typevet.evaluation.runner import (
     load_eval_tasks,
     run_eval_tasks,
 )
-from typevet.evaluation.tpjep import (
+from typevet_evals.tpjep import (
     TPJEP_MANIFEST_HASH,
     TPJEP_PROTOCOL_V0,
     TpjepRunConfig,
@@ -33,18 +34,17 @@ from typevet.evaluation.tpjep import (
     run_tpjep_tasks,
     summarize_tpjep_records,
 )
-from typevet_evals.cli import eval_runner as eval_cli
 
 # Removed root module -> current home. The old path must not resolve.
 REMOVED_SHIM_HOMES: dict[str, str] = {
-    "typevet.eval_tpjep_loader": "typevet.evaluation.tpjep.loader",
-    "typevet.eval_tpjep_outcome": "typevet.evaluation.tpjep.outcome",
-    "typevet.eval_tpjep_records": "typevet.evaluation.tpjep.records",
-    "typevet.eval_tpjep_runner": "typevet.evaluation.tpjep.runner",
-    "typevet.eval_runner": "typevet.evaluation.runner.core",
-    "typevet.eval_runner_datasets": "typevet.evaluation.runner.datasets",
-    "typevet.eval_runner_live_gate": "typevet.evaluation.runner.live_gate",
-    "typevet.eval_runner_report": "typevet.evaluation.runner.report",
+    "typevet.eval_tpjep_loader": "typevet_evals.tpjep.loader",
+    "typevet.eval_tpjep_outcome": "typevet_evals.tpjep.outcome",
+    "typevet.eval_tpjep_records": "typevet_evals.tpjep.records",
+    "typevet.eval_tpjep_runner": "typevet_evals.tpjep.runner",
+    "typevet.eval_runner": "typevet_evals.runner.core",
+    "typevet.eval_runner_datasets": "typevet_evals.runner.datasets",
+    "typevet.eval_runner_live_gate": "typevet_evals.runner.live_gate",
+    "typevet.eval_runner_report": "typevet_evals.runner.report",
     "typevet.eval_runner_cli": "typevet_evals.cli.eval_runner",
     "typevet.eval_banking77": "typevet.evaluation.datasets.banking77",
     "typevet.eval_boolq": "typevet.evaluation.datasets.boolq",
@@ -70,30 +70,30 @@ REMOVED_SHIM_HOMES: dict[str, str] = {
 
 # Legacy symbols callers depend on, per current home of a removed shim.
 LEGACY_SYMBOLS: dict[str, tuple[str, ...]] = {
-    "typevet.evaluation.tpjep.loader": (
+    "typevet_evals.tpjep.loader": (
         "TPJEP_DATASET_GIT_COMMIT",
         "TPJEP_MANIFEST_HASH",
         "TpjepScheduledTask",
         "load_eight_task_fixture",
         "model_inputs_for_task",
     ),
-    "typevet.evaluation.tpjep.outcome": ("outcome_from_answer", "prob_valid"),
-    "typevet.evaluation.tpjep.records": (
+    "typevet_evals.tpjep.outcome": ("outcome_from_answer", "prob_valid"),
+    "typevet_evals.tpjep.records": (
         "TPJEP_PROTOCOL_V0",
         "TpjepAttemptRecord",
         "TpjepRunSummary",
         "summarize_tpjep_records",
     ),
-    "typevet.evaluation.tpjep.runner": (
+    "typevet_evals.tpjep.runner": (
         "TpjepRunConfig",
         "TpjepRunReceipt",
         "run_tpjep_tasks",
         "run_tpjep_with_receipt",
     ),
-    "typevet.evaluation.runner.core": ("run_eval_tasks",),
-    "typevet.evaluation.runner.datasets": ("SUPPORTED_DATASETS", "load_eval_tasks"),
-    "typevet.evaluation.runner.live_gate": ("live_skip_reason",),
-    "typevet.evaluation.runner.report": (
+    "typevet_evals.runner.core": ("run_eval_tasks",),
+    "typevet_evals.runner.datasets": ("SUPPORTED_DATASETS", "load_eval_tasks"),
+    "typevet_evals.runner.live_gate": ("live_skip_reason",),
+    "typevet_evals.runner.report": (
         "EvalRunReport",
         "format_report",
         "merge_reports",

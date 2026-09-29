@@ -8,6 +8,7 @@ Examples:
 
 See Also:
     - [typevet_evals.instruction_variant.offline][]: offline runner
+    - [typevet_evals.experiment_identity][]: receipt collision error
 
 ``--out-dir`` requests an exclusive receipt path; ``--out`` remains a deprecated
 exact-path write for local debugging.
@@ -23,7 +24,7 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from typevet.evaluation.experiment_identity import ReceiptAlreadyExistsError
+from typevet_evals.experiment_identity import ReceiptAlreadyExistsError
 from typevet_evals.instruction_variant.offline import (
     InstructionVariantProofResult,
     run_offline_instruction_variant_proof,

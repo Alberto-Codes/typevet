@@ -32,7 +32,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from typevet.evaluation.runner.live_gate import LiveGateAction, live_gate_action
+from typevet_evals.runner.live_gate import LiveGateAction, live_gate_action
 from typevet_evals.vllm_acceptance.core import (
     AcceptanceInputs,
     live_gate_reason,

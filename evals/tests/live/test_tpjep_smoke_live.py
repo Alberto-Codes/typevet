@@ -14,19 +14,20 @@ from tests.live.gate import gate_live
 from typevet.adapters.inbound.settings import load_llama_settings
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.adapters.outbound.llama_cpp.scoring import LlamaCppCandidateScoringAdapter
-from typevet.evaluation.tpjep.loader import load_eight_task_fixture
-from typevet.evaluation.tpjep.records import records_to_jsonl
-from typevet.evaluation.tpjep.runner import TpjepRunConfig, run_tpjep_with_receipt
+from typevet_evals.tpjep.loader import load_eight_task_fixture
+from typevet_evals.tpjep.records import records_to_jsonl
+from typevet_evals.tpjep.runner import TpjepRunConfig, run_tpjep_with_receipt
 
 _LLAMA = load_llama_settings()
 _PINNED_MODEL = "gemma-4-31b-24gib-kv11-decoder"
 _FIXTURE = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[3]
+    / "tests"
     / "fixtures"
     / "tpjep"
     / "eight_task_smoke.jsonl"
 ).read_text(encoding="utf-8")
-_OUTPUT_DIR = Path(__file__).resolve().parents[2] / "scratchpad" / "tpjep"
+_OUTPUT_DIR = Path(__file__).resolve().parents[3] / "scratchpad" / "tpjep"
 
 
 @pytest.fixture

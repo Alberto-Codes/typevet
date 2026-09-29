@@ -11,7 +11,7 @@ Examples:
     ```python
     from pathlib import Path
 
-    from typevet.evaluation.experiment_identity import (
+    from typevet_evals.experiment_identity import (
         ExperimentIdentityRequest,
         PromptSpec,
         RuntimeBuild,

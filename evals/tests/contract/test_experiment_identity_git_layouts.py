@@ -8,11 +8,11 @@ layout resolves.
 
 Examples:
     ```bash
-    uv run pytest -q tests/contract/test_experiment_identity_git_layouts.py
+    uv run pytest -q evals/tests/contract/test_experiment_identity_git_layouts.py
     ```
 
 See Also:
-    - [typevet.evaluation.experiment_identity][]: the reader under test
+    - [typevet_evals.experiment_identity][]: the reader under test
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ from pathlib import Path
 
 import pytest
 
-from typevet.evaluation.experiment_identity import read_baseline_commit
+from typevet_evals.experiment_identity import read_baseline_commit
 
 pytestmark = pytest.mark.contract
 

@@ -14,9 +14,9 @@ are **not** stored by default.
 
 | Piece | Location |
 |---|---|
-| Record + summary types | ``typevet.evaluation.tpjep.records`` |
+| Record + summary types | ``typevet_evals.tpjep.records`` |
 | Mixed smoke JSONL (5 rows) | ``tests/fixtures/tpjep/mixed_attempts_smoke.jsonl`` |
-| Unit tests | ``tests/unit/test_eval_tpjep_records.py`` |
+| Unit tests | ``evals/tests/unit/test_eval_tpjep_records.py`` |
 | Eight-task runner | [eval-tpjep-runner.md](eval-tpjep-runner.md) |
 
 ## Required fields
@@ -49,5 +49,5 @@ run file.
 ## Commands
 
 ```bash
-uv run pytest tests/unit/test_eval_tpjep_records.py -m unit -q
+uv run pytest evals/tests/unit/test_eval_tpjep_records.py -m unit -q
 ```

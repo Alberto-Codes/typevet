@@ -32,8 +32,8 @@ from typevet.adapters.inbound.backend_settings import (
     vllm_http_client,
 )
 from typevet.evaluation.datasets.cord_expense import load_expense_cases
-from typevet.evaluation.experiment_identity import read_baseline_commit
 from typevet_evals.cli.cord_semantic_acceptance import main as cord_cli
+from typevet_evals.experiment_identity import read_baseline_commit
 from typevet_evals.vllm_acceptance import core as vllm_acceptance
 from typevet_evals.vllm_acceptance import sets as vllm_acceptance_sets
 from typevet_evals.vllm_acceptance.core import (

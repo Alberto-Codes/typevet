@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from typevet.evaluation.tpjep.records import (
+from typevet_evals.tpjep.records import (
     TPJEP_PROTOCOL_V0,
     TpjepAttemptRecord,
     iter_records_jsonl,
@@ -145,7 +145,8 @@ def test_jsonl_round_trip_preserves_hash_and_protocol_fields() -> None:
 @pytest.mark.unit
 def test_fixture_mixed_smoke_jsonl_matches_summary() -> None:
     fixture = (
-        Path(__file__).resolve().parents[1]
+        Path(__file__).resolve().parents[3]
+        / "tests"
         / "fixtures"
         / "tpjep"
         / "mixed_attempts_smoke.jsonl"

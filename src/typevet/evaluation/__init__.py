@@ -1,18 +1,17 @@
-"""Evaluation harnesses: dataset loaders, eval runners and TPJEP (#147).
+"""Evaluation harnesses: dataset loaders (#147).
 
 Evaluation code drives the library from the outside. It may import adapters,
-ports and the domain; nothing in the domain may import it.
+ports and the domain; nothing in the domain may import it. The eval runner,
+the TPJEP protocol and the experiment identity helpers now live in the
+``typevet-evals`` workspace member (``typevet_evals``, #256).
 
 Examples:
     ```python
-    from typevet.evaluation.runner import load_eval_tasks
-    from typevet.evaluation.tpjep import load_eight_task_fixture
+    from typevet.evaluation.datasets import boolq
     ```
 
 See Also:
     - [typevet.evaluation.datasets][]: Dataset loaders and download helpers
-    - [typevet.evaluation.runner][]: Loader eval runner, gate and reports
-    - [typevet.evaluation.tpjep][]: TPJEP fixture, records and runner
 
 Attributes:
     None: This package provides organizational structure only.

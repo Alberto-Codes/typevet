@@ -7,7 +7,7 @@ Examples:
     ```python
     from pathlib import Path
 
-    from typevet.evaluation.tpjep.loader import load_eight_task_fixture
+    from typevet_evals.tpjep.loader import load_eight_task_fixture
 
     text = Path("tests/fixtures/tpjep/eight_task_smoke.jsonl").read_text()
     tasks = load_eight_task_fixture(text)
@@ -15,8 +15,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.tpjep.runner][]: Offline and live runner
-    - [typevet.evaluation.tpjep.records][]: Frozen attempt JSONL (#131)
+    - [typevet_evals.tpjep.runner][]: Offline and live runner
+    - [typevet_evals.tpjep.records][]: Frozen attempt JSONL (#131)
 """
 
 from __future__ import annotations
@@ -81,7 +81,7 @@ class TpjepScheduledTask:
 
     Examples:
         ```python
-        from typevet.evaluation.tpjep.loader import load_eight_task_fixture
+        from typevet_evals.tpjep.loader import load_eight_task_fixture
 
         task = load_eight_task_fixture(text)[0]
         assert task.task_id

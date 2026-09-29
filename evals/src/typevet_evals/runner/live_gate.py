@@ -3,7 +3,7 @@
 Examples:
     ```python
     from typevet.adapters.inbound.settings import load_llama_settings
-    from typevet.evaluation.runner.live_gate import live_gate_action, live_skip_reason
+    from typevet_evals.runner.live_gate import live_gate_action, live_skip_reason
 
     reason = live_skip_reason(load_llama_settings())
     assert live_gate_action(reason).name in {"RUN", "SKIP", "FAIL"}
@@ -32,7 +32,7 @@ class LiveGateAction(Enum):
 
     Examples:
         ```python
-        from typevet.evaluation.runner.live_gate import LiveGateAction, live_gate_action
+        from typevet_evals.runner.live_gate import LiveGateAction, live_gate_action
 
         assert live_gate_action("router down") is LiveGateAction.SKIP
         ```

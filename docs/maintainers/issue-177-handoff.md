@@ -65,7 +65,7 @@ uv run pytest -q --cov=typevet --cov-report=term-missing
 uv run pytest -q tests/contract/test_runtime_gemma_vision_factory.py
 uv run pytest -q evals/tests/contract/test_gemma_native_vision_wheel_consumer.py
 uv run pytest -q evals/tests/unit/test_outcome_replay_metrics.py
-TYPEVET_REQUIRE_LIVE=1 uv run pytest -q tests/unit/test_eval_runner_live_gate.py
+TYPEVET_REQUIRE_LIVE=1 uv run pytest -q evals/tests/unit/test_eval_runner_live_gate.py
 uv run python scripts/gemma_native_vision_wheel_proof.py
 ```
 

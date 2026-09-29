@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from typevet.evaluation.tpjep.records import TpjepRunSummary
-from typevet.evaluation.tpjep.runner import TpjepRunReceipt
+from typevet_evals.tpjep.records import TpjepRunSummary
+from typevet_evals.tpjep.runner import TpjepRunReceipt
 
 _EIGHT_TASKS = 8
 

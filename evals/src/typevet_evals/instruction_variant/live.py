@@ -17,6 +17,8 @@ Examples:
 See Also:
     - [typevet_evals.instruction_variant.live_router][]: router matrix
     - [typevet_evals.instruction_variant.offline][]: offline orchestration
+    - [typevet_evals.runner.live_gate][]: require-live switch
+    - [typevet_evals.experiment_identity][]: receipt collision error
 
 When ``out_dir`` is set, ``finalize_variant_proof`` writes an exclusive receipt
 with ``evidence_kind`` ``instruction_variant_live`` and fail-closed collision
@@ -36,11 +38,7 @@ from pathlib import Path
 import httpx
 
 from typevet.domain.errors import GenerationError, JudgmentError
-from typevet.evaluation.experiment_identity import ReceiptAlreadyExistsError
-from typevet.evaluation.runner.live_gate import (
-    TYPEVET_REQUIRE_LIVE_ENV,
-    require_live_enabled,
-)
+from typevet_evals.experiment_identity import ReceiptAlreadyExistsError
 from typevet_evals.instruction_variant.live_router import (
     resolve_variant_live_model,
     run_live_variant_matrix,
@@ -60,6 +58,10 @@ from typevet_evals.instruction_variant.receipt import (
     VariantProofRunContext,
     variant_receipt_basename,
     write_variant_receipt_exclusive,
+)
+from typevet_evals.runner.live_gate import (
+    TYPEVET_REQUIRE_LIVE_ENV,
+    require_live_enabled,
 )
 
 _EXIT_INVALID = 2
