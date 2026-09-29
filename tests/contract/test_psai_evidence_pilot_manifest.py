@@ -135,6 +135,13 @@ def _task_name_in_claim(m: Manifest) -> None:
     row["model_input"]["claim"] = f"Done: {row['task_name']}"
 
 
+def _task_words_in_claim(m: Manifest) -> None:
+    # Exactly 4 consecutive words of this row's own task_name.
+    row = m["rows"][PROMPT + 6]
+    assert row["task_name"].startswith("Synthetic task 7 for the ")
+    row["model_input"]["claim"] = "The page says synthetic task 7 for users."
+
+
 def _bad_label(m: Manifest) -> None:
     m["rows"][DEV]["gold_label"] = "maybe"
 
@@ -162,6 +169,23 @@ def _gold_label_spaced_in_claim(m: Manifest) -> None:
 def _gold_label_underscored_in_claim(m: Manifest) -> None:
     row = m["rows"][DEV + 20]
     row["model_input"]["claim"] = "Answer: insufficient_evidence."
+
+
+def _gold_label_hyphenated_in_claim(m: Manifest) -> None:
+    row = m["rows"][DEV + 20]
+    assert row["gold_label"] == "insufficient_evidence"
+    row["model_input"]["claim"] = "The page gives insufficient-evidence here."
+
+
+def _gold_label_double_spaced_in_claim(m: Manifest) -> None:
+    row = m["rows"][DEV + 20]
+    row["model_input"]["claim"] = "The page gives insufficient  evidence here."
+
+
+def _gold_label_joined_to_snake_word(m: Manifest) -> None:
+    row = m["rows"][DEV]
+    assert row["gold_label"] == "supported"
+    row["model_input"]["claim"] = "The claim is supported_by the page."
 
 
 def _rejected_is_row_id(m: Manifest) -> None:
@@ -197,6 +221,9 @@ MUTATIONS: list[tuple[str, FunctionType]] = [
     ("gold_label_leak", _gold_label_word_in_claim),
     ("gold_label_leak", _gold_label_spaced_in_claim),
     ("gold_label_leak", _gold_label_underscored_in_claim),
+    ("gold_label_leak", _gold_label_hyphenated_in_claim),
+    ("gold_label_leak", _gold_label_double_spaced_in_claim),
+    ("gold_label_leak", _gold_label_joined_to_snake_word),
     ("rejected_items", _rejected_is_row_id),
     ("rejected_items", _rejected_twice),
     ("rejected_items", _rejected_in_fixtures),
@@ -220,6 +247,7 @@ MUTATIONS: list[tuple[str, FunctionType]] = [
     ("verified_agreement", _named_source_without_vote),
     ("input_leak", _host_in_claim),
     ("input_leak", _task_name_in_claim),
+    ("input_leak", _task_words_in_claim),
     ("schema", _bad_label),
     ("schema", _case_id_is_source_id),
 ]
@@ -313,3 +341,21 @@ def test_label_inside_a_longer_word_is_not_a_gold_label_leak(tmp_path: Path):
     loaded = load_manifest(_write(tmp_path, manifest), pilot_root=PILOT_ROOT)
 
     assert loaded.rows[DEV]["model_input"]["claim"] == "The button is unsupported."
+
+
+@pytest.mark.parametrize(
+    ("case", "claim"),
+    [
+        (DEV, "The claim is supportedly true."),
+        (PROMPT + 6, "The page says synthetic task 7 is done."),
+    ],
+    ids=["label-prefix-of-longer-word", "three-task-words"],
+)
+def test_near_miss_claim_loads(tmp_path: Path, case: int, claim: str):
+    """A label inside a longer word and a 3-word task run are not leaks."""
+    manifest = _valid()
+    manifest["rows"][case]["model_input"]["claim"] = claim
+
+    loaded = load_manifest(_write(tmp_path, manifest), pilot_root=PILOT_ROOT)
+
+    assert loaded.rows[case]["model_input"]["claim"] == claim

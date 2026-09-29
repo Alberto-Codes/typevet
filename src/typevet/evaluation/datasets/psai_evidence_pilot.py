@@ -18,8 +18,8 @@ the JSON schema first, then the cross-row rules below, and raises one
 | ``gold_per_class`` | Each split holds at least 4 gold per class. |
 | ``human_decision`` | Final, swap and crop rows carry a human decision. |
 | ``verified_agreement`` | A non-human label has Gemma, construction and Qwen agreement. |
-| ``input_leak`` | No host or ``task_name`` text is in a model-input field. |
-| ``gold_label_leak`` | No model-input field holds the row's gold label as a whole word. |
+| ``input_leak`` | No host, ``task_name`` or 4-word ``task_name`` run is in a model-input field. |
+| ``gold_label_leak`` | No model-input field holds the gold label, joined by space, _ or -. |
 
 Rejected items sit in their own list with reason codes. They are not rows and
 no count rule counts them. A task is one ``unique_data_id`` in one split.
@@ -52,6 +52,7 @@ Attributes:
     MIN_GOLD_PER_CLASS (int): Smallest gold count per class in each split.
     QWEN_MAJORITY (int): Qwen runs that must agree with a non-human label.
     TASKS_PER_SPLIT (int): Distinct ``unique_data_id`` values in each split.
+    TASK_RUN_WORDS (int): Consecutive ``task_name`` words that make an input leak.
 """
 
 from __future__ import annotations
@@ -74,10 +75,12 @@ SPLIT_KIND_COUNTS: Final = {"baseline": 8, "claim_axis": 8, "swap": 4, "crop": 4
 MIN_GOLD_PER_CLASS: Final = 4
 QWEN_MAJORITY: Final = 4
 TASKS_PER_SPLIT: Final = 8
+TASK_RUN_WORDS: Final = 4
 
 _TEXT_SUFFIXES: Final = frozenset({".json", ".jsonl", ".txt", ".csv", ".md"})
 _HUMAN_KINDS: Final = frozenset({"swap", "crop"})
 _TASK_ROLES: Final = {"baseline": 1, "claim_axis": 1, "image": 1}
+_WORD: Final = re.compile(r"[^\W_]+")
 
 Row = dict[str, Any]
 
@@ -471,8 +474,45 @@ def _check_verified_agreement(rows: list[Row]) -> None:
             raise ManifestError("verified_agreement", f"{row['case_id']}: {gap}")
 
 
+def _word_runs(text: str, size: int) -> set[tuple[str, ...]]:
+    """Return each run of ``size`` consecutive words in case-folded ``text``.
+
+    A word is a run of letters or digits; ``_`` and punctuation split words.
+
+    Args:
+        text: The text to split.
+        size: Words per run.
+
+    Returns:
+        The word runs, as tuples.
+    """
+    words = _WORD.findall(text.casefold())
+    return {tuple(words[i : i + size]) for i in range(len(words) - size + 1)}
+
+
+def _holds_task_run(text: str, task_name: str) -> bool:
+    """Tell whether ``text`` copies ``TASK_RUN_WORDS`` words of ``task_name``.
+
+    A ``task_name`` with fewer words must be copied whole.
+
+    Args:
+        text: One model-input field value.
+        task_name: The row's task name.
+
+    Returns:
+        ``True`` when the text holds such a run of task words.
+    """
+    size = min(TASK_RUN_WORDS, len(_WORD.findall(task_name)))
+    if size == 0:
+        return False
+    return not _word_runs(task_name, size).isdisjoint(_word_runs(text, size))
+
+
 def _check_input_leak(rows: list[Row]) -> None:
     """Keep host and ``task_name`` text out of every model-input field.
+
+    A field also leaks when it holds ``TASK_RUN_WORDS`` consecutive words of
+    ``task_name``, or the whole name when it has fewer words.
 
     Args:
         rows: Manifest rows that passed the schema.
@@ -486,14 +526,20 @@ def _check_input_leak(rows: list[Row]) -> None:
             secrets.append(row["donor"]["host"])
         for field, value in row["model_input"].items():
             text = str(value).casefold()
-            if any(secret.casefold() in text for secret in secrets):
+            if any(secret.casefold() in text for secret in secrets) or (
+                _holds_task_run(text, row["task_name"])
+            ):
                 raise ManifestError(
                     "input_leak", f"{row['case_id']} {field} holds host or task text"
                 )
 
 
 def _gold_pattern(label: str) -> re.Pattern[str]:
-    """Match ``label`` as a whole word, with ``_`` also matched as a space.
+    """Match ``label`` with no letter or digit on either side.
+
+    The words of the label may be joined by any run of spaces, ``_`` or
+    ``-``. A ``_`` next to the label does not hide it, so ``supported_by``
+    matches and ``unsupported`` does not.
 
     Args:
         label: One of ``LABELS``.
@@ -501,8 +547,8 @@ def _gold_pattern(label: str) -> re.Pattern[str]:
     Returns:
         A pattern for the label, to search in case-folded text.
     """
-    body = "[_ ]".join(re.escape(part) for part in label.split("_"))
-    return re.compile(rf"\b{body}\b")
+    body = r"[\s_-]+".join(re.escape(part) for part in label.split("_"))
+    return re.compile(rf"(?<![^\W_]){body}(?![^\W_])")
 
 
 def _check_gold_label_leak(rows: list[Row]) -> None:
@@ -513,7 +559,7 @@ def _check_gold_label_leak(rows: list[Row]) -> None:
 
     Raises:
         ManifestError: With rule ``gold_label_leak`` when a field holds the
-            gold label as a whole word.
+            gold label as ``_gold_pattern`` matches it.
     """
     for row in rows:
         pattern = _gold_pattern(row["gold_label"])
