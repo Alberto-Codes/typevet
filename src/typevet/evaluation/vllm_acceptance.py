@@ -286,6 +286,25 @@ def _present_ok(present: Mapping[str, Any], omitted: Mapping[str, Any] | None) -
 
 
 def _swap_ok(present: Mapping[str, Any], swapped: Mapping[str, Any] | None) -> bool:
+    """Return whether the swapped image moved the answer away from gold.
+
+    The #180 gates say a swap counts when the answer "moves away from gold".
+    "Away" assumes that the present answer started at gold. This rule is
+    stricter than that text: the label change counts only when the present
+    label equals gold. A wrong present answer that stays wrong after the
+    swap counts only through the probability margin. The rule can only lower
+    ``swapped``, and ``passed`` already needs present 4/4 (#216).
+
+    Args:
+        present: Scored ``present`` row with ``gold``, ``label`` and
+            ``probabilities``.
+        swapped: Scored ``swapped`` row, or ``None`` when it is missing.
+
+    Returns:
+        ``True`` when the gold probability drops by at least
+        ``SWAP_MARGIN_FLOOR``, or when a correct present label changes to a
+        label that is not gold.
+    """
     if swapped is None or swapped["label"] is None:
         return False
     gold = present["gold"]

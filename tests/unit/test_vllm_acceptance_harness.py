@@ -29,6 +29,7 @@ from typevet.adapters.inbound.backend_settings import (
     vllm_http_client,
 )
 from typevet.adapters.inbound.cord_semantic_acceptance_cli import main as cord_cli
+from typevet.evaluation import vllm_acceptance
 from typevet.evaluation.datasets.cord_expense import load_expense_cases
 from typevet.evaluation.experiment_identity import read_baseline_commit
 from typevet.evaluation.vllm_acceptance import (
@@ -480,3 +481,46 @@ def test_live_gate_rejects_unusable_receipt_paths(
     assert "not writable" in str(reason)
     fresh = str(tmp_path / "new" / "receipt.json")
     assert live_gate_reason(_env(TYPEVET_VLLM_RECEIPT=fresh)) is None
+
+
+def test_error_message_is_masked_before_write_receipt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    captured: list[dict[str, Any]] = []
+
+    def spy(path: Path, receipt: dict[str, Any], *, api_key: str | None) -> str:
+        captured.append(copy.deepcopy(receipt))
+        return ""
+
+    monkeypatch.setattr(vllm_acceptance, "write_receipt", spy)
+    server = _Vllm(fail_chat=RuntimeError(f"socket died near {_KEY}"))
+    with pytest.raises(RuntimeError):
+        _run(server, receipt_path=tmp_path / "receipt.json")
+    assert len(captured) == 1
+    message = captured[0]["error"]["message"]
+    assert "socket died near" in message
+    assert _KEY not in message
+
+
+def test_write_receipt_masks_the_raw_and_json_escaped_key(tmp_path: Path) -> None:
+    key = 'sk-"QUOTED"\\SENTINEL'
+    escaped = json.dumps(key)[1:-1]
+    path = tmp_path / "receipt.json"
+    write_receipt(path, {"x": key}, api_key=key)
+    text = path.read_text(encoding="utf-8")
+    assert escaped not in text
+    assert key not in text
+    assert json.loads(text) == {"x": "***"}
+    plain = tmp_path / "plain.json"
+    write_receipt(plain, {"x": f"near {_KEY}"}, api_key=_KEY)
+    assert _KEY not in plain.read_text(encoding="utf-8")
+
+
+def test_swap_needs_a_correct_present_answer_to_count_as_moved() -> None:
+    present = {
+        "gold": "true",
+        "label": "false",
+        "probabilities": {"true": 0.4, "false": 0.6},
+    }
+    swapped = {"label": "false", "probabilities": {"true": 0.4, "false": 0.6}}
+    assert vllm_acceptance._swap_ok(present, swapped) is False

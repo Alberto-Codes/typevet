@@ -68,9 +68,10 @@ def main(argv: list[str] | None = None) -> int:
         argv: CLI args; defaults to ``sys.argv[1:]`` (one receipt path).
 
     Returns:
-        ``0`` when ``accepted`` is true, ``1`` when checks fail, ``2`` on
-        usage errors, malformed receipts, or ``ValueError`` / ``TypeError`` from
-        parsing.
+        ``0`` when ``accepted`` is true, ``1`` when checks fail or the
+        top-level ``stopped`` is a non-empty string (``stopped: <reason>`` on
+        stderr, no floor table), ``2`` on usage errors, malformed receipts, or
+        ``ValueError`` / ``TypeError`` from parsing.
     """
     parser = _build_parser()
     parser.add_argument(
@@ -91,6 +92,14 @@ def main(argv: list[str] | None = None) -> int:
         )
     try:
         receipt = _load_receipt(args.receipt)
+    except (ValueError, TypeError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return _EXIT_USAGE_OR_MALFORMED
+    stopped = receipt.get("stopped")
+    if isinstance(stopped, str) and stopped:
+        print(f"stopped: {stopped}", file=sys.stderr)
+        return _EXIT_REJECT
+    try:
         outcome = evaluate_combined_receipt(receipt)
     except (ValueError, TypeError) as exc:
         print(f"error: {exc}", file=sys.stderr)

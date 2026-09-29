@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -90,3 +91,33 @@ def test_report_lists_every_failure_reason(
     assert code == 1
     assert err.out.count("FAIL") >= 1
     assert "failures:" in err.out
+
+
+def test_cli_reports_a_stopped_receipt_without_a_floor_table(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    receipt = {
+        "issue": 170,
+        "stopped": "model call cap 5 reached",
+        "passed": False,
+        "cases": [],
+        "combined": {},
+    }
+    path = tmp_path / "stopped.json"
+    path.write_text(json.dumps(receipt), encoding="utf-8")
+    code = main([str(path)])
+    captured = capsys.readouterr()
+    assert code == 1
+    assert captured.err.strip() == "stopped: model call cap 5 reached"
+    assert captured.out == ""
+
+
+def test_cli_null_stopped_keeps_the_floor_table(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    source = FIXTURE_DIR / "labeled_synthetic_pass.json"
+    receipt = json.loads(source.read_text(encoding="utf-8"))
+    path = tmp_path / "null_stopped.json"
+    path.write_text(json.dumps({**receipt, "stopped": None}), encoding="utf-8")
+    assert main([str(path)]) == 0
+    assert "accepted: true" in capsys.readouterr().out
