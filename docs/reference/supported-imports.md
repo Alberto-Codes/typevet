@@ -142,8 +142,8 @@ Prefer `generate` for library entry when you already hold a `GenerationPort`.
 Prefer `run_sync(port.generate(request))` for `AsyncGenerationPort` in scripts
 instead of duplicating sync wrappers on each adapter.
 
-The module `typevet.adapters.inbound.eval_cli` is the eval runner command. It
-is a module entry, not a package export. See [Command-line entry](#command-line-entry).
+The eval runner command is the module `typevet_evals.cli.eval_runner` in the
+`typevet-evals` workspace member. It is not in the wheel. See [Command-line entry](#command-line-entry).
 
 ## `typevet.adapters.outbound`
 
@@ -215,7 +215,7 @@ re-exported names from their current home. Import from the current home.
 
 | Removed module | Current home |
 |---|---|
-| `typevet.eval_runner_cli` | `typevet.adapters.inbound.eval_cli` |
+| `typevet.eval_runner_cli` | `typevet_evals.cli.eval_runner` (workspace member, not in the wheel) |
 | `typevet.eval_runner`, `typevet.eval_runner_datasets`, `typevet.eval_runner_live_gate`, `typevet.eval_runner_report` | `typevet.evaluation.runner` |
 | `typevet.eval_tpjep_loader`, `typevet.eval_tpjep_outcome`, `typevet.eval_tpjep_records`, `typevet.eval_tpjep_runner` | `typevet.evaluation.tpjep` |
 | Other `typevet.eval_*` loaders, download helpers, and guards | One submodule of `typevet.evaluation.datasets` |
@@ -226,10 +226,11 @@ typevet declares no console script. `pyproject.toml` has no
 `[project.scripts]` table, so installing the wheel does not put a `typevet`
 command on `PATH`.
 
-The one command is a Python module entry:
+The wheel ships no command. In a checkout, the eval runner is a Python module
+entry in the `typevet-evals` workspace member:
 
 ```bash
-uv run python -m typevet.adapters.inbound.eval_cli --help
+uv run python -m typevet_evals.cli.eval_runner --help
 ```
 
 Without `TYPEVET_LLAMA__*` router settings, the command prints a skip
@@ -250,7 +251,7 @@ reason and exits `0`. See [live eval runner](eval-live-runner.md).
 |---|---|---|
 | Library | Initial public hex surface | Root, domain, ports, runtime, inbound, outbound, diagnostics, testing |
 | Evaluation | Shipped, research harness | `typevet.evaluation.runner` and `typevet.evaluation.tpjep`; dataset loaders by submodule |
-| CLI | Module entry only | `python -m typevet.adapters.inbound.eval_cli`. No console script. The `cli` extra lists Typer only and no module imports it |
+| CLI | Not shipped | No console script and no module entry in the wheel. In a checkout: `python -m typevet_evals.cli.eval_runner`. The `cli` extra lists Typer only and no module imports it |
 | MCP | Not shipped | No extra or entry point |
 | Dependencies | `httpx`, `jsonschema`, `structlog` | Locked via `uv.lock` in development |
 

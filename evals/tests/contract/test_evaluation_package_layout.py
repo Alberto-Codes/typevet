@@ -14,7 +14,6 @@ from pathlib import Path
 
 import pytest
 
-from typevet.adapters.inbound import eval_cli
 from typevet.evaluation.datasets import clinc_shard
 from typevet.evaluation.runner import (
     SUPPORTED_DATASETS,
@@ -34,6 +33,7 @@ from typevet.evaluation.tpjep import (
     run_tpjep_tasks,
     summarize_tpjep_records,
 )
+from typevet_evals.cli import eval_runner as eval_cli
 
 # Removed root module -> current home. The old path must not resolve.
 REMOVED_SHIM_HOMES: dict[str, str] = {
@@ -45,7 +45,7 @@ REMOVED_SHIM_HOMES: dict[str, str] = {
     "typevet.eval_runner_datasets": "typevet.evaluation.runner.datasets",
     "typevet.eval_runner_live_gate": "typevet.evaluation.runner.live_gate",
     "typevet.eval_runner_report": "typevet.evaluation.runner.report",
-    "typevet.eval_runner_cli": "typevet.adapters.inbound.eval_cli",
+    "typevet.eval_runner_cli": "typevet_evals.cli.eval_runner",
     "typevet.eval_banking77": "typevet.evaluation.datasets.banking77",
     "typevet.eval_boolq": "typevet.evaluation.datasets.boolq",
     "typevet.eval_boolq_download": "typevet.evaluation.datasets.boolq_download",
@@ -98,7 +98,7 @@ LEGACY_SYMBOLS: dict[str, tuple[str, ...]] = {
         "format_report",
         "merge_reports",
     ),
-    "typevet.adapters.inbound.eval_cli": ("main",),
+    "typevet_evals.cli.eval_runner": ("main",),
     "typevet.evaluation.datasets.clinc_shard": (
         "domain_intent_map",
         "plus_intent_names",
@@ -130,7 +130,7 @@ def test_runner_package_exports_public_names() -> None:
 
 
 @pytest.mark.contract
-def test_eval_cli_lives_under_inbound_adapters() -> None:
+def test_eval_cli_lives_in_the_evals_member() -> None:
     assert callable(eval_cli.main)
 
 
@@ -156,7 +156,7 @@ def test_eval_cli_module_runs_as_main(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    module_name = "typevet.adapters.inbound.eval_cli"
+    module_name = "typevet_evals.cli.eval_runner"
     monkeypatch.setattr("sys.argv", [module_name, "--limit", "0"])
     monkeypatch.delitem(sys.modules, module_name, raising=False)
     with pytest.raises(SystemExit) as exit_info:

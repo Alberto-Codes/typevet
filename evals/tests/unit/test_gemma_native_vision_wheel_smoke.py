@@ -2,11 +2,11 @@
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_gemma_native_vision_wheel_smoke.py
+    uv run pytest -q evals/tests/unit/test_gemma_native_vision_wheel_smoke.py
     ```
 
 See Also:
-    - [typevet.evaluation.gemma_native_vision_wheel_smoke][]: smoke runner
+    - [typevet_evals.gemma_native_vision_wheel_smoke][]: smoke runner
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.domain.judgment_questions import Noul, Question
 from typevet.domain.judgment_response import JudgmentResponse
 from typevet.domain.media import ImageInput
-from typevet.evaluation.gemma_native_vision_wheel_smoke import run_wheel_smoke
+from typevet_evals.gemma_native_vision_wheel_smoke import run_wheel_smoke
 
 
 @pytest.mark.unit

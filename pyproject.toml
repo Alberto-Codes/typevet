@@ -129,7 +129,7 @@ convention = "google"
     "D104",
     "PLR2004",
 ]
-"src/typevet/testing/wheel_isolated.py" = ["S603"]
+"evals/src/typevet_evals/wheel_isolated.py" = ["S603"]
 "scripts/check_commit_msg.py" = ["S603"]
 "src/typevet/evaluation/datasets/partner_guard.py" = ["S603", "S607"]
 

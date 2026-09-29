@@ -169,7 +169,7 @@ same adapter. The runner reports attempted, schema-valid, and gold-match counts
 ```bash
 TYPEVET_LLAMA__DEFAULT_MODEL='<your-gemma-4-model-id>' \
   TYPEVET_LLAMA__TIMEOUT=600 \
-  uv run python -m typevet.adapters.inbound.eval_cli --dataset boolq --limit 2
+  uv run python -m typevet_evals.cli.eval_runner --dataset boolq --limit 2
 ```
 
 

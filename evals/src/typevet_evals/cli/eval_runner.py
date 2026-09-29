@@ -2,14 +2,14 @@ r"""CLI entry for opt-in loader eval against a live llama.cpp router (#98).
 
 Examples:
     ```console
-    $ uv run python -m typevet.adapters.inbound.eval_cli --dataset boolq --limit 2
+    $ uv run python -m typevet_evals.cli.eval_runner --dataset boolq --limit 2
     dataset=boolq\tmetric=exact_match\tlimit=2\tattempted=2\tschema_valid=2\tgold_match=1
     ```
 
     Proof runs that must not silently skip:
 
     ```console
-    $ uv run python -m typevet.adapters.inbound.eval_cli --require-live --dataset boolq --limit 2
+    $ uv run python -m typevet_evals.cli.eval_runner --require-live --dataset boolq --limit 2
     ```
 
 See Also:

@@ -2,7 +2,7 @@
 
 Examples:
     ```python
-    from typevet.evaluation.gemma_native_vision_wheel_smoke import run_wheel_smoke
+    from typevet_evals.gemma_native_vision_wheel_smoke import run_wheel_smoke
 
     assert run_wheel_smoke() == 0
     ```

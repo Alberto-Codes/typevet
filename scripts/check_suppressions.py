@@ -37,7 +37,7 @@ SUPPRESSION = re.compile(
 # a reason in the commit message.
 # Current budget: 11 codes
 # - 7 in **/tests/**/*.py (S101, D100, D101, D102, D103, D104, PLR2004)
-# - 1 in scripts/build_wheel_for_tests.py (S603 - uv build/isolated argv)
+# - 1 in evals/src/typevet_evals/wheel_isolated.py (S603 - uv build/isolated argv)
 # - 1 in scripts/check_commit_msg.py (S603 - git by absolute path, list argv)
 # - 2 in src/typevet/evaluation/datasets/partner_guard.py (S603, S607 - git)
 ALLOWED_PER_FILE_IGNORE_CODES = 11

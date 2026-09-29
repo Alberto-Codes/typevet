@@ -10,7 +10,6 @@ See Also:
     - [typevet.evaluation.runner.datasets][]: Supported datasets and task specs
     - [typevet.evaluation.runner.live_gate][]: Skip reasons for live runs
     - [typevet.evaluation.runner.report][]: Report shape and formatting
-    - [typevet.adapters.inbound.eval_cli][]: CLI entry for these runs
 
 Attributes:
     SUPPORTED_DATASETS (tuple): Dataset names the runner can load.

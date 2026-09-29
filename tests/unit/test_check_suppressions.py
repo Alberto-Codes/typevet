@@ -34,7 +34,7 @@ class TestCountPerFileIgnores:
         assert total == ALLOWED_PER_FILE_IGNORE_CODES == 11
         assert len(per_pattern) == 4
         assert len(per_pattern["**/tests/**/*.py"]) == 7
-        assert len(per_pattern["src/typevet/testing/wheel_isolated.py"]) == 1
+        assert len(per_pattern["evals/src/typevet_evals/wheel_isolated.py"]) == 1
         assert len(per_pattern["scripts/check_commit_msg.py"]) == 1
         assert len(per_pattern["src/typevet/evaluation/datasets/partner_guard.py"]) == 2
 

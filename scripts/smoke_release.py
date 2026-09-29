@@ -13,7 +13,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.testing.wheel_isolated][]: isolated ``uv run --with`` helper
+    - [typevet_evals.wheel_isolated][]: isolated ``uv run --with`` helper
     - [tests.unit.test_release_metadata][]: the same metadata checks in the suite
 """
 
@@ -27,7 +27,7 @@ from email.parser import Parser
 from email.policy import compat32
 from pathlib import Path
 
-from typevet.testing.wheel_isolated import run_isolated_wheel_python
+from typevet_evals.wheel_isolated import run_isolated_wheel_python
 
 __all__ = ["check_wheel_metadata", "main", "wheel_version"]
 

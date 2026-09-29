@@ -49,7 +49,7 @@ uv run python scripts/run_consumer_instruction_variant_proof.py --dev
 TYPEVET_WHEEL_SHA256=$(sha256sum dist/typevet-*.whl | awk '{print $1}') \
   uv run python scripts/consumer_instruction_variant_proof.py
 uv run pytest -q tests/unit/test_instruction_variant_consumer_proof.py
-uv run pytest -q tests/contract/test_gemma_native_vision_wheel_consumer.py
+uv run pytest -q evals/tests/contract/test_gemma_native_vision_wheel_consumer.py
 uv run python scripts/gemma_native_vision_wheel_proof.py
 ```
 
@@ -63,7 +63,7 @@ Executable local checks:
 ```bash
 uv run pytest -q --cov=typevet --cov-report=term-missing
 uv run pytest -q tests/contract/test_runtime_gemma_vision_factory.py
-uv run pytest -q tests/contract/test_gemma_native_vision_wheel_consumer.py
+uv run pytest -q evals/tests/contract/test_gemma_native_vision_wheel_consumer.py
 uv run pytest -q tests/unit/test_outcome_replay_metrics.py
 TYPEVET_REQUIRE_LIVE=1 uv run pytest -q tests/unit/test_eval_runner_live_gate.py
 uv run python scripts/gemma_native_vision_wheel_proof.py

@@ -45,7 +45,7 @@ Opt-in live (router + model required):
 ```bash
 export TYPEVET_LLAMA__DEFAULT_MODEL='<your-gemma-4-model-id>'
 TYPEVET_LLAMA__TIMEOUT=600 \
-  uv run python -m typevet.adapters.inbound.eval_cli --dataset boolq --limit 2
+  uv run python -m typevet_evals.cli.eval_runner --dataset boolq --limit 2
 ```
 
 Proof runs that must not silently skip (nonzero on missing config, model,
@@ -53,13 +53,13 @@ workload, or incomplete schema-valid completion; wrong gold labels stay in
 metrics only):
 
 ```bash
-uv run python -m typevet.adapters.inbound.eval_cli --require-live --dataset boolq --limit 2
+uv run python -m typevet_evals.cli.eval_runner --require-live --dataset boolq --limit 2
 ```
 
 Run both loaders in one invocation:
 
 ```bash
-uv run python -m typevet.adapters.inbound.eval_cli --dataset boolq --dataset banking77 --limit 2
+uv run python -m typevet_evals.cli.eval_runner --dataset boolq --dataset banking77 --limit 2
 ```
 
 Pytest live marker (BoolQ smoke):

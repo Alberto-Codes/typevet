@@ -12,7 +12,8 @@ import sys
 import tempfile
 from pathlib import Path
 
-from typevet.testing.wheel_isolated import (
+from typevet_evals.wheel_isolated import (
+    build_member_wheel_to_directory,
     build_wheel_to_directory,
     run_isolated_wheel_python,
 )
@@ -34,14 +35,17 @@ def run_offline_wheel_smoke(*, work_dir: Path | None = None) -> tuple[int, Path]
         print(f"FAIL_CLOSED: expected one wheel under {dist}", file=sys.stderr)
         return (2, dist)
     wheel = wheels[0]
+    member_dist = base / "evals-dist"
+    build_member_wheel_to_directory(member_dist)
     source = """
-from typevet.evaluation.gemma_native_vision_wheel_smoke import run_wheel_smoke
+from typevet_evals.gemma_native_vision_wheel_smoke import run_wheel_smoke
 raise SystemExit(run_wheel_smoke())
 """
     completed = run_isolated_wheel_python(
         wheel=wheel,
         source=source,
         cwd=isolated_cwd,
+        extra_wheels=sorted(member_dist.glob("typevet_evals-*.whl")),
     )
     if completed.stdout:
         print(completed.stdout, end="")

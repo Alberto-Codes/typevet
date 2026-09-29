@@ -8,9 +8,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from typevet.adapters.inbound.eval_cli import _as_dataset, main
 from typevet.adapters.inbound.settings import LlamaSettings
 from typevet.evaluation.runner.report import EvalRunReport
+from typevet_evals.cli.eval_runner import _as_dataset, main
 
 
 @pytest.mark.unit
@@ -26,11 +26,11 @@ def test_main_skips_when_live_gate_reports_reason(
     settings = LlamaSettings(default_model="gemma")
     with (
         patch(
-            "typevet.adapters.inbound.eval_cli.load_llama_settings",
+            "typevet_evals.cli.eval_runner.load_llama_settings",
             return_value=settings,
         ),
         patch(
-            "typevet.adapters.inbound.eval_cli.live_skip_reason",
+            "typevet_evals.cli.eval_runner.live_skip_reason",
             return_value="llama.cpp router not reachable",
         ),
     ):
@@ -46,10 +46,10 @@ def test_main_skips_when_default_model_missing_after_gate(
     settings = LlamaSettings(default_model=None)
     with (
         patch(
-            "typevet.adapters.inbound.eval_cli.load_llama_settings",
+            "typevet_evals.cli.eval_runner.load_llama_settings",
             return_value=settings,
         ),
-        patch("typevet.adapters.inbound.eval_cli.live_skip_reason", return_value=None),
+        patch("typevet_evals.cli.eval_runner.live_skip_reason", return_value=None),
     ):
         code = main([])
     assert code == 0
@@ -79,16 +79,16 @@ def test_main_runs_datasets_and_prints_reports(
 
     with (
         patch(
-            "typevet.adapters.inbound.eval_cli.load_llama_settings",
+            "typevet_evals.cli.eval_runner.load_llama_settings",
             return_value=settings,
         ),
-        patch("typevet.adapters.inbound.eval_cli.live_skip_reason", return_value=None),
-        patch("typevet.adapters.inbound.eval_cli.llama_cpp_adapter", fake_adapter),
+        patch("typevet_evals.cli.eval_runner.live_skip_reason", return_value=None),
+        patch("typevet_evals.cli.eval_runner.llama_cpp_adapter", fake_adapter),
         patch(
-            "typevet.adapters.inbound.eval_cli.load_eval_tasks",
+            "typevet_evals.cli.eval_runner.load_eval_tasks",
             return_value=[cast(Any, object())],
         ),
-        patch("typevet.adapters.inbound.eval_cli.run_eval_tasks", return_value=report),
+        patch("typevet_evals.cli.eval_runner.run_eval_tasks", return_value=report),
     ):
         code = main(["--dataset", "boolq", "--limit", "1", "--seed", "3"])
     assert code == 0
@@ -123,16 +123,16 @@ def test_main_default_dataset_is_boolq_when_omitted(
 
     with (
         patch(
-            "typevet.adapters.inbound.eval_cli.load_llama_settings",
+            "typevet_evals.cli.eval_runner.load_llama_settings",
             return_value=settings,
         ),
-        patch("typevet.adapters.inbound.eval_cli.live_skip_reason", return_value=None),
-        patch("typevet.adapters.inbound.eval_cli.llama_cpp_adapter", fake_adapter),
+        patch("typevet_evals.cli.eval_runner.live_skip_reason", return_value=None),
+        patch("typevet_evals.cli.eval_runner.llama_cpp_adapter", fake_adapter),
         patch(
-            "typevet.adapters.inbound.eval_cli.load_eval_tasks",
+            "typevet_evals.cli.eval_runner.load_eval_tasks",
             side_effect=capture_load,
         ),
-        patch("typevet.adapters.inbound.eval_cli.run_eval_tasks", return_value=report),
+        patch("typevet_evals.cli.eval_runner.run_eval_tasks", return_value=report),
     ):
         main([])
     assert seen == ["boolq"]
@@ -161,29 +161,21 @@ def _patch_live_run(
     with ExitStack() as stack:
         stack.enter_context(
             patch(
-                "typevet.adapters.inbound.eval_cli.load_llama_settings",
+                "typevet_evals.cli.eval_runner.load_llama_settings",
                 return_value=_live_ready_settings(),
             )
         )
         stack.enter_context(
-            patch(
-                "typevet.adapters.inbound.eval_cli.live_skip_reason", return_value=None
-            )
+            patch("typevet_evals.cli.eval_runner.live_skip_reason", return_value=None)
         )
         stack.enter_context(
-            patch(
-                "typevet.adapters.inbound.eval_cli.llama_cpp_adapter", _fake_adapter()
-            )
+            patch("typevet_evals.cli.eval_runner.llama_cpp_adapter", _fake_adapter())
         )
         stack.enter_context(
-            patch(
-                "typevet.adapters.inbound.eval_cli.load_eval_tasks", return_value=tasks
-            )
+            patch("typevet_evals.cli.eval_runner.load_eval_tasks", return_value=tasks)
         )
         stack.enter_context(
-            patch(
-                "typevet.adapters.inbound.eval_cli.run_eval_tasks", return_value=report
-            )
+            patch("typevet_evals.cli.eval_runner.run_eval_tasks", return_value=report)
         )
         yield
 
@@ -209,7 +201,7 @@ def test_main_accepts_require_live_flag(
 @pytest.mark.unit
 def test_main_limit_must_be_positive_before_settings_io() -> None:
     loader = MagicMock()
-    with patch("typevet.adapters.inbound.eval_cli.load_llama_settings", loader):
+    with patch("typevet_evals.cli.eval_runner.load_llama_settings", loader):
         code = main(["--limit", "0"])
     assert code == 2
     loader.assert_not_called()
@@ -222,11 +214,11 @@ def test_require_live_nonzero_when_live_gate_skips(
     settings = LlamaSettings(default_model="gemma")
     with (
         patch(
-            "typevet.adapters.inbound.eval_cli.load_llama_settings",
+            "typevet_evals.cli.eval_runner.load_llama_settings",
             return_value=settings,
         ),
         patch(
-            "typevet.adapters.inbound.eval_cli.live_skip_reason",
+            "typevet_evals.cli.eval_runner.live_skip_reason",
             return_value="llama.cpp router not reachable",
         ),
     ):
@@ -243,10 +235,10 @@ def test_require_live_nonzero_when_default_model_missing(
     settings = LlamaSettings(default_model=None)
     with (
         patch(
-            "typevet.adapters.inbound.eval_cli.load_llama_settings",
+            "typevet_evals.cli.eval_runner.load_llama_settings",
             return_value=settings,
         ),
-        patch("typevet.adapters.inbound.eval_cli.live_skip_reason", return_value=None),
+        patch("typevet_evals.cli.eval_runner.live_skip_reason", return_value=None),
     ):
         code = main(["--require-live"])
     assert code != 0

@@ -22,6 +22,9 @@ Examples:
 See Also:
     - [typevet][]: The library that this package evaluates
     - [typevet.evaluation][]: Evaluation code that has not moved yet
+    - [typevet_evals.cli][]: Module-entry commands, such as the eval runner
+    - [typevet_evals.wheel_isolated][]: Isolated wheel build and run helpers
+    - [typevet_evals.gemma_native_vision_wheel_smoke][]: Factory wheel smoke
 """
 
 __all__: list[str] = []

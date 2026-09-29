@@ -8,7 +8,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.testing.wheel_isolated][]: implementation module
+    - [typevet_evals.wheel_isolated][]: implementation module
     - [tests.unit.test_package_wheel][]: Wheel content checks
 """
 
@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import sys
 
-from typevet.testing.wheel_isolated import (
+from typevet_evals.wheel_isolated import (
     build_wheel_to_directory,
     main,
     run_isolated_wheel_python,

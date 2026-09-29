@@ -13,7 +13,6 @@ See Also:
     - [typevet.evaluation.datasets][]: Dataset loaders and download helpers
     - [typevet.evaluation.runner][]: Loader eval runner, gate and reports
     - [typevet.evaluation.tpjep][]: TPJEP fixture, records and runner
-    - [typevet.adapters.inbound.eval_cli][]: CLI entry for the eval runner
 
 Attributes:
     None: This package provides organizational structure only.

@@ -4,7 +4,7 @@ Examples:
     ```python
     from pathlib import Path
 
-    from typevet.testing.wheel_isolated import (
+    from typevet_evals.wheel_isolated import (
         build_wheel_to_directory,
         run_isolated_wheel_python,
     )
@@ -83,11 +83,37 @@ def build_wheel_to_directory(out_dir: Path) -> None:
         RuntimeError: When ``uv`` is not on ``PATH``.
         subprocess.CalledProcessError: When ``uv build`` fails.
     """
+    _uv_build(out_dir)
+
+
+def build_member_wheel_to_directory(out_dir: Path) -> None:
+    """Run ``uv build`` for the ``typevet-evals`` member wheel under ``out_dir``.
+
+    An isolated environment needs this wheel next to the ``typevet`` wheel
+    when its code imports ``typevet_evals`` (#256 E2).
+
+    Args:
+        out_dir: Absolute directory for the ``typevet_evals-*.whl`` artifact.
+
+    Raises:
+        RuntimeError: When ``uv`` is not on ``PATH``.
+        subprocess.CalledProcessError: When ``uv build`` fails.
+    """
+    _uv_build(out_dir, "--package", "typevet-evals", "--wheel")
+
+
+def _uv_build(out_dir: Path, *extra: str) -> None:
+    """Run ``uv build`` from the repository root into ``out_dir``.
+
+    Raises:
+        RuntimeError: When ``uv`` is not on ``PATH``.
+        subprocess.CalledProcessError: When ``uv build`` fails.
+    """
     uv_bin = _uv_executable()
     resolved = out_dir.resolve()
     resolved.mkdir(parents=True, exist_ok=True)
     subprocess.run(
-        [uv_bin, "build", "--out-dir", str(resolved)],
+        [uv_bin, "build", *extra, "--out-dir", str(resolved)],
         check=True,
         cwd=_REPO_ROOT,
     )
@@ -98,13 +124,16 @@ def run_isolated_wheel_python(
     wheel: Path,
     source: str,
     cwd: Path,
+    extra_wheels: Sequence[Path] = (),
 ) -> subprocess.CompletedProcess[str]:
-    """Run ``python -c`` in an isolated env with only the given wheel installed.
+    """Run ``python -c`` in an isolated env with only the given wheels installed.
 
     Args:
         wheel: Built ``typevet`` wheel path passed to ``uv run --with``.
         source: Python statements for ``python -c``.
         cwd: Working directory outside the checkout when possible.
+        extra_wheels: More wheel paths, each passed as one more ``--with``
+            (for example the ``typevet-evals`` member wheel).
 
     Returns:
         Completed process with captured stdout and stderr.
@@ -117,6 +146,7 @@ def run_isolated_wheel_python(
         _uv_executable(),
         *_UV_RUN_ISOLATED_TAIL,
         str(wheel.resolve()),
+        *(arg for extra in extra_wheels for arg in ("--with", str(extra.resolve()))),
         "python",
         "-c",
         source,

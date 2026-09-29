@@ -22,7 +22,7 @@ spine.
 |---|---|---|
 | Python application, generation | `generate(port, …)` or `port.generate(request)` | Adapter construction, lifetime, prompt/schema/model, and what to do with the result |
 | Python application, judgment | `ScoringJudgmentAdapter(scorer, …).judge(state, questions, model)` or `judge_with_scoring` | Scoring adapter, tokenizer callback, questions, and what to do with the answers |
-| Shell or CI, eval runs | `python -m typevet.adapters.inbound.eval_cli` | Arguments, `TYPEVET_LLAMA__*` environment, stdout/stderr, exit status |
+| Shell or CI, eval runs (checkout only) | `python -m typevet_evals.cli.eval_runner` | Arguments, `TYPEVET_LLAMA__*` environment, stdout/stderr, exit status |
 | Shell, general command (not shipped) | `typevet` console script | No `[project.scripts]` entry exists |
 | MCP host (not shipped) | stdio server | Host config, process lifetime, tool schemas |
 
@@ -99,7 +99,8 @@ Direct library use moves that job to your application:
 Composition roots read `TYPEVET_LLAMA__*` through
 [`load_llama_settings`](../reference/configuration.md) and pass the values into
 `LlamaCppGenerationAdapter` (or call `llama_cpp_adapter`). The eval command in
-`typevet.adapters.inbound.eval_cli` is the shipped example: it loads settings
+`typevet_evals.cli.eval_runner` is the in-repo example (in the `typevet-evals`
+workspace member, not the wheel): it loads settings
 once, builds the adapter in a `with` block, and closes it before exit. Library
 constructors stay explicit so tests and embedders never depend on hidden
 global configuration.

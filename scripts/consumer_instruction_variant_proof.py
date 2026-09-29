@@ -26,7 +26,7 @@ from typevet.evaluation.runner.live_gate import (
     live_skip_reason,
     require_live_enabled,
 )
-from typevet.testing.wheel_isolated import (
+from typevet_evals.wheel_isolated import (
     build_wheel_to_directory,
     run_isolated_wheel_python,
 )
