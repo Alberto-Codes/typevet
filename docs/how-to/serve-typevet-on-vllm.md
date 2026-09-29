@@ -111,7 +111,9 @@ default and its validation rule. These rules apply most often:
 `async_vllm_generation_adapter`. It builds an `AsyncVllmGenerationAdapter`
 with the same variables and uses `TYPEVET_VLLM__MAX_CONCURRENCY` as its limit.
 Its HTTP client binds to the first event loop that uses it. Build one adapter
-for each event loop, for example inside each `asyncio.run` call.
+for each event loop, for example inside each `asyncio.run` call. A call on a
+different loop raises `RuntimeError("build one adapter per event loop")`
+before any request. A retry with the same adapter fails again.
 
 Some proxies block requests that carry a library `User-Agent` header. In that
 case, set `TYPEVET_VLLM__USER_AGENT` to a value that the proxy accepts. The

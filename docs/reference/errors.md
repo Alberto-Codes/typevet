@@ -64,6 +64,23 @@ errors, not `GenerationError`:
 
 Fix the request; do not treat these as retryable generation failures.
 
+### Event loop misuse (not a generation error)
+
+An async vLLM adapter that owns its HTTP client serves only the first event
+loop that calls `generate`. This applies to the adapter from
+`async_vllm_generation_adapter` and to `AsyncVllmGenerationAdapter` built with
+`client=None`. A call on a different loop raises a plain `RuntimeError`
+before any request:
+
+| Condition | Type | Message |
+|---|---|---|
+| `generate` runs on a different event loop from the first call | `RuntimeError` | `build one adapter per event loop` |
+
+This `RuntimeError` is not a `GenerationError`. A caller that catches only
+`GenerationError` does not catch it. The failure is permanent for that
+adapter, so do not retry it. Build one adapter for each event loop. An adapter
+with an injected client does not do this check.
+
 ## Schema compilation failures
 
 Import `SchemaError` from `typevet.domain` (not the package root):
@@ -131,6 +148,7 @@ Use these boundaries when a caller adds retries:
 | `GenerationUnsupportedCapabilityError` | No | Use an adapter that supports the request, or remove the images. |
 | `SchemaError`, `NotImplementedError` | No | Fix or narrow the schema before calling generation. |
 | `GenerationRequest` `ValueError` / `TypeError` | No | Fix the request object. |
+| `RuntimeError` (`build one adapter per event loop`) | No | Build one adapter for each event loop. |
 
 `except GenerationError` catches `SchemaValidationError` because it subclasses
 `GenerationError`. Use `except SchemaValidationError` when validation failures

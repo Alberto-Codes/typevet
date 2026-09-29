@@ -100,9 +100,13 @@ timeout, headers and proxy behaviour as the sync client, and
 The limit applies to one adapter only. Two adapters do not share it. With the
 default of `1`, the adapter sends one request at a time. The adapter keeps one
 limit for each event loop. The `httpx.AsyncClient` of this adapter binds to
-the first event loop that uses it. A call from a second `asyncio.run` can fail
-with `RuntimeError: Event loop is closed`. Build one adapter for each event
-loop, for example inside each `asyncio.run` call.
+the first event loop that uses it. The adapter records the first running loop
+that calls `generate`. A call on a different loop, for example from a second
+`asyncio.run`, raises `RuntimeError("build one adapter per event loop")`
+before any request. This error is not a `GenerationError`. Build one adapter
+for each event loop, for example inside each `asyncio.run` call. An
+`AsyncVllmGenerationAdapter` built with `client=None` does the same check. An
+adapter with an injected client does not.
 
 ### vLLM live acceptance run
 

@@ -7,14 +7,19 @@ POSTs that one adapter has in flight; the default of 1 sends requests one at a
 time. The limit holds per event loop: when a call runs on a new loop, the
 adapter makes a new semaphore for that loop, and it keeps a weak reference to
 one loop only. The semaphore does not move the HTTP client. An httpx
-``AsyncClient`` with a connection pool binds to the first loop that uses it,
-and a call from a later loop can raise ``RuntimeError: Event loop is closed``.
-Only an injected client whose transport works on any loop, such as
-``httpx.MockTransport``, can serve a second ``asyncio.run``. Otherwise build
-one adapter per event loop. A caller that cancels ``generate`` gets
-``asyncio.CancelledError`` unchanged, and the slot is released for the next
-queued call. An httpx timeout, like every other ``httpx.HTTPError``, becomes
-``TransportError``. Other exceptions from the client, such as that
+``AsyncClient`` with a connection pool binds to the first loop that uses it.
+An adapter that owns its client (built with ``client=None``) therefore records
+the first running loop that calls ``generate``. A call on a different loop
+raises ``RuntimeError("build one adapter per event loop")`` before any
+request. That error is not a ``GenerationError``, and a retry fails again.
+Build one adapter per event loop, for example per ``asyncio.run``. An
+adapter with an injected client does not record a loop: only a client whose
+transport works on any loop, such as ``httpx.MockTransport``, can serve a
+second ``asyncio.run``, and a pooled client can raise
+``RuntimeError: Event loop is closed``. A caller that cancels ``generate``
+gets ``asyncio.CancelledError`` unchanged, and the slot is released for the
+next queued call. An httpx timeout, like every other ``httpx.HTTPError``,
+becomes ``TransportError``. Other exceptions from the client, such as that
 ``RuntimeError``, propagate unchanged.
 The adapter makes one POST per call. It does not retry and does not fall back
 to unconstrained generation.
@@ -68,6 +73,10 @@ class AsyncVllmGenerationAdapter:
         _slots (asyncio.Semaphore): Limit on POSTs in flight on the current loop.
         _slots_loop (weakref.ref[asyncio.AbstractEventLoop] | None): Loop that
             ``_slots`` serves, or ``None`` before the first call.
+        _binds_loop (bool): Whether calls must stay on the first loop that
+            uses the client, because the adapter owns that client.
+        _client_loop (weakref.ref[asyncio.AbstractEventLoop] | None): First
+            loop that called ``generate`` when ``_binds_loop`` is set.
 
     Examples:
         ```python
@@ -96,7 +105,8 @@ class AsyncVllmGenerationAdapter:
                 that carries authentication headers. The adapter does not
                 close it.
             max_concurrency: Maximum POSTs in flight for this adapter on
-                each event loop.
+                each event loop. When ``client`` is ``None``, the adapter
+                serves only the first loop that calls ``generate``.
 
         Raises:
             ValueError: When ``max_concurrency`` is less than 1.
@@ -111,6 +121,8 @@ class AsyncVllmGenerationAdapter:
         self._max_concurrency = max_concurrency
         self._slots = asyncio.Semaphore(max_concurrency)
         self._slots_loop: weakref.ref[asyncio.AbstractEventLoop] | None = None
+        self._binds_loop = client is None
+        self._client_loop: weakref.ref[asyncio.AbstractEventLoop] | None = None
 
     async def close(self) -> None:
         """Close the owned HTTP client when the adapter created it."""
@@ -142,6 +154,9 @@ class AsyncVllmGenerationAdapter:
             Validated structured value.
 
         Raises:
+            RuntimeError: When the adapter owns its client and the running
+                loop is not the first loop that called ``generate``. No
+                request is sent.
             TransportError: When the HTTP client raises an
                 ``httpx.HTTPError`` before a response, including a timeout.
             BackendHttpError: When vLLM returns HTTP status 400 or above.
@@ -149,6 +164,7 @@ class AsyncVllmGenerationAdapter:
             SchemaValidationError: When the value is not an object, is
                 non-finite or fails the schema.
         """
+        self._check_client_loop()
         schema_obj = dict(request.schema)
         body = generation_body(request, schema_obj)
         url = urljoin(self._base_url, "v1/chat/completions")
@@ -158,6 +174,25 @@ class AsyncVllmGenerationAdapter:
         raw_text = extract_content(payload, "vLLM")
         value = validated_value(raw_text, schema_obj)
         return GenerationResult(value=value, model=request.model, raw_text=raw_text)
+
+    def _check_client_loop(self) -> None:
+        """Keep an owned client on the first loop that calls ``generate``.
+
+        The adapter keeps a weak reference to that loop. A later call on a
+        different loop, or after that loop is gone, raises before any request.
+
+        Raises:
+            RuntimeError: When the adapter owns its client and the running
+                loop is not the recorded loop.
+        """
+        if not self._binds_loop:
+            return
+        loop = asyncio.get_running_loop()
+        if self._client_loop is None:
+            self._client_loop = weakref.ref(loop)
+        elif self._client_loop() is not loop:
+            msg = "build one adapter per event loop"
+            raise RuntimeError(msg)
 
     def _loop_slots(self) -> asyncio.Semaphore:
         """Return the semaphore for the running event loop.

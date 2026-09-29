@@ -343,6 +343,7 @@ class _ClientOwningAsyncVllmAdapter(AsyncVllmGenerationAdapter):
         )
         self._settings_client = client
         self._needles = _key_needles(settings.api_key)
+        self._binds_loop = True
 
     async def generate(self, request: GenerationRequest) -> GenerationResult:
         """Generate, and mask the configured key in any raised error.
@@ -360,6 +361,8 @@ class _ClientOwningAsyncVllmAdapter(AsyncVllmGenerationAdapter):
 
         Raises:
             GenerationError: The adapter error, masked when it holds the key.
+            RuntimeError: When the call runs on a different event loop from
+                the first call. It is not masked, because it holds no key.
         """
         try:
             return await super().generate(request)
@@ -540,6 +543,8 @@ def async_vllm_generation_adapter(
     handling as ``vllm_http_client``, and ``TYPEVET_VLLM__MAX_CONCURRENCY``
     sets its POST limit. That client binds to the first event loop that uses
     it, so build one adapter per event loop, for example per ``asyncio.run``.
+    The adapter records the first running loop that calls ``generate``, and a
+    call on a different loop raises ``RuntimeError`` before any request.
 
     Args:
         environ: Mapping to read. Defaults to ``os.environ``.

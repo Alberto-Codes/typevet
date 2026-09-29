@@ -522,3 +522,22 @@ def test_async_proxy_mounts_match_sync_client_with_and_without_key(
         client = adapter._ensure_client()
         assert sorted(p.pattern for p in client._mounts) == expected == ["https://"]
         asyncio.run(adapter.close())
+
+
+@pytest.mark.unit
+def test_async_factory_adapter_refuses_a_second_event_loop_before_any_request() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json=_REPLY)
+
+    adapter = async_vllm_generation_adapter(
+        _vllm_env(), transport=httpx.MockTransport(handler)
+    )
+    first = asyncio.run(adapter.generate(_request()))
+    assert first.value == {"ok": True}
+    with pytest.raises(RuntimeError, match=r"^build one adapter per event loop$"):
+        asyncio.run(adapter.generate(_request()))
+    assert len(seen) == 1
+    asyncio.run(adapter.close())

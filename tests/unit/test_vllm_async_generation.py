@@ -288,3 +288,29 @@ def test_one_adapter_serves_queued_calls_across_two_event_loops() -> None:
         results = asyncio.run(run())
         assert [result.value for result in results] == [{"n": 1}] * 3
     assert peaks == [1] * 6
+
+
+@pytest.mark.unit
+def test_owned_client_adapter_refuses_a_second_event_loop_before_any_request(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seen: list[httpx.Request] = []
+    real_client = httpx.AsyncClient
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return _reply()
+
+    def mocked_client(**kwargs: Any) -> httpx.AsyncClient:
+        return real_client(transport=httpx.MockTransport(handler), **kwargs)
+
+    monkeypatch.setattr(
+        "typevet.adapters.outbound.vllm_generation_async.httpx.AsyncClient",
+        mocked_client,
+    )
+    adapter = AsyncVllmGenerationAdapter("http://vllm.test:8000/")
+    assert asyncio.run(adapter.generate(_request())).value == {"n": 1}
+    with pytest.raises(RuntimeError, match=r"^build one adapter per event loop$"):
+        asyncio.run(adapter.generate(_request()))
+    assert len(seen) == 1
+    asyncio.run(adapter.close())
