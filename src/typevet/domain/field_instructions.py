@@ -1,5 +1,8 @@
 """Model-agnostic categorical field instruction rendering (#148).
 
+A native Choice lists controls as ``<i> → <label>`` (#207). Noul and Score
+keep the ``Control <i> → <label>`` form.
+
 Examples:
     ```python
     from typevet.domain.decisions import Decision
@@ -46,6 +49,13 @@ def _choice_label(value: object) -> str:
     return str(value)
 
 
+def _is_native_choice(decision: Decision) -> bool:
+    # Score decisions also use the Choice syntax but carry int levels.
+    return decision.syntax == "Choice" and not any(
+        isinstance(choice, int) for choice in decision.choices
+    )
+
+
 _ANSWER_WITH_CONTROL_INSTRUCTION = (
     "Answer with exactly one control string (the digit shown), "
     "not the original label text."
@@ -63,8 +73,9 @@ def render_field_instructions(
     Args:
         decision: Compiled Choice or Bool field.
         choice_criteria: Optional label-to-description lines for choices.
-        original_labels: When set, list ``Control <i> → <label>`` mappings for
-            ordinal scoring tokens aligned with ``bind_control_candidates``.
+        original_labels: When set, list ordinal control mappings aligned with
+            ``bind_control_candidates``. A native Choice writes
+            ``<i> → <label>``. Noul and Score write ``Control <i> → <label>``.
 
     Returns:
         Plain-text field block without user context or template wrappers.
@@ -72,12 +83,13 @@ def render_field_instructions(
     lines: list[str] = [f"{decision.name}: {decision.question}", "", "Options:"]
     criteria = choice_criteria or {}
     if original_labels is not None:
+        prefix = "" if _is_native_choice(decision) else "Control "
         for control, label in control_binding_pairs(original_labels):
             description = criteria.get(label) or criteria.get(label.lower())
             if description:
-                lines.append(f"Control {control} → {label}: {description}")
+                lines.append(f"{prefix}{control} → {label}: {description}")
             else:
-                lines.append(f"Control {control} → {label}")
+                lines.append(f"{prefix}{control} → {label}")
         lines.extend(["", _ANSWER_WITH_CONTROL_INSTRUCTION])
         return "\n".join(lines)
     for choice in decision.choices:

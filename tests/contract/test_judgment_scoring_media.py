@@ -91,8 +91,8 @@ def test_media_prefix_keeps_control_to_label_binding() -> None:
         media=(_image(),),
     )
     route_prefix = fake.calls[1].prefix
-    assert "Control 0 → billing: Money" in route_prefix
-    assert "Control 1 → technical: Bugs" in route_prefix
+    assert "\n0 → billing: Money" in route_prefix
+    assert "\n1 → technical: Bugs" in route_prefix
     assert response.choices["route"].choice == "billing"
     assert response.nouls["flagged"].noul == pytest.approx(0.6)
 

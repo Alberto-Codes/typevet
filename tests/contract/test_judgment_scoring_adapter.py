@@ -47,7 +47,7 @@ def test_adapter_prompt_maps_controls_while_answers_keep_original_labels() -> No
     true_pos = noul_prefix.index("Control 1 → true")
     assert false_pos < true_pos
     choice_prefix = fake.calls[1].prefix
-    assert "Control 0 → billing: Money" in choice_prefix
+    assert "\n0 → billing: Money" in choice_prefix
     score_prefix = fake.calls[2].prefix
     assert "Control 1 → 1: Fair" in score_prefix
 

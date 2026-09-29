@@ -181,7 +181,7 @@ def test_adapter_media_uses_native_prefix_and_keeps_bindings() -> None:
         assert CHATML_IM_START not in call.prefix
         assert call.prefix.count(MEDIA_MARKER) == len(media)
         assert call.media == media
-    assert "Control 0 → billing: Money" in fake.calls[1].prefix
+    assert "\n0 → billing: Money" in fake.calls[1].prefix
     assert response.choices["route"].choice == "billing"
     assert response.nouls["flagged"].noul == pytest.approx(0.6)
 
@@ -231,7 +231,7 @@ def test_adapter_media_uses_native_gemma4_prefix_and_keeps_bindings() -> None:
             classify_served_template(call.prefix)
             is ServedTemplateClass.NATIVE_GEMMA4_TURN
         )
-    assert "Control 0 → billing: Money" in fake.calls[1].prefix
+    assert "\n0 → billing: Money" in fake.calls[1].prefix
     assert response.choices["route"].choice == "billing"
     assert response.nouls["flagged"].noul == pytest.approx(0.6)
 

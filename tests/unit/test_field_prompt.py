@@ -75,9 +75,24 @@ def test_render_field_instructions_choice_control_mapping_with_descriptions() ->
         choice_criteria={"billing": "Money", "technical": "Bugs"},
         original_labels=("billing", "technical"),
     )
-    assert "Control 0 → billing: Money" in block
-    assert "Control 1 → technical: Bugs" in block
+    assert "\n0 → billing: Money" in block
+    assert "\n1 → technical: Bugs" in block
     assert "exactly one control string" in block.lower()
+
+
+@pytest.mark.unit
+def test_render_field_instructions_six_option_choice_omits_control_word() -> None:
+    labels = ("alpha", "bravo", "charlie", "delta", "echo", "foxtrot")
+    decision = Decision("kind", "Pick the kind.", labels, syntax="Choice")
+    criteria = {label: f"About {label}" for label in labels}
+    block = render_field_instructions(
+        decision,
+        choice_criteria=criteria,
+        original_labels=labels,
+    )
+    assert "Control" not in block
+    for index, label in enumerate(labels):
+        assert f"{index} → {label}: About {label}" in block
 
 
 @pytest.mark.unit
@@ -113,8 +128,8 @@ def test_render_field_instructions_choice_mapping_follows_criteria_order() -> No
         choice_criteria={"z_last": "Z", "a_first": "A"},
         original_labels=("z_last", "a_first"),
     )
-    z_pos = block.index("Control 0 → z_last")
-    a_pos = block.index("Control 1 → a_first")
+    z_pos = block.index("\n0 → z_last")
+    a_pos = block.index("\n1 → a_first")
     assert z_pos < a_pos
 
 
