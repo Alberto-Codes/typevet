@@ -4,7 +4,7 @@ Examples:
     ```python
     from pathlib import Path
 
-    from typevet.evaluation.instruction_variant_consumer_offline import (
+    from typevet_evals.instruction_variant.offline import (
         run_offline_instruction_variant_proof,
     )
 
@@ -15,8 +15,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.instruction_variant_consumer_matrix][]: matrix legs
-    - [typevet.evaluation.instruction_variant_consumer_receipt][]: receipt writer
+    - [typevet_evals.instruction_variant.matrix][]: matrix legs
+    - [typevet_evals.instruction_variant.receipt][]: receipt writer
 
 ``finalize_variant_proof`` compares saved outcomes, assembles the receipt, and
 calls ``persist_variant_receipt`` when ``VariantProofRunContext.out_dir`` is set.
@@ -32,13 +32,18 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from typevet.evaluation.instruction_variant_consumer_matrix import gold_labels
-from typevet.evaluation.instruction_variant_consumer_protocol import (
+from typevet.evaluation.psai_vision_consumer_accounting import (
+    ConsumerCallBudgetError,
+    ConsumerCallCounts,
+    enforce_consumer_call_budget,
+)
+from typevet_evals.instruction_variant.matrix import gold_labels
+from typevet_evals.instruction_variant.protocol import (
     DEFAULT_CANDIDATE_INSTRUCTION,
     DEFAULT_SEED_INSTRUCTION,
     plan_instruction_variant_calls,
 )
-from typevet.evaluation.instruction_variant_consumer_receipt import (
+from typevet_evals.instruction_variant.receipt import (
     VariantFinalizeInputs,
     VariantProofRunContext,
     acceptance_failures,
@@ -46,18 +51,13 @@ from typevet.evaluation.instruction_variant_consumer_receipt import (
     persist_variant_receipt,
     variant_receipt_assembly_from_run,
 )
-from typevet.evaluation.instruction_variant_consumer_run import (
+from typevet_evals.instruction_variant.run import (
     VariantMatrixRun,
     run_variant_matrix,
 )
-from typevet.evaluation.outcome_replay_metrics import (
+from typevet_evals.outcome_replay_metrics import (
     compare_matched_prompt_outcomes,
     replay_identical_reports,
-)
-from typevet.evaluation.psai_vision_consumer_accounting import (
-    ConsumerCallBudgetError,
-    ConsumerCallCounts,
-    enforce_consumer_call_budget,
 )
 
 _NOUL_LABELS: tuple[str, ...] = ("false", "true")
@@ -89,7 +89,7 @@ class InstructionVariantProofResult:
     receipt_path: Path | None = None
 
 
-_REPO_ROOT = Path(__file__).resolve().parents[3]
+_REPO_ROOT = Path(__file__).resolve().parents[4]
 
 
 def _git_head() -> str:

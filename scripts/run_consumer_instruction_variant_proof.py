@@ -11,7 +11,7 @@ Examples:
 
 See Also:
     - [scripts.consumer_instruction_variant_proof][]: wheel-isolated runner
-    - [typevet.evaluation.instruction_variant_consumer_proof][]: in-tree CLI
+    - [typevet_evals.instruction_variant.proof][]: in-tree CLI
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ import importlib.util
 import sys
 from pathlib import Path
 
-from typevet.evaluation.instruction_variant_consumer_proof import proof_main
+from typevet_evals.instruction_variant.proof import proof_main
 
 _WHEEL_PROOF = (
     Path(__file__).resolve().with_name("consumer_instruction_variant_proof.py")

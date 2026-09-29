@@ -2,7 +2,7 @@
 
 Examples:
     ```python
-    from typevet.evaluation.outcome_replay_metrics import (
+    from typevet_evals.outcome_replay_metrics import (
         SavedPromptOutcome,
         compare_matched_prompt_outcomes,
     )

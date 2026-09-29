@@ -4,7 +4,7 @@ Examples:
     ```python
     from pathlib import Path
 
-    from typevet.evaluation.instruction_variant_consumer_matrix import (
+    from typevet_evals.instruction_variant.matrix import (
         run_variant_matrix,
     )
 
@@ -18,7 +18,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.instruction_variant_consumer_offline][]: orchestration
+    - [typevet_evals.instruction_variant.offline][]: orchestration
 """
 
 from __future__ import annotations
@@ -48,11 +48,6 @@ from typevet.evaluation.datasets.psai_vision_controls import (
     control_matrix,
     visual_question,
 )
-from typevet.evaluation.instruction_variant_consumer_protocol import (
-    FROZEN_VARIANT_CASE_UIDS,
-    VariantDispatchLedger,
-)
-from typevet.evaluation.outcome_replay_metrics import SavedPromptOutcome
 from typevet.evaluation.psai_vision_consumer_offline import (
     SequentialConsumerScoringFake,
     run_negative_template_probe,
@@ -60,6 +55,11 @@ from typevet.evaluation.psai_vision_consumer_offline import (
 from typevet.evaluation.psai_vision_consumer_receipt import serialize_answer
 from typevet.ports.judgment import JudgmentPort
 from typevet.ports.scoring import CandidateScoringPort
+from typevet_evals.instruction_variant.protocol import (
+    FROZEN_VARIANT_CASE_UIDS,
+    VariantDispatchLedger,
+)
+from typevet_evals.outcome_replay_metrics import SavedPromptOutcome
 
 
 class _LedgerScoringPort:

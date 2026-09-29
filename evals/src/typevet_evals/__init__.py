@@ -27,6 +27,8 @@ See Also:
     - [typevet_evals.cli][]: Module-entry commands, such as the eval runner
     - [typevet_evals.wheel_isolated][]: Isolated wheel build and run helpers
     - [typevet_evals.gemma_native_vision_wheel_smoke][]: Factory wheel smoke
+    - [typevet_evals.instruction_variant][]: Instruction-variant consumer proof
+    - [typevet_evals.outcome_replay_metrics][]: Replay comparison metrics
 """
 
 __all__: list[str] = []

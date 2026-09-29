@@ -2,7 +2,7 @@
 
 Examples:
     ```python
-    from typevet.evaluation.instruction_variant_consumer_protocol import (
+    from typevet_evals.instruction_variant.protocol import (
         FROZEN_VARIANT_SCORING_REQUESTS,
         plan_instruction_variant_calls,
     )
@@ -12,7 +12,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.instruction_variant_consumer_proof][]: harness runner
+    - [typevet_evals.instruction_variant.proof][]: harness runner
     - [docs/maintainers/consumer-instruction-variant-protocol.md][]: maintainer table
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177

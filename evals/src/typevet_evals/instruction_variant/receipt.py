@@ -2,7 +2,7 @@
 
 Examples:
     ```python
-    from typevet.evaluation.instruction_variant_consumer_receipt import (
+    from typevet_evals.instruction_variant.receipt import (
         descriptive_replay_label,
     )
 
@@ -12,7 +12,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.instruction_variant_consumer_offline][]: orchestration
+    - [typevet_evals.instruction_variant.offline][]: orchestration
 
 Exclusive commits use ``write_receipt_exclusive`` with manifest and image pins
 from ``variant_fixture_identity_pins``. ``persist_variant_receipt`` enriches
@@ -31,18 +31,18 @@ from pathlib import Path
 from typing import Any
 
 from typevet.evaluation.experiment_identity import write_receipt_exclusive
-from typevet.evaluation.instruction_variant_consumer_matrix import gold_labels
-from typevet.evaluation.instruction_variant_consumer_protocol import (
-    FROZEN_VARIANT_SCORING_REQUESTS,
-    INSTRUCTION_VARIANT_PROTOCOL_REVISION,
-    VariantDispatchLedger,
-)
-from typevet.evaluation.instruction_variant_consumer_run import VariantMatrixRun
-from typevet.evaluation.outcome_replay_metrics import SavedPromptOutcome
 from typevet.evaluation.psai_vision_consumer_accounting import ConsumerCallCounts
 from typevet.evaluation.psai_vision_consumer_offline import (
     consumer_fixture_identity_pins,
 )
+from typevet_evals.instruction_variant.matrix import gold_labels
+from typevet_evals.instruction_variant.protocol import (
+    FROZEN_VARIANT_SCORING_REQUESTS,
+    INSTRUCTION_VARIANT_PROTOCOL_REVISION,
+    VariantDispatchLedger,
+)
+from typevet_evals.instruction_variant.run import VariantMatrixRun
+from typevet_evals.outcome_replay_metrics import SavedPromptOutcome
 
 _VARIANT_HARNESS = "scripts/run_consumer_instruction_variant_proof.py"
 

@@ -2,12 +2,12 @@
 
 Examples:
     ```bash
-    uv run python -m typevet.evaluation.instruction_variant_consumer_proof \
+    uv run python -m typevet_evals.instruction_variant.proof \
         --fixture-root tests/fixtures/psai/vision_smoke
     ```
 
 See Also:
-    - [typevet.evaluation.instruction_variant_consumer_offline][]: offline runner
+    - [typevet_evals.instruction_variant.offline][]: offline runner
 
 ``--out-dir`` requests an exclusive receipt path; ``--out`` remains a deprecated
 exact-path write for local debugging.
@@ -24,11 +24,11 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from typevet.evaluation.experiment_identity import ReceiptAlreadyExistsError
-from typevet.evaluation.instruction_variant_consumer_offline import (
+from typevet_evals.instruction_variant.offline import (
     InstructionVariantProofResult,
     run_offline_instruction_variant_proof,
 )
-from typevet.evaluation.instruction_variant_consumer_receipt import (
+from typevet_evals.instruction_variant.receipt import (
     VariantProofRunContext,
 )
 

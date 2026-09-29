@@ -4,7 +4,7 @@ Examples:
     ```python
     from pathlib import Path
 
-    from typevet.evaluation.instruction_variant_consumer_run import (
+    from typevet_evals.instruction_variant.run import (
         run_variant_matrix,
     )
 
@@ -18,7 +18,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.instruction_variant_consumer_matrix][]: matrix helpers
+    - [typevet_evals.instruction_variant.matrix][]: matrix helpers
 """
 
 from __future__ import annotations
@@ -31,19 +31,19 @@ from typing import Any
 from typevet.adapters.outbound.gemma import ServedTemplateClass
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.evaluation.datasets.psai_vision_controls import VisualControl
-from typevet.evaluation.instruction_variant_consumer_matrix import (
+from typevet.evaluation.psai_vision_consumer_offline import load_frozen_consumer_fixture
+from typevet.testing import ScriptedScoringFake
+from typevet_evals.instruction_variant.matrix import (
     build_offline_variant_port,
     probe_invalid_model,
     run_negative_probe,
     run_variant_arm,
     slice_present_controls,
 )
-from typevet.evaluation.instruction_variant_consumer_protocol import (
+from typevet_evals.instruction_variant.protocol import (
     VariantDispatchLedger,
 )
-from typevet.evaluation.outcome_replay_metrics import SavedPromptOutcome
-from typevet.evaluation.psai_vision_consumer_offline import load_frozen_consumer_fixture
-from typevet.testing import ScriptedScoringFake
+from typevet_evals.outcome_replay_metrics import SavedPromptOutcome
 
 
 @dataclass(frozen=True, slots=True)

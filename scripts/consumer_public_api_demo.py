@@ -6,7 +6,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.outcome_replay_metrics][]: offline compare API
+    - [typevet_evals.outcome_replay_metrics][]: offline compare API
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from typevet.evaluation.outcome_replay_metrics import (
+from typevet_evals.outcome_replay_metrics import (
     SavedPromptOutcome,
     compare_matched_prompt_outcomes,
 )

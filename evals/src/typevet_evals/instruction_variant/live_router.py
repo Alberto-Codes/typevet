@@ -4,7 +4,7 @@ Examples:
     ```python
     from pathlib import Path
 
-    from typevet.evaluation.instruction_variant_consumer_live_router import (
+    from typevet_evals.instruction_variant.live_router import (
         run_live_variant_matrix,
     )
 
@@ -17,7 +17,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.instruction_variant_consumer_live][]: receipt orchestration
+    - [typevet_evals.instruction_variant.live][]: receipt orchestration
     - [typevet.adapters.outbound.gemma_native_vision_factory][]: native vision factory
 
 ``run_live_variant_matrix`` opens a scoring-backed judgment port when the live
@@ -39,23 +39,23 @@ from typevet.adapters.inbound.settings import load_llama_settings
 from typevet.adapters.outbound.gemma_native_vision_factory import (
     open_gemma_native_vision_judgment,
 )
-from typevet.evaluation.instruction_variant_consumer_matrix import (
+from typevet.evaluation.psai_vision_consumer_dispatch import wrap_scoring_port
+from typevet.evaluation.psai_vision_consumer_offline import load_frozen_consumer_fixture
+from typevet.evaluation.runner.live_gate import require_live_enabled
+from typevet.ports.judgment import JudgmentPort
+from typevet_evals.instruction_variant.matrix import (
     _LedgerJudgmentPort as LedgerJudgmentPort,
 )
-from typevet.evaluation.instruction_variant_consumer_matrix import (
+from typevet_evals.instruction_variant.matrix import (
     probe_invalid_model,
     run_negative_probe,
     run_variant_arm,
     slice_present_controls,
 )
-from typevet.evaluation.instruction_variant_consumer_protocol import (
+from typevet_evals.instruction_variant.protocol import (
     VariantDispatchLedger,
 )
-from typevet.evaluation.instruction_variant_consumer_run import VariantMatrixRun
-from typevet.evaluation.psai_vision_consumer_dispatch import wrap_scoring_port
-from typevet.evaluation.psai_vision_consumer_offline import load_frozen_consumer_fixture
-from typevet.evaluation.runner.live_gate import require_live_enabled
-from typevet.ports.judgment import JudgmentPort
+from typevet_evals.instruction_variant.run import VariantMatrixRun
 
 _MODEL_ENV = ("TYPEVET_GEMMA_MODEL", "TYPEVET_LLAMA__DEFAULT_MODEL")
 

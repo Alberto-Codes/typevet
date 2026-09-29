@@ -2,7 +2,7 @@
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_instruction_variant_consumer_proof.py
+    uv run pytest -q evals/tests/unit/test_instruction_variant_consumer_proof.py
     ```
 """
 
@@ -16,32 +16,32 @@ import pytest
 
 from typevet.domain.errors import JudgmentValidationError
 from typevet.domain.judgment_response import JudgmentResponse
-from typevet.evaluation.instruction_variant_consumer_live import (
+from typevet.ports.judgment import JudgmentPort
+from typevet_evals.instruction_variant.live import (
     run_live_instruction_variant_proof,
 )
-from typevet.evaluation.instruction_variant_consumer_matrix import (
+from typevet_evals.instruction_variant.matrix import (
     _LedgerJudgmentPort,
     probe_invalid_model,
 )
-from typevet.evaluation.instruction_variant_consumer_offline import (
+from typevet_evals.instruction_variant.offline import (
     run_offline_instruction_variant_proof,
 )
-from typevet.evaluation.instruction_variant_consumer_proof import proof_main
-from typevet.evaluation.instruction_variant_consumer_protocol import (
+from typevet_evals.instruction_variant.proof import proof_main
+from typevet_evals.instruction_variant.protocol import (
     FROZEN_VARIANT_JUDGMENT_CALLS,
     FROZEN_VARIANT_SCORING_REQUESTS,
     VariantDispatchLedger,
 )
-from typevet.evaluation.instruction_variant_consumer_receipt import (
+from typevet_evals.instruction_variant.receipt import (
     acceptance_failures,
     descriptive_replay_label,
 )
-from typevet.evaluation.instruction_variant_consumer_run import run_variant_matrix
-from typevet.evaluation.outcome_replay_metrics import replay_identical_reports
-from typevet.ports.judgment import JudgmentPort
+from typevet_evals.instruction_variant.run import run_variant_matrix
+from typevet_evals.outcome_replay_metrics import replay_identical_reports
 
 FIXTURE_ROOT = (
-    Path(__file__).resolve().parents[1] / "fixtures" / "psai" / "vision_smoke"
+    Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "psai" / "vision_smoke"
 )
 
 
@@ -159,7 +159,7 @@ def test_proof_main_writes_receipt(tmp_path: Path) -> None:
 def test_run_live_instruction_variant_proof_requires_live_env() -> None:
     """Live path exits invalid when ``TYPEVET_REQUIRE_LIVE`` is unset."""
     with patch(
-        "typevet.evaluation.instruction_variant_consumer_live.require_live_enabled",
+        "typevet_evals.instruction_variant.live.require_live_enabled",
         return_value=False,
     ):
         result = run_live_instruction_variant_proof(fixture_root=FIXTURE_ROOT)
@@ -172,11 +172,11 @@ def test_run_live_instruction_variant_proof_when_gate_blocks() -> None:
     """Live path exits invalid when router gate skips."""
     with (
         patch(
-            "typevet.evaluation.instruction_variant_consumer_live.require_live_enabled",
+            "typevet_evals.instruction_variant.live.require_live_enabled",
             return_value=True,
         ),
         patch(
-            "typevet.evaluation.instruction_variant_consumer_live.run_live_variant_matrix",
+            "typevet_evals.instruction_variant.live.run_live_variant_matrix",
             return_value=None,
         ),
     ):
@@ -195,11 +195,11 @@ def test_run_live_instruction_variant_proof_offline_shaped_matrix() -> None:
     )
     with (
         patch(
-            "typevet.evaluation.instruction_variant_consumer_live.require_live_enabled",
+            "typevet_evals.instruction_variant.live.require_live_enabled",
             return_value=True,
         ),
         patch(
-            "typevet.evaluation.instruction_variant_consumer_live.run_live_variant_matrix",
+            "typevet_evals.instruction_variant.live.run_live_variant_matrix",
             return_value=matrix,
         ),
     ):

@@ -2,11 +2,11 @@
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_outcome_replay_metrics.py
+    uv run pytest -q evals/tests/unit/test_outcome_replay_metrics.py
     ```
 
 See Also:
-    - [typevet.evaluation.outcome_replay_metrics][]: metric helpers
+    - [typevet_evals.outcome_replay_metrics][]: metric helpers
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ import math
 
 import pytest
 
-from typevet.evaluation.outcome_replay_metrics import (
+from typevet_evals.outcome_replay_metrics import (
     SavedPromptOutcome,
     brier_score,
     compare_matched_prompt_outcomes,

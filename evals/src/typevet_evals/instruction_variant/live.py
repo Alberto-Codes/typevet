@@ -4,7 +4,7 @@ Examples:
     ```python
     from pathlib import Path
 
-    from typevet.evaluation.instruction_variant_consumer_live import (
+    from typevet_evals.instruction_variant.live import (
         run_live_instruction_variant_proof,
     )
 
@@ -15,8 +15,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.instruction_variant_consumer_live_router][]: router matrix
-    - [typevet.evaluation.instruction_variant_consumer_offline][]: offline orchestration
+    - [typevet_evals.instruction_variant.live_router][]: router matrix
+    - [typevet_evals.instruction_variant.offline][]: offline orchestration
 
 When ``out_dir`` is set, ``finalize_variant_proof`` writes an exclusive receipt
 with ``evidence_kind`` ``instruction_variant_live`` and fail-closed collision
@@ -37,29 +37,29 @@ import httpx
 
 from typevet.domain.errors import GenerationError, JudgmentError
 from typevet.evaluation.experiment_identity import ReceiptAlreadyExistsError
-from typevet.evaluation.instruction_variant_consumer_live_router import (
+from typevet.evaluation.runner.live_gate import (
+    TYPEVET_REQUIRE_LIVE_ENV,
+    require_live_enabled,
+)
+from typevet_evals.instruction_variant.live_router import (
     resolve_variant_live_model,
     run_live_variant_matrix,
 )
-from typevet.evaluation.instruction_variant_consumer_offline import (
+from typevet_evals.instruction_variant.offline import (
     InstructionVariantProofResult,
     finalize_variant_proof,
 )
-from typevet.evaluation.instruction_variant_consumer_protocol import (
+from typevet_evals.instruction_variant.protocol import (
     DEFAULT_CANDIDATE_INSTRUCTION,
     DEFAULT_SEED_INSTRUCTION,
     INSTRUCTION_VARIANT_PROTOCOL_REVISION,
     VariantDispatchLedger,
     plan_instruction_variant_calls,
 )
-from typevet.evaluation.instruction_variant_consumer_receipt import (
+from typevet_evals.instruction_variant.receipt import (
     VariantProofRunContext,
     variant_receipt_basename,
     write_variant_receipt_exclusive,
-)
-from typevet.evaluation.runner.live_gate import (
-    TYPEVET_REQUIRE_LIVE_ENV,
-    require_live_enabled,
 )
 
 _EXIT_INVALID = 2
