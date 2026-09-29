@@ -255,12 +255,8 @@ def test_vllm_scoring_rejects_negative_infinity() -> None:
     [
         {"stage": ScoreStage.POST_SAMPLING},
         {"candidates": (CandidateTokenSpec("pair", (1, 2)),)},
-        {
-            "prefix": f"{MEDIA_MARKER} Answer:",
-            "media": (ImageInput(data=b"\x89PNG", mime_type="image/png"),),
-        },
     ],
-    ids=["post_sampling", "multi_token", "media"],
+    ids=["post_sampling", "multi_token"],
 )
 def test_vllm_scoring_refuses_unsupported_capability_before_post(
     request_kwargs: dict[str, Any],

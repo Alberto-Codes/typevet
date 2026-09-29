@@ -1,0 +1,152 @@
+{
+  "probe": "P3",
+  "purpose": "image binary scores + far id + top20",
+  "path": "/v1/chat/completions",
+  "request": {
+    "model": "gemma-4-31b-it",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "<data:image/png;base64 of R03.png, 570652 bytes>"
+            }
+          },
+          {
+            "type": "text",
+            "text": "Expense claim for this receipt: total 2,352,460.\n\nverdict: Does the receipt image support the expense claim?\n\nOptions:\nControl 0 → supported\nControl 1 → contradicted\n\nAnswer with exactly one control string (the digit shown), not the original label text."
+          }
+        ]
+      }
+    ],
+    "max_tokens": 1,
+    "temperature": 0,
+    "logprobs": true,
+    "top_logprobs": 20,
+    "logprob_token_ids": [
+      236771,
+      236770,
+      250000
+    ],
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    },
+    "return_tokens_as_token_ids": true
+  },
+  "http_status": 200,
+  "response": {
+    "object": "chat.completion",
+    "model": "gemma-4-31b-it",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "0",
+          "refusal": null,
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "reasoning": null
+        },
+        "logprobs": {
+          "content": [
+            {
+              "token": "token_id:236771",
+              "logprob": -1.1920922133867862e-06,
+              "bytes": [
+                48
+              ],
+              "top_logprobs": [
+                {
+                  "token": "token_id:236771",
+                  "logprob": -1.1920922133867862e-06,
+                  "bytes": [
+                    116,
+                    111,
+                    107,
+                    101,
+                    110,
+                    95,
+                    105,
+                    100,
+                    58,
+                    50,
+                    51,
+                    54,
+                    55,
+                    55,
+                    49
+                  ]
+                },
+                {
+                  "token": "token_id:236770",
+                  "logprob": -21.187501907348633,
+                  "bytes": [
+                    116,
+                    111,
+                    107,
+                    101,
+                    110,
+                    95,
+                    105,
+                    100,
+                    58,
+                    50,
+                    51,
+                    54,
+                    55,
+                    55,
+                    48
+                  ]
+                },
+                {
+                  "token": "token_id:250000",
+                  "logprob": -29.734376907348633,
+                  "bytes": [
+                    116,
+                    111,
+                    107,
+                    101,
+                    110,
+                    95,
+                    105,
+                    100,
+                    58,
+                    50,
+                    53,
+                    48,
+                    48,
+                    48,
+                    48
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "finish_reason": "length",
+        "stop_reason": null,
+        "token_ids": null,
+        "routed_experts": null
+      }
+    ],
+    "service_tier": null,
+    "system_fingerprint": "vllm-0.30.0-2d965b6e",
+    "usage": {
+      "prompt_tokens": 343,
+      "total_tokens": 344,
+      "completion_tokens": 1,
+      "prompt_tokens_details": null,
+      "completion_tokens_details": null
+    },
+    "prompt_logprobs": null,
+    "prompt_token_ids": null,
+    "prompt_text": null,
+    "kv_transfer_params": null,
+    "ec_transfer_params": null,
+    "metrics": null
+  }
+}

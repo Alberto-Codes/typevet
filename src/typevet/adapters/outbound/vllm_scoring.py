@@ -4,7 +4,8 @@ The vLLM server applies the served chat template, so the scoring prefix is
 sent as the content of one user message. ``ChatContentFraming`` composes that
 content without turn markers. The adapter asks for the requested token ids
 through ``logprob_token_ids`` and reads their logprobs from the first
-generated position.
+generated position. A request with images sends the content as a list of
+``text`` and ``image_url`` blocks, one ``data:`` URI per image.
 
 Examples:
     ```python
@@ -37,6 +38,7 @@ Attributes:
 
 from __future__ import annotations
 
+import base64
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, Self
 from urllib.parse import urljoin
@@ -46,6 +48,7 @@ import httpx
 from typevet.domain.candidate_scoring_validate import build_and_validate_result
 from typevet.domain.errors import GenerationError, ScoringUnsupportedCapabilityError
 from typevet.domain.judgment_response import TokenUsage
+from typevet.domain.media import MEDIA_MARKER
 from typevet.domain.scoring_stage import ScoreStage
 
 if TYPE_CHECKING:
@@ -151,8 +154,8 @@ class VllmCandidateScoringAdapter:
             Validated ``CandidateScoringResult`` with raw logprobs per label.
 
         Raises:
-            ScoringUnsupportedCapabilityError: Non-``PRE_SAMPLING`` stage,
-                multi-token candidates, or images.
+            ScoringUnsupportedCapabilityError: Non-``PRE_SAMPLING`` stage or
+                multi-token candidates.
             ScoringValidationError: Missing candidate scores or invalid logprob
                 values (via ``build_and_validate_result``).
             GenerationError: When the body is not JSON or its shape is not usable.
@@ -196,8 +199,8 @@ def _ensure_supported(request: CandidateScoringRequest) -> None:
         request: The scoring ask.
 
     Raises:
-        ScoringUnsupportedCapabilityError: Non-``PRE_SAMPLING`` stage,
-            multi-token candidates, or images.
+        ScoringUnsupportedCapabilityError: Non-``PRE_SAMPLING`` stage or
+            multi-token candidates.
     """
     if request.stage is not ScoreStage.PRE_SAMPLING:
         msg = (
@@ -212,23 +215,52 @@ def _ensure_supported(request: CandidateScoringRequest) -> None:
                 f"only; {spec.label!r} has {len(spec.token_ids)} ids"
             )
             raise ScoringUnsupportedCapabilityError(msg)
-    if request.media:
-        msg = "VllmCandidateScoringAdapter does not support media scoring yet"
-        raise ScoringUnsupportedCapabilityError(msg)
+
+
+def _content_blocks(prefix: str, media: tuple[ImageInput, ...]) -> list[dict[str, Any]]:
+    """Split a prefix at its media markers into chat content blocks.
+
+    Each marker becomes one ``image_url`` block, in ``media`` order. The text
+    between markers becomes ``text`` blocks, verbatim except that one newline
+    directly after a marker is dropped. Empty text blocks are left out.
+
+    Args:
+        prefix: Scoring prefix that holds one ``MEDIA_MARKER`` per image.
+        media: Images the markers stand for, in marker order.
+
+    Returns:
+        Content blocks in prefix order.
+    """
+    parts = prefix.split(MEDIA_MARKER)
+    blocks: list[dict[str, Any]] = []
+    if parts[0]:
+        blocks.append({"type": "text", "text": parts[0]})
+    for image, part in zip(media, parts[1:], strict=True):
+        encoded = base64.b64encode(image.data).decode("ascii")
+        url = f"data:{image.mime_type};base64,{encoded}"
+        blocks.append({"type": "image_url", "image_url": {"url": url}})
+        text = part.removeprefix("\n")
+        if text:
+            blocks.append({"type": "text", "text": text})
+    return blocks
 
 
 def _request_body(request: CandidateScoringRequest) -> dict[str, Any]:
     """Build the chat completions body for one scoring ask.
 
     Args:
-        request: A supported, text-only scoring ask.
+        request: A supported scoring ask; its media marker count matches
+            ``request.media``, as the domain requires.
 
     Returns:
         JSON body that asks for the logprobs of the requested token ids.
     """
+    content: str | list[dict[str, Any]] = request.prefix
+    if request.media:
+        content = _content_blocks(request.prefix, request.media)
     return {
         "model": request.model,
-        "messages": [{"role": "user", "content": request.prefix}],
+        "messages": [{"role": "user", "content": content}],
         "max_tokens": 1,
         "temperature": 0,
         "logprobs": True,
