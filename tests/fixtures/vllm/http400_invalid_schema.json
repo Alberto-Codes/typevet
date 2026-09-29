@@ -1,0 +1,36 @@
+{
+  "probe": "P10",
+  "purpose": "invalid JSON schema -> expect 4xx",
+  "path": "/v1/chat/completions",
+  "request": {
+    "model": "gemma-4-31b-it",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Expense claim for this receipt: total 2,352,460.\n\nverdict: Does the receipt image support the expense claim?\n\nOptions:\nControl 0 → supported\nControl 1 → contradicted\nControl 2 → insufficient\n\nAnswer with exactly one control string (the digit shown), not the original label text."
+      }
+    ],
+    "max_tokens": 20,
+    "temperature": 0,
+    "structured_outputs": {
+      "json": {
+        "type": "object",
+        "properties": {
+          "verdict": {
+            "type": "nosuchtype"
+          }
+        },
+        "required": 5
+      }
+    }
+  },
+  "http_status": 400,
+  "response": {
+    "error": {
+      "message": "Grammar error: Invalid type: nosuchtype",
+      "type": "BadRequestError",
+      "param": null,
+      "code": 400
+    }
+  }
+}

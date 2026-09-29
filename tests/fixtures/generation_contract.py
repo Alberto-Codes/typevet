@@ -2,8 +2,9 @@
 
 Each fixture is a **synthetic** labeled case: the author defines the request,
 the mocked HTTP stimulus (when used), and the fake configuration. A green
-contract test shows the offline fake and ``LlamaCppGenerationAdapter`` driven
-through ``httpx.MockTransport`` agree on value or error type for that case.
+contract test shows the offline fake and ``LlamaCppGenerationAdapter`` (or
+``VllmGenerationAdapter``) driven through ``httpx.MockTransport`` agree on value
+or error type for that case.
 """
 
 from __future__ import annotations
@@ -20,6 +21,7 @@ from typevet.adapters.outbound import (
     FakeGenerationAdapter,
     LlamaCppGenerationAdapter,
 )
+from typevet.adapters.outbound.vllm_generation import VllmGenerationAdapter
 from typevet.domain.errors import (
     BackendHttpError,
     GenerationError,
@@ -171,6 +173,25 @@ def async_fake_adapter(fixture: dict[str, Any]) -> AsyncFakeGenerationAdapter:
     raise ValueError(msg)
 
 
+def _replay(fixture: dict[str, Any]) -> httpx.Response:
+    http = fixture["http"]
+    if "content" in http:
+        return httpx.Response(
+            http.get("status", 200),
+            json={
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": http["content"],
+                        }
+                    }
+                ]
+            },
+        )
+    return httpx.Response(http["status"], text=http.get("text", ""))
+
+
 def mock_transport_for(fixture: dict[str, Any]) -> httpx.MockTransport:
     """Build ``httpx.MockTransport`` that replays the fixture HTTP stimulus."""
 
@@ -178,22 +199,26 @@ def mock_transport_for(fixture: dict[str, Any]) -> httpx.MockTransport:
         assert request.url.path.endswith("/v1/chat/completions")
         body = json.loads(request.content.decode())
         assert body["response_format"]["type"] == "json_schema"
-        http = fixture["http"]
-        if "content" in http:
-            return httpx.Response(
-                http.get("status", 200),
-                json={
-                    "choices": [
-                        {
-                            "message": {
-                                "role": "assistant",
-                                "content": http["content"],
-                            }
-                        }
-                    ]
-                },
-            )
-        return httpx.Response(http["status"], text=http.get("text", ""))
+        return _replay(fixture)
+
+    return httpx.MockTransport(handler)
+
+
+def vllm_mock_transport_for(fixture: dict[str, Any]) -> httpx.MockTransport:
+    """Build a vLLM ``httpx.MockTransport`` that replays the fixture stimulus.
+
+    The handler asserts the vLLM structured-output body shape before replay.
+
+    Returns:
+        Transport that checks the body and replays the fixture response.
+    """
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path.endswith("/v1/chat/completions")
+        body = json.loads(request.content.decode())
+        assert body["structured_outputs"] == {"json": fixture["request"]["schema"]}
+        assert "response_format" not in body
+        return _replay(fixture)
 
     return httpx.MockTransport(handler)
 
@@ -205,6 +230,19 @@ def sync_llama_adapter(fixture: dict[str, Any]) -> LlamaCppGenerationAdapter:
         base_url="http://test",
     )
     return LlamaCppGenerationAdapter(base_url="http://test", client=client)
+
+
+def sync_vllm_adapter(fixture: dict[str, Any]) -> VllmGenerationAdapter:
+    """Build ``VllmGenerationAdapter`` with injected mock transport.
+
+    Returns:
+        Adapter whose client replays the fixture through the vLLM transport.
+    """
+    client = httpx.Client(
+        transport=vllm_mock_transport_for(fixture),
+        base_url="http://test",
+    )
+    return VllmGenerationAdapter(base_url="http://test", client=client)
 
 
 def async_llama_adapter(fixture: dict[str, Any]) -> AsyncLlamaCppGenerationAdapter:
