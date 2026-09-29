@@ -254,7 +254,17 @@ class ScoringJudgmentAdapter:
         pinned_model: str | None = None,
         framing: ModelFramingPort | None = None,
     ) -> None:
-        """Wire scoring port, tokenizer, temperature, family, pin and framing."""
+        """Wire scoring port, tokenizer, temperature, family, pin and framing.
+
+        ``framing`` and ``served_template`` are mutually exclusive: a framing
+        composes every prefix, so a served family would not be read.
+
+        Raises:
+            ValueError: Both ``framing`` and ``served_template`` are set.
+        """
+        if framing is not None and served_template is not None:
+            msg = "pass framing or served_template, not both"
+            raise ValueError(msg)
         self._port = scoring_port
         self._tokenize = tokenize_content
         self._temperature = temperature
