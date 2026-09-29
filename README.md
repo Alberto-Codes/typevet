@@ -1,5 +1,6 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/Alberto-Codes/typevet/ci.yml?branch=main&label=CI)](https://github.com/Alberto-Codes/typevet/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/github/actions/workflow/status/Alberto-Codes/typevet/docs.yml?branch=main&label=docs)](https://alberto-codes.github.io/typevet/)
+[![PyPI](https://img.shields.io/pypi/v/typevet)](https://pypi.org/project/typevet/)
 [![Python](https://img.shields.io/badge/python-3.12-blue)](https://github.com/Alberto-Codes/typevet/blob/main/pyproject.toml)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![docs vetted](https://img.shields.io/badge/docs%20vetted-docvet-purple)](https://github.com/Alberto-Codes/docvet)
