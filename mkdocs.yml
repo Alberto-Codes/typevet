@@ -84,6 +84,7 @@ nav:
   - Tutorials:
       - First typed judgment offline: tutorials/first-typed-judgment-offline.md
   - How-to:
+      - Install typevet: how-to/install.md
       - Call typevet from Python: how-to/call-typevet-from-python.md
       - Run Gemma 4 on llama.cpp: how-to/run-gemma4-llamacpp.md
       - Serve typevet on vLLM: how-to/serve-typevet-on-vllm.md

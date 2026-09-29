@@ -37,6 +37,8 @@ answers a question, and a reference gives facts.
 
 ## How-to
 
+- [Install typevet](how-to/install.md): build a wheel, install it with the optional `cli`
+  extra, and check the version. PyPI is not yet published.
 - [Run Gemma 4 on llama.cpp](how-to/run-gemma4-llamacpp.md): stock
   `llama-server`, nested `json_schema`, and opt-in live pytest.
 - [Serve typevet on vLLM](how-to/serve-typevet-on-vllm.md): the tested
