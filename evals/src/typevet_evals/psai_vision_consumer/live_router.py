@@ -5,7 +5,7 @@ Examples:
     from pathlib import Path
 
     from typevet.adapters.inbound.settings import load_llama_settings
-    from typevet.evaluation.psai_vision_consumer_live_router import (
+    from typevet_evals.psai_vision_consumer.live_router import (
         run_consumer_live_matrix,
     )
 
@@ -19,8 +19,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_dispatch][]: budget ledger
-    - [typevet.evaluation.psai_vision_consumer_live][]: receipt orchestration
+    - [typevet_evals.psai_vision_consumer.dispatch][]: budget ledger
+    - [typevet_evals.psai_vision_consumer.live][]: receipt orchestration
     - [typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory][]: native vision factory
 
 Probes health, capability, and template identity before matrix dispatch;
@@ -48,16 +48,16 @@ from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
 from typevet.adapters.outbound.llama_cpp.multimodal import (
     MediaCapability,
 )
-from typevet.evaluation.psai_vision_consumer_dispatch import (
+from typevet_evals.psai_vision_consumer.dispatch import (
     ConsumerDispatchLedger,
     wrap_judgment_port,
     wrap_scoring_port,
 )
-from typevet.evaluation.psai_vision_consumer_live_identity import (
+from typevet_evals.psai_vision_consumer.live_identity import (
     finalize_consumer_live_identity,
     start_consumer_live_identity,
 )
-from typevet.evaluation.psai_vision_consumer_offline import (
+from typevet_evals.psai_vision_consumer.offline import (
     load_frozen_consumer_fixture,
     run_offline_consumer_matrix,
 )
@@ -79,7 +79,7 @@ class ConsumerLiveMatrixResult:
 
     Examples:
         ```python
-        from typevet.evaluation.psai_vision_consumer_live_router import (
+        from typevet_evals.psai_vision_consumer.live_router import (
             ConsumerLiveMatrixResult,
         )
 

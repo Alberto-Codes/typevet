@@ -4,9 +4,10 @@ Skips unless ``TYPEVET_REQUIRE_LIVE=1``. With it set, **fails** before any
 network call when ``TYPEVET_BACKEND=vllm``, the ``TYPEVET_VLLM__*`` settings
 or ``TYPEVET_VLLM_RECEIPT`` are missing or invalid. The run executes the five
 pre-registered sets once through ``run_acceptance``, which writes one receipt
-that ``cord_semantic_acceptance_cli`` can read, also when the run raises. The
-test prints the receipt sha256 and fails when a stop rule fired or a gated set
-failed. A failing result is a valid result. The receipt path must not exist.
+that ``typevet_evals.cli.cord_semantic_acceptance`` can read, also when the
+run raises. The test prints the receipt sha256 and fails when a stop rule
+fired or a gated set failed. A failing result is a valid result. The receipt
+path must not exist.
 
 Examples:
     ```bash

@@ -4,7 +4,7 @@ Examples:
     ```python
     from pathlib import Path
 
-    from typevet.evaluation.psai_vision_consumer_live import run_live_consumer_proof
+    from typevet_evals.psai_vision_consumer.live import run_live_consumer_proof
 
     result = run_live_consumer_proof(
         fixture_root=Path("tests/fixtures/psai/vision_smoke"),
@@ -14,8 +14,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_live_identity][]: pre-dispatch snapshot
-    - [typevet.evaluation.psai_vision_consumer_live_router][]: router HTTP leg
+    - [typevet_evals.psai_vision_consumer.live_identity][]: pre-dispatch snapshot
+    - [typevet_evals.psai_vision_consumer.live_router][]: router HTTP leg
     - [scripts.psai_vision_consumer_wheel_proof][]: isolated wheel entry
 
 Live proof snapshots router identity before the matrix, enforces
@@ -50,40 +50,40 @@ from typevet.evaluation.experiment_identity import (
     ReceiptAlreadyExistsError,
     write_receipt_exclusive,
 )
-from typevet.evaluation.psai_vision_consumer_accounting import (
+from typevet.evaluation.runner.live_gate import (
+    TYPEVET_REQUIRE_LIVE_ENV,
+    require_live_enabled,
+)
+from typevet_evals.psai_vision_consumer.accounting import (
     ConsumerCallBudgetError,
     ConsumerCallCounts,
     plan_frozen_consumer_calls,
 )
-from typevet.evaluation.psai_vision_consumer_dispatch import ConsumerDispatchLedger
-from typevet.evaluation.psai_vision_consumer_harness import (
+from typevet_evals.psai_vision_consumer.dispatch import ConsumerDispatchLedger
+from typevet_evals.psai_vision_consumer.harness import (
     _EXIT_ACCEPTANCE_FAIL,
     _EXIT_INVALID,
     PROTOCOL_REVISION,
     ConsumerProofResult,
 )
-from typevet.evaluation.psai_vision_consumer_live_receipt import (
+from typevet_evals.psai_vision_consumer.live_receipt import (
     LiveReceiptContext,
     build_live_receipt_payload,
 )
-from typevet.evaluation.psai_vision_consumer_live_router import (
+from typevet_evals.psai_vision_consumer.live_router import (
     ConsumerLiveMatrixResult,
     run_consumer_live_matrix,
 )
-from typevet.evaluation.psai_vision_consumer_offline import (
+from typevet_evals.psai_vision_consumer.offline import (
     consumer_fixture_identity_pins,
     frozen_consumer_controls,
     load_frozen_consumer_fixture,
     run_negative_template_probe,
 )
-from typevet.evaluation.psai_vision_consumer_receipt import (
+from typevet_evals.psai_vision_consumer.receipt import (
     consumer_receipt_basename,
     evaluate_consumer_receipt_acceptance,
     resolve_receipt_write_path,
-)
-from typevet.evaluation.runner.live_gate import (
-    TYPEVET_REQUIRE_LIVE_ENV,
-    require_live_enabled,
 )
 
 _DISPATCH_ERRORS = (
@@ -95,7 +95,7 @@ _DISPATCH_ERRORS = (
 )
 
 _MODEL_ENV = ("TYPEVET_GEMMA_MODEL", "TYPEVET_LLAMA__DEFAULT_MODEL")
-_REPO_ROOT = Path(__file__).resolve().parents[3]
+_REPO_ROOT = Path(__file__).resolve().parents[4]
 
 
 def _typevet_install_path() -> str:

@@ -13,13 +13,6 @@ import pytest
 from typevet.adapters.inbound.settings import LlamaSettings
 from typevet.domain.errors import GenerationError, JudgmentError
 from typevet.domain.judgment_questions import Noul
-from typevet.evaluation.psai_vision_consumer_dispatch import (
-    ConsumerDispatchLedger,
-    wrap_judgment_port,
-    wrap_scoring_port,
-)
-from typevet.evaluation.psai_vision_consumer_live import run_live_consumer_proof
-from typevet.evaluation.psai_vision_consumer_live_router import run_consumer_live_matrix
 from typevet.runtime import open_gemma_native_vision_judgment
 from typevet_evals.instruction_variant.live import (
     run_live_instruction_variant_proof,
@@ -30,6 +23,13 @@ from typevet_evals.instruction_variant.live_router import (
 from typevet_evals.instruction_variant.protocol import (
     VariantDispatchLedger,
 )
+from typevet_evals.psai_vision_consumer.dispatch import (
+    ConsumerDispatchLedger,
+    wrap_judgment_port,
+    wrap_scoring_port,
+)
+from typevet_evals.psai_vision_consumer.live import run_live_consumer_proof
+from typevet_evals.psai_vision_consumer.live_router import run_consumer_live_matrix
 
 pytestmark = pytest.mark.contract
 ROOT = Path(__file__).resolve().parents[3] / "tests/fixtures/psai/vision_smoke"
@@ -98,7 +98,7 @@ def run(
         patch("httpx.Client", return_value=client),
         patch.dict("os.environ", {"TYPEVET_REQUIRE_LIVE": "1"}),
         patch(
-            "typevet.evaluation.psai_vision_consumer_live.load_llama_settings",
+            "typevet_evals.psai_vision_consumer.live.load_llama_settings",
             return_value=settings,
         ),
         patch(

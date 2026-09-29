@@ -17,6 +17,7 @@ Examples:
 See Also:
     - [typevet_evals.instruction_variant.matrix][]: matrix legs
     - [typevet_evals.instruction_variant.receipt][]: receipt writer
+    - [typevet_evals.psai_vision_consumer.accounting][]: call budgets
 
 ``finalize_variant_proof`` compares saved outcomes, assembles the receipt, and
 calls ``persist_variant_receipt`` when ``VariantProofRunContext.out_dir`` is set.
@@ -32,11 +33,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from typevet.evaluation.psai_vision_consumer_accounting import (
-    ConsumerCallBudgetError,
-    ConsumerCallCounts,
-    enforce_consumer_call_budget,
-)
 from typevet_evals.instruction_variant.matrix import gold_labels
 from typevet_evals.instruction_variant.protocol import (
     DEFAULT_CANDIDATE_INSTRUCTION,
@@ -58,6 +54,11 @@ from typevet_evals.instruction_variant.run import (
 from typevet_evals.outcome_replay_metrics import (
     compare_matched_prompt_outcomes,
     replay_identical_reports,
+)
+from typevet_evals.psai_vision_consumer.accounting import (
+    ConsumerCallBudgetError,
+    ConsumerCallCounts,
+    enforce_consumer_call_budget,
 )
 
 _NOUL_LABELS: tuple[str, ...] = ("false", "true")

@@ -9,7 +9,7 @@ is counted separately.
 
 Examples:
     ```python
-    from typevet.evaluation.psai_vision_consumer_accounting import (
+    from typevet_evals.psai_vision_consumer.accounting import (
         ANNOTATION_QUESTIONS_PER_JUDGE_CALL,
         ConsumerCallCounts,
         enforce_consumer_call_budget,
@@ -28,7 +28,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_harness][]: receipt writer
+    - [typevet_evals.psai_vision_consumer.harness][]: receipt writer
     - [typevet.evaluation.datasets.psai_vision_controls][]: control matrix
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
@@ -99,7 +99,7 @@ class ConsumerCallBudgetError(ValueError):
 
     Examples:
         ```python
-        from typevet.evaluation.psai_vision_consumer_accounting import (
+        from typevet_evals.psai_vision_consumer.accounting import (
             ConsumerCallBudgetError,
         )
 

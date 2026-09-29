@@ -7,15 +7,20 @@ from pathlib import Path
 
 import pytest
 
-from typevet.adapters.inbound.cord_semantic_acceptance_cli import main
+from typevet_evals.cli.cord_semantic_acceptance import main
 
 pytestmark = pytest.mark.contract
 
 FIXTURE_DIR = (
-    Path(__file__).resolve().parents[1] / "fixtures" / "cord" / "semantic_acceptance"
+    Path(__file__).resolve().parents[3]
+    / "tests"
+    / "fixtures"
+    / "cord"
+    / "semantic_acceptance"
 )
 EXPENSE_FAIL = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[3]
+    / "tests"
     / "fixtures"
     / "cord"
     / "expense_smoke"

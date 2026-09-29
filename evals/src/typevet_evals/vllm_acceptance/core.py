@@ -8,10 +8,10 @@ this module; this module never imports it. Every request passes through
 raises ``CallCapReached`` before a request that would pass a cap. The run then
 stops and still returns a receipt. The harness makes no transport retry. The
 receipt keeps the CORD ``cases`` and ``combined`` rows at the top level, so
-``cord_semantic_acceptance_cli`` reads the receipt file directly. The call
-caps, ``CountingTransport``, ``CallCapReached`` and ``kv_cache_usage`` live
-in ``typevet_evals.vllm_acceptance.transport``; this module re-exports
-all of them except ``CallCapReached`` (#229).
+``typevet_evals.cli.cord_semantic_acceptance`` reads the receipt file
+directly. The call caps, ``CountingTransport``, ``CallCapReached`` and
+``kv_cache_usage`` live in ``typevet_evals.vllm_acceptance.transport``; this
+module re-exports all of them except ``CallCapReached`` (#229).
 
 Examples:
     ```python

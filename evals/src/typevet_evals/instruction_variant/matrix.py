@@ -19,6 +19,7 @@ Examples:
 
 See Also:
     - [typevet_evals.instruction_variant.offline][]: orchestration
+    - [typevet_evals.psai_vision_consumer.offline][]: consumer fixture helpers
 """
 
 from __future__ import annotations
@@ -48,11 +49,6 @@ from typevet.evaluation.datasets.psai_vision_controls import (
     control_matrix,
     visual_question,
 )
-from typevet.evaluation.psai_vision_consumer_offline import (
-    SequentialConsumerScoringFake,
-    run_negative_template_probe,
-)
-from typevet.evaluation.psai_vision_consumer_receipt import serialize_answer
 from typevet.ports.judgment import JudgmentPort
 from typevet.ports.scoring import CandidateScoringPort
 from typevet_evals.instruction_variant.protocol import (
@@ -60,6 +56,11 @@ from typevet_evals.instruction_variant.protocol import (
     VariantDispatchLedger,
 )
 from typevet_evals.outcome_replay_metrics import SavedPromptOutcome
+from typevet_evals.psai_vision_consumer.offline import (
+    SequentialConsumerScoringFake,
+    run_negative_template_probe,
+)
+from typevet_evals.psai_vision_consumer.receipt import serialize_answer
 
 
 class _LedgerScoringPort:

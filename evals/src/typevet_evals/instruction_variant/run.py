@@ -19,6 +19,7 @@ Examples:
 
 See Also:
     - [typevet_evals.instruction_variant.matrix][]: matrix helpers
+    - [typevet_evals.psai_vision_consumer.offline][]: frozen consumer fixture
 """
 
 from __future__ import annotations
@@ -31,7 +32,6 @@ from typing import Any
 from typevet.adapters.outbound.gemma import ServedTemplateClass
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.evaluation.datasets.psai_vision_controls import VisualControl
-from typevet.evaluation.psai_vision_consumer_offline import load_frozen_consumer_fixture
 from typevet.testing import ScriptedScoringFake
 from typevet_evals.instruction_variant.matrix import (
     build_offline_variant_port,
@@ -44,6 +44,7 @@ from typevet_evals.instruction_variant.protocol import (
     VariantDispatchLedger,
 )
 from typevet_evals.outcome_replay_metrics import SavedPromptOutcome
+from typevet_evals.psai_vision_consumer.offline import load_frozen_consumer_fixture
 
 
 @dataclass(frozen=True, slots=True)

@@ -2,7 +2,7 @@
 
 Examples:
     ```python
-    from typevet.evaluation.psai_vision_consumer_outcomes import (
+    from typevet_evals.psai_vision_consumer.outcomes import (
         expected_outcome_failures,
     )
 
@@ -10,7 +10,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_receipt][]: acceptance wrapper
+    - [typevet_evals.psai_vision_consumer.receipt][]: acceptance wrapper
 
 Gold replay resolves the committed fixture from receipt identity pins
 (``manifest_sha256``, ``frozen_case_image_digests``) when ``fixture_root``
@@ -38,8 +38,8 @@ from typevet.evaluation.datasets.psai_vision_controls import (
     noul_polarity,
     semantic_hit,
 )
-from typevet.evaluation.psai_vision_consumer_accounting import FROZEN_CONSUMER_CASE_UIDS
-from typevet.evaluation.psai_vision_consumer_protocol import (
+from typevet_evals.psai_vision_consumer.accounting import FROZEN_CONSUMER_CASE_UIDS
+from typevet_evals.psai_vision_consumer.protocol import (
     committed_consumer_fixture_root,
 )
 

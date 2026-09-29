@@ -8,7 +8,7 @@ Examples:
 
 See Also:
     - [scripts.build_wheel_for_tests][]: wheel build helpers
-    - [typevet.evaluation.psai_vision_consumer_harness][]: matrix harness
+    - [typevet_evals.psai_vision_consumer.harness][]: matrix harness
 """
 
 from __future__ import annotations
@@ -28,6 +28,7 @@ from typevet.evaluation.runner.live_gate import (
     require_live_enabled,
 )
 from typevet_evals.wheel_isolated import (
+    build_member_wheel_to_directory,
     build_wheel_to_directory,
     run_isolated_wheel_python,
 )
@@ -72,6 +73,20 @@ def verify_wheel_sha256(measured: str, expected: str | None) -> None:
         raise ValueError(msg)
 
 
+def _member_wheels(base: Path) -> list[Path]:
+    """Build the ``typevet-evals`` member wheel under ``base``.
+
+    The harness lives in the member, which the ``typevet`` wheel does not
+    hold (#256), so each isolated run installs this wheel next to it.
+
+    Returns:
+        Sorted ``typevet_evals-*.whl`` paths for ``extra_wheels``.
+    """
+    member_dist = base / "evals-dist"
+    build_member_wheel_to_directory(member_dist)
+    return sorted(member_dist.glob("typevet_evals-*.whl"))
+
+
 def _isolated_offline_source(
     *,
     fixture_root: Path,
@@ -83,7 +98,7 @@ import importlib.metadata
 from pathlib import Path
 
 import typevet
-from typevet.evaluation.psai_vision_consumer_harness import consumer_proof_main
+from typevet_evals.psai_vision_consumer.harness import consumer_proof_main
 
 install_path = Path(typevet.__file__).resolve()
 version = importlib.metadata.version("typevet")
@@ -113,7 +128,7 @@ import importlib.metadata
 from pathlib import Path
 
 import typevet
-from typevet.evaluation.psai_vision_consumer_live import live_consumer_proof_main
+from typevet_evals.psai_vision_consumer.live import live_consumer_proof_main
 
 install_path = Path(typevet.__file__).resolve()
 version = importlib.metadata.version("typevet")
@@ -137,11 +152,13 @@ def _run_isolated_phase(
     wheel: Path,
     source: str,
     isolated_cwd: Path,
+    extra_wheels: Sequence[Path],
 ) -> int:
     completed = run_isolated_wheel_python(
         wheel=wheel,
         source=source,
         cwd=isolated_cwd,
+        extra_wheels=extra_wheels,
     )
     if completed.stdout:
         print(completed.stdout, end="")
@@ -194,6 +211,7 @@ def run_offline_wheel_proof(
             wheel_sha256=measured,
         ),
         isolated_cwd=isolated_cwd,
+        extra_wheels=_member_wheels(base),
     )
     return (code, wheel, measured)
 
@@ -231,6 +249,7 @@ def run_live_wheel_proof(
             out_dir=receipt_dir,
         ),
         isolated_cwd=isolated_cwd,
+        extra_wheels=_member_wheels(base),
     )
 
 

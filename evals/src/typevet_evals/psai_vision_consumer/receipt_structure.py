@@ -2,7 +2,7 @@
 
 Examples:
     ```python
-    from typevet.evaluation.psai_vision_consumer_receipt_structure import (
+    from typevet_evals.psai_vision_consumer.receipt_structure import (
         protocol_structural_failures,
     )
 
@@ -10,7 +10,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_protocol][]: frozen pins
+    - [typevet_evals.psai_vision_consumer.protocol][]: frozen pins
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
 """
@@ -21,11 +21,11 @@ from collections.abc import Mapping
 from math import isfinite
 from typing import Any
 
-from typevet.evaluation.psai_vision_consumer_accounting import (
+from typevet_evals.psai_vision_consumer.accounting import (
     FROZEN_CONSUMER_CASE_UIDS,
     TEXT_ANNOTATION_JUDGE_UIDS,
 )
-from typevet.evaluation.psai_vision_consumer_protocol import (
+from typevet_evals.psai_vision_consumer.protocol import (
     FROZEN_JUDGMENT_CALLS,
     FROZEN_PROTOCOL_REVISION,
     FROZEN_SCORING_REQUESTS,

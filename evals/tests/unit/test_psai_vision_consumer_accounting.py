@@ -8,7 +8,7 @@ import pytest
 
 from tests.fixtures.judgment_scoring_contract import adapter_for
 from typevet.evaluation.datasets.psai_vision_controls import annotation_questions
-from typevet.evaluation.psai_vision_consumer_accounting import (
+from typevet_evals.psai_vision_consumer.accounting import (
     ANNOTATION_QUESTIONS_PER_JUDGE_CALL,
     ConsumerCallBudgetError,
     ConsumerCallCounts,

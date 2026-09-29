@@ -2,7 +2,7 @@
 
 Examples:
     ```python
-    from typevet.evaluation.psai_vision_consumer_protocol import (
+    from typevet_evals.psai_vision_consumer.protocol import (
         expected_matrix_row_keys,
         committed_consumer_fixture_root,
     )
@@ -11,7 +11,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_accounting][]: call budgets
+    - [typevet_evals.psai_vision_consumer.accounting][]: call budgets
     - [docs/maintainers/consumer-live-protocol-rev2.md][]: maintainer table
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
@@ -21,12 +21,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from typevet.evaluation.psai_vision_consumer_accounting import (
+from typevet_evals.psai_vision_consumer.accounting import (
     FROZEN_CONSUMER_CASE_UIDS,
     TEXT_ANNOTATION_JUDGE_UIDS,
 )
 
-_REPO_ROOT = Path(__file__).resolve().parents[3]
+_REPO_ROOT = Path(__file__).resolve().parents[4]
 COMMITTED_CONSUMER_FIXTURE_ROOT = _REPO_ROOT / "tests/fixtures/psai/vision_smoke"
 
 FROZEN_PROTOCOL_REVISION = 2

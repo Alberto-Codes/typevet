@@ -2,11 +2,11 @@
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_psai_vision_consumer_receipt_paths.py
+    uv run pytest -q evals/tests/unit/test_psai_vision_consumer_receipt_paths.py
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_receipt][]: receipt helpers
+    - [typevet_evals.psai_vision_consumer.receipt][]: receipt helpers
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from typing import cast
 import pytest
 
 from typevet.domain.judgment_answers import Answer, NoulAnswer
-from typevet.evaluation.psai_vision_consumer_receipt import (
+from typevet_evals.psai_vision_consumer.receipt import (
     consumer_receipt_basename,
     resolve_receipt_write_path,
     serialize_answer,

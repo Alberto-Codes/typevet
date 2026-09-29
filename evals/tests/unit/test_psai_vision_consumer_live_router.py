@@ -2,11 +2,11 @@
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_psai_vision_consumer_live_router.py
+    uv run pytest -q evals/tests/unit/test_psai_vision_consumer_live_router.py
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_live_router][]: router leg
+    - [typevet_evals.psai_vision_consumer.live_router][]: router leg
 """
 
 from __future__ import annotations
@@ -22,10 +22,10 @@ from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
     GemmaNativeVisionSession,
 )
 from typevet.adapters.outbound.llama_cpp.multimodal import MediaCapability
-from typevet.evaluation.psai_vision_consumer_live_router import run_consumer_live_matrix
+from typevet_evals.psai_vision_consumer.live_router import run_consumer_live_matrix
 
 FIXTURE_ROOT = (
-    Path(__file__).resolve().parents[1] / "fixtures" / "psai" / "vision_smoke"
+    Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "psai" / "vision_smoke"
 )
 
 
@@ -47,13 +47,13 @@ def test_run_consumer_live_matrix_offline_scripted_router() -> None:
 
     with (
         patch(
-            "typevet.evaluation.psai_vision_consumer_live_router.httpx.Client",
+            "typevet_evals.psai_vision_consumer.live_router.httpx.Client",
         ) as client_cls,
         patch(
-            "typevet.evaluation.psai_vision_consumer_live_router.open_gemma_native_vision_judgment",
+            "typevet_evals.psai_vision_consumer.live_router.open_gemma_native_vision_judgment",
         ) as factory_ctx,
         patch(
-            "typevet.evaluation.psai_vision_consumer_live_router.run_offline_consumer_matrix",
+            "typevet_evals.psai_vision_consumer.live_router.run_offline_consumer_matrix",
             return_value=([], {}),
         ),
     ):

@@ -228,6 +228,7 @@ re-exported names from their current home. Import from the current home.
 | Removed module | Current home |
 |---|---|
 | `typevet.eval_runner_cli` | `typevet_evals.cli.eval_runner` (workspace member, not in the wheel) |
+| `typevet.cord_semantic_acceptance_cli` | `typevet_evals.cli.cord_semantic_acceptance` (workspace member, not in the wheel) |
 | `typevet.eval_runner`, `typevet.eval_runner_datasets`, `typevet.eval_runner_live_gate`, `typevet.eval_runner_report` | `typevet.evaluation.runner` |
 | `typevet.eval_tpjep_loader`, `typevet.eval_tpjep_outcome`, `typevet.eval_tpjep_records`, `typevet.eval_tpjep_runner` | `typevet.evaluation.tpjep` |
 | Other `typevet.eval_*` loaders, download helpers, and guards | One submodule of `typevet.evaluation.datasets` |
@@ -257,17 +258,30 @@ release (#256). The six old module files do not resolve.
 | `typevet.adapters.outbound.vllm_scoring` | `typevet.adapters.outbound.vllm.scoring` |
 | `typevet.adapters.outbound.vllm_judgment_factory` | `typevet.adapters.outbound.vllm.judgment_factory` |
 
+typevet also moved these evaluation modules out of the library into the
+`typevet-evals` workspace member before its first release (#256). The wheel
+does not hold them, and the old paths do not resolve.
+
+| Removed module | Current home (workspace member, not in the wheel) |
+|---|---|
+| `typevet.adapters.inbound.cord_semantic_acceptance_cli` | `typevet_evals.cli.cord_semantic_acceptance` |
+| `typevet.evaluation.psai_vision_consumer_*` (12 modules) | `typevet_evals.psai_vision_consumer.*`, with the prefix removed (for example `…_harness` → `harness`) |
+| `typevet.evaluation.consumer_http_accounting` | `typevet_evals.psai_vision_consumer.http_accounting` |
+| `typevet.evaluation.psai_vision_probability_evidence` | `typevet_evals.psai_vision_probability_evidence` |
+
 ## Command-line entry
 
 typevet declares no console script. `pyproject.toml` has no
 `[project.scripts]` table, so installing the wheel does not put a `typevet`
 command on `PATH`.
 
-The wheel ships no command. In a checkout, the eval runner is a Python module
-entry in the `typevet-evals` workspace member:
+The wheel ships no command. In a checkout, the eval runner and the CORD
+receipt acceptance check are Python module entries in the `typevet-evals`
+workspace member:
 
 ```bash
 uv run python -m typevet_evals.cli.eval_runner --help
+uv run python -m typevet_evals.cli.cord_semantic_acceptance path/to/receipt.json
 ```
 
 Without `TYPEVET_LLAMA__*` router settings, the command prints a skip
@@ -288,7 +302,7 @@ reason and exits `0`. See [live eval runner](eval-live-runner.md).
 |---|---|---|
 | Library | Initial public hex surface | Root, domain, ports, runtime, inbound, outbound, diagnostics, testing |
 | Evaluation | Shipped, research harness | `typevet.evaluation.runner` and `typevet.evaluation.tpjep`; dataset loaders by submodule |
-| CLI | Not shipped | No console script and no module entry in the wheel. In a checkout: `python -m typevet_evals.cli.eval_runner`. The `cli` extra lists Typer only and no module imports it |
+| CLI | Not shipped | No console script and no module entry in the wheel. In a checkout: `python -m typevet_evals.cli.eval_runner` and `python -m typevet_evals.cli.cord_semantic_acceptance`. The `cli` extra lists Typer only and no module imports it |
 | MCP | Not shipped | No extra or entry point |
 | Dependencies | `httpx`, `jsonschema`, `structlog` | Locked via `uv.lock` in development |
 

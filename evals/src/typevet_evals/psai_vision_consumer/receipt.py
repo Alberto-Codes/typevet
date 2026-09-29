@@ -2,7 +2,7 @@
 
 Examples:
     ```python
-    from typevet.evaluation.psai_vision_consumer_receipt import (
+    from typevet_evals.psai_vision_consumer.receipt import (
         evaluate_consumer_receipt_acceptance,
         serialize_answer,
     )
@@ -13,8 +13,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_harness][]: orchestration
-    - [typevet.evaluation.psai_vision_consumer_receipt_structure][]: structural checks
+    - [typevet_evals.psai_vision_consumer.harness][]: orchestration
+    - [typevet_evals.psai_vision_consumer.receipt_structure][]: structural checks
 
 Acceptance runs structural fail-closed checks first, then semantic gold
 replay when fixture identity pins on the receipt are valid.
@@ -36,8 +36,8 @@ from typevet.domain.judgment_answers import (
     NoulAnswer,
     ScoreAnswer,
 )
-from typevet.evaluation.psai_vision_consumer_outcomes import expected_outcome_failures
-from typevet.evaluation.psai_vision_consumer_receipt_structure import (
+from typevet_evals.psai_vision_consumer.outcomes import expected_outcome_failures
+from typevet_evals.psai_vision_consumer.receipt_structure import (
     protocol_structural_failures,
 )
 

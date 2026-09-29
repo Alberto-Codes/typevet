@@ -11,7 +11,7 @@ Kind: reference, for maintainers.
 | r4 instruction-variant E2E | **Landed (slice 4)** — `scripts/consumer_instruction_variant_proof.py` + replay metrics |
 | r1 wheel-isolated harness | Landed: `scripts/psai_vision_consumer_wheel_proof.py` |
 | r5 exclusive receipts + pins | `write_receipt_exclusive`; manifest/image pins on receipt |
-| r6 live wheel matrix | Wired — `run_live_wheel_proof` + `psai_vision_consumer_live` |
+| r6 live wheel matrix | Wired — `run_live_wheel_proof` + `typevet_evals.psai_vision_consumer.live` |
 | r7 fail-closed repair | **Landed** — `6cf48de` (Refs #177); acceptance [#5849008536](https://github.com/Alberto-Codes/typevet/issues/177#issuecomment-5849008536) |
 
 ## Freeze protocol (post before live rerun)
@@ -42,7 +42,7 @@ uv run python scripts/run_psai_vision_consumer_proof.py
 uv run python scripts/run_psai_vision_consumer_proof.py --dev --fixture-root tests/fixtures/psai/vision_smoke
 TYPEVET_WHEEL_SHA256=$(sha256sum dist/typevet-*.whl | awk '{print $1}') \
   uv run python scripts/psai_vision_consumer_wheel_proof.py
-uv run pytest -q tests/unit/test_psai_vision_consumer_failclosed.py
+uv run pytest -q evals/tests/unit/test_psai_vision_consumer_failclosed.py
 uv run python scripts/consumer_public_api_demo.py
 uv run python scripts/run_consumer_instruction_variant_proof.py
 uv run python scripts/run_consumer_instruction_variant_proof.py --dev

@@ -2,11 +2,11 @@
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_psai_vision_probability_evidence.py
+    uv run pytest -q evals/tests/unit/test_psai_vision_probability_evidence.py
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_probability_evidence][]: mass helpers
+    - [typevet_evals.psai_vision_probability_evidence][]: mass helpers
     - [docs.reference.psai-vision-choice-probability-evidence][]: reporting
 
 [i180]: https://github.com/Alberto-Codes/typevet/issues/180
@@ -21,7 +21,7 @@ from pathlib import Path
 
 import pytest
 
-from typevet.evaluation.psai_vision_probability_evidence import (
+from typevet_evals.psai_vision_probability_evidence import (
     ARTIFACT_VERSION,
     build_corrected_artifact,
     legacy_denominator_mass,
@@ -32,7 +32,11 @@ from typevet.evaluation.psai_vision_probability_evidence import (
 pytestmark = pytest.mark.unit
 
 _FIXTURE_DIR = (
-    Path(__file__).resolve().parents[1] / "fixtures" / "psai" / "vision_choice_evidence"
+    Path(__file__).resolve().parents[3]
+    / "tests"
+    / "fixtures"
+    / "psai"
+    / "vision_choice_evidence"
 )
 
 

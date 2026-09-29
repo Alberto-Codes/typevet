@@ -4,7 +4,7 @@ Examples:
     ```python
     from pathlib import Path
 
-    from typevet.evaluation.psai_vision_consumer_harness import (
+    from typevet_evals.psai_vision_consumer.harness import (
         consumer_proof_main,
         run_offline_consumer_proof,
     )
@@ -16,9 +16,9 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_accounting][]: call budgets
-    - [typevet.evaluation.psai_vision_consumer_dispatch][]: dispatch ledger
-    - [typevet.evaluation.psai_vision_consumer_offline][]: matrix runner
+    - [typevet_evals.psai_vision_consumer.accounting][]: call budgets
+    - [typevet_evals.psai_vision_consumer.dispatch][]: dispatch ledger
+    - [typevet_evals.psai_vision_consumer.offline][]: matrix runner
 
 Offline runs wrap the scoring port with a [ConsumerDispatchLedger][]
 so ``scoring_requests_observed`` and ``failed_attempts`` reflect real
@@ -39,7 +39,6 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
-from typevet.adapters.inbound.cord_semantic_acceptance_cli import main as cord_cli_main
 from typevet.adapters.outbound.gemma import ServedTemplateClass
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.evaluation.datasets.psai_vision_controls import (
@@ -50,33 +49,34 @@ from typevet.evaluation.experiment_identity import (
     ReceiptAlreadyExistsError,
     write_receipt_exclusive,
 )
-from typevet.evaluation.psai_vision_consumer_accounting import (
+from typevet.ports.judgment import JudgmentPort
+from typevet_evals.cli.cord_semantic_acceptance import main as cord_cli_main
+from typevet_evals.psai_vision_consumer.accounting import (
     ANNOTATION_QUESTIONS_PER_JUDGE_CALL,
     ConsumerCallBudgetError,
     ConsumerCallCounts,
     enforce_consumer_call_budget,
     plan_frozen_consumer_calls,
 )
-from typevet.evaluation.psai_vision_consumer_dispatch import (
+from typevet_evals.psai_vision_consumer.dispatch import (
     ConsumerDispatchLedger,
     wrap_judgment_port,
     wrap_scoring_port,
 )
-from typevet.evaluation.psai_vision_consumer_offline import (
+from typevet_evals.psai_vision_consumer.offline import (
     build_offline_consumer_port,
     consumer_fixture_identity_pins,
     frozen_consumer_controls,
     load_frozen_consumer_fixture,
     run_offline_consumer_matrix,
 )
-from typevet.evaluation.psai_vision_consumer_protocol import (
+from typevet_evals.psai_vision_consumer.protocol import (
     FROZEN_PROTOCOL_REVISION as PROTOCOL_REVISION,
 )
-from typevet.evaluation.psai_vision_consumer_receipt import (
+from typevet_evals.psai_vision_consumer.receipt import (
     consumer_receipt_basename,
     evaluate_consumer_receipt_acceptance,
 )
-from typevet.ports.judgment import JudgmentPort
 
 _EXIT_ACCEPTANCE_FAIL = 1
 _EXIT_INVALID = 2

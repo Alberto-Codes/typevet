@@ -13,6 +13,7 @@ Examples:
 
 See Also:
     - [typevet_evals.instruction_variant.proof][]: harness runner
+    - [typevet_evals.psai_vision_consumer.http_accounting][]: dispatch accounting
     - [docs/maintainers/consumer-instruction-variant-protocol.md][]: maintainer table
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
@@ -22,8 +23,8 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from typevet.evaluation.consumer_http_accounting import DispatchAccounting
-from typevet.evaluation.psai_vision_consumer_accounting import ConsumerCallCounts
+from typevet_evals.psai_vision_consumer.accounting import ConsumerCallCounts
+from typevet_evals.psai_vision_consumer.http_accounting import DispatchAccounting
 
 INSTRUCTION_VARIANT_PROTOCOL_REVISION = 2
 

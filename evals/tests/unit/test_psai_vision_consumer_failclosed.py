@@ -2,11 +2,11 @@
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_psai_vision_consumer_failclosed.py
+    uv run pytest -q evals/tests/unit/test_psai_vision_consumer_failclosed.py
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_receipt_structure][]: structural checks
+    - [typevet_evals.psai_vision_consumer.receipt_structure][]: structural checks
 """
 
 from __future__ import annotations
@@ -22,25 +22,26 @@ from typevet.domain.candidate_scoring_request import (
     CandidateTokenSpec,
 )
 from typevet.domain.scoring_stage import ScoreStage
-from typevet.evaluation.psai_vision_consumer_dispatch import (
+from typevet.testing import ScriptedScoringFake
+from typevet_evals.psai_vision_consumer.dispatch import (
     ConsumerDispatchLedger,
     wrap_scoring_port,
 )
-from typevet.evaluation.psai_vision_consumer_harness import run_offline_consumer_proof
-from typevet.evaluation.psai_vision_consumer_outcomes import expected_outcome_failures
-from typevet.evaluation.psai_vision_consumer_receipt import (
+from typevet_evals.psai_vision_consumer.harness import run_offline_consumer_proof
+from typevet_evals.psai_vision_consumer.outcomes import expected_outcome_failures
+from typevet_evals.psai_vision_consumer.receipt import (
     evaluate_consumer_receipt_acceptance,
 )
-from typevet.evaluation.psai_vision_consumer_receipt_structure import (
+from typevet_evals.psai_vision_consumer.receipt_structure import (
     protocol_structural_failures,
 )
-from typevet.testing import ScriptedScoringFake
 
 FIXTURE_ROOT = (
-    Path(__file__).resolve().parents[1] / "fixtures" / "psai" / "vision_smoke"
+    Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "psai" / "vision_smoke"
 )
 REV2_RECEIPT = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[3]
+    / "tests"
     / "fixtures"
     / "consumer"
     / "consumer-receipt-p2-b01ef692945a65e3-gemma-4-31b-kv9-q4km-mm.json"

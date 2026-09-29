@@ -15,8 +15,8 @@ capability work lives under
 | `tests/fixtures/psai/vision_choice_evidence/source_c10_repair_v1.json` | Two-call C10 opposite-gold donor repair |
 | `tests/fixtures/psai/vision_choice_evidence/corrected_v1.json` | Versioned corrected artifact with SHA-256 source links |
 
-Library helpers live in
-[`typevet.evaluation.psai_vision_probability_evidence`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/evaluation/psai_vision_probability_evidence.py).
+Evaluation helpers live in the `typevet-evals` workspace member, in
+[`typevet_evals.psai_vision_probability_evidence`](https://github.com/Alberto-Codes/typevet/blob/main/evals/src/typevet_evals/psai_vision_probability_evidence.py).
 
 ## Raw mass vs normalized confidence
 
@@ -61,7 +61,7 @@ invalid.
 ## Offline verification
 
 ```bash
-uv run pytest tests/unit/test_psai_vision_probability_evidence.py -q
+uv run pytest evals/tests/unit/test_psai_vision_probability_evidence.py -q
 ```
 
 No live inference is required to verify mass arithmetic.

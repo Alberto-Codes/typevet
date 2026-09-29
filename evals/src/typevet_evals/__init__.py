@@ -29,6 +29,8 @@ See Also:
     - [typevet_evals.gemma_native_vision_wheel_smoke][]: Factory wheel smoke
     - [typevet_evals.instruction_variant][]: Instruction-variant consumer proof
     - [typevet_evals.outcome_replay_metrics][]: Replay comparison metrics
+    - [typevet_evals.psai_vision_consumer][]: PSAI vision consumer proof
+    - [typevet_evals.psai_vision_probability_evidence][]: Choice mass evidence
 """
 
 __all__: list[str] = []

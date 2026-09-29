@@ -1,4 +1,4 @@
-"""Module-entry commands over the evaluation tooling (#256 E2).
+r"""Module-entry commands over the evaluation tooling (#256 E2, E5).
 
 Each submodule runs with ``uv run python -m typevet_evals.cli.<name>``. The
 typevet wheel ships no command.
@@ -9,10 +9,13 @@ Attributes:
 Examples:
     ```console
     $ uv run python -m typevet_evals.cli.eval_runner --help
+    $ uv run python -m typevet_evals.cli.cord_semantic_acceptance \\
+        tests/fixtures/cord/semantic_acceptance/labeled_synthetic_pass.json
     ```
 
 See Also:
     - [typevet_evals.cli.eval_runner][]: Loader eval runner command
+    - [typevet_evals.cli.cord_semantic_acceptance][]: CORD receipt acceptance
 """
 
-__all__ = ["eval_runner"]
+__all__ = ["cord_semantic_acceptance", "eval_runner"]

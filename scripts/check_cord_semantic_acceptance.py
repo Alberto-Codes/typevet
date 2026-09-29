@@ -7,13 +7,13 @@ Examples:
     ```
 
 See Also:
-    - [typevet.adapters.inbound.cord_semantic_acceptance_cli][]: CLI implementation
+    - [typevet_evals.cli.cord_semantic_acceptance][]: CLI implementation
     - [typevet.evaluation.cord_semantic_acceptance][]: acceptance floors
 """
 
 from __future__ import annotations
 
-from typevet.adapters.inbound.cord_semantic_acceptance_cli import main
+from typevet_evals.cli.cord_semantic_acceptance import main
 
 if __name__ == "__main__":
     raise SystemExit(main())

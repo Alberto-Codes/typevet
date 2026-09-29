@@ -2,11 +2,11 @@
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_psai_vision_consumer_live_receipt.py
+    uv run pytest -q evals/tests/unit/test_psai_vision_consumer_live_receipt.py
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_live_receipt][]: payload builder
+    - [typevet_evals.psai_vision_consumer.live_receipt][]: payload builder
 """
 
 from __future__ import annotations
@@ -17,19 +17,19 @@ from unittest.mock import MagicMock
 import pytest
 
 from typevet.adapters.outbound.gemma import ServedTemplateClass
-from typevet.evaluation.psai_vision_consumer_accounting import (
+from typevet_evals.psai_vision_consumer.accounting import (
     plan_frozen_consumer_calls,
 )
-from typevet.evaluation.psai_vision_consumer_dispatch import ConsumerDispatchLedger
-from typevet.evaluation.psai_vision_consumer_harness import run_offline_consumer_proof
-from typevet.evaluation.psai_vision_consumer_live_receipt import (
+from typevet_evals.psai_vision_consumer.dispatch import ConsumerDispatchLedger
+from typevet_evals.psai_vision_consumer.harness import run_offline_consumer_proof
+from typevet_evals.psai_vision_consumer.live_receipt import (
     LiveReceiptContext,
     build_live_receipt_payload,
 )
-from typevet.evaluation.psai_vision_consumer_live_router import ConsumerLiveMatrixResult
+from typevet_evals.psai_vision_consumer.live_router import ConsumerLiveMatrixResult
 
 FIXTURE_ROOT = (
-    Path(__file__).resolve().parents[1] / "fixtures" / "psai" / "vision_smoke"
+    Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "psai" / "vision_smoke"
 )
 
 

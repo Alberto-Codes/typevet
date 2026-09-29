@@ -4,7 +4,7 @@ Examples:
     ```python
     from pathlib import Path
 
-    from typevet.evaluation.psai_vision_consumer_offline import (
+    from typevet_evals.psai_vision_consumer.offline import (
         build_offline_consumer_port,
         run_offline_consumer_matrix,
     )
@@ -19,7 +19,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_harness][]: receipt orchestration
+    - [typevet_evals.psai_vision_consumer.harness][]: receipt orchestration
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
 """
@@ -53,13 +53,13 @@ from typevet.evaluation.datasets.psai_vision_controls import (
     control_matrix,
     visual_question,
 )
-from typevet.evaluation.psai_vision_consumer_accounting import (
+from typevet.ports.judgment import JudgmentPort
+from typevet.testing import ScriptedScoringFake
+from typevet_evals.psai_vision_consumer.accounting import (
     FROZEN_CONSUMER_CASE_UIDS,
     TEXT_ANNOTATION_JUDGE_UIDS,
 )
-from typevet.evaluation.psai_vision_consumer_receipt import serialize_answer
-from typevet.ports.judgment import JudgmentPort
-from typevet.testing import ScriptedScoringFake
+from typevet_evals.psai_vision_consumer.receipt import serialize_answer
 
 
 def load_frozen_consumer_fixture(fixture_root: Path) -> VisionSmokeFixture:
@@ -319,7 +319,7 @@ class SequentialConsumerScoringFake(ScriptedScoringFake):
 
     Examples:
         ```python
-        from typevet.evaluation.psai_vision_consumer_offline import (
+        from typevet_evals.psai_vision_consumer.offline import (
             SequentialConsumerScoringFake,
         )
 

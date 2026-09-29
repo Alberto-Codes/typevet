@@ -2,11 +2,11 @@
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_psai_vision_consumer_receipt.py
+    uv run pytest -q evals/tests/unit/test_psai_vision_consumer_receipt.py
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_receipt][]: acceptance helper
+    - [typevet_evals.psai_vision_consumer.receipt][]: acceptance helper
 """
 
 from __future__ import annotations
@@ -15,13 +15,13 @@ from pathlib import Path
 
 import pytest
 
-from typevet.evaluation.psai_vision_consumer_harness import run_offline_consumer_proof
-from typevet.evaluation.psai_vision_consumer_receipt import (
+from typevet_evals.psai_vision_consumer.harness import run_offline_consumer_proof
+from typevet_evals.psai_vision_consumer.receipt import (
     evaluate_consumer_receipt_acceptance,
 )
 
 FIXTURE_ROOT = (
-    Path(__file__).resolve().parents[1] / "fixtures" / "psai" / "vision_smoke"
+    Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "psai" / "vision_smoke"
 )
 
 

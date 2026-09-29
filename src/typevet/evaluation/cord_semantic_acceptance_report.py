@@ -12,7 +12,7 @@ Examples:
 
 See Also:
     - [typevet.evaluation.cord_semantic_acceptance][]: acceptance floors
-    - [typevet.adapters.inbound.cord_semantic_acceptance_cli][]: operator CLI
+    - [typevet_evals.cli.cord_semantic_acceptance][]: operator CLI
 
 [i184]: https://github.com/Alberto-Codes/typevet/issues/184
 """

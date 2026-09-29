@@ -2,7 +2,7 @@
 
 Examples:
     ```python
-    from typevet.evaluation.psai_vision_consumer_live_receipt import (
+    from typevet_evals.psai_vision_consumer.live_receipt import (
         build_live_receipt_payload,
     )
 
@@ -10,7 +10,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_live][]: orchestration
+    - [typevet_evals.psai_vision_consumer.live][]: orchestration
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
 """
@@ -24,13 +24,13 @@ from pathlib import Path
 from typing import Any
 
 from typevet.evaluation.datasets.psai_vision_controls import PairedOrdering
-from typevet.evaluation.psai_vision_consumer_accounting import (
+from typevet_evals.psai_vision_consumer.accounting import (
     ANNOTATION_QUESTIONS_PER_JUDGE_CALL,
     ConsumerCallCounts,
 )
-from typevet.evaluation.psai_vision_consumer_harness import PROTOCOL_REVISION
-from typevet.evaluation.psai_vision_consumer_live_router import ConsumerLiveMatrixResult
-from typevet.evaluation.psai_vision_consumer_offline import (
+from typevet_evals.psai_vision_consumer.harness import PROTOCOL_REVISION
+from typevet_evals.psai_vision_consumer.live_router import ConsumerLiveMatrixResult
+from typevet_evals.psai_vision_consumer.offline import (
     consumer_fixture_identity_pins,
 )
 
@@ -53,7 +53,7 @@ class LiveReceiptContext:
 
     Examples:
         ```python
-        from typevet.evaluation.psai_vision_consumer_live_receipt import (
+        from typevet_evals.psai_vision_consumer.live_receipt import (
             LiveReceiptContext,
         )
 

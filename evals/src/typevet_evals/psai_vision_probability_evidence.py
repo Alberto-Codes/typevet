@@ -7,7 +7,7 @@ softmax quotient and is preserved when logprobs are unchanged.
 
 Examples:
     ```python
-    from typevet.evaluation.psai_vision_probability_evidence import (
+    from typevet_evals.psai_vision_probability_evidence import (
         raw_candidate_mass,
         correct_matrix_receipt,
     )

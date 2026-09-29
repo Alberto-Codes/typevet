@@ -6,7 +6,7 @@ a malformed receipt and exits 2 (#216).
 
 Examples:
     ```console
-    $ uv run python -m typevet.adapters.inbound.cord_semantic_acceptance_cli \\
+    $ uv run python -m typevet_evals.cli.cord_semantic_acceptance \\
         tests/fixtures/cord/semantic_acceptance/labeled_synthetic_pass.json
     | check | bound | limit | measured | n | status |
     ...

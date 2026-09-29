@@ -4,7 +4,7 @@ Examples:
     ```python
     from pathlib import Path
 
-    from typevet.evaluation.psai_vision_consumer_live_identity import (
+    from typevet_evals.psai_vision_consumer.live_identity import (
         consumer_fixture_paths,
         finalize_consumer_live_identity,
         start_consumer_live_identity,
@@ -43,10 +43,10 @@ from typevet.evaluation.experiment_identity import (
     finalize_experiment_identity,
     snapshot_evaluated_inputs,
 )
-from typevet.evaluation.psai_vision_consumer_accounting import FROZEN_CONSUMER_CASE_UIDS
-from typevet.evaluation.psai_vision_consumer_dispatch import ConsumerDispatchLedger
+from typevet_evals.psai_vision_consumer.accounting import FROZEN_CONSUMER_CASE_UIDS
+from typevet_evals.psai_vision_consumer.dispatch import ConsumerDispatchLedger
 
-_REPO_ROOT = Path(__file__).resolve().parents[3]
+_REPO_ROOT = Path(__file__).resolve().parents[4]
 
 
 def _git_porcelain() -> str:

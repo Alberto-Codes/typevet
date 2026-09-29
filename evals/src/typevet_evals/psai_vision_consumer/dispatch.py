@@ -2,7 +2,7 @@
 
 Examples:
     ```python
-    from typevet.evaluation.psai_vision_consumer_dispatch import (
+    from typevet_evals.psai_vision_consumer.dispatch import (
         ConsumerDispatchLedger,
         wrap_judgment_port,
         wrap_scoring_port,
@@ -16,8 +16,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_accounting][]: frozen totals
-    - [typevet.evaluation.psai_vision_consumer_protocol][]: ceilings
+    - [typevet_evals.psai_vision_consumer.accounting][]: frozen totals
+    - [typevet_evals.psai_vision_consumer.protocol][]: ceilings
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
 """
@@ -32,9 +32,9 @@ from typevet.domain.candidate_scoring_response import CandidateScoringResult
 from typevet.domain.judgment_questions import Question
 from typevet.domain.judgment_response import JudgmentResponse
 from typevet.domain.media import ImageInput
-from typevet.evaluation.consumer_http_accounting import DispatchAccounting
 from typevet.ports.judgment import JudgmentPort
 from typevet.ports.scoring import CandidateScoringPort
+from typevet_evals.psai_vision_consumer.http_accounting import DispatchAccounting
 
 
 class ConsumerDispatchLedger(DispatchAccounting):
@@ -58,7 +58,7 @@ class _BudgetScoringPort:
 
     Examples:
         ```python
-        from typevet.evaluation.psai_vision_consumer_dispatch import (
+        from typevet_evals.psai_vision_consumer.dispatch import (
             ConsumerDispatchLedger,
             _BudgetScoringPort,
         )
@@ -107,7 +107,7 @@ class _BudgetJudgmentPort:
 
     Examples:
         ```python
-        from typevet.evaluation.psai_vision_consumer_dispatch import (
+        from typevet_evals.psai_vision_consumer.dispatch import (
             ConsumerDispatchLedger,
             _BudgetJudgmentPort,
         )

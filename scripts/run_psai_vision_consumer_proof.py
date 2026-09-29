@@ -12,7 +12,7 @@ Examples:
 
 See Also:
     - [scripts.psai_vision_consumer_wheel_proof][]: wheel-isolated runner
-    - [typevet.evaluation.psai_vision_consumer_harness][]: in-tree harness
+    - [typevet_evals.psai_vision_consumer.harness][]: in-tree harness
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ import importlib.util
 import sys
 from pathlib import Path
 
-from typevet.evaluation.psai_vision_consumer_harness import consumer_proof_main
+from typevet_evals.psai_vision_consumer.harness import consumer_proof_main
 
 _WHEEL_PROOF = Path(__file__).resolve().with_name("psai_vision_consumer_wheel_proof.py")
 

@@ -2,11 +2,11 @@
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_psai_vision_consumer_live_identity.py
+    uv run pytest -q evals/tests/unit/test_psai_vision_consumer_live_identity.py
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_live_identity][]: snapshot helpers
+    - [typevet_evals.psai_vision_consumer.live_identity][]: snapshot helpers
 """
 
 from __future__ import annotations
@@ -15,16 +15,16 @@ from pathlib import Path
 
 import pytest
 
-from typevet.evaluation.psai_vision_consumer_dispatch import ConsumerDispatchLedger
-from typevet.evaluation.psai_vision_consumer_live_identity import (
+from typevet_evals.psai_vision_consumer.dispatch import ConsumerDispatchLedger
+from typevet_evals.psai_vision_consumer.live_identity import (
     consumer_fixture_paths,
     finalize_consumer_live_identity,
     start_consumer_live_identity,
 )
-from typevet.evaluation.psai_vision_consumer_offline import load_frozen_consumer_fixture
+from typevet_evals.psai_vision_consumer.offline import load_frozen_consumer_fixture
 
 FIXTURE_ROOT = (
-    Path(__file__).resolve().parents[1] / "fixtures" / "psai" / "vision_smoke"
+    Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "psai" / "vision_smoke"
 )
 
 

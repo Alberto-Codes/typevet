@@ -210,7 +210,7 @@ uv run python scripts/check_cord_semantic_acceptance.py \
   tests/fixtures/cord/semantic_acceptance/labeled_synthetic_pass.json
 echo $?   # expect 0 — synthetic PASS exercising every floor
 
-uv run python -m typevet.adapters.inbound.cord_semantic_acceptance_cli \
+uv run python -m typevet_evals.cli.cord_semantic_acceptance \
   tests/fixtures/cord/semantic_acceptance/gemma4_post187_combined_pass.json
 echo $?   # expect 0 — vendored historical PASS (provenance in sibling .note.md)
 ```
@@ -218,7 +218,7 @@ echo $?   # expect 0 — vendored historical PASS (provenance in sibling .note.m
 Contract proof for the CLI exit codes:
 
 ```bash
-uv run pytest -q tests/contract/test_cord_semantic_acceptance_cli.py
+uv run pytest -q evals/tests/contract/test_cord_semantic_acceptance_cli.py
 ```
 
 ### Attachment and live wiring gates ([#185](https://github.com/Alberto-Codes/typevet/issues/185))

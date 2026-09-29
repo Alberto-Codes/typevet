@@ -2,11 +2,11 @@
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_psai_vision_consumer_dispatch.py
+    uv run pytest -q evals/tests/unit/test_psai_vision_consumer_dispatch.py
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_dispatch][]: ledger helpers
+    - [typevet_evals.psai_vision_consumer.dispatch][]: ledger helpers
 """
 
 from __future__ import annotations
@@ -18,15 +18,15 @@ from typevet.domain.candidate_scoring_request import (
     CandidateTokenSpec,
 )
 from typevet.domain.scoring_stage import ScoreStage
-from typevet.evaluation.psai_vision_consumer_accounting import ConsumerCallBudgetError
-from typevet.evaluation.psai_vision_consumer_dispatch import (
+from typevet.ports.judgment import JudgmentPort
+from typevet.testing import ScriptedScoringFake
+from typevet_evals.psai_vision_consumer.accounting import ConsumerCallBudgetError
+from typevet_evals.psai_vision_consumer.dispatch import (
     ConsumerDispatchLedger,
     wrap_judgment_port,
     wrap_scoring_port,
 )
-from typevet.evaluation.psai_vision_consumer_protocol import FROZEN_SCORING_REQUESTS
-from typevet.ports.judgment import JudgmentPort
-from typevet.testing import ScriptedScoringFake
+from typevet_evals.psai_vision_consumer.protocol import FROZEN_SCORING_REQUESTS
 
 
 class _RaisingJudgmentPort(JudgmentPort):

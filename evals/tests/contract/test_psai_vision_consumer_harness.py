@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-import typevet.evaluation.psai_vision_consumer_harness as consumer_harness
-from typevet.adapters.inbound.cord_semantic_acceptance_cli import main as cord_cli_main
-from typevet.evaluation.psai_vision_consumer_harness import (
+import typevet_evals.psai_vision_consumer.harness as consumer_harness
+from typevet_evals.cli.cord_semantic_acceptance import main as cord_cli_main
+from typevet_evals.psai_vision_consumer.harness import (
     consumer_proof_main,
     cord_semantic_cli_exit_code,
     run_offline_consumer_proof,
@@ -18,16 +18,18 @@ from typevet.evaluation.psai_vision_consumer_harness import (
 pytestmark = pytest.mark.contract
 
 FIXTURE_ROOT = (
-    Path(__file__).resolve().parents[1] / "fixtures" / "psai" / "vision_smoke"
+    Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "psai" / "vision_smoke"
 )
 CORRECTION = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[3]
+    / "tests"
     / "fixtures"
     / "consumer"
     / "live-receipt-v1-accounting-correction.json"
 )
 CORD_PASS = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[3]
+    / "tests"
     / "fixtures"
     / "cord"
     / "semantic_acceptance"

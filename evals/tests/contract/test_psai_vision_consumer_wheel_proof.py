@@ -2,7 +2,7 @@
 
 Examples:
     ```bash
-    uv run pytest -q tests/contract/test_psai_vision_consumer_wheel_proof.py
+    uv run pytest -q evals/tests/contract/test_psai_vision_consumer_wheel_proof.py
     ```
 
 See Also:
@@ -25,7 +25,7 @@ from scripts.psai_vision_consumer_wheel_proof import (
 )
 
 FIXTURE_ROOT = (
-    Path(__file__).resolve().parents[1] / "fixtures" / "psai" / "vision_smoke"
+    Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "psai" / "vision_smoke"
 )
 
 

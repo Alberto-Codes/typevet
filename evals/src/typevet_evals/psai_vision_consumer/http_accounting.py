@@ -7,7 +7,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.psai_vision_consumer_dispatch][]: port wrappers
+    - [typevet_evals.psai_vision_consumer.dispatch][]: port wrappers
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from typing import ClassVar
 
 import httpx
 
-from typevet.evaluation.psai_vision_consumer_accounting import ConsumerCallBudgetError
+from typevet_evals.psai_vision_consumer.accounting import ConsumerCallBudgetError
 
 
 @dataclass(slots=True)

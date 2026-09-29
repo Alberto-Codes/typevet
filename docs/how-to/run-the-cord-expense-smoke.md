@@ -157,7 +157,7 @@ uv run python scripts/check_cord_semantic_acceptance.py path/to/receipt.json
 Equivalent module entry:
 
 ```bash
-uv run python -m typevet.adapters.inbound.cord_semantic_acceptance_cli path/to/receipt.json
+uv run python -m typevet_evals.cli.cord_semantic_acceptance path/to/receipt.json
 ```
 
 Vendored examples (no live model):
