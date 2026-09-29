@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 import pytest
@@ -15,7 +16,10 @@ from typevet.domain.candidate_scoring_response import (
     CandidateScoringResult,
     ScoredCandidate,
 )
-from typevet.domain.candidate_scoring_validate import validate_result_against_request
+from typevet.domain.candidate_scoring_validate import (
+    build_and_validate_result,
+    validate_result_against_request,
+)
 from typevet.domain.errors import ScoringValidationError
 from typevet.domain.scoring_stage import ScoreStage
 
@@ -53,3 +57,53 @@ def test_matching_result_accepted_with_different_model_id() -> None:
         ),
     )
     validate_result_against_request(_request(), result)
+
+
+def _result_with_logprob(logprob: float) -> CandidateScoringResult:
+    return CandidateScoringResult(
+        model="requested-alias",
+        stage=ScoreStage.PRE_SAMPLING,
+        candidates=(
+            ScoredCandidate("billing", (101,), logprob),
+            ScoredCandidate("technical", (202,), -1.2),
+        ),
+    )
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("logprob", [1.0, 2e-6])
+def test_result_with_positive_logprob_rejected(logprob: float) -> None:
+    with pytest.raises(ScoringValidationError, match="positive logprob"):
+        validate_result_against_request(_request(), _result_with_logprob(logprob))
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("logprob", [0.0, -0.0, 1e-6])
+def test_result_with_logprob_within_tolerance_accepted(logprob: float) -> None:
+    result = _result_with_logprob(logprob)
+    validate_result_against_request(_request(), result)
+    assert result.candidates[0].logprob == logprob
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("logprob", [1.0, 2e-6])
+def test_build_with_positive_logprob_rejected(logprob: float) -> None:
+    with pytest.raises(ScoringValidationError, match="positive logprob"):
+        build_and_validate_result(
+            _request(),
+            raw_logprobs={"billing": logprob, "technical": -1.2},
+            model="m",
+        )
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("logprob", [0.0, -0.0, 1e-6])
+def test_build_with_logprob_within_tolerance_keeps_value(logprob: float) -> None:
+    result = build_and_validate_result(
+        _request(),
+        raw_logprobs={"billing": logprob, "technical": -1.2},
+        model="m",
+    )
+    kept = result.candidates[0].logprob
+    assert kept == logprob
+    assert math.copysign(1.0, kept) == math.copysign(1.0, logprob)

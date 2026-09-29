@@ -23,7 +23,8 @@ Examples:
 
 ``build_and_validate_result`` builds a result from a label mapping.
 ``validate_result_against_request`` checks a finished port result against the
-exact request before a consumer normalizes its logprobs.
+exact request before a consumer normalizes its logprobs. Both reject a
+non-finite logprob and a positive logprob above ``1e-6``.
 
 See Also:
     - [typevet.domain.errors][]: ScoringValidationError
@@ -44,6 +45,25 @@ from typevet.domain.errors import ScoringValidationError
 from typevet.domain.judgment_response import TokenUsage
 from typevet.domain.scoring_stage import ScoreStage
 
+_POSITIVE_LOGPROB_TOLERANCE = 1e-6
+"""Largest logprob accepted above zero.
+
+Log-softmax output is at most 0. A float32 rounding error stays below
+``1.2e-7``. A probability sent in place of a logprob is far above this value.
+"""
+
+
+def _check_logprob(label: str, value: float) -> None:
+    if not math.isfinite(value):
+        msg = f"non-finite logprob for candidate {label!r}: {value!r}"
+        raise ScoringValidationError(msg)
+    if value > _POSITIVE_LOGPROB_TOLERANCE:
+        msg = (
+            f"positive logprob for candidate {label!r}: {value!r} is above "
+            f"the tolerance {_POSITIVE_LOGPROB_TOLERANCE!r}"
+        )
+        raise ScoringValidationError(msg)
+
 
 def _validate_raw_logprobs(
     request: CandidateScoringRequest,
@@ -63,9 +83,7 @@ def _validate_raw_logprobs(
         msg = f"unexpected score labels not in request: {unexpected!r}"
         raise ScoringValidationError(msg)
     for label, value in raw_logprobs.items():
-        if not math.isfinite(value):
-            msg = f"non-finite logprob for candidate {label!r}: {value!r}"
-            raise ScoringValidationError(msg)
+        _check_logprob(label, value)
 
 
 def validate_result_against_request(
@@ -75,7 +93,8 @@ def validate_result_against_request(
     """Reject a result that does not score exactly the requested candidates.
 
     Rows must match ``request.candidates`` one to one, in request order, with
-    the same label and token ids, at the requested stage, with finite logprobs.
+    the same label and token ids, at the requested stage, with finite logprobs
+    that are not above ``1e-6``. Accepted logprobs are not changed.
 
     ``result.model`` is not compared with ``request.model``. A backend may
     report a resolved id for a requested alias, so the result model is
@@ -88,7 +107,7 @@ def validate_result_against_request(
     Raises:
         ScoringValidationError: On a stage, row count, duplicate label,
             unexpected label, label order, token-id, or non-finite logprob
-            mismatch.
+            mismatch, or on a positive logprob above ``1e-6``.
 
     Examples:
         ```python
@@ -131,9 +150,7 @@ def validate_result_against_request(
                 f"do not match requested token ids {spec.token_ids!r}"
             )
             raise ScoringValidationError(msg)
-        if not math.isfinite(row.logprob):
-            msg = f"non-finite logprob for candidate {spec.label!r}: {row.logprob!r}"
-            raise ScoringValidationError(msg)
+        _check_logprob(spec.label, row.logprob)
 
 
 def build_and_validate_result(
@@ -159,8 +176,8 @@ def build_and_validate_result(
         Validated ``CandidateScoringResult``.
 
     Raises:
-        ScoringValidationError: Missing, duplicate, or unexpected labels, or
-            non-finite logprobs.
+        ScoringValidationError: Missing, duplicate, or unexpected labels,
+            non-finite logprobs, or a positive logprob above ``1e-6``.
     """
     _validate_raw_logprobs(request, raw_logprobs)
     scored = tuple(
