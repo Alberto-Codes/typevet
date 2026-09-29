@@ -1,0 +1,34 @@
+{
+  "probe": "P6",
+  "purpose": "id 262144 (just past vocab) -> expect 4xx",
+  "path": "/v1/chat/completions",
+  "request": {
+    "model": "gemma-4-31b-it",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Expense claim for this receipt: total 2,352,460.\n\nverdict: Does the receipt image support the expense claim?\n\nOptions:\nControl 0 → supported\nControl 1 → contradicted\n\nAnswer with exactly one control string (the digit shown), not the original label text."
+      }
+    ],
+    "max_tokens": 1,
+    "temperature": 0,
+    "logprobs": true,
+    "top_logprobs": 20,
+    "logprob_token_ids": [
+      236771,
+      262144
+    ],
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    }
+  },
+  "http_status": 400,
+  "response": {
+    "error": {
+      "message": "token_id(s) [262144] in logprob_token_ids contain out-of-vocab token ids. Vocabulary size: 262144 (parameter=logprob_token_ids, value=[262144])",
+      "type": "BadRequestError",
+      "param": "logprob_token_ids",
+      "code": 400
+    }
+  }
+}

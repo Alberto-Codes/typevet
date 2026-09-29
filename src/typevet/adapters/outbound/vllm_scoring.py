@@ -34,6 +34,7 @@ See Also:
 
 Attributes:
     ID_FORM_PREFIX (str): Prefix of a token that vLLM returns as an id.
+    MAX_LOGPROB_TOKEN_IDS (int): Largest ``logprob_token_ids`` list vLLM takes.
 """
 
 from __future__ import annotations
@@ -45,8 +46,13 @@ from urllib.parse import urljoin
 
 import httpx
 
+from typevet.adapters.outbound.vllm_http import post_json
 from typevet.domain.candidate_scoring_validate import build_and_validate_result
-from typevet.domain.errors import GenerationError, ScoringUnsupportedCapabilityError
+from typevet.domain.errors import (
+    GenerationError,
+    ScoringUnsupportedCapabilityError,
+    ScoringValidationError,
+)
 from typevet.domain.judgment_response import TokenUsage
 from typevet.domain.media import MEDIA_MARKER
 from typevet.domain.scoring_stage import ScoreStage
@@ -57,6 +63,7 @@ if TYPE_CHECKING:
     from typevet.domain.media import ImageInput
 
 ID_FORM_PREFIX = "token_id:"
+MAX_LOGPROB_TOKEN_IDS = 128
 
 
 class ChatContentFraming:
@@ -154,20 +161,18 @@ class VllmCandidateScoringAdapter:
             Validated ``CandidateScoringResult`` with raw logprobs per label.
 
         Raises:
-            ScoringUnsupportedCapabilityError: Non-``PRE_SAMPLING`` stage or
-                multi-token candidates.
-            ScoringValidationError: Missing candidate scores or invalid logprob
-                values (via ``build_and_validate_result``).
+            ScoringUnsupportedCapabilityError: Non-``PRE_SAMPLING`` stage,
+                multi-token candidates or more than ``MAX_LOGPROB_TOKEN_IDS``
+                candidates.
+            ScoringValidationError: A duplicate ``token_id:N`` entry, missing
+                candidate scores or invalid logprob values.
+            TransportError: When the HTTP client fails.
+            BackendHttpError: When vLLM returns status 400 or above.
             GenerationError: When the body is not JSON or its shape is not usable.
         """
         _ensure_supported(request)
         url = urljoin(self._base_url, "v1/chat/completions")
-        response = self._ensure_client().post(url, json=_request_body(request))
-        try:
-            payload = response.json()
-        except ValueError as exc:
-            msg = "vLLM chat completions response is not valid JSON"
-            raise GenerationError(msg) from exc
+        payload = post_json(self._ensure_client(), url, _request_body(request))
         token_logprobs = _extract_token_logprobs(payload)
         raw_by_label = {
             spec.label: token_logprobs[spec.token_ids[0]]
@@ -199,9 +204,16 @@ def _ensure_supported(request: CandidateScoringRequest) -> None:
         request: The scoring ask.
 
     Raises:
-        ScoringUnsupportedCapabilityError: Non-``PRE_SAMPLING`` stage or
-            multi-token candidates.
+        ScoringUnsupportedCapabilityError: Non-``PRE_SAMPLING`` stage,
+            multi-token candidates or more than ``MAX_LOGPROB_TOKEN_IDS``
+            candidates.
     """
+    if len(request.candidates) > MAX_LOGPROB_TOKEN_IDS:
+        msg = (
+            f"vLLM accepts at most {MAX_LOGPROB_TOKEN_IDS} logprob_token_ids; "
+            f"got {len(request.candidates)} candidates"
+        )
+        raise ScoringUnsupportedCapabilityError(msg)
     if request.stage is not ScoreStage.PRE_SAMPLING:
         msg = (
             "VllmCandidateScoringAdapter supports PRE_SAMPLING only; "
@@ -336,30 +348,51 @@ def _extract_token_logprobs(payload: Any) -> dict[int, float]:
         payload: Parsed JSON body from vLLM chat completions.
 
     Returns:
-        Mapping from vocabulary token id to raw logprob. The first entry for
-        an id is kept.
+        Mapping from vocabulary token id to raw logprob.
 
     Raises:
         GenerationError: When an entry is not an object, lacks ``token`` or
-            ``logprob``, or has a token not in ``token_id:N`` form.
+            ``logprob``, has a logprob that is not a real number, or has a
+            token not in ``token_id:N`` form.
+        ScoringValidationError: When two entries name the same token id.
     """
     result: dict[int, float] = {}
     for item in _top_logprobs(payload):
-        if not isinstance(item, dict):
-            msg = "vLLM top_logprobs entries must be objects"
-            raise GenerationError(msg)
-        try:
-            token = str(item["token"])
-            logprob = float(item["logprob"])
-        except (KeyError, TypeError, ValueError) as exc:
-            msg = "vLLM top_logprobs entry missing token or logprob"
-            raise GenerationError(msg) from exc
-        digits = token.removeprefix(ID_FORM_PREFIX)
-        if digits == token or not digits.isdecimal():
-            msg = (
-                f"vLLM top_logprobs token {token!r} is not in {ID_FORM_PREFIX}N "
-                "form; send return_tokens_as_token_ids"
-            )
-            raise GenerationError(msg)
-        result.setdefault(int(digits), logprob)
+        token_id, logprob = _parse_entry(item)
+        if token_id in result:
+            msg = f"vLLM top_logprobs holds a duplicate entry for token id {token_id}"
+            raise ScoringValidationError(msg)
+        result[token_id] = logprob
     return result
+
+
+def _parse_entry(item: Any) -> tuple[int, float]:
+    """Read the token id and logprob from one ``top_logprobs`` entry.
+
+    Args:
+        item: One raw entry from ``top_logprobs``.
+
+    Returns:
+        The vocabulary token id and its raw logprob.
+
+    Raises:
+        GenerationError: When the entry is not an object, lacks ``token`` or
+            ``logprob``, has a logprob that is not a real number, or has a
+            token not in ``token_id:N`` form.
+    """
+    if not isinstance(item, dict) or "token" not in item or "logprob" not in item:
+        msg = "vLLM top_logprobs entry must be an object with token and logprob"
+        raise GenerationError(msg)
+    logprob = item["logprob"]
+    if isinstance(logprob, bool) or not isinstance(logprob, int | float):
+        msg = f"vLLM top_logprobs logprob {logprob!r} is not a real number"
+        raise GenerationError(msg)
+    token = str(item["token"])
+    digits = token.removeprefix(ID_FORM_PREFIX)
+    if digits == token or not digits.isdecimal():
+        msg = (
+            f"vLLM top_logprobs token {token!r} is not in {ID_FORM_PREFIX}N "
+            "form; send return_tokens_as_token_ids"
+        )
+        raise GenerationError(msg)
+    return int(digits), float(logprob)
