@@ -74,6 +74,7 @@ mapping below.
 | `TYPEVET_VLLM__TIMEOUT` | `timeout` | float, seconds | `300` | Must be positive |
 | `TYPEVET_VLLM__API_KEY` | `api_key` | string or empty | none | Sent as `Authorization: Bearer <key>` |
 | `TYPEVET_VLLM__MAX_CONCURRENCY` | `max_concurrency` | integer | `1` | Must be a positive integer; POST limit for one `AsyncVllmGenerationAdapter` |
+| `TYPEVET_VLLM__USER_AGENT` | `user_agent` | string or empty | none | Sent as `User-Agent` only when set; otherwise the httpx default |
 
 The key does not appear in `repr(VllmSettings)`. The client is built the same
 way with or without a key. Only the `Authorization` header differs. So
@@ -93,6 +94,19 @@ adapter only. Two adapters do not share it. With the default of `1`, the
 adapter sends one request at a time. Build the async adapter's
 `httpx.AsyncClient` yourself. The key masking above applies only to the
 adapter from `generation_adapter`.
+
+### vLLM live acceptance run
+
+The opt-in test `tests/live/test_vllm_acceptance_live.py` reads the variables
+above and these three. It skips unless `TYPEVET_REQUIRE_LIVE` is truthy. When
+it is truthy and a required variable is missing, the test fails before any
+network call.
+
+| Environment name | Default | Notes |
+|---|---|---|
+| `TYPEVET_REQUIRE_LIVE` | none | Set to `1` to run the paid run |
+| `TYPEVET_VLLM_RECEIPT` | none | Required; the file must not exist and the nearest existing parent directory must be writable |
+| `TYPEVET_VLLM_POD_NOTES` | `unknown` | Free text for the receipt, such as GPU, flags and Hugging Face revision; never put the key here |
 
 ## Diagnostic logging
 

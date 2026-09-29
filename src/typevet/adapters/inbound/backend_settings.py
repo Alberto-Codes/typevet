@@ -4,8 +4,10 @@
 branch reads ``TYPEVET_VLLM__*`` variables and builds one ``httpx.Client``
 that carries the base URL, timeout and optional bearer key.
 ``TYPEVET_VLLM__MAX_CONCURRENCY`` sets ``VllmSettings.max_concurrency``, the
-POST limit for an ``AsyncVllmGenerationAdapter``. Outbound adapters never read
-the environment.
+POST limit for an ``AsyncVllmGenerationAdapter``. The optional
+``TYPEVET_VLLM__USER_AGENT`` sets the ``User-Agent`` header; when it is unset
+the client sends the httpx default. Outbound adapters never read the
+environment.
 
 The configured key never reaches the caller in clear text. ``VllmSettings``
 leaves it out of ``repr``. The adapter that ``generation_adapter`` returns
@@ -89,6 +91,8 @@ class VllmSettings:
         timeout (float): HTTP request timeout in seconds.
         api_key (str | None): Bearer key, or ``None``. Excluded from ``repr``.
         max_concurrency (int): Maximum POSTs in flight for one async adapter.
+        user_agent (str | None): ``User-Agent`` header value, or ``None`` for
+            the httpx default.
 
     Examples:
         ```python
@@ -103,6 +107,7 @@ class VllmSettings:
     timeout: float = _DEFAULT_TIMEOUT
     api_key: str | None = field(default=None, repr=False)
     max_concurrency: int = 1
+    user_agent: str | None = None
 
 
 def _masked(text: str, needles: tuple[str, ...]) -> str:
@@ -335,7 +340,8 @@ def load_vllm_settings(environ: Mapping[str, str] | None = None) -> VllmSettings
         environ: Mapping to read. Defaults to ``os.environ``.
 
     Returns:
-        Frozen settings. An empty ``TYPEVET_VLLM__API_KEY`` gives ``None``.
+        Frozen settings. An empty ``TYPEVET_VLLM__API_KEY`` or
+        ``TYPEVET_VLLM__USER_AGENT`` gives ``None``.
 
     Raises:
         ValueError: When ``TYPEVET_VLLM__BASE_URL`` or ``TYPEVET_VLLM__MODEL``
@@ -354,6 +360,7 @@ def load_vllm_settings(environ: Mapping[str, str] | None = None) -> VllmSettings
         timeout=_read_timeout(source, "TYPEVET_VLLM__TIMEOUT"),
         api_key=api_key or None,
         max_concurrency=_read_max_concurrency(source, "TYPEVET_VLLM__MAX_CONCURRENCY"),
+        user_agent=source.get("TYPEVET_VLLM__USER_AGENT", "").strip() or None,
     )
 
 
@@ -370,12 +377,15 @@ def vllm_http_client(
 
     Returns:
         A client with ``base_url`` and ``timeout`` set. When a key is set, the
-        client also sends ``Authorization: Bearer <key>``. Nothing else
-        changes, so environment proxy settings apply with or without a key.
+        client also sends ``Authorization: Bearer <key>``. When a user agent
+        is set, the client sends it as ``User-Agent``. Nothing else changes,
+        so environment proxy settings apply with or without a key.
     """
     headers: dict[str, str] = {}
     if settings.api_key is not None:
         headers["Authorization"] = f"Bearer {settings.api_key}"
+    if settings.user_agent is not None:
+        headers["User-Agent"] = settings.user_agent
     return httpx.Client(
         base_url=settings.base_url,
         timeout=settings.timeout,
