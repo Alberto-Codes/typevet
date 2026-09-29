@@ -174,6 +174,36 @@ def test_unreadable_packed_refs_returns_unknown(tmp_path: Path) -> None:
         packed.chmod(stat.S_IRUSR | stat.S_IWUSR)
 
 
+def _worktree_with_common_packed_ref(tmp_path: Path) -> tuple[Path, Path]:
+    worktree, gitdir, common = _linked_worktree(tmp_path, "ref: refs/heads/feature\n")
+    (common / "packed-refs").write_text(
+        _packed_refs(f"{_COMMIT} refs/heads/feature"), encoding="utf-8"
+    )
+    return worktree, gitdir / "packed-refs"
+
+
+def test_binary_gitdir_packed_refs_stops_common_dir_fallback(tmp_path: Path) -> None:
+    """A non-UTF-8 gitdir ``packed-refs`` yields ``unknown``, not the common ref."""
+    worktree, packed = _worktree_with_common_packed_ref(tmp_path)
+    packed.write_bytes(b"\xff\xfe\x00 refs/heads/feature\n")
+
+    assert read_baseline_commit(worktree) == "unknown"
+
+
+@pytest.mark.skipif(os.geteuid() == 0, reason="root ignores file modes")
+def test_unreadable_gitdir_packed_refs_stops_common_dir_fallback(
+    tmp_path: Path,
+) -> None:
+    """An unreadable gitdir ``packed-refs`` yields ``unknown``, not the common ref."""
+    worktree, packed = _worktree_with_common_packed_ref(tmp_path)
+    packed.write_text(_packed_refs(f"{_OTHER} refs/heads/other"), encoding="utf-8")
+    packed.chmod(0)
+    try:
+        assert read_baseline_commit(worktree) == "unknown"
+    finally:
+        packed.chmod(stat.S_IRUSR | stat.S_IWUSR)
+
+
 @pytest.mark.parametrize(
     "head",
     ["", "\n", "not-a-commit\n", "a" * 39 + "\n", "A" * 40 + "\n"],
