@@ -432,13 +432,15 @@ def judge_with_scoring(
     scoring_port: CandidateScoringPort,
     tokenize_content: Callable[[str], Sequence[int]],
     media: tuple[ImageInput, ...] | None = None,
+    framing: ModelFramingPort | None = None,
     **settings: Unpack[ScoringAdapterSettings],
 ) -> JudgmentResponse:
     """One-shot judgment via ``ScoringJudgmentAdapter``.
 
     Non-empty ``media`` needs ``served_template=NATIVE_GEMMA3_TURN`` or
     ``NATIVE_GEMMA4_TURN``; an omitted, unknown or unsupported family fails
-    closed before any scoring IO.
+    closed before any scoring IO. A ``framing`` composes every prefix
+    instead; ``None`` keeps the served-family path.
 
     Args:
         state: Content under evaluation.
@@ -447,6 +449,7 @@ def judge_with_scoring(
         scoring_port: Injected candidate scorer.
         tokenize_content: Control-string tokenizer hook.
         media: Images to condition every scored field on, in order.
+        framing: Model framing that composes every prefix, or ``None``.
 
     Other Parameters:
         temperature (float): Softmax temperature for execute.
@@ -455,9 +458,13 @@ def judge_with_scoring(
 
     Returns:
         ``JudgmentResponse`` from a fresh adapter instance.
+
+    Raises:
+        ValueError: Both ``framing`` and ``served_template`` are set.
     """
     return ScoringJudgmentAdapter(
         scoring_port,
         tokenize_content=tokenize_content,
+        framing=framing,
         **settings,
     ).judge(state, questions, model, media=media)

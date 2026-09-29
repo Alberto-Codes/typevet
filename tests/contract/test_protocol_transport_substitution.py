@@ -20,8 +20,12 @@ from typevet.adapters.outbound.gemma.served_template import (
     GEMMA3_START_OF_TURN,
     GEMMA4_TURN_CLOSE,
     GEMMA4_TURN_OPEN,
+    ServedTemplateClass,
 )
-from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
+from typevet.adapters.outbound.judgment_scoring import (
+    ScoringJudgmentAdapter,
+    judge_with_scoring,
+)
 from typevet.domain.candidate_scoring_request import CandidateScoringRequest
 from typevet.domain.candidate_scoring_response import (
     CandidateScoringResult,
@@ -288,3 +292,41 @@ def test_framing_carries_media_markers_to_transport() -> None:
     response = adapter.judge("state", _QUESTIONS, "fake-model", media=(image,))
     assert response.choices["route"].choice == "billing"
     assert all(p.startswith(_OTHER_OPEN) for p in transport.prefixes)
+
+
+@pytest.mark.contract
+def test_judge_with_scoring_forwards_non_gemma_framing() -> None:
+    """The function path forwards ``framing`` and matches the adapter path."""
+    reference = _run(BracketFraming(), LlamaStyleTransport())
+    transport = LlamaStyleTransport()
+    response = judge_with_scoring(
+        "Charged twice.",
+        _QUESTIONS,
+        "fake-model",
+        scoring_port=transport,
+        tokenize_content=_tokenize,
+        framing=BracketFraming(),
+    )
+    assert response == reference
+    assert len(transport.prefixes) == len(_QUESTIONS)
+    for prefix in transport.prefixes:
+        for marker in (*_GEMMA_MARKERS, CHATML_IM_START):
+            assert marker not in prefix
+        assert prefix.startswith(_OTHER_OPEN)
+
+
+@pytest.mark.contract
+def test_judge_with_scoring_rejects_framing_with_served_template() -> None:
+    """The function path surfaces the adapter error before scoring IO."""
+    transport = LlamaStyleTransport()
+    with pytest.raises(ValueError, match="not both"):
+        judge_with_scoring(
+            "state",
+            _QUESTIONS,
+            "fake-model",
+            scoring_port=transport,
+            tokenize_content=_tokenize,
+            framing=BracketFraming(),
+            served_template=ServedTemplateClass.NATIVE_GEMMA4_TURN,
+        )
+    assert transport.payloads == []
