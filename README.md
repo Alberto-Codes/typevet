@@ -1,39 +1,51 @@
+[![CI](https://img.shields.io/github/actions/workflow/status/Alberto-Codes/typevet/ci.yml?branch=main&label=CI)](https://github.com/Alberto-Codes/typevet/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/github/actions/workflow/status/Alberto-Codes/typevet/docs.yml?branch=main&label=docs)](https://alberto-codes.github.io/typevet/)
+[![Python](https://img.shields.io/badge/python-3.12-blue)](https://github.com/Alberto-Codes/typevet/blob/main/pyproject.toml)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![docs vetted](https://img.shields.io/badge/docs%20vetted-docvet-purple)](https://github.com/Alberto-Codes/docvet)
+
 # typevet
 
-Kind: explanation, the project overview.
+Kind: landing page (the project overview; the one page that mixes kinds).
 
-typevet delivers **native typed judgments** (`Noul`, `Choice`, `Score`) and
-type-safe structured generation under hexagonal architecture. The default path
-is **local llama.cpp** with **Gemma 4** candidate scoring. Grammar-JSON
-generation is the transport floor for some adapters. typevet owns its
-implementation. [TypeLLM](https://github.com/TypeLLM/TypeLLM) is a research
-reference for the Jev-inspired decision model, not a runtime dependency.
-Sisters like [judgevet](https://github.com/Alberto-Codes/judgevet) may consume
-this surface later. See
-[Native typed judgments](docs/explanation/native-typed-judgments.md) and
-[TypeLLM, Jev and judgevet](docs/explanation/typellm-and-judgevet.md).
-No SGLang dependency.
+typevet is a Python library that asks a model typed questions and returns typed answers.
+The three question types are `Noul` (yes or no), `Choice` (one label) and `Score` (one rubric level).
+typevet computes each answer from the model's next-token probabilities, read before sampling.
+typevet also returns JSON objects that pass a JSON Schema you supply, or it raises an error.
+The receipts cover Gemma 4 31B on llama.cpp for local work and on vLLM for hosting.
 
-It shares the supervised-worker pattern with
-[judgevet](https://github.com/Alberto-Codes/judgevet),
-[finvet](https://github.com/Alberto-Codes/finvet),
-[gepa-adk](https://github.com/Alberto-Codes/gepa-adk),
-[automarket](https://github.com/Alberto-Codes/automarket) and
-[docvet](https://github.com/Alberto-Codes/docvet).
+Read the documentation at <https://alberto-codes.github.io/typevet/>.
 
-## Quick start (users)
+## Status
+
+- typevet is pre-1.0. The package version is `0.1.0`.
+- typevet is not on PyPI yet.
+  Build a wheel from a checkout and install it: see
+  [Install typevet](docs/how-to/install.md).
+- typevet requires Python 3.12 or later.
+- Each backend has one tested model pin.
+  The receipts give the full pin and its limits.
+
+| Backend | Tested pin | Receipt |
+|---|---|---|
+| vLLM | `vllm/vllm-openai:v0.30.0`, BF16 `google/gemma-4-31B-it`, one H100 80 GB | [#170](https://github.com/Alberto-Codes/typevet/issues/170#issuecomment-5884707915) |
+| llama.cpp | Build `b11223-4da633776`, local alias `gemma-4-31b-kv9-q4km-mm` | [#203](https://github.com/Alberto-Codes/typevet/issues/203#issuecomment-5882379255) |
+| llama.cpp grammar | Build `b11243-fc07d781e`, Gemma 4 31B QAT Q4_0 GGUF | [#129](https://github.com/Alberto-Codes/typevet/issues/129#issuecomment-5892208050) |
+
+The H100 throughput measurement is in progress
+([#236](https://github.com/Alberto-Codes/typevet/issues/236)).
+A valid structure does not prove accuracy or calibration.
+The receipts are small samples.
+
+## Quickstart
+
+Get one offline typed judgment from a scripted fake. This step needs no model.
 
 ```bash
 uv sync
-```
-
-Obtain one offline typed judgment (no model). Works from a checkout or from an
-installed wheel (`uv pip install` / `uv build` wheel) with no `tests.*` imports:
-
-```bash
 uv run python -c "
 from typevet.domain import Noul
-from typevet.runtime import ScoringJudgmentAdapter
+from typevet.judge import ScoringJudgmentAdapter
 from typevet.testing import ScriptedScoringFake
 fake = ScriptedScoringFake(logprobs={'True': -0.2, 'False': -1.0})
 port = ScoringJudgmentAdapter(fake, tokenize_content=lambda t: (ord(t[0]),))
@@ -42,60 +54,39 @@ print('noul', r.nouls['q'].noul)
 "
 ```
 
-Tutorial: [First typed judgment offline](docs/tutorials/first-typed-judgment-offline.md).
-Release support matrix: [Typed-judgment release support matrix](docs/reference/typed-judgment-release-support-matrix.md).
-Live small eval: [Run a small live judgment eval](docs/how-to/run-a-small-live-judgment-eval.md).
-Multimodal (Gemma + image): [Run a multimodal live smoke](docs/how-to/run-a-multimodal-live-smoke.md).
-PSAI screenshots: [Run the PSAI vision smoke](docs/how-to/run-the-psai-vision-smoke.md).
+The command prints the probability of yes, near 0.69.
+The [offline tutorial](docs/tutorials/first-typed-judgment-offline.md) explains each step.
+Then connect a model server:
 
-## Quick start (contributors)
+- To host typevet, follow [Serve typevet on vLLM](docs/how-to/serve-typevet-on-vllm.md).
+- To run typevet locally, follow [Run Gemma 4 on llama.cpp](docs/how-to/run-gemma4-llamacpp.md).
+- To call typevet from code, follow [Call typevet from Python](docs/how-to/call-typevet-from-python.md).
+
+## Learn more
+
+- [How typevet works with Gemma 4](docs/explanation/how-typevet-works-with-gemma-4.md)
+  explains the scoring path, the two backends and the receipts.
+- [Gemma 4 multimodal judgments](docs/explanation/gemma-4-multimodal-judgments.md)
+  explains how images reach each backend, and the limits.
+- [Native typed judgments](docs/explanation/native-typed-judgments.md) states the scope and the limitations.
+- [The documentation index](docs/README.md) lists every page and its kind.
+
+[TypeLLM](https://github.com/TypeLLM/TypeLLM) is a research reference for the decision model.
+It is not a runtime dependency.
+
+## For contributors
+
+Read [CLAUDE.md](CLAUDE.md) first.
+It states the gates, the issue workflow and the rules for agents and people.
 
 ```bash
-uv run pre-commit install --hook-types pre-commit --hook-types pre-push --hook-types commit-msg
+uv sync
+uv run pre-commit install -t pre-commit -t pre-push -t commit-msg
 uv run pytest -q
-# optional live (loads Gemma 4 on the local router; slow first load):
-uv run pytest -m live -q
 ```
 
-Pull requests and pushes to `main` run the same gates on GitHub Actions
-(`.github/workflows/ci.yml`): pre-commit and pre-push hook stages from
-`.pre-commit-config.yaml`, plus commit-message range checks. Live pytest is
-excluded (`-m "not live"` in `pyproject.toml`).
-
-See [Run Gemma 4 on llama.cpp](docs/how-to/run-gemma4-llamacpp.md).
-
-## How work moves
-
-**GitHub issues are the bus.** New goals become issues, then triage, size and
-child tasks, then an accepted contract comment, then a worker brief. Chat does
-not hand off across harnesses or fresh sessions.
-
-Read [CLAUDE.md](CLAUDE.md) first in every agent session.
-Then [groom worker issues](docs/maintainers/groom-worker-issues.md) and
-[delegate a bounded change](docs/maintainers/delegate-work.md).
-
-**Diátaxis**, **Conventional Commits 1.0.0** and the **ASD-STE100 local writing
-profile** are law. See [the writing system](docs/reference/writing-system.md)
-and [commits](docs/reference/commits.md).
-
-## Supervised workers
-
-Role, harness and model weight are three separate choices. Supervisor and
-worker harnesses are independent. `worker-fit` means any verified worker
-harness may take the slice — not “use pi”.
-
-Verified worker harnesses:
-
-| Harness | Entry |
-|---|---|
-| pi | `delegate-to-pi` skill |
-| Claude Code sub agents | `.claude/agents/` (`builder`, `acceptance-reviewer`, `specifier`) |
-| Cursor CLI | print mode, guarded by `.cursor/cli.json` |
-
-## Where to read next
-
-- [docs/README.md](docs/README.md) indexes every page.
-- [Native typed judgments](docs/explanation/native-typed-judgments.md) states
-  scope, receipts, and limitations.
-- [The glossary](docs/reference/glossary.md) defines each term.
-- [Worker runs](docs/reference/worker-runs.md) for launch evidence and trailers.
+The default test run skips live tests.
+Pull requests and pushes to `main` run the hook stages in
+[the CI workflow](.github/workflows/ci.yml).
+[The writing system](docs/reference/writing-system.md) and
+[the commit rules](docs/reference/commits.md) apply to every change.

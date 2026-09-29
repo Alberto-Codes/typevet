@@ -8,8 +8,10 @@ answers a question, and a reference gives facts.
 
 ## Overview
 
-- [README.md](https://github.com/Alberto-Codes/typevet/blob/main/README.md) (explanation): what typevet is and where the
-  worker harness lives.
+- [README.md](https://github.com/Alberto-Codes/typevet/blob/main/README.md) (explanation): what typevet is, its status
+  and a quickstart.
+- [Landing page](index.md) (reference): the site home page, with a path for
+  each reader question.
 
 ## Explanation
 
