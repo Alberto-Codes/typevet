@@ -19,12 +19,11 @@ Read the documentation at <https://alberto-codes.github.io/typevet/>.
 ## Status
 
 - typevet is pre-1.0. The package version is `0.1.0`.
-- typevet is not on PyPI yet.
-  Build a wheel from a checkout and install it: see
-  [Install typevet](https://github.com/Alberto-Codes/typevet/blob/main/docs/how-to/install.md).
+- Install typevet from PyPI: `pip install typevet` or `uv add typevet`.
+  See [Install typevet](https://alberto-codes.github.io/typevet/how-to/install/).
 - typevet requires Python 3.12 or later.
-- Each backend has one tested model pin.
-  The receipts give the full pin and its limits.
+- Each tested pin has one receipt.
+  The receipt gives the full pin and its limits.
 
 | Backend | Tested pin | Receipt |
 |---|---|---|
@@ -44,8 +43,8 @@ The receipts are small samples.
 Get one offline typed judgment from a scripted fake. This step needs no model.
 
 ```bash
-uv sync
-uv run python -c "
+pip install typevet
+python -c "
 from typevet.domain import Noul
 from typevet.runtime import ScoringJudgmentAdapter
 from typevet.testing import ScriptedScoringFake

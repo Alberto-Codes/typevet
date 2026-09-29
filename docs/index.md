@@ -8,7 +8,7 @@ typevet computes each answer from the model's next-token probabilities, read bef
 typevet also returns JSON objects that pass a JSON Schema you supply, or it raises an error.
 The receipts cover Gemma 4 31B on llama.cpp for local work and on vLLM for hosting.
 
-typevet is pre-1.0 and is not on PyPI yet.
+typevet is pre-1.0. Install it from PyPI with `pip install typevet`.
 The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.md) lists every page and its kind.
 
 ## Evaluate typevet

@@ -1,7 +1,7 @@
 [project]
 name = "typevet"
 version = "0.1.0"
-description = "Type-safe structured generation under hexagonal architecture (llama.cpp first)"
+description = "Typed answers from model next-token probabilities, on llama.cpp and vLLM"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]

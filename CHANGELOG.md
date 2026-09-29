@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.1.0](https://github.com/Alberto-Codes/typevet/compare/v0.1.0...v0.1.0) (2026-09-29)
+## [0.1.0](https://github.com/Alberto-Codes/typevet/releases/tag/v0.1.0) (2026-09-29)
 
 
 ### Refactoring

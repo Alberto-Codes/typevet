@@ -2,18 +2,35 @@
 
 Kind: how-to.
 
-Use this page to install typevet into a project outside the typevet checkout.
-Today you build a wheel from the checkout and install that wheel.
+Use this page to install typevet into your own project.
 
 ## Prerequisites
 
 - Python 3.12 or newer. The package declares `requires-python = ">=3.12"`.
-- [uv](https://docs.astral.sh/uv/) on your `PATH`.
-- A clone of the typevet repository.
+- [uv](https://docs.astral.sh/uv/) or pip.
 
-An older Python rejects the wheel. uv reports that typevet depends on `Python>=3.12`.
+An older Python rejects the package. uv reports that typevet depends on `Python>=3.12`.
 
-## Build the wheel
+## Install from PyPI
+
+In your project directory, run one of these commands:
+
+```bash
+uv add typevet
+```
+
+```bash
+pip install typevet
+```
+
+The installer also installs the runtime dependencies: `httpx`, `jsonschema` and `structlog`.
+
+## Install from a checkout
+
+Use this procedure to test a commit that is not on PyPI.
+You need a clone of the typevet repository.
+
+### Build the wheel
 
 From the typevet checkout, run:
 
@@ -31,7 +48,7 @@ Successfully built /tmp/typevet-dist/typevet-0.1.0-py3-none-any.whl
 The version in the file name comes from `[project].version` in `pyproject.toml`.
 Replace `0.1.0` in the next steps if your checkout has a different version.
 
-## Install the wheel into a fresh virtual environment
+### Install the wheel into a fresh virtual environment
 
 In your own project directory, run:
 
@@ -54,14 +71,8 @@ The package declares one extra, `cli`. It installs Typer.
 typevet does not yet ship a console script, so the extra adds no command.
 
 ```bash
-uv pip install "/tmp/typevet-dist/typevet-0.1.0-py3-none-any.whl[cli]"
+uv add "typevet[cli]"
 ```
-
-## Install from PyPI
-
-typevet is not yet published on PyPI.
-The release task [#255](https://github.com/Alberto-Codes/typevet/issues/255) owns the first publication.
-Until then, `pip install typevet` and `uv add typevet` fail.
 
 ## Check the installation
 
