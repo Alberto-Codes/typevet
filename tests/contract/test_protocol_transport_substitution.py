@@ -102,11 +102,13 @@ class _RecordingTransport:
 
     Attributes:
         payload_keys (tuple[str, ...]): Keys of the private wire payload.
+        sentinel (str): Distinctive transport-only value in each payload.
         payloads (list[dict[str, Any]]): Recorded private payloads.
         prefixes (list[str]): Recorded scoring prefixes.
     """
 
     payload_keys: tuple[str, ...] = ()
+    sentinel: str = ""
 
     def __init__(self) -> None:
         self.payloads: list[dict[str, Any]] = []
@@ -140,26 +142,30 @@ class _RecordingTransport:
 class LlamaStyleTransport(_RecordingTransport):
     """Fake transport with a llama.cpp-shaped completion payload."""
 
-    payload_keys = ("prompt", "n_probs", "n_predict")
+    payload_keys = ("prompt", "n_probs", "n_predict", "id_slot")
+    sentinel = "__wire_sentinel_llama__"
 
     def _payload(self, request: CandidateScoringRequest) -> dict[str, Any]:
         return {
             "prompt": request.prefix,
             "n_probs": len(request.candidates),
             "n_predict": 1,
+            "id_slot": self.sentinel,
         }
 
 
 class VllmStyleTransport(_RecordingTransport):
     """Fake transport with a vLLM-shaped chat payload."""
 
-    payload_keys = ("messages", "logprob_token_ids", "max_tokens")
+    payload_keys = ("messages", "logprob_token_ids", "max_tokens", "request_id")
+    sentinel = "__wire_sentinel_vllm__"
 
     def _payload(self, request: CandidateScoringRequest) -> dict[str, Any]:
         return {
             "messages": [{"role": "user", "content": request.prefix}],
             "logprob_token_ids": [s.token_ids[0] for s in request.candidates],
             "max_tokens": 1,
+            "request_id": self.sentinel,
         }
 
 
@@ -193,6 +199,16 @@ def _keys(value: object) -> set[str]:
     return set()
 
 
+def _strings(value: object) -> list[str]:
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, dict):
+        return [s for k, v in value.items() for s in (*_strings(k), *_strings(v))]
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return [s for item in value for s in _strings(item)]
+    return []
+
+
 _PAIR_IDS = [f"{f.__name__}-{t.__name__}" for f, t in _PAIRS]
 
 
@@ -205,6 +221,12 @@ def test_pair_returns_equal_answers_without_leaks(
     reference = _run(Gemma4Framing(), LlamaStyleTransport())
     transport = transport_cls()
     response = _run(framing_cls(), transport)
+
+    assert all(transport.sentinel in p.values() for p in transport.payloads)
+    serialized = _strings(dataclasses.asdict(response))
+    sentinels = {t.sentinel for t in _TRANSPORTS}
+    leaked = [s for s in serialized for w in sentinels if w in s]
+    assert leaked == []
 
     assert response == reference
     assert response.nouls["noul"].noul == pytest.approx(0.7)
