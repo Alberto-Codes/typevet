@@ -1,5 +1,16 @@
 """Build and run isolated wheel environments for packaging proofs.
 
+Every ``uv`` subprocess here names its cache on the command line. When
+``TYPEVET_TEST_UV_CACHE_DIR`` is set (the pytest session sets it), the
+helpers pass ``--cache-dir`` with that path. Otherwise they pass
+``--no-cache``. Either way no built wheel or ephemeral environment lands in
+the shared uv cache, and the caller's ``UV_CACHE_DIR`` stays unchanged.
+[private_uv_cache][typevet_evals.wheel_isolated.private_uv_cache] gives one
+pytest session that variable and removes the directory at the end.
+
+Attributes:
+    SESSION_UV_CACHE_ENV: Name of the variable that holds the session cache.
+
 Examples:
     ```python
     from pathlib import Path
@@ -18,11 +29,17 @@ See Also:
 
 from __future__ import annotations
 
+import os
 import shutil
+import stat
 import subprocess
 import sys
-from collections.abc import Sequence
+import tempfile
+from collections.abc import Callable, Iterator, Sequence
+from contextlib import contextmanager
 from pathlib import Path
+
+SESSION_UV_CACHE_ENV = "TYPEVET_TEST_UV_CACHE_DIR"
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _UV_RUN_ISOLATED_TAIL: tuple[str, ...] = (
@@ -32,7 +49,60 @@ _UV_RUN_ISOLATED_TAIL: tuple[str, ...] = (
     "--with",
 )
 _MIN_UV_HEAD_LEN = 2
-_MIN_ISOLATED_WHEEL_ARGV_LEN = 9
+_MIN_ISOLATED_WHEEL_ARGV_LEN = 10
+
+
+def uv_cache_args() -> tuple[str, ...]:
+    """Return the ``uv`` cache options for one helper subprocess.
+
+    Returns:
+        ``("--cache-dir", path)`` when ``TYPEVET_TEST_UV_CACHE_DIR`` names a
+        directory, else ``("--no-cache",)``.
+    """
+    session_cache = os.environ.get(SESSION_UV_CACHE_ENV, "").strip()
+    if session_cache:
+        return ("--cache-dir", session_cache)
+    return ("--no-cache",)
+
+
+@contextmanager
+def private_uv_cache(parent: Path) -> Iterator[Path]:
+    """Point ``TYPEVET_TEST_UV_CACHE_DIR`` at a new directory under ``parent``.
+
+    On exit the directory is removed and the variable is unset again.
+    When the variable is already set (an outer pytest session, or a
+    second conftest in the same session), the existing directory is yielded
+    and nothing is created, changed or removed.
+
+    Args:
+        parent: Directory that holds the new cache, such as the pytest base
+            temporary directory.
+
+    Yields:
+        The cache directory the helpers use.
+    """
+    existing = os.environ.get(SESSION_UV_CACHE_ENV, "").strip()
+    if existing:
+        yield Path(existing)
+        return
+    cache = Path(tempfile.mkdtemp(prefix="uv-cache-", dir=parent))
+    os.environ[SESSION_UV_CACHE_ENV] = str(cache)
+    try:
+        yield cache
+    finally:
+        os.environ.pop(SESSION_UV_CACHE_ENV, None)
+        shutil.rmtree(cache, onexc=_make_writable_and_retry)
+
+
+def _make_writable_and_retry(
+    func: Callable[[str], object], path: str, _exc: BaseException
+) -> None:
+    """Clear a read-only bit that stops ``shutil.rmtree``, then retry once."""
+    parent = Path(path).parent
+    parent.chmod(parent.stat().st_mode | stat.S_IWUSR | stat.S_IXUSR)
+    if not Path(path).is_symlink():
+        Path(path).chmod(Path(path).stat().st_mode | stat.S_IWUSR | stat.S_IXUSR)
+    func(path)
 
 
 def _uv_executable() -> str:
@@ -54,8 +124,11 @@ def _uv_executable() -> str:
 def _assert_uv_argv(argv: Sequence[str]) -> None:
     """Reject subprocess argv that does not start with the resolved ``uv`` binary.
 
+    The argv must also name a private cache (``--cache-dir`` or ``--no-cache``).
+
     Raises:
-        ValueError: When ``argv`` is not a validated isolated ``uv run --with`` invoke.
+        ValueError: When ``argv`` is not a validated isolated ``uv run --with``
+            invoke, or names no private uv cache.
     """
     if len(argv) < _MIN_UV_HEAD_LEN:
         msg = "uv argv too short"
@@ -70,6 +143,9 @@ def _assert_uv_argv(argv: Sequence[str]) -> None:
         raise ValueError(msg)
     if len(argv) < _MIN_ISOLATED_WHEEL_ARGV_LEN:
         msg = "isolated wheel argv missing wheel path or python -c body"
+        raise ValueError(msg)
+    if "--cache-dir" not in argv and "--no-cache" not in argv:
+        msg = "isolated wheel argv names no private uv cache"
         raise ValueError(msg)
 
 
@@ -105,6 +181,9 @@ def build_member_wheel_to_directory(out_dir: Path) -> None:
 def _uv_build(out_dir: Path, *extra: str) -> None:
     """Run ``uv build`` from the repository root into ``out_dir``.
 
+    The command carries [uv_cache_args][typevet_evals.wheel_isolated.uv_cache_args],
+    so the build never writes to the shared uv cache.
+
     Raises:
         RuntimeError: When ``uv`` is not on ``PATH``.
         subprocess.CalledProcessError: When ``uv build`` fails.
@@ -113,7 +192,7 @@ def _uv_build(out_dir: Path, *extra: str) -> None:
     resolved = out_dir.resolve()
     resolved.mkdir(parents=True, exist_ok=True)
     subprocess.run(
-        [uv_bin, "build", *extra, "--out-dir", str(resolved)],
+        [uv_bin, "build", *uv_cache_args(), *extra, "--out-dir", str(resolved)],
         check=True,
         cwd=_REPO_ROOT,
     )
@@ -127,6 +206,9 @@ def run_isolated_wheel_python(
     extra_wheels: Sequence[Path] = (),
 ) -> subprocess.CompletedProcess[str]:
     """Run ``python -c`` in an isolated env with only the given wheels installed.
+
+    The command carries [uv_cache_args][typevet_evals.wheel_isolated.uv_cache_args],
+    so the ephemeral environment never lands in the shared uv cache.
 
     Args:
         wheel: Built ``typevet`` wheel path passed to ``uv run --with``.
@@ -147,6 +229,7 @@ def run_isolated_wheel_python(
         *_UV_RUN_ISOLATED_TAIL,
         str(wheel.resolve()),
         *(arg for extra in extra_wheels for arg in ("--with", str(extra.resolve()))),
+        *uv_cache_args(),
         "python",
         "-c",
         source,
