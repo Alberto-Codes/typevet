@@ -1,0 +1,159 @@
+---
+name: Publish to PyPI
+
+# Fires when release-please pushes a version tag with RELEASE_PLEASE_TOKEN.
+# A tag pushed with GITHUB_TOKEN does not trigger this workflow.
+"on":
+  push:
+    tags:
+      - "v*"
+
+# Least-privilege: read-only by default. Each job escalates for itself.
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref_name }}
+  cancel-in-progress: false  # never cancel an in-flight publish
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Publish only a tag whose commit is on main.
+      - name: Verify the tagged commit is on main
+        run: |
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Tag ${GITHUB_REF_NAME} points to a commit that is not on main"
+            exit 1
+          fi
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: true
+
+      # Pin the interpreter rather than trust the runner image, matching
+      # ci.yml. The wheel is py3-none-any, so this fixes the build
+      # environment, not the artifact.
+      - name: Install Python 3.12
+        run: uv python install 3.12
+
+      - name: Sync locked dependencies
+        run: uv sync --locked
+
+      - name: Verify version matches tag
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          TOML_VERSION="$(uv version --short)"
+          if [ "$TAG_VERSION" != "$TOML_VERSION" ]; then
+            echo "::error::Tag ${TAG_VERSION} does not match pyproject.toml ${TOML_VERSION}"
+            exit 1
+          fi
+          echo "Version ${TAG_VERSION} matches the tag"
+
+      - name: Build package
+        run: uv build --no-sources
+
+      - name: Verify exactly one wheel
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          wheels=(dist/*.whl)
+          if (( ${#wheels[@]} != 1 )); then
+            echo "::error::expected exactly one wheel in dist/, found ${#wheels[@]}"
+            ls -la dist/
+            exit 1
+          fi
+          printf 'WHEEL=%s\n' "${wheels[0]}" >> "$GITHUB_ENV"
+
+      - name: Smoke test the wheel
+        run: >-
+          uv run --locked python scripts/smoke_release.py
+          --wheel "$WHEEL" --expect-version "${GITHUB_REF_NAME#v}"
+
+      - name: Export the runtime SBOM
+        run: >-
+          uv export --locked --no-default-groups --no-hashes
+          --format cyclonedx1.5 --preview-features sbom-export
+          --output-file sbom-runtime.cdx.json
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sbom
+          path: sbom-runtime.cdx.json
+          if-no-files-found: error
+
+      - name: Prune uv cache
+        if: always()
+        continue-on-error: true
+        run: uv cache prune --ci
+
+  # Signed build-provenance and SBOM attestations over the same wheel and
+  # sdist that go to PyPI.
+  # https://docs.github.com/en/actions/concepts/security/artifact-attestations
+  attest:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: sbom
+          path: sbom
+
+      - uses: actions/attest-build-provenance@v4.2.2
+        with:
+          subject-path: |
+            dist/*.whl
+            dist/*.tar.gz
+
+      - uses: actions/attest-sbom@v4.1.0
+        with:
+          subject-path: dist/*.whl
+          sbom-path: sbom/sbom-runtime.cdx.json
+
+  # Publishes only attested files over OIDC trusted publishing.
+  publish-pypi:
+    needs: [build, attest]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: false
+          ignore-empty-workdir: true
+
+      - name: Publish to PyPI
+        run: >-
+          uv publish --trusted-publishing always
+          --check-url https://pypi.org/simple/

@@ -3,14 +3,31 @@ name = "typevet"
 version = "0.1.0"
 description = "Type-safe structured generation under hexagonal architecture (llama.cpp first)"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
 authors = [{ name = "Alberto-Codes", email = "alberto.codes.dev@gmail.com" }]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
     "Typing :: Typed",
+]
+keywords = [
+    "evaluation",
+    "gemma",
+    "json-schema",
+    "llama-cpp",
+    "llm",
+    "structured-generation",
+    "structured-output",
+    "type-safe",
+    "vllm",
 ]
 dependencies = [
     "httpx>=0.28",
@@ -20,6 +37,13 @@ dependencies = [
 
 [project.optional-dependencies]
 cli = ["typer>=0.12"]
+
+[project.urls]
+Homepage = "https://github.com/Alberto-Codes/typevet"
+Documentation = "https://alberto-codes.github.io/typevet/"
+Repository = "https://github.com/Alberto-Codes/typevet"
+Issues = "https://github.com/Alberto-Codes/typevet/issues"
+Changelog = "https://github.com/Alberto-Codes/typevet/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["uv_build>=0.11.20,<0.13.0"]

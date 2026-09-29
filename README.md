@@ -21,7 +21,7 @@ Read the documentation at <https://alberto-codes.github.io/typevet/>.
 - typevet is pre-1.0. The package version is `0.1.0`.
 - typevet is not on PyPI yet.
   Build a wheel from a checkout and install it: see
-  [Install typevet](docs/how-to/install.md).
+  [Install typevet](https://github.com/Alberto-Codes/typevet/blob/main/docs/how-to/install.md).
 - typevet requires Python 3.12 or later.
 - Each backend has one tested model pin.
   The receipts give the full pin and its limits.
@@ -55,28 +55,28 @@ print('noul', r.nouls['q'].noul)
 ```
 
 The command prints the probability of yes, near 0.69.
-The [offline tutorial](docs/tutorials/first-typed-judgment-offline.md) explains each step.
+The [offline tutorial](https://github.com/Alberto-Codes/typevet/blob/main/docs/tutorials/first-typed-judgment-offline.md) explains each step.
 Then connect a model server:
 
-- To host typevet, follow [Serve typevet on vLLM](docs/how-to/serve-typevet-on-vllm.md).
-- To run typevet locally, follow [Run Gemma 4 on llama.cpp](docs/how-to/run-gemma4-llamacpp.md).
-- To call typevet from code, follow [Call typevet from Python](docs/how-to/call-typevet-from-python.md).
+- To host typevet, follow [Serve typevet on vLLM](https://github.com/Alberto-Codes/typevet/blob/main/docs/how-to/serve-typevet-on-vllm.md).
+- To run typevet locally, follow [Run Gemma 4 on llama.cpp](https://github.com/Alberto-Codes/typevet/blob/main/docs/how-to/run-gemma4-llamacpp.md).
+- To call typevet from code, follow [Call typevet from Python](https://github.com/Alberto-Codes/typevet/blob/main/docs/how-to/call-typevet-from-python.md).
 
 ## Learn more
 
-- [How typevet works with Gemma 4](docs/explanation/how-typevet-works-with-gemma-4.md)
+- [How typevet works with Gemma 4](https://github.com/Alberto-Codes/typevet/blob/main/docs/explanation/how-typevet-works-with-gemma-4.md)
   explains the scoring path, the two backends and the receipts.
-- [Gemma 4 multimodal judgments](docs/explanation/gemma-4-multimodal-judgments.md)
+- [Gemma 4 multimodal judgments](https://github.com/Alberto-Codes/typevet/blob/main/docs/explanation/gemma-4-multimodal-judgments.md)
   explains how images reach each backend, and the limits.
-- [Native typed judgments](docs/explanation/native-typed-judgments.md) states the scope and the limitations.
-- [The documentation index](docs/README.md) lists every page and its kind.
+- [Native typed judgments](https://github.com/Alberto-Codes/typevet/blob/main/docs/explanation/native-typed-judgments.md) states the scope and the limitations.
+- [The documentation index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.md) lists every page and its kind.
 
 [TypeLLM](https://github.com/TypeLLM/TypeLLM) is a research reference for the decision model.
 It is not a runtime dependency.
 
 ## For contributors
 
-Read [CLAUDE.md](CLAUDE.md) first.
+Read [CLAUDE.md](https://github.com/Alberto-Codes/typevet/blob/main/CLAUDE.md) first.
 It states the gates, the issue workflow and the rules for agents and people.
 
 ```bash
@@ -87,6 +87,6 @@ uv run pytest -q
 
 The default test run skips live tests.
 Pull requests and pushes to `main` run the hook stages in
-[the CI workflow](.github/workflows/ci.yml).
-[The writing system](docs/reference/writing-system.md) and
-[the commit rules](docs/reference/commits.md) apply to every change.
+[the CI workflow](https://github.com/Alberto-Codes/typevet/blob/main/.github/workflows/ci.yml).
+[The writing system](https://github.com/Alberto-Codes/typevet/blob/main/docs/reference/writing-system.md) and
+[the commit rules](https://github.com/Alberto-Codes/typevet/blob/main/docs/reference/commits.md) apply to every change.

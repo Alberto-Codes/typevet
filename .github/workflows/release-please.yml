@@ -1,0 +1,91 @@
+---
+name: Release Please
+
+"on":
+  push:
+    branches: [main]
+
+# Least-privilege: read-only by default. Each job escalates for itself.
+permissions:
+  contents: read
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    env:
+      HAS_PAT: ${{ secrets.RELEASE_PLEASE_TOKEN != '' }}
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      prs_created: ${{ steps.release.outputs.prs_created }}
+      pr_branch: >-
+        ${{ steps.release.outputs.prs_created == 'true' &&
+        fromJSON(steps.release.outputs.pr).headBranchName || '' }}
+    steps:
+      - uses: googleapis/release-please-action@v5
+        id: release
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          target-branch: main
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      # publish.yml fires on the tag push. A tag pushed with GITHUB_TOKEN
+      # never triggers another workflow, so a release cut without the PAT
+      # would silently skip PyPI. Fail rather than report a success that
+      # is only partly true.
+      - name: Fail a release cut without the PAT
+        if: >-
+          steps.release.outputs.release_created == 'true' &&
+          env.HAS_PAT != 'true'
+        env:
+          TAG_NAME: ${{ steps.release.outputs.tag_name }}
+        run: |
+          echo "::error::Released ${TAG_NAME} with GITHUB_TOKEN. The tag will \
+          not trigger publish.yml. Set RELEASE_PLEASE_TOKEN, then push the \
+          tag by hand."
+          exit 1
+
+  # The release PR bumps pyproject.toml. The uv.lock extra-file in
+  # release-please-config.json moves the typevet entry; this job re-locks
+  # in case anything else in the lock moved with it.
+  update-lockfile:
+    needs: release-please
+    if: needs.release-please.outputs.prs_created == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout release-please PR branch
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          ref: ${{ needs.release-please.outputs.pr_branch }}
+
+      - uses: astral-sh/setup-uv@v10.2.0
+
+      # Pin the interpreter rather than trust the runner image, matching
+      # ci.yml.
+      - name: Install Python 3.12
+        run: uv python install 3.12
+
+      - name: Update uv.lock
+        run: uv lock
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet uv.lock; then
+            echo "uv.lock is already up to date"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add uv.lock
+            git commit -m "chore(release): update uv.lock after version bump"
+            git push
+          fi

@@ -1,0 +1,100 @@
+---
+name: Publish to TestPyPI
+
+# Manual rehearsal of publish.yml against TestPyPI. Each run publishes a
+# unique dev version, so TestPyPI accepts repeat runs.
+"on":
+  workflow_dispatch:
+
+# Least-privilege: read-only by default. Each job escalates for itself.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: true
+
+      # Pin the interpreter rather than trust the runner image, matching
+      # ci.yml.
+      - name: Install Python 3.12
+        run: uv python install 3.12
+
+      - name: Sync locked dependencies
+        run: uv sync --locked
+
+      # <release>.dev<run id><attempt> sorts below the release and never
+      # repeats. --frozen leaves uv.lock alone on the runner.
+      - name: Set a unique dev version
+        run: |
+          BASE="$(uv version --short)"
+          DEV="${BASE}.dev$((GITHUB_RUN_ID * 100 + GITHUB_RUN_ATTEMPT))"
+          uv version --frozen "$DEV"
+          printf 'DEV_VERSION=%s\n' "$DEV" >> "$GITHUB_ENV"
+
+      - name: Build package
+        run: uv build --no-sources
+
+      - name: Verify exactly one wheel
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          wheels=(dist/*.whl)
+          if (( ${#wheels[@]} != 1 )); then
+            echo "::error::expected exactly one wheel in dist/, found ${#wheels[@]}"
+            ls -la dist/
+            exit 1
+          fi
+          printf 'WHEEL=%s\n' "${wheels[0]}" >> "$GITHUB_ENV"
+
+      - name: Smoke test the wheel
+        run: >-
+          uv run --frozen --no-sync python scripts/smoke_release.py
+          --wheel "$WHEEL" --expect-version "$DEV_VERSION"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+      - name: Prune uv cache
+        if: always()
+        continue-on-error: true
+        run: uv cache prune --ci
+
+  publish-testpypi:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: testpypi
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: false
+          ignore-empty-workdir: true
+
+      # Explicit endpoints: --index cannot be combined with --check-url.
+      - name: Publish to TestPyPI
+        run: >-
+          uv publish --trusted-publishing always
+          --publish-url https://test.pypi.org/legacy/
+          --check-url https://test.pypi.org/simple/
