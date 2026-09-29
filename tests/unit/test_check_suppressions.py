@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import shutil
+import hashlib
 import tempfile
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -14,6 +15,35 @@ from scripts.check_suppressions import (
     main,
     scan,
 )
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+REAL_PYPROJECT = REPO_ROOT / "pyproject.toml"
+
+
+def _snapshot() -> tuple[int, int, str, int]:
+    """Record the real pyproject.toml identity and the repo root mtime.
+
+    Returns:
+        A tuple of (inode, mtime_ns, sha256 hex digest, repo root mtime_ns).
+    """
+    stat = REAL_PYPROJECT.stat()
+    digest = hashlib.sha256(REAL_PYPROJECT.read_bytes()).hexdigest()
+    return stat.st_ino, stat.st_mtime_ns, digest, REPO_ROOT.stat().st_mtime_ns
+
+
+@pytest.fixture(autouse=True)
+def real_pyproject_untouched() -> Iterator[None]:
+    """Fail a test that moves, copies over or rewrites the real pyproject.toml.
+
+    Yields:
+        Nothing; the check runs after the test.
+    """
+    before = _snapshot()
+    yield
+    assert _snapshot() == before, (
+        "real pyproject.toml or repo root changed: (inode, mtime_ns, sha256, "
+        f"root mtime_ns) before={before} after={_snapshot()}"
+    )
 
 
 class TestCountPerFileIgnores:
@@ -40,34 +70,40 @@ class TestCountPerFileIgnores:
             len(per_pattern["evals/src/typevet_evals/datasets/partner_guard.py"]) == 2
         )
 
-    def test_main_fails_when_budget_exceeded(self) -> None:
-        """main() returns 1 when per-file-ignores exceeds the budget."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmpdir_path = Path(tmpdir)
-            pyproject = tmpdir_path / "pyproject.toml"
+    @pytest.mark.parametrize(
+        ("extra", "expected"),
+        [(1, 1), (0, 0)],
+        ids=["over-budget", "at-budget"],
+    )
+    def test_main_fails_when_budget_exceeded(
+        self,
+        extra: int,
+        expected: int,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        """main() returns 1 only when per-file-ignores exceeds the budget.
 
-            over = ALLOWED_PER_FILE_IGNORE_CODES + 1
-            codes = "".join(f'    "CODE{i:03d}",\n' for i in range(over))
-            pyproject.write_text(
-                "[tool.ruff.lint.per-file-ignores]\n"
-                '"tests/**/*.py" = [\n' + codes + "]\n"
-            )
+        The run uses a temp working directory. The real pyproject.toml is
+        never moved, copied over or rewritten.
+        """
+        codes_count = ALLOWED_PER_FILE_IGNORE_CODES + extra
+        codes = "".join(f'    "CODE{i:03d}",\n' for i in range(codes_count))
+        pyproject = tmp_path / "pyproject.toml"
+        pyproject.write_text(
+            '[tool.ruff.lint.per-file-ignores]\n"tests/**/*.py" = [\n' + codes + "]\n"
+        )
+        assert count_per_file_ignores(pyproject)[0] == codes_count
 
-            total, _ = count_per_file_ignores(pyproject)
-            assert total == ALLOWED_PER_FILE_IGNORE_CODES + 1
+        monkeypatch.chdir(tmp_path)
+        result = main([])
+        out = capsys.readouterr().out
 
-            original_pyproject = Path("pyproject.toml")
-            backup = tmpdir_path / "pyproject.toml.bak"
-            if original_pyproject.exists():
-                shutil.move(str(original_pyproject), str(backup))
-
-            try:
-                shutil.copy(pyproject, "pyproject.toml")
-                result = main([])
-                assert result == 1
-            finally:
-                if backup.exists():
-                    shutil.move(str(backup), str(original_pyproject))
+        assert result == expected
+        assert "Gate suppressions are not allowed" not in out
+        budget_line = f"pyproject.toml has {codes_count} per-file-ignores codes"
+        assert (budget_line in out) is (expected == 1)
 
 
 class TestScan:
