@@ -33,7 +33,7 @@ class TestCountPerFileIgnores:
         total, per_pattern = count_per_file_ignores(Path("pyproject.toml"))
         assert total == ALLOWED_PER_FILE_IGNORE_CODES == 11
         assert len(per_pattern) == 4
-        assert len(per_pattern["tests/**/*.py"]) == 7
+        assert len(per_pattern["**/tests/**/*.py"]) == 7
         assert len(per_pattern["src/typevet/testing/wheel_isolated.py"]) == 1
         assert len(per_pattern["scripts/check_commit_msg.py"]) == 1
         assert len(per_pattern["src/typevet/evaluation/datasets/partner_guard.py"]) == 2

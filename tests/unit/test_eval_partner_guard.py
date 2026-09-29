@@ -70,3 +70,15 @@ def test_public_repo_has_no_forbidden_tracked_content() -> None:
 @pytest.mark.unit
 def test_packaging_config_excludes_partner_paths() -> None:
     assert scan_packaging_config(REPO_ROOT) == []
+
+
+@pytest.mark.unit
+def test_scan_packaging_config_flags_the_evals_member(tmp_path: Path) -> None:
+    member = tmp_path / "evals"
+    member.mkdir()
+    (member / "pyproject.toml").write_text(
+        '[tool.uv_build]\ninclude = ["data/collections_nba"]\n',
+        encoding="utf-8",
+    )
+    hits = scan_packaging_config(tmp_path)
+    assert hits == ['evals/pyproject.toml:2:include = ["data/collections_nba"]']

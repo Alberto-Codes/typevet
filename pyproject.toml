@@ -61,6 +61,7 @@ dev = [
     "pytest-cov>=7.1.0",
     "ruff>=0.16.8",
     "ty>=0.0.82",
+    "typevet-evals",
 ]
 docs = [
     "mkdocs>=1.6.1,<2",
@@ -72,6 +73,13 @@ docs = [
 [tool.uv]
 # The docs group installs by default: the unit suite builds the site (#241).
 default-groups = ["dev", "docs"]
+
+[tool.uv.workspace]
+# Evaluation tooling lives in the evals/ member and never ships in the wheel (#256).
+members = ["evals"]
+
+[tool.uv.sources]
+typevet-evals = { workspace = true }
 
 [tool.ruff]
 line-length = 88
@@ -112,7 +120,7 @@ max-line-length = 100
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = [
+"**/tests/**/*.py" = [
     "S101",
     "D100",
     "D101",
@@ -126,7 +134,7 @@ convention = "google"
 "src/typevet/evaluation/datasets/partner_guard.py" = ["S603", "S607"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["typevet"]
+known-first-party = ["typevet", "typevet_evals"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -134,7 +142,7 @@ docstring-code-format = true
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
-testpaths = ["tests"]
+testpaths = ["tests", "evals/tests"]
 markers = [
     "unit: fast, isolated",
     "contract: adapter behaviour against fakes",
@@ -150,17 +158,17 @@ addopts = [
 ]
 
 [tool.coverage.run]
-source = ["typevet"]
+source = ["typevet", "typevet_evals"]
 
 [tool.coverage.report]
 fail_under = 90
 show_missing = true
 
 [tool.ty.src]
-include = ["src", "tests", "scripts"]
+include = ["src", "tests", "scripts", "evals/src", "evals/tests"]
 
 [tool.importlinter]
-root_package = "typevet"
+root_packages = ["typevet", "typevet_evals"]
 include_external_packages = true
 exclude_type_checking_imports = true
 
@@ -178,6 +186,12 @@ layers = [
     "typevet.ports",
     "typevet.domain",
 ]
+
+[[tool.importlinter.contracts]]
+name = "The library does not import the evals"
+type = "forbidden"
+source_modules = ["typevet"]
+forbidden_modules = ["typevet_evals"]
 
 [[tool.importlinter.contracts]]
 name = "runtime_must_not_import_evaluation"
@@ -209,7 +223,7 @@ forbidden_modules = [
 
 [tool.docvet]
 fail-on = ["enrichment", "freshness", "coverage", "griffe", "presence"]
-exclude = ["tests", "scripts"]
+exclude = ["tests", "scripts", "evals/tests"]
 
 [tool.docvet.presence]
 min-coverage = 100.0

@@ -225,13 +225,13 @@ Record lasting decisions in docs, ADRs or issue contracts, not only in chat.
 | ruff | `uv run ruff check .` and `uv run ruff format --check .` |
 | ty | `uv run ty check` |
 | import-linter | `uv run lint-imports` |
-| loc | `uv run python scripts/check_loc.py src` |
+| loc | `uv run python scripts/check_loc.py src evals/src` |
 | suppressions | `uv run python scripts/check_suppressions.py` |
 | owned prose | `uv run python scripts/check_plain_english.py` |
 | terminology | `uv run python scripts/check_terminology.py` |
-| docvet | `uv run docvet check --all` |
+| docvet | `uv run docvet check --all` and `uv run --directory evals docvet check --all` |
 | pytest | `uv run pytest -q` |
-| coverage (push) | `uv run pytest -q --cov=typevet --cov-report=term-missing` |
+| coverage (push) | `uv run pytest -q --cov=typevet --cov=typevet_evals --cov-report=term-missing` |
 | uv-secure (push) | `uv audit --locked --preview-features audit-command` |
 | commit-msg | `uv run python scripts/check_commit_msg.py` (hook) |
 
@@ -247,7 +247,8 @@ Install hooks once per clone:
 A `PostToolUse` hook in `.claude/settings.json` runs `scripts/vet_file.sh`
 after every `Write`, `Edit` or `Bash` call once `pyproject.toml` exists. It
 runs `uv run ruff format`, `uv run ruff check` and `uv run docvet` on each
-changed Python file, plus `check_loc` under `src` when that script exists.
+changed Python file, plus `check_loc` under `src` and `evals/src` when that
+script exists.
 Silence means those gates are green for the files touched; do not re-run them
 by hand. `ty`, `lint-imports` and `pytest` stay in pre-commit and the gate
 table. Until the package exists, the hook exits quietly. **uv is required** for

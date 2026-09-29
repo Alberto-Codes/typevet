@@ -1,0 +1,30 @@
+# Workspace member for evaluation tooling. It is never published (#256).
+[project]
+name = "typevet-evals"
+version = "0.0.0"
+description = "Evaluation harnesses, benchmark runners and proofs for typevet (not published)"
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = ["Private :: Do Not Upload"]
+dependencies = [
+    "typevet",
+    "httpx>=0.28",
+    "jsonschema>=4.26.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.20,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.sources]
+typevet = { workspace = true }
+
+# docvet reads one src-root per pyproject.toml, so the member carries its own
+# config and the docvet hook runs a second time from evals/ (#256 E1).
+[tool.docvet]
+src-root = "src"
+fail-on = ["enrichment", "freshness", "coverage", "griffe", "presence"]
+exclude = ["tests"]
+
+[tool.docvet.presence]
+min-coverage = 100.0

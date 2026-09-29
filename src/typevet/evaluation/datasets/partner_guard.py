@@ -2,6 +2,8 @@
 
 The finvet collections NBA split is partner-only and git-ignored in finvet.
 typevet eval bundles and wheels must never vendor those paths or jsonl.
+The packaging scan reads the root ``pyproject.toml``, ``MANIFEST.in`` and the
+``evals/pyproject.toml`` of the ``typevet-evals`` workspace member.
 
 Examples:
     Scan a tree before release:
@@ -40,7 +42,9 @@ CONTENT_ALLOWLIST: frozenset[str] = frozenset(
     }
 )
 
-PACKAGING_FILES: frozenset[str] = frozenset({"pyproject.toml", "MANIFEST.in"})
+PACKAGING_FILES: frozenset[str] = frozenset(
+    {"pyproject.toml", "MANIFEST.in", "evals/pyproject.toml"}
+)
 
 
 def normalize_posix(path: str) -> str:

@@ -2,6 +2,12 @@ version = 1
 revision = 3
 requires-python = ">=3.12"
 
+[manifest]
+members = [
+    "typevet",
+    "typevet-evals",
+]
+
 [[package]]
 name = "annotated-doc"
 version = "0.0.5"
@@ -1254,6 +1260,7 @@ dev = [
     { name = "pytest-cov" },
     { name = "ruff" },
     { name = "ty" },
+    { name = "typevet-evals" },
 ]
 docs = [
     { name = "mkdocs" },
@@ -1280,12 +1287,30 @@ dev = [
     { name = "pytest-cov", specifier = ">=7.1.0" },
     { name = "ruff", specifier = ">=0.16.8" },
     { name = "ty", specifier = ">=0.0.82" },
+    { name = "typevet-evals", editable = "evals" },
 ]
 docs = [
     { name = "mkdocs", specifier = ">=1.6.1,<2" },
     { name = "mkdocs-material", specifier = ">=9.7.7" },
     { name = "mkdocstrings", extras = ["python"], specifier = ">=1.0.6" },
     { name = "pymdown-extensions", specifier = ">=12.1" },
+]
+
+[[package]]
+name = "typevet-evals"
+version = "0.0.0"
+source = { editable = "evals" }
+dependencies = [
+    { name = "httpx" },
+    { name = "jsonschema" },
+    { name = "typevet" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "httpx", specifier = ">=0.28" },
+    { name = "jsonschema", specifier = ">=4.26.0" },
+    { name = "typevet", editable = "." },
 ]
 
 [[package]]

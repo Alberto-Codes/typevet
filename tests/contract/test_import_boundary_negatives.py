@@ -12,7 +12,7 @@ Examples:
     ```
 
 See Also:
-    - [tool.importlinter.contracts][]: The four enforced import contracts
+    - [tool.importlinter.contracts][]: The enforced import contracts
     - `tests/contract/test_runtime_evaluation_boundary.py`: TOML and AST guard
 """
 
@@ -41,6 +41,7 @@ _CONTRACT_NAMES = (
     "runtime_must_not_import_evaluation",
     "Fakes stay off the adapters",
     "Domain is IO-free",
+    "The library does not import the evals",
 )
 
 
@@ -77,6 +78,11 @@ _EDGES = (
         "import typevet.adapters.outbound",
     ),
     _Edge("Domain is IO-free", "domain/errors.py", "import httpx"),
+    _Edge(
+        "The library does not import the evals",
+        "domain/errors.py",
+        "import typevet_evals",
+    ),
 )
 
 
@@ -192,7 +198,7 @@ def _status(report: str, contract: str) -> str | None:
 
 @pytest.mark.contract
 def test_uninjected_copy_keeps_every_contract(tmp_path: Path) -> None:
-    """A clean copy of the package keeps all four real contracts."""
+    """A clean copy of the package keeps every real contract."""
     _copy_package(tmp_path)
     config = _write_config(tmp_path / "importlinter.toml")
 

@@ -9,12 +9,13 @@ counted by total codes, not patterns. Adding a new code to an existing entry
 is a decision, so this script fails until the budget is raised deliberately.
 
 Inline suppressions (`# noqa`, `# type: ignore`, `# ty: ignore`) are forbidden
-in `src/`, `tests/` and `scripts/`; `per-file-ignores` is the only route. A real
-suppression must be a comment; a `# noqa` inside a string literal suppresses
-nothing, so this gate uses `tokenize` to flag `COMMENT` tokens only.
+in `src/`, `tests/`, `scripts/`, `evals/src/` and `evals/tests/`;
+`per-file-ignores` is the only route. A real suppression must be a comment; a
+`# noqa` inside a string literal suppresses nothing, so this gate uses
+`tokenize` to flag `COMMENT` tokens only.
 
 Usage:
-    check_suppressions.py [paths...]     # defaults to src/, tests/, scripts/
+    check_suppressions.py [paths...]     # defaults to src/, tests/, scripts/, evals/
 
 Exit status is 1 when a suppression is found.
 """
@@ -35,7 +36,7 @@ SUPPRESSION = re.compile(
 # Deliberate `per-file-ignores` codes in pyproject.toml. Raise this only with
 # a reason in the commit message.
 # Current budget: 11 codes
-# - 7 in tests/**/*.py (S101, D100, D101, D102, D103, D104, PLR2004)
+# - 7 in **/tests/**/*.py (S101, D100, D101, D102, D103, D104, PLR2004)
 # - 1 in scripts/build_wheel_for_tests.py (S603 - uv build/isolated argv)
 # - 1 in scripts/check_commit_msg.py (S603 - git by absolute path, list argv)
 # - 2 in src/typevet/evaluation/datasets/partner_guard.py (S603, S607 - git)
@@ -115,12 +116,19 @@ def main(argv: list[str]) -> int:
     """Run the check.
 
     Args:
-        argv: Paths to scan; defaults to `src`, `tests`, `scripts`.
+        argv: Paths to scan; defaults to `src`, `tests`, `scripts`,
+            `evals/src` and `evals/tests`.
 
     Returns:
         1 when a suppression is found or the ignore budget is exceeded.
     """
-    roots = [Path(a) for a in argv] or [Path("src"), Path("tests"), Path("scripts")]
+    roots = [Path(a) for a in argv] or [
+        Path("src"),
+        Path("tests"),
+        Path("scripts"),
+        Path("evals/src"),
+        Path("evals/tests"),
+    ]
     existing_roots = [r for r in roots if r.exists()]
     findings, files_scanned = scan(existing_roots)
 

@@ -51,7 +51,7 @@ repos:
 
       - id: loc-check
         name: file size limit (300 code lines)
-        entry: uv run python scripts/check_loc.py src
+        entry: uv run python scripts/check_loc.py src evals/src
         language: system
         pass_filenames: false
         always_run: true
@@ -59,6 +59,14 @@ repos:
       - id: docvet
         name: docvet check
         entry: uv run docvet check --all
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      # docvet reads one src-root per pyproject.toml; the evals member has its own.
+      - id: docvet-evals
+        name: docvet check (evals member)
+        entry: uv run --directory evals docvet check --all
         language: system
         pass_filenames: false
         always_run: true
@@ -72,7 +80,7 @@ repos:
 
       - id: pytest-cov
         name: pytest with coverage floor
-        entry: uv run pytest -q --cov=typevet --cov-report=term-missing
+        entry: uv run pytest -q --cov=typevet --cov=typevet_evals --cov-report=term-missing
         language: system
         pass_filenames: false
         always_run: true
