@@ -6,7 +6,6 @@ Examples:
     ```
 
 See Also:
-    - [typevet.decide_categorical][]: Root compatibility shim
     - [typevet.domain.decision_execute][]: Categorical execution through
       the injected scoring port
 """

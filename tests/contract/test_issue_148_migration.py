@@ -1,4 +1,7 @@
-"""Contract tests for #148 package migration shims and prompt bytes."""
+"""Contract tests for #148 package migration and prompt bytes.
+
+The root shims are removed (#256); see ``tests/contract/test_package_layout.py``.
+"""
 
 from __future__ import annotations
 
@@ -7,9 +10,10 @@ import inspect
 
 import pytest
 
+from typevet.adapters.outbound.gemma.scoring_prefix import compose_scoring_prefix
 from typevet.domain import decision_execute as decision_execute_mod
 from typevet.domain.decisions import Decision
-from typevet.field_prompt import compose_scoring_prefix, render_field_instructions
+from typevet.domain.field_instructions import render_field_instructions
 from typevet.ports.scoring import CandidateScoringPort
 
 _GOLDEN_PREFIX = (
@@ -20,25 +24,6 @@ _GOLDEN_PREFIX = (
     "- b<|im_end|>\n"
     "<|im_start|>assistant\n"
 )
-
-
-@pytest.mark.contract
-def test_field_prompt_root_shim_exports() -> None:
-    fp = importlib.import_module("typevet.field_prompt")
-    assert callable(fp.render_field_instructions)
-    assert callable(fp.compose_scoring_prefix)
-    assert callable(fp.gold_reference_markers)
-    assert callable(fp.choice_criteria_from_schema)
-
-
-@pytest.mark.contract
-def test_gemma_root_shims_export_public_names() -> None:
-    served = importlib.import_module("typevet.gemma_served_template")
-    binding = importlib.import_module("typevet.gemma_answer_binding")
-    assert hasattr(served, "classify_served_template")
-    assert hasattr(served, "CHATML_ASSISTANT_HEADER")
-    assert hasattr(binding, "resolve_answer_anchor")
-    assert hasattr(binding, "ThinkingDisposition")
 
 
 @pytest.mark.contract

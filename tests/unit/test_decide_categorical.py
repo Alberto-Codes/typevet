@@ -10,10 +10,10 @@ import pytest
 
 from tests.fixtures.scoring_contract import ContractScoringFake
 from typevet import decide_categorical
+from typevet.adapters.outbound.gemma.served_template import CHATML_ASSISTANT_HEADER
 from typevet.domain.candidate_scoring_request import CandidateTokenSpec
 from typevet.domain.decisions import Decision, SchemaError
 from typevet.domain.errors import DecisionExecutionError
-from typevet.gemma_served_template import CHATML_ASSISTANT_HEADER
 
 _SINGLE_ENUM_SCHEMA: dict[str, Any] = {
     "type": "object",

@@ -5,12 +5,12 @@ from __future__ import annotations
 import pytest
 
 from tests.fixtures.gemma_template_contract import exc_type_from_name, get_fixtures
-from typevet.gemma_answer_binding import (
+from typevet.adapters.outbound.gemma.answer_binding import (
     bind_enum_labels,
     resolve_answer_anchor,
     termination_kind,
 )
-from typevet.gemma_served_template import ServedTemplateClass
+from typevet.adapters.outbound.gemma.served_template import ServedTemplateClass
 
 
 @pytest.mark.contract

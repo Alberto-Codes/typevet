@@ -70,7 +70,7 @@ gate reads inbound settings. **Runtime** holds thin orchestration facades
 `compose_scoring_prefix`) over the layers below
 ([#148](https://github.com/Alberto-Codes/typevet/issues/148)).
 
-Root modules such as `typevet.judge` and `typevet.eval_runner` are
+Root modules such as `typevet.eval_runner` are
 compatibility shims that re-export from these layers. See
 [supported imports](../reference/supported-imports.md#root-compatibility-shims).
 

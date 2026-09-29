@@ -8,7 +8,7 @@ replaces that served-template choice for every prefix (#174).
 Examples:
     ```python
     from typevet.domain.judgment_questions import Noul
-    from typevet.judge import ScoringJudgmentAdapter
+    from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
     from typevet.testing import ScriptedScoringFake
 
     fake = ScriptedScoringFake(logprobs={"True": -0.2, "False": -1.0})
@@ -33,6 +33,7 @@ from typevet.adapters.outbound.gemma import (
     ServedTemplateClass,
     compose_media_scoring_prefix,
 )
+from typevet.adapters.outbound.gemma.scoring_prefix import compose_scoring_prefix
 from typevet.domain.candidate_scoring_request import CandidateTokenSpec
 from typevet.domain.decision_execute import (
     CategoricalExecutionResult,
@@ -40,6 +41,7 @@ from typevet.domain.decision_execute import (
 )
 from typevet.domain.decisions import Decision
 from typevet.domain.errors import JudgmentValidationError
+from typevet.domain.field_instructions import render_field_instructions
 from typevet.domain.judgment_answers import (
     Answer,
     ChoiceAnswer,
@@ -54,7 +56,6 @@ from typevet.domain.judgment_normalize import (
 from typevet.domain.judgment_questions import Choice, Noul, Question, Score
 from typevet.domain.judgment_response import JudgmentResponse, TokenUsage
 from typevet.domain.media import MEDIA_MARKER, ImageInput, count_media_markers
-from typevet.field_prompt import compose_scoring_prefix, render_field_instructions
 from typevet.ports.framing import ModelFramingPort
 from typevet.ports.scoring import CandidateScoringPort
 

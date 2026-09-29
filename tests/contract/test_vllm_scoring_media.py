@@ -26,7 +26,7 @@ from typevet.domain.candidate_scoring_request import (
 )
 from typevet.domain.judgment_questions import Choice
 from typevet.domain.media import MEDIA_MARKER, ImageInput
-from typevet.judge import ScoringJudgmentAdapter
+from typevet.runtime import ScoringJudgmentAdapter
 from typevet.testing import ScriptedScoringFake
 
 _FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "vllm"

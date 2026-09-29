@@ -10,8 +10,9 @@ Examples:
     ```
 
 See Also:
-    - [typevet.gemma_served_template][]: Root compatibility shim
-    - [typevet.gemma_answer_binding][]: Root compatibility shim
+    - [typevet.adapters.outbound.gemma.served_template][]: Template classification
+    - [typevet.adapters.outbound.gemma.answer_binding][]: Answer anchors and
+      enum binding
 
 Attributes:
     CHATML_ASSISTANT_HEADER (str): ChatML assistant turn header constant.

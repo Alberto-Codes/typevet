@@ -11,21 +11,21 @@ from tests.fixtures.gemma_template_contract import (
     pinned_tokenize_content,
     pinned_tokenize_with_special,
 )
-from typevet.adapters.outbound.gemma.scoring_prefix import compose_media_scoring_prefix
-from typevet.domain.errors import GemmaTemplateError
-from typevet.domain.media import MEDIA_MARKER
-from typevet.gemma_answer_binding import (
+from typevet.adapters.outbound.gemma.answer_binding import (
     bind_enum_label,
     resolve_answer_anchor,
     termination_kind,
 )
-from typevet.gemma_served_template import (
+from typevet.adapters.outbound.gemma.scoring_prefix import compose_media_scoring_prefix
+from typevet.adapters.outbound.gemma.served_template import (
     GEMMA4_MODEL_TURN_HEADER,
     GEMMA4_NO_THINKING_PREFILL,
     GEMMA4_TURN_CLOSE,
     GEMMA4_TURN_OPEN,
     ServedTemplateClass,
 )
+from typevet.domain.errors import GemmaTemplateError
+from typevet.domain.media import MEDIA_MARKER
 
 
 @pytest.mark.unit

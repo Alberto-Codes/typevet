@@ -23,6 +23,7 @@ See Also:
     - [typevet.domain.decisions][]: Decision types and dependency layers
     - [typevet.domain.decision_compile][]: JSON Schema compilation
     - [typevet.domain.media][]: Image inputs and the media marker
+    - [typevet.domain.question_schema][]: Question records to JSON Schema
 
 Attributes:
     Decision (type): One compiled TypeLLM field from JSON Schema.
@@ -56,6 +57,11 @@ Attributes:
     bind_control_candidates (callable): Ordinal control tokens for native labels.
     judgment_original_labels (callable): Ordered labels for a native question.
     normalize_question (callable): Native question to executable Decision.
+    compile_question_records (callable): Question records to decisions.
+    question_record_to_property (callable): One question record to a
+        JSON Schema property.
+    question_records_to_json_schema (callable): Question records to an
+        object schema.
 """
 
 from typevet.domain.candidate_scoring_request import (
@@ -123,6 +129,11 @@ from typevet.domain.media import (
     count_media_markers,
 )
 from typevet.domain.models import GenerationRequest, GenerationResult
+from typevet.domain.question_schema import (
+    compile_question_records,
+    question_record_to_property,
+    question_records_to_json_schema,
+)
 from typevet.domain.scoring_stage import ScoreStage
 
 __all__ = [
@@ -167,6 +178,7 @@ __all__ = [
     "bind_control_candidates",
     "build_and_validate_result",
     "compile_json_schema",
+    "compile_question_records",
     "count_media_markers",
     "dependency_layers",
     "execute_categorical_decision",
@@ -175,5 +187,7 @@ __all__ = [
     "normalize_noul",
     "normalize_question",
     "normalize_score",
+    "question_record_to_property",
+    "question_records_to_json_schema",
     "question_types",
 ]

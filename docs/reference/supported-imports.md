@@ -89,6 +89,7 @@ compiler types, judgment types, and scoring types, import from
 | `execute_categorical_decision` | Choice/Bool execution; calls the injected scoring port and performs no I/O itself |
 | `bind_control_candidates`, `judgment_original_labels` | Control-token binding for native questions |
 | `normalize_noul`, `normalize_choice`, `normalize_score`, `normalize_question` | Native question → ``Decision`` |
+| `question_record_to_property`, `question_records_to_json_schema`, `compile_question_records` | Question records → JSON Schema or ``Decision`` values; defined in `typevet.domain.question_schema` (see [question-schema-map.md](question-schema-map.md)) |
 
 ## `typevet.ports`
 
@@ -214,17 +215,10 @@ and commands keep working. New code imports from the current home.
 
 | Shim module | Current home |
 |---|---|
-| `typevet.decide_categorical` | `typevet.runtime` |
-| `typevet.judge` | `typevet.runtime` |
-| `typevet.field_prompt` | `typevet.domain.field_instructions` and `typevet.adapters.outbound.gemma` |
-| `typevet.gemma_served_template`, `typevet.gemma_answer_binding` | `typevet.adapters.outbound.gemma` |
 | `typevet.eval_runner_cli` | `typevet.adapters.inbound.eval_cli` |
 | `typevet.eval_runner`, `typevet.eval_runner_datasets`, `typevet.eval_runner_live_gate`, `typevet.eval_runner_report` | `typevet.evaluation.runner` |
 | `typevet.eval_tpjep_*` | `typevet.evaluation.tpjep` |
 | Other `typevet.eval_*` loaders, download helpers, and guards | One submodule of `typevet.evaluation.datasets` |
-
-`typevet.question_schema` is a root module, not a shim. It maps question
-records to JSON Schema. See [question-schema-map.md](question-schema-map.md).
 
 ## Command-line entry
 

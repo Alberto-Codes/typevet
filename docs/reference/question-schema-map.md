@@ -48,7 +48,7 @@ compilation rejects those. Score maps to the same closed-enum path as Choice.
 
 ## API
 
-Module: [``typevet.question_schema``](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/question_schema.py).
+Module: [``typevet.domain.question_schema``](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/domain/question_schema.py).
 
 | Function | Role |
 |---|---|

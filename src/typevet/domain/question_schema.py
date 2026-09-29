@@ -8,7 +8,7 @@ Choice, Score), ``instructions``, and optional ``labels`` /
 Examples:
     ```python
     from typevet.eval_boolq import BOOLQ_ANSWER_NOUL_SCHEMA, questions_payload
-    from typevet.question_schema import question_records_to_json_schema
+    from typevet.domain.question_schema import question_records_to_json_schema
 
     assert question_records_to_json_schema(questions_payload()) == (
         BOOLQ_ANSWER_NOUL_SCHEMA
@@ -27,6 +27,13 @@ from typing import Any, Final, Literal
 
 from typevet.domain.decision_compile import compile_json_schema
 from typevet.domain.decisions import MAX_ENUM_CHOICES, Decision
+
+__all__ = [
+    "SyntaxName",
+    "compile_question_records",
+    "question_record_to_property",
+    "question_records_to_json_schema",
+]
 
 SyntaxName = Literal["Noul", "Choice", "Score"]
 _SUPPORTED_SYNTAX: Final[frozenset[str]] = frozenset({"Noul", "Choice", "Score"})

@@ -210,7 +210,7 @@ uv run python scripts/check_cord_semantic_acceptance.py \
   tests/fixtures/cord/semantic_acceptance/labeled_synthetic_pass.json
 echo $?   # expect 0 — synthetic PASS exercising every floor
 
-uv run python -m typevet.cord_semantic_acceptance_cli \
+uv run python -m typevet.adapters.inbound.cord_semantic_acceptance_cli \
   tests/fixtures/cord/semantic_acceptance/gemma4_post187_combined_pass.json
 echo $?   # expect 0 — vendored historical PASS (provenance in sibling .note.md)
 ```

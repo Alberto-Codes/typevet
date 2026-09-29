@@ -24,11 +24,11 @@ uv pip install /tmp/typevet-wheel/typevet-*.whl
 ## Step 1 — Import the public surface
 
 typevet exposes judgment types on the domain package, the scoring adapter on
-`typevet.judge`, and the offline scoring fake on `typevet.testing`.
+`typevet.runtime`, and the offline scoring fake on `typevet.testing`.
 
 ```python
 from typevet.domain.judgment_questions import Noul
-from typevet.judge import ScoringJudgmentAdapter
+from typevet.runtime import ScoringJudgmentAdapter
 from typevet.testing import ScriptedScoringFake
 ```
 
@@ -80,7 +80,7 @@ expected rubric level (a float), not the winning level index.
 ```bash
 uv run python -c "
 from typevet.domain.judgment_questions import Noul
-from typevet.judge import ScoringJudgmentAdapter
+from typevet.runtime import ScoringJudgmentAdapter
 from typevet.testing import ScriptedScoringFake
 
 fake = ScriptedScoringFake(logprobs={'True': -0.2, 'False': -1.0})

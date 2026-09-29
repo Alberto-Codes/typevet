@@ -2,13 +2,14 @@
 
 Examples:
     ```python
-    from typevet.gemma_answer_binding import ThinkingDisposition
+    from typevet.adapters.outbound.gemma.answer_binding import ThinkingDisposition
 
     assert ThinkingDisposition.NO_THINKING.value == "no_thinking"
     ```
 
 See Also:
-    - [typevet.gemma_served_template][]: Template gate classification
+    - [typevet.adapters.outbound.gemma.served_template][]: Template gate
+      classification
     - [typevet.domain.candidate_scoring_request][]: Scoring request types
 """
 
@@ -63,7 +64,7 @@ class AnswerAnchor:
 
     Examples:
         ```python
-        from typevet.gemma_served_template import ServedTemplateClass
+        from typevet.adapters.outbound.gemma.served_template import ServedTemplateClass
 
         AnswerAnchor(
             template_class=ServedTemplateClass.DEGRADED_CHATML,

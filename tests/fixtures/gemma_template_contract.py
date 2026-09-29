@@ -5,8 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any, Final
 
-from typevet.domain.errors import GemmaTemplateError
-from typevet.gemma_served_template import (
+from typevet.adapters.outbound.gemma.served_template import (
     CHATML_ASSISTANT_HEADER,
     CHATML_IM_END,
     CHATML_IM_START,
@@ -15,6 +14,7 @@ from typevet.gemma_served_template import (
     GEMMA4_TURN_OPEN,
     ServedTemplateClass,
 )
+from typevet.domain.errors import GemmaTemplateError
 
 
 def degraded_chatml_rendered(user_text: str) -> str:

@@ -6,8 +6,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.decide_categorical][]: Root compatibility shim
-    - [typevet.judge][]: Root compatibility shim
+    - [typevet.runtime.categorical][]: Categorical decision facade
+    - [typevet.runtime.judgment][]: Scoring-backed judgment facade
 
 Attributes:
     decide_categorical (callable): M1 categorical decision via scoring port.

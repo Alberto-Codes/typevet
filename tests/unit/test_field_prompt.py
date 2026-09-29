@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
+from typevet.adapters.outbound.gemma.scoring_prefix import compose_scoring_prefix
+from typevet.adapters.outbound.gemma.served_template import CHATML_ASSISTANT_HEADER
 from typevet.domain.decisions import Decision
-from typevet.field_prompt import (
-    compose_scoring_prefix,
+from typevet.domain.field_instructions import (
     gold_reference_markers,
     render_field_instructions,
 )
-from typevet.gemma_served_template import CHATML_ASSISTANT_HEADER
 
 
 @pytest.mark.unit

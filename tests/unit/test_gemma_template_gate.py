@@ -8,7 +8,7 @@ from tests.fixtures.gemma_template_contract import (
     degraded_chatml_rendered,
     native_gemma4_rendered,
 )
-from typevet.gemma_served_template import (
+from typevet.adapters.outbound.gemma.served_template import (
     CHATML_IM_END,
     ServedTemplateClass,
     classify_served_template,

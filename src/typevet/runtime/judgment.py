@@ -6,7 +6,6 @@ Examples:
     ```
 
 See Also:
-    - [typevet.judge][]: Root compatibility shim
     - [typevet.adapters.outbound.judgment_scoring][]: Adapter implementation
 """
 

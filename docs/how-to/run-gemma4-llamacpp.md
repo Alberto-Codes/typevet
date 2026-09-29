@@ -126,7 +126,7 @@ page holds the nested ``prompt`` shape and the marker the router randomizes.
 
 Library entry: ``LlamaCppCandidateScoringAdapter`` from
 ``typevet.adapters.outbound``. For enum decisions, inject that adapter as
-``scoring_port`` on ``typevet.decide_categorical`` (caller owns client lifetime).
+``scoring_port`` on ``typevet.runtime.categorical.decide_categorical`` (caller owns client lifetime).
 Use ``inject_prefix=True`` with a template-derived ``prefix=`` when you already
 applied ``/apply-template``; otherwise pass ``context=`` and let the library
 compose the degraded ChatML scoring prefix.
@@ -149,7 +149,7 @@ classifies that string into:
 
 Unsupported templates fail before scoring; native and degraded paths use
 different answer-prefix anchors and stop markers
-(``typevet.gemma_served_template``).
+(``typevet.adapters.outbound.gemma.served_template``).
 
 Live receipt (router up, model catalog reachable; pins
 ``gemma-4-31b-24gib-kv11-decoder`` on ``/apply-template`` as degraded ChatML):

@@ -8,7 +8,6 @@ from pathlib import Path
 import pytest
 
 from typevet.adapters.inbound.cord_semantic_acceptance_cli import main
-from typevet.cord_semantic_acceptance_cli import main as shim_main
 
 pytestmark = pytest.mark.contract
 
@@ -73,14 +72,6 @@ def test_cli_nonzero_on_missing_path() -> None:
 
 def test_cli_usage_error_without_receipt() -> None:
     assert main([]) == 2
-
-
-def test_shim_module_main_matches_inbound(
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    path = FIXTURE_DIR / "labeled_synthetic_pass.json"
-    assert shim_main([str(path)]) == 0
-    assert "accepted: true" in capsys.readouterr().out
 
 
 def test_report_lists_every_failure_reason(

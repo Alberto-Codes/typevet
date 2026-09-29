@@ -10,6 +10,11 @@ import pytest
 
 from typevet.domain import compile_json_schema
 from typevet.domain.decisions import MAX_ENUM_CHOICES
+from typevet.domain.question_schema import (
+    compile_question_records,
+    question_record_to_property,
+    question_records_to_json_schema,
+)
 from typevet.evaluation.datasets.boolq import (
     BOOLQ_ANSWER_NOUL_SCHEMA,
     PRIMARY_NOUL_NAME,
@@ -29,11 +34,6 @@ from typevet.evaluation.datasets.hyperpartisan import (
 )
 from typevet.evaluation.datasets.psai import questions_payload as psai_questions
 from typevet.evaluation.datasets.psai_schema import METADATA_DECISIONS_SCHEMA
-from typevet.question_schema import (
-    compile_question_records,
-    question_record_to_property,
-    question_records_to_json_schema,
-)
 
 GO_EMOTION_SCHEMA_PATH = (
     Path(__file__).resolve().parents[2]

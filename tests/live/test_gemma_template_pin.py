@@ -7,8 +7,8 @@ import pytest
 
 from tests.live.gate import gate_live
 from typevet.adapters.inbound.settings import load_llama_settings
-from typevet.gemma_answer_binding import resolve_answer_anchor
-from typevet.gemma_served_template import ServedTemplateClass
+from typevet.adapters.outbound.gemma.answer_binding import resolve_answer_anchor
+from typevet.adapters.outbound.gemma.served_template import ServedTemplateClass
 
 _SETTINGS = load_llama_settings()
 _PINNED_MODEL = "gemma-4-31b-24gib-kv11-decoder"

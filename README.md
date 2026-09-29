@@ -47,7 +47,7 @@ Get one offline typed judgment from a scripted fake. This step needs no model.
 uv sync
 uv run python -c "
 from typevet.domain import Noul
-from typevet.judge import ScoringJudgmentAdapter
+from typevet.runtime import ScoringJudgmentAdapter
 from typevet.testing import ScriptedScoringFake
 fake = ScriptedScoringFake(logprobs={'True': -0.2, 'False': -1.0})
 port = ScoringJudgmentAdapter(fake, tokenize_content=lambda t: (ord(t[0]),))

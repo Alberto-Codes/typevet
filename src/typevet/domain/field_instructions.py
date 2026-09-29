@@ -14,7 +14,6 @@ Examples:
 
 See Also:
     - [typevet.runtime.scoring_prefix][]: ChatML prefix composition
-    - [typevet.field_prompt][]: Root compatibility shim
 """
 
 from __future__ import annotations

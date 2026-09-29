@@ -11,9 +11,9 @@ import pytest
 from tests.live.gate import gate_live
 from typevet import decide_categorical
 from typevet.adapters.inbound.settings import load_llama_settings
+from typevet.adapters.outbound.gemma.answer_binding import resolve_answer_anchor
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.candidate_scoring_request import CandidateTokenSpec
-from typevet.gemma_answer_binding import resolve_answer_anchor
 
 _LLAMA = load_llama_settings()
 _PINNED_MODEL = "gemma-4-31b-24gib-kv11-decoder"
