@@ -36,6 +36,8 @@ answers a question, and a reference gives facts.
 
 - [Run Gemma 4 on llama.cpp](how-to/run-gemma4-llamacpp.md): stock
   `llama-server`, nested `json_schema`, and opt-in live pytest.
+- [Serve typevet on vLLM](how-to/serve-typevet-on-vllm.md): the tested
+  vLLM v0.30.0 pin, `TYPEVET_VLLM__*` settings and the live acceptance test (#170).
 - [Call typevet from Python](how-to/call-typevet-from-python.md): Fake and
   llama.cpp adapters, `generate()` vs port injection; link to Gemma howto.
 
