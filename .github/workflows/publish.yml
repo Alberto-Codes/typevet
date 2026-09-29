@@ -1,12 +1,12 @@
 ---
 name: Publish to PyPI
 
-# Fires when release-please pushes a version tag with RELEASE_PLEASE_TOKEN.
-# A tag pushed with GITHUB_TOKEN does not trigger this workflow.
+# Fires when a person publishes the draft release that release-please
+# created. GitHub creates the version tag at that moment, so nothing
+# reaches PyPI before the release notes are edited and published.
 "on":
-  push:
-    tags:
-      - "v*"
+  release:
+    types: [published]
 
 # Least-privilege: read-only by default. Each job escalates for itself.
 permissions:

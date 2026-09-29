@@ -17,8 +17,6 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
-    env:
-      HAS_PAT: ${{ secrets.RELEASE_PLEASE_TOKEN != '' }}
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
@@ -34,22 +32,6 @@ jobs:
           target-branch: main
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
-
-      # publish.yml fires on the tag push. A tag pushed with GITHUB_TOKEN
-      # never triggers another workflow, so a release cut without the PAT
-      # would silently skip PyPI. Fail rather than report a success that
-      # is only partly true.
-      - name: Fail a release cut without the PAT
-        if: >-
-          steps.release.outputs.release_created == 'true' &&
-          env.HAS_PAT != 'true'
-        env:
-          TAG_NAME: ${{ steps.release.outputs.tag_name }}
-        run: |
-          echo "::error::Released ${TAG_NAME} with GITHUB_TOKEN. The tag will \
-          not trigger publish.yml. Set RELEASE_PLEASE_TOKEN, then push the \
-          tag by hand."
-          exit 1
 
   # The release PR bumps pyproject.toml. The uv.lock extra-file in
   # release-please-config.json moves the typevet entry; this job re-locks

@@ -7,6 +7,7 @@
       "package-name": "typevet",
       "include-component-in-tag": false,
       "bump-minor-pre-major": true,
+      "draft": true,
       "release-as": "0.1.0",
       "extra-files": [
         {
