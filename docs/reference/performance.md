@@ -9,6 +9,22 @@ The pod cost comes from the
 [#236 supervisor pod record](https://github.com/Alberto-Codes/typevet/issues/236#issuecomment-5898685257).
 The data is from one run on one pod with one pin.
 
+## Latency at a glance
+
+Each Banking77 record makes two scoring calls: a `Noul` and a `Choice`.
+
+| In flight | Client time per record, p50 / p95 | Server time per request, p95 | Records/s |
+|---|---|---|---|
+| 1 | 0.24 s / 0.29 s | 0.3 s or less | 3.96 |
+| 8 | 0.31 s / 0.38 s | 0.3 s or less | 25.1 |
+| 32 | 0.82 s / 1.01 s | 0.5 s or less | 37.3 |
+| 64 | 1.59 s / 1.88 s | 1.0 s or less | 39.6 |
+
+One record takes less than one second up to 32 requests in flight.
+At 64 in flight, each record waits longer, but total throughput is 10 times the rate at 1.
+Client time includes the RunPod proxy from the operator machine.
+Server times are histogram bucket upper bounds.
+
 ## Pins
 
 | Item | Value |
