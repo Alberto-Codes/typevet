@@ -1,6 +1,6 @@
 [project]
 name = "typevet"
-version = "0.1.0.dev1"
+version = "0.1.0"
 description = "Type-safe structured generation under hexagonal architecture (llama.cpp first)"
 readme = "README.md"
 license = "MIT"
