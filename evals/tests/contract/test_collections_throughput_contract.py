@@ -8,11 +8,11 @@ receipt.
 
 Examples:
     ```bash
-    uv run pytest -q tests/contract/test_collections_throughput_contract.py
+    uv run pytest -q evals/tests/contract/test_collections_throughput_contract.py
     ```
 
 See Also:
-    - [typevet.evaluation.collections_throughput][]: the runner
+    - [typevet_evals.throughput.collections_throughput][]: the runner
 
 [i236]: https://github.com/Alberto-Codes/typevet/issues/236
 """
@@ -24,7 +24,7 @@ import json
 import httpx
 import pytest
 
-from tests.unit.test_collections_throughput import (
+from evals.tests.unit.test_collections_throughput import (
     AGENT,
     KEY,
     QUESTIONS,
@@ -32,7 +32,7 @@ from tests.unit.test_collections_throughput import (
     env,
     records,
 )
-from typevet.evaluation.collections_throughput import run_throughput
+from typevet_evals.throughput.collections_throughput import run_throughput
 
 
 @pytest.mark.contract

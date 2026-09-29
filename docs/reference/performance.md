@@ -38,7 +38,7 @@ Server times are histogram bucket upper bounds.
 | API key | Required |
 | typevet revision | `a0cc4b9` |
 | Client | The operator machine, through the RunPod proxy, `User-Agent: curl/8.9.1` |
-| Harness | `tests/live/test_public_throughput_live.py` |
+| Harness | `evals/tests/live/test_public_throughput_live.py` (under `tests/live/` at `a0cc4b9`) |
 | Run date | 2026-09-29 |
 
 `/v1/models` does not show a model revision.

@@ -21,6 +21,8 @@ Examples:
 
 See Also:
     - [typevet][]: The library that this package evaluates
+    - [typevet_evals.throughput][]: Throughput sweep and its workloads
+    - [typevet_evals.vllm_acceptance][]: The #170 vLLM acceptance run
     - [typevet.evaluation][]: Evaluation code that has not moved yet
     - [typevet_evals.cli][]: Module-entry commands, such as the eval runner
     - [typevet_evals.wheel_isolated][]: Isolated wheel build and run helpers

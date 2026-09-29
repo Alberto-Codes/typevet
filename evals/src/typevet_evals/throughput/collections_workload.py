@@ -21,7 +21,7 @@ Attributes:
 
 Examples:
     ```python
-    from typevet.evaluation.collections_workload import parity
+    from typevet_evals.throughput.collections_workload import parity
 
     report = parity([(0.9, True), (0.1, False), (None, True)])
     assert report["scored"] == 2 and report["failures"] == 1
@@ -29,7 +29,7 @@ Examples:
 
 See Also:
     - [typevet.ports.judgment.JudgmentPort][]: the port each record reaches
-    - [typevet.evaluation.public_workload][]: public records with a baseline
+    - [typevet_evals.throughput.public_workload][]: public records with a baseline
 
 [i236]: https://github.com/Alberto-Codes/typevet/issues/236
 """

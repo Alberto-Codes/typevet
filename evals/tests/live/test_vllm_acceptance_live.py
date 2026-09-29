@@ -14,12 +14,12 @@ Examples:
       TYPEVET_VLLM__BASE_URL=https://<pod>-8000.proxy.runpod.net \
       TYPEVET_VLLM__MODEL=google/gemma-4-31B-it \
       TYPEVET_VLLM_RECEIPT=scratchpad/vllm/170-receipt.json \
-      uv run pytest tests/live/test_vllm_acceptance_live.py -m live -q -s
+      uv run pytest evals/tests/live/test_vllm_acceptance_live.py -m live -q -s
     ```
 
 See Also:
-    - [typevet.evaluation.vllm_acceptance][]: caps, gates and receipt
-    - [typevet.evaluation.vllm_acceptance_sets][]: the five set runners
+    - [typevet_evals.vllm_acceptance.core][]: caps, gates and receipt
+    - [typevet_evals.vllm_acceptance.sets][]: the five set runners
 """
 
 from __future__ import annotations
@@ -32,14 +32,14 @@ import httpx
 import pytest
 
 from typevet.evaluation.runner.live_gate import LiveGateAction, live_gate_action
-from typevet.evaluation.vllm_acceptance import (
+from typevet_evals.vllm_acceptance.core import (
     AcceptanceInputs,
     live_gate_reason,
     run_acceptance,
 )
-from typevet.evaluation.vllm_acceptance_sets import DEVIATIONS, SET_RUNNERS
+from typevet_evals.vllm_acceptance.sets import DEVIATIONS, SET_RUNNERS
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 _FIXTURES = _REPO_ROOT / "tests" / "fixtures"
 
 

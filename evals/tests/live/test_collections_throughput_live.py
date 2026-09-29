@@ -17,11 +17,11 @@ Examples:
       TYPEVET_VLLM_RECEIPT=scratchpad/vllm/236-receipt.json \
       TYPEVET_FINVET_JEV_DIR=<finvet JEV split directory> \
       TYPEVET_FINVET_QUESTIONS=<seed>.json \
-      uv run pytest tests/live/test_collections_throughput_live.py -m live -q -s
+      uv run pytest evals/tests/live/test_collections_throughput_live.py -m live -q -s
     ```
 
 See Also:
-    - [typevet.evaluation.collections_throughput][]: the runner
+    - [typevet_evals.throughput.collections_throughput][]: the runner
 
 [i236]: https://github.com/Alberto-Codes/typevet/issues/236
 """
@@ -37,19 +37,19 @@ import httpx
 import pytest
 
 from typevet.adapters.inbound.backend_settings import load_vllm_settings
-from typevet.evaluation.collections_throughput import (
+from typevet.evaluation.runner.live_gate import LiveGateAction, live_gate_action
+from typevet_evals.throughput.collections_throughput import (
     CAPS,
     RunOptions,
     remaining_run_seconds,
     run_throughput,
 )
-from typevet.evaluation.collections_workload import (
+from typevet_evals.throughput.collections_workload import (
     load_questions,
     load_records,
     workload_paths,
 )
-from typevet.evaluation.runner.live_gate import LiveGateAction, live_gate_action
-from typevet.evaluation.vllm_acceptance import (
+from typevet_evals.vllm_acceptance.core import (
     CallCaps,
     live_gate_reason,
     write_receipt,

@@ -6,14 +6,14 @@
 is fixed for one served model. ``kv_cache_usage`` parses the whole
 ``/metrics`` text for the ``vllm:kv_cache_usage_perc`` gauge;
 ``CountingTransport.wait_for`` lets a runner read it while requests are in
-flight (#216). ``typevet.evaluation.vllm_acceptance`` re-exports these names
+flight (#216). ``typevet_evals.vllm_acceptance.core`` re-exports these names
 (#229).
 
 Examples:
     ```python
     import httpx
 
-    from typevet.evaluation.vllm_acceptance_transport import (
+    from typevet_evals.vllm_acceptance.transport import (
         CallCaps,
         CountingTransport,
     )
@@ -22,7 +22,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.vllm_acceptance][]: the acceptance run and receipt
+    - [typevet_evals.vllm_acceptance.core][]: the acceptance run and receipt
 """
 
 from __future__ import annotations

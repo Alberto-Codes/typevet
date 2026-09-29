@@ -5,11 +5,11 @@ Banking77 and DIFrauD rows come from the vendored CI subsets under
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_public_workload.py
+    uv run pytest -q evals/tests/unit/test_public_workload.py
     ```
 
 See Also:
-    - [typevet.evaluation.public_workload][]: the workload builders
+    - [typevet_evals.throughput.public_workload][]: the workload builders
 
 [i236]: https://github.com/Alberto-Codes/typevet/issues/236
 """
@@ -22,11 +22,12 @@ from typing import Any
 import httpx
 import pytest
 
-from tests.unit.test_collections_throughput import FakeVllm, env, records
+from evals.tests.unit.test_collections_throughput import FakeVllm, env, records
 from typevet.domain.judgment_questions import Choice, Noul
-from typevet.evaluation import public_workload
-from typevet.evaluation.collections_throughput import run_throughput
-from typevet.evaluation.collections_workload import (
+from typevet.evaluation.datasets import banking77, difraud
+from typevet_evals.throughput import public_workload
+from typevet_evals.throughput.collections_throughput import run_throughput
+from typevet_evals.throughput.collections_workload import (
     BASELINE_BASE_RATE,
     BASELINE_ECE,
     COLLECTIONS_BASELINE,
@@ -35,8 +36,7 @@ from typevet.evaluation.collections_workload import (
     CollectionsRecord,
     parity,
 )
-from typevet.evaluation.datasets import banking77, difraud
-from typevet.evaluation.public_workload import (
+from typevet_evals.throughput.public_workload import (
     BANKING77_BASELINE,
     BANKING77_FILE,
     DIFRAUD_BASELINE,
@@ -53,7 +53,7 @@ from typevet.evaluation.public_workload import (
 
 pytestmark = pytest.mark.unit
 
-_FIX = Path(__file__).resolve().parents[1] / "fixtures"
+_FIX = Path(__file__).resolve().parents[3] / "tests" / "fixtures"
 _CSV = (_FIX / "banking77" / "test_subset.csv").read_text(encoding="utf-8")
 _JSONL = (_FIX / "difraud" / "sms_test_subset.jsonl").read_text(encoding="utf-8")
 

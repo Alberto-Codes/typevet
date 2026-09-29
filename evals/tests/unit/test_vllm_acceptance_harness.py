@@ -32,10 +32,11 @@ from typevet.adapters.inbound.backend_settings import (
     vllm_http_client,
 )
 from typevet.adapters.inbound.cord_semantic_acceptance_cli import main as cord_cli
-from typevet.evaluation import vllm_acceptance, vllm_acceptance_sets
 from typevet.evaluation.datasets.cord_expense import load_expense_cases
 from typevet.evaluation.experiment_identity import read_baseline_commit
-from typevet.evaluation.vllm_acceptance import (
+from typevet_evals.vllm_acceptance import core as vllm_acceptance
+from typevet_evals.vllm_acceptance import sets as vllm_acceptance_sets
+from typevet_evals.vllm_acceptance.core import (
     OMITTED_RULE,
     AcceptanceInputs,
     CallCaps,
@@ -46,7 +47,7 @@ from typevet.evaluation.vllm_acceptance import (
     run_acceptance,
     write_receipt,
 )
-from typevet.evaluation.vllm_acceptance_sets import (
+from typevet_evals.vllm_acceptance.sets import (
     DEVIATIONS,
     SET_RUNNERS,
     TEXT_SCHEMA,
@@ -54,7 +55,7 @@ from typevet.evaluation.vllm_acceptance_sets import (
 
 pytestmark = pytest.mark.unit
 
-_TESTS = Path(__file__).resolve().parents[1]
+_TESTS = Path(__file__).resolve().parents[3] / "tests"
 _REPO = _TESTS.parent
 _VLLM = _TESTS / "fixtures" / "vllm"
 _MODEL = "gemma-4-31b-it"

@@ -8,12 +8,12 @@ synthetic and use finvet field names only.
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_collections_throughput.py
+    uv run pytest -q evals/tests/unit/test_collections_throughput.py
     ```
 
 See Also:
-    - [typevet.evaluation.collections_throughput][]: the runner
-    - [typevet.evaluation.collections_metrics][]: /metrics deltas
+    - [typevet_evals.throughput.collections_throughput][]: the runner
+    - [typevet_evals.throughput.collections_metrics][]: /metrics deltas
 
 [i236]: https://github.com/Alberto-Codes/typevet/issues/236
 """
@@ -32,14 +32,14 @@ import httpx
 import pytest
 
 from typevet.domain.judgment_questions import Choice, Noul
-from typevet.evaluation.collections_metrics import (
+from typevet_evals.throughput.collections_metrics import (
     histogram_delta,
     prefix_hit_rate,
     read_metrics,
     server_delta,
     snapshot,
 )
-from typevet.evaluation.collections_throughput import (
+from typevet_evals.throughput.collections_throughput import (
     CAPS,
     LEVELS,
     METHOD,
@@ -50,12 +50,12 @@ from typevet.evaluation.collections_throughput import (
     remaining_run_seconds,
     run_throughput,
 )
-from typevet.evaluation.collections_workload import CollectionsRecord, ece
-from typevet.evaluation.vllm_acceptance import CallCaps
+from typevet_evals.throughput.collections_workload import CollectionsRecord, ece
+from typevet_evals.vllm_acceptance.core import CallCaps
 
 pytestmark = pytest.mark.unit
 
-_VLLM = Path(__file__).resolve().parents[1] / "fixtures" / "vllm"
+_VLLM = Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "vllm"
 MODEL = "gemma-4-31b-it"
 KEY = "sk-SENTINEL-236A2"
 AGENT = "typevet-236-test/1.0"

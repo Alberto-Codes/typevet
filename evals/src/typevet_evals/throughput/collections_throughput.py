@@ -30,17 +30,17 @@ Examples:
     ```python
     import httpx
 
-    from typevet.evaluation.collections_throughput import run_throughput
+    from typevet_evals.throughput.collections_throughput import run_throughput
 
     with httpx.HTTPTransport() as transport:
         receipt = run_throughput(env, records, questions, transport=transport)
     ```
 
 See Also:
-    - [typevet.evaluation.collections_workload][]: records, questions, parity
-    - [typevet.evaluation.public_workload][]: Banking77 and DIFrauD workloads
-    - [typevet.evaluation.collections_metrics][]: /metrics deltas
-    - [typevet.evaluation.vllm_acceptance][]: caps, counter and receipt writer
+    - [typevet_evals.throughput.collections_workload][]: records, questions, parity
+    - [typevet_evals.throughput.public_workload][]: Banking77 and DIFrauD workloads
+    - [typevet_evals.throughput.collections_metrics][]: /metrics deltas
+    - [typevet_evals.vllm_acceptance.core][]: caps, counter and receipt writer
 
 [i236]: https://github.com/Alberto-Codes/typevet/issues/236
 """
@@ -63,18 +63,18 @@ from typevet.adapters.inbound.backend_settings import (
 )
 from typevet.domain.errors import GenerationError
 from typevet.domain.judgment_questions import Choice, Noul
-from typevet.evaluation.collections_metrics import (
+from typevet_evals.throughput.collections_metrics import (
     UNKNOWN,
     latency,
     read_metrics,
     server_delta,
 )
-from typevet.evaluation.collections_workload import (
+from typevet_evals.throughput.collections_workload import (
     COLLECTIONS_BASELINE,
     Baseline,
     parity,
 )
-from typevet.evaluation.vllm_acceptance import (
+from typevet_evals.vllm_acceptance.core import (
     AcceptanceStoppedError,
     CallCaps,
     CountingTransport,
@@ -119,7 +119,7 @@ class ScoredRecord(Protocol):
 
     Examples:
         ```python
-        from typevet.evaluation.public_workload import PublicRecord
+        from typevet_evals.throughput.public_workload import PublicRecord
 
         record: ScoredRecord = PublicRecord(state="text", positive=True)
         ```

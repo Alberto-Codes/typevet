@@ -21,15 +21,15 @@ Attributes:
 
 Examples:
     ```python
-    from typevet.evaluation.collections_metrics import latency, server_delta
+    from typevet_evals.throughput.collections_metrics import latency, server_delta
 
     assert latency([0.2, 0.1])["p50"] == 0.1
     assert server_delta(None, None)["e2e"] == "unknown"
     ```
 
 See Also:
-    - [typevet.evaluation.collections_throughput][]: the runner that reads them
-    - [typevet.evaluation.vllm_acceptance][]: ``kv_cache_usage`` gauge read
+    - [typevet_evals.throughput.collections_throughput][]: the runner that reads them
+    - [typevet_evals.vllm_acceptance.core][]: ``kv_cache_usage`` gauge read
 
 [i236]: https://github.com/Alberto-Codes/typevet/issues/236
 """

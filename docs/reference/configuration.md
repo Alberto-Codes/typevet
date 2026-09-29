@@ -110,7 +110,7 @@ adapter with an injected client does not.
 
 ### vLLM live acceptance run
 
-The opt-in test `tests/live/test_vllm_acceptance_live.py` reads the variables
+The opt-in test `evals/tests/live/test_vllm_acceptance_live.py` reads the variables
 above and these three. It skips unless `TYPEVET_REQUIRE_LIVE` is truthy. When
 it is truthy and a required variable is missing, the test fails before any
 network call.

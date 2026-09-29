@@ -7,11 +7,11 @@ answered record must read its probability from that Noul.
 
 Examples:
     ```bash
-    uv run pytest -q tests/contract/test_public_workload_contract.py
+    uv run pytest -q evals/tests/contract/test_public_workload_contract.py
     ```
 
 See Also:
-    - [typevet.evaluation.public_workload][]: the workload builders
+    - [typevet_evals.throughput.public_workload][]: the workload builders
 
 [i236]: https://github.com/Alberto-Codes/typevet/issues/236
 """
@@ -24,13 +24,20 @@ from pathlib import Path
 import httpx
 import pytest
 
-from tests.unit.test_collections_throughput import FakeVllm, env
-from typevet.evaluation.collections_throughput import run_throughput
+from evals.tests.unit.test_collections_throughput import FakeVllm, env
 from typevet.evaluation.datasets import banking77
-from typevet.evaluation.public_workload import BANKING77_BASELINE, banking77_workload
+from typevet_evals.throughput.collections_throughput import run_throughput
+from typevet_evals.throughput.public_workload import (
+    BANKING77_BASELINE,
+    banking77_workload,
+)
 
 _CSV = (
-    Path(__file__).resolve().parents[1] / "fixtures" / "banking77" / "test_subset.csv"
+    Path(__file__).resolve().parents[3]
+    / "tests"
+    / "fixtures"
+    / "banking77"
+    / "test_subset.csv"
 )
 
 

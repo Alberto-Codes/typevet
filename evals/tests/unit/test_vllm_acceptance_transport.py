@@ -5,8 +5,8 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from typevet.evaluation import vllm_acceptance
-from typevet.evaluation.vllm_acceptance_transport import (
+from typevet_evals.vllm_acceptance import core as vllm_acceptance
+from typevet_evals.vllm_acceptance.transport import (
     CountingTransport,
     kv_cache_usage,
 )

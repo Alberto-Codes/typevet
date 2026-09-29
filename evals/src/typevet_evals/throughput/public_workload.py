@@ -21,14 +21,14 @@ Examples:
     ```python
     from pathlib import Path
 
-    from typevet.evaluation.public_workload import load_public_workloads
+    from typevet_evals.throughput.public_workload import load_public_workloads
 
     sets = load_public_workloads(Path("scratchpad/public-data"))
     work = sets["banking77_balanced"]
     ```
 
 See Also:
-    - [typevet.evaluation.collections_throughput][]: the runner
+    - [typevet_evals.throughput.collections_throughput][]: the runner
     - [typevet.evaluation.datasets.banking77][]: Banking77 loader
     - [typevet.evaluation.datasets.difraud][]: DIFrauD loader
 
@@ -45,8 +45,8 @@ from typing import Final
 import httpx
 
 from typevet.domain.judgment_questions import Choice, Noul
-from typevet.evaluation.collections_workload import Baseline
 from typevet.evaluation.datasets import banking77, difraud
+from typevet_evals.throughput.collections_workload import Baseline
 
 PUBLIC_DATASET_ENV: Final[str] = "TYPEVET_PUBLIC_DATASET"
 BANKING77_FILE: Final[str] = "banking77_test.csv"
@@ -206,7 +206,7 @@ def missing_data(directory: Path) -> str | None:
         return None
     return (
         f"public data files not found in {PUBLIC_DATASET_ENV}: {absent}; "
-        "run typevet.evaluation.public_workload.fetch_public_data first"
+        "run typevet_evals.throughput.public_workload.fetch_public_data first"
     )
 
 

@@ -5,11 +5,11 @@ seed are synthetic and use finvet field names only.
 
 Examples:
     ```bash
-    uv run pytest -q tests/contract/test_collections_workload_contract.py
+    uv run pytest -q evals/tests/contract/test_collections_workload_contract.py
     ```
 
 See Also:
-    - [typevet.evaluation.collections_workload][]: workload and parity
+    - [typevet_evals.throughput.collections_workload][]: workload and parity
 
 [i236]: https://github.com/Alberto-Codes/typevet/issues/236
 """
@@ -27,12 +27,12 @@ from typevet.domain.judgment_answers import ChoiceAnswer, NoulAnswer
 from typevet.domain.judgment_questions import Choice, Noul
 from typevet.domain.judgment_response import JudgmentResponse
 from typevet.domain.media import ImageInput
-from typevet.evaluation.collections_workload import (
+from typevet.ports.judgment import JudgmentPort
+from typevet_evals.throughput.collections_workload import (
     judge_record,
     load_questions,
     load_records,
 )
-from typevet.ports.judgment import JudgmentPort
 
 
 class _RecordingPort:

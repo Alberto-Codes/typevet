@@ -2,7 +2,7 @@
 
 ``run_acceptance`` runs set runners through the public entry points
 ``generation_adapter`` and ``open_judgment`` with ``TYPEVET_BACKEND=vllm``.
-The runners live in ``typevet.evaluation.vllm_acceptance_sets``, which imports
+The runners live in ``typevet_evals.vllm_acceptance.sets``, which imports
 this module; this module never imports it. Every request passes through
 ``CountingTransport``, which counts model, tokenizer and metadata calls and
 raises ``CallCapReached`` before a request that would pass a cap. The run then
@@ -10,15 +10,15 @@ stops and still returns a receipt. The harness makes no transport retry. The
 receipt keeps the CORD ``cases`` and ``combined`` rows at the top level, so
 ``cord_semantic_acceptance_cli`` reads the receipt file directly. The call
 caps, ``CountingTransport``, ``CallCapReached`` and ``kv_cache_usage`` live
-in ``typevet.evaluation.vllm_acceptance_transport``; this module re-exports
+in ``typevet_evals.vllm_acceptance.transport``; this module re-exports
 all of them except ``CallCapReached`` (#229).
 
 Examples:
     ```python
     import httpx
 
-    from typevet.evaluation.vllm_acceptance import run_acceptance, write_receipt
-    from typevet.evaluation.vllm_acceptance_sets import DEVIATIONS, SET_RUNNERS
+    from typevet_evals.vllm_acceptance.core import run_acceptance, write_receipt
+    from typevet_evals.vllm_acceptance.sets import DEVIATIONS, SET_RUNNERS
 
     receipt = run_acceptance(
         env,
@@ -31,8 +31,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.vllm_acceptance_sets][]: the five set runners
-    - [typevet.evaluation.vllm_acceptance_transport][]: call caps and
+    - [typevet_evals.vllm_acceptance.sets][]: the five set runners
+    - [typevet_evals.vllm_acceptance.transport][]: call caps and
       ``/metrics`` read
     - [typevet.adapters.inbound.backend_settings][]: backend selection
     - [typevet.evaluation.cord_semantic_acceptance][]: CORD floors
@@ -63,7 +63,7 @@ from typevet.adapters.inbound.backend_settings import (
 from typevet.evaluation.cord_semantic_acceptance import accept_combined_receipt
 from typevet.evaluation.experiment_identity import read_baseline_commit
 from typevet.evaluation.runner.live_gate import require_live_enabled
-from typevet.evaluation.vllm_acceptance_transport import (
+from typevet_evals.vllm_acceptance.transport import (
     AcceptanceStoppedError,
     CallCaps,
     CountingTransport,

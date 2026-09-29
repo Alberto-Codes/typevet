@@ -11,13 +11,16 @@ layer can verify. Law lives in [CLAUDE.md](https://github.com/Alberto-Codes/type
 
 | Layer | Marker | Path | Default CI | Coverage counted |
 |---|---|---|---|---|
-| Unit | `unit` | `tests/unit/` | yes | yes |
-| Contract | `contract` | `tests/contract/` | yes | yes |
-| Live | `live` | `tests/live/` | no | no |
+| Unit | `unit` | `tests/unit/`, `evals/tests/unit/` | yes | yes |
+| Contract | `contract` | `tests/contract/`, `evals/tests/contract/` | yes | yes |
+| Live | `live` | `tests/live/`, `evals/tests/live/` | no | no |
 
 Default pytest excludes `live` (`-m "not live"` in `pyproject.toml`). The
 default suite must keep **≥ 90** coverage (`tool.coverage.report.fail_under`).
 A live pass does not replace unit or contract proof.
+
+`testpaths` holds `tests` and `evals/tests`, so one `uv run pytest` runs both.
+The `evals/tests/` layers test the `typevet-evals` workspace member.
 
 ## What each layer proves
 
@@ -90,7 +93,8 @@ Suite: [tests/contract/test_scoring_port.py](https://github.com/Alberto-Codes/ty
 uv run pytest -m "unit or contract"
 uv run pytest -m contract
 uv run pytest -m live   # opt-in; not default CI
-uv run pytest --cov=typevet --cov-report=term-missing
+uv run pytest evals/tests/live/test_vllm_acceptance_live.py -m live -q -s
+uv run pytest --cov=typevet --cov=typevet_evals --cov-report=term-missing
 uv run mkdocs build --strict   # site build; also a unit test
 ```
 

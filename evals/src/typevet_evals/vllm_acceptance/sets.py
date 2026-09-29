@@ -1,7 +1,7 @@
 """The five pre-registered set runners for the #170 vLLM acceptance run.
 
 Each runner takes the shared ``RunState`` and its set result mapping from
-``typevet.evaluation.vllm_acceptance``. The sets are generation (#168 P10/P11
+``typevet_evals.vllm_acceptance.core``. The sets are generation (#168 P10/P11
 and the frozen llama.cpp ``SCHEMA``; since #226 the adapter rejects the P10
 schema with ``ValueError`` before any POST), PSAI (#180 rev2 visual Choice matrix plus
 four text regressions), CORD (text, image-only and combined arms), order (the
@@ -12,13 +12,13 @@ pre-registered protocol; the receipt keeps it.
 
 Examples:
     ```python
-    from typevet.evaluation.vllm_acceptance_sets import SET_RUNNERS
+    from typevet_evals.vllm_acceptance.sets import SET_RUNNERS
 
     assert SET_RUNNERS[0][0] == "generation"
     ```
 
 See Also:
-    - [typevet.evaluation.vllm_acceptance][]: caps, gates and receipt
+    - [typevet_evals.vllm_acceptance.core][]: caps, gates and receipt
     - [typevet.evaluation.cord_expense_receipt_requirement][]: CORD arm rows
 
 [i170]: https://github.com/Alberto-Codes/typevet/issues/170
@@ -54,7 +54,7 @@ from typevet.evaluation.datasets.psai_vision_controls import (
     annotation_state,
     noul_polarity,
 )
-from typevet.evaluation.vllm_acceptance import (
+from typevet_evals.vllm_acceptance.core import (
     RunState,
     cord_acceptance,
     cord_passed,

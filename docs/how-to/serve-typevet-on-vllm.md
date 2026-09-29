@@ -202,7 +202,7 @@ TYPEVET_REQUIRE_LIVE=1 \
   TYPEVET_VLLM__API_KEY="$VLLM_API_KEY" \
   TYPEVET_VLLM_RECEIPT=scratchpad/vllm/new-receipt.json \
   TYPEVET_VLLM_POD_NOTES='H100 80 GB, vLLM v0.30.0, revision 842da37' \
-  uv run pytest tests/live/test_vllm_acceptance_live.py -m live -q -s
+  uv run pytest evals/tests/live/test_vllm_acceptance_live.py -m live -q -s
 ```
 
 - `TYPEVET_VLLM_RECEIPT` must name a new file. The test fails when the file

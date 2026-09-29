@@ -4,11 +4,11 @@ Every record and seed here is synthetic and uses finvet field names only.
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_collections_workload.py
+    uv run pytest -q evals/tests/unit/test_collections_workload.py
     ```
 
 See Also:
-    - [typevet.evaluation.collections_workload][]: workload and parity
+    - [typevet_evals.throughput.collections_workload][]: workload and parity
 
 [i236]: https://github.com/Alberto-Codes/typevet/issues/236
 """
@@ -22,7 +22,7 @@ from typing import Any
 import pytest
 
 from typevet.domain.judgment_questions import Choice, Noul
-from typevet.evaluation.collections_workload import (
+from typevet_evals.throughput.collections_workload import (
     BASELINE_ECE,
     ENGAGED,
     JEV_DIR_ENV,

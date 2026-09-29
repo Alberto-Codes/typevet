@@ -249,7 +249,7 @@ TYPEVET_REQUIRE_LIVE=1 TYPEVET_BACKEND=vllm \
   TYPEVET_VLLM__API_KEY="$VLLM_API_KEY" \
   TYPEVET_VLLM__USER_AGENT=curl/8.9.1 \
   TYPEVET_VLLM_RECEIPT=scratchpad/vllm/170-receipt.json \
-  uv run pytest tests/live/test_vllm_acceptance_live.py -m live -q -s
+  uv run pytest evals/tests/live/test_vllm_acceptance_live.py -m live -q -s
 ```
 
 The receipt path must not exist before the run.
