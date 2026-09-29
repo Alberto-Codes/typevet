@@ -9,7 +9,7 @@ from typing import Any
 import httpx
 import pytest
 
-from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
+from typevet.adapters.outbound.llama_cpp.scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.candidate_scoring_request import (
     CandidateScoringRequest,
     CandidateTokenSpec,

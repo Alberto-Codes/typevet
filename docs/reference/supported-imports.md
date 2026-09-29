@@ -158,6 +158,11 @@ The eval runner command is the module `typevet_evals.cli.eval_runner` in the
 Constructors take explicit arguments only (no settings module on the adapter).
 See [library-first architecture](../explanation/library-first-architecture.md).
 
+`typevet.adapters.outbound.llama_cpp` groups the llama.cpp serving-backend
+modules. Its `__all__` is the three llama.cpp adapters above. The package does
+not import the Gemma native vision factory. Import the factory from
+`typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory`.
+
 `typevet.adapters.outbound.gemma` exports Gemma and ChatML served-template
 constants, template classification, and answer-binding helpers. Import from
 that subpackage when you need them. Its `__all__` is the list of supported names.
@@ -219,6 +224,19 @@ re-exported names from their current home. Import from the current home.
 | `typevet.eval_runner`, `typevet.eval_runner_datasets`, `typevet.eval_runner_live_gate`, `typevet.eval_runner_report` | `typevet.evaluation.runner` |
 | `typevet.eval_tpjep_loader`, `typevet.eval_tpjep_outcome`, `typevet.eval_tpjep_records`, `typevet.eval_tpjep_runner` | `typevet.evaluation.tpjep` |
 | Other `typevet.eval_*` loaders, download helpers, and guards | One submodule of `typevet.evaluation.datasets` |
+
+typevet also moved the llama.cpp outbound modules into one package before its
+first release (#256). The five old module files do not resolve.
+`typevet.adapters.outbound.llama_cpp` still resolves: it is now a package that re-exports the three adapters.
+
+| Removed module | Current home |
+|---|---|
+| `typevet.adapters.outbound.llama_cpp` (module) | `typevet.adapters.outbound.llama_cpp.generation` |
+| `typevet.adapters.outbound.async_llama_cpp` | `typevet.adapters.outbound.llama_cpp.generation_async` |
+| `typevet.adapters.outbound.llama_cpp_http` | `typevet.adapters.outbound.llama_cpp.http_mapping` |
+| `typevet.adapters.outbound.llama_cpp_multimodal` | `typevet.adapters.outbound.llama_cpp.multimodal` |
+| `typevet.adapters.outbound.llama_cpp_scoring` | `typevet.adapters.outbound.llama_cpp.scoring` |
+| `typevet.adapters.outbound.gemma_native_vision_factory` | `typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory` |
 
 ## Command-line entry
 

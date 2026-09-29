@@ -125,7 +125,7 @@ class TypevetSystemOneAdapter:
         self.close()
 
 
-_FACTORY_MODULE = "typevet.adapters.outbound.gemma_native_vision_factory"
+_FACTORY_MODULE = "typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory"
 
 
 def _error_frames(error: Exception) -> list[tuple[str, str]]:
@@ -160,8 +160,8 @@ def _metadata_failure(error: Exception) -> bool:
             ],
         )
     return type(error) is GenerationError and frames[-1:] in (
-        [("typevet.adapters.outbound.llama_cpp_multimodal", "_capability_from_props")],
-        [("typevet.adapters.outbound.llama_cpp_http", "parse_json_response")],
+        [("typevet.adapters.outbound.llama_cpp.multimodal", "_capability_from_props")],
+        [("typevet.adapters.outbound.llama_cpp.http_mapping", "parse_json_response")],
     )
 
 

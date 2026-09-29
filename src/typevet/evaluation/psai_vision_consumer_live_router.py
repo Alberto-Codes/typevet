@@ -21,7 +21,7 @@ Examples:
 See Also:
     - [typevet.evaluation.psai_vision_consumer_dispatch][]: budget ledger
     - [typevet.evaluation.psai_vision_consumer_live][]: receipt orchestration
-    - [typevet.adapters.outbound.gemma_native_vision_factory][]: native vision factory
+    - [typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory][]: native vision factory
 
 Probes health, capability, and template identity before matrix dispatch;
 each HTTP leg increments auxiliary or tokenizer counters on the ledger.
@@ -42,10 +42,10 @@ from typevet.adapters.inbound.settings import LlamaSettings
 from typevet.adapters.outbound.gemma import (
     ServedTemplateClass,
 )
-from typevet.adapters.outbound.gemma_native_vision_factory import (
+from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
     open_gemma_native_vision_judgment,
 )
-from typevet.adapters.outbound.llama_cpp_multimodal import (
+from typevet.adapters.outbound.llama_cpp.multimodal import (
     MediaCapability,
 )
 from typevet.evaluation.psai_vision_consumer_dispatch import (

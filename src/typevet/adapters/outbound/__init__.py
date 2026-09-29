@@ -16,7 +16,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.adapters.outbound.llama_cpp][]: Local llama.cpp router adapter
+    - [typevet.adapters.outbound.llama_cpp][]: llama.cpp router adapters
     - [typevet.adapters.outbound.fake][]: Offline validating fake
     - [typevet.adapters.outbound.vllm_scoring][]: vLLM chat logprob scorer
     - [typevet.adapters.outbound.vllm_generation][]: vLLM structured generation
@@ -38,10 +38,12 @@ Attributes:
 """
 
 from typevet.adapters.outbound.async_fake import AsyncFakeGenerationAdapter
-from typevet.adapters.outbound.async_llama_cpp import AsyncLlamaCppGenerationAdapter
 from typevet.adapters.outbound.fake import FakeGenerationAdapter
-from typevet.adapters.outbound.llama_cpp import LlamaCppGenerationAdapter
-from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
+from typevet.adapters.outbound.llama_cpp import (
+    AsyncLlamaCppGenerationAdapter,
+    LlamaCppCandidateScoringAdapter,
+    LlamaCppGenerationAdapter,
+)
 from typevet.adapters.outbound.vllm_generation import VllmGenerationAdapter
 from typevet.adapters.outbound.vllm_generation_async import AsyncVllmGenerationAdapter
 from typevet.adapters.outbound.vllm_scoring import (

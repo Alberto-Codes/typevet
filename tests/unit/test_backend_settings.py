@@ -24,7 +24,7 @@ from typevet.adapters.inbound.backend_settings import (
     vllm_http_client,
 )
 from typevet.adapters.inbound.settings import load_llama_settings
-from typevet.adapters.outbound.llama_cpp import LlamaCppGenerationAdapter
+from typevet.adapters.outbound.llama_cpp.generation import LlamaCppGenerationAdapter
 from typevet.adapters.outbound.vllm_generation import VllmGenerationAdapter
 from typevet.adapters.outbound.vllm_generation_async import AsyncVllmGenerationAdapter
 from typevet.domain.errors import (

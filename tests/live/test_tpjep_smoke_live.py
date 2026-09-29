@@ -13,7 +13,7 @@ from tests.fixtures.tpjep.live_acceptance import assert_tpjep_live_smoke_receipt
 from tests.live.gate import gate_live
 from typevet.adapters.inbound.settings import load_llama_settings
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
-from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
+from typevet.adapters.outbound.llama_cpp.scoring import LlamaCppCandidateScoringAdapter
 from typevet.evaluation.tpjep.loader import load_eight_task_fixture
 from typevet.evaluation.tpjep.records import records_to_jsonl
 from typevet.evaluation.tpjep.runner import TpjepRunConfig, run_tpjep_with_receipt

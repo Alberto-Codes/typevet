@@ -12,7 +12,7 @@ Measured on router build ``b11176-f805c57a2`` with ``gemma-3-4b-it-q4km-mm``:
 
 Examples:
     ```python
-    from typevet.adapters.outbound.llama_cpp_multimodal import media_prompt_field
+    from typevet.adapters.outbound.llama_cpp.multimodal import media_prompt_field
     from typevet.domain.media import MEDIA_MARKER, ImageInput
 
     image = ImageInput(data=png_bytes, mime_type="image/png")
@@ -25,7 +25,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.adapters.outbound.llama_cpp_scoring][]: Caller of this module
+    - [typevet.adapters.outbound.llama_cpp.scoring][]: Caller of this module
     - [typevet.domain.media][]: ``ImageInput`` and the documented marker
 """
 
@@ -38,7 +38,7 @@ from urllib.parse import urljoin
 
 import httpx
 
-from typevet.adapters.outbound.llama_cpp_http import (
+from typevet.adapters.outbound.llama_cpp.http_mapping import (
     ensure_success_status,
     map_transport_error,
     parse_json_response,
@@ -57,7 +57,7 @@ class MediaCapability:
 
     Examples:
         ```python
-        from typevet.adapters.outbound.llama_cpp_multimodal import MediaCapability
+        from typevet.adapters.outbound.llama_cpp.multimodal import MediaCapability
 
         MediaCapability(vision=True, marker="<__media__>")
         ```

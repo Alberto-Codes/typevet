@@ -10,7 +10,7 @@ Examples:
 
 See Also:
     - [typevet.ports.generation][]: Sync GenerationPort
-    - [typevet.adapters.outbound.async_llama_cpp][]: llama.cpp implementation
+    - [typevet.adapters.outbound.llama_cpp.generation_async][]: llama.cpp implementation
     - [typevet.domain.models][]: Request and result types
 """
 

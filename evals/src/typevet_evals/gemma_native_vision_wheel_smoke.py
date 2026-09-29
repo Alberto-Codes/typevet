@@ -8,7 +8,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.adapters.outbound.gemma_native_vision_factory][]: factory entry
+    - [typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory][]: factory entry
 
 [i177]: https://github.com/Alberto-Codes/typevet/issues/177
 [i196]: https://github.com/Alberto-Codes/typevet/issues/196
@@ -24,9 +24,9 @@ from typing import Any
 
 import httpx
 
-import typevet.adapters.outbound.gemma_native_vision_factory
+import typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory
 from typevet.adapters.inbound.settings import LlamaSettings
-from typevet.adapters.outbound.gemma_native_vision_factory import (
+from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
     open_gemma_native_vision_judgment,
 )
 from typevet.domain.errors import JudgmentValidationError
@@ -153,7 +153,14 @@ def run_wheel_smoke() -> int:
 
 
 def _print_receipt(router: _Router) -> None:
-    """Print wire success and installed smoke and factory module locations."""
+    """Print wire success and installed smoke and factory module locations.
+
+    The factory location is the installed
+    ``typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory`` file.
+
+    Args:
+        router: Fake router whose completion call count goes in the receipt.
+    """
     print(
         json.dumps(
             {
@@ -163,7 +170,7 @@ def _print_receipt(router: _Router) -> None:
                     "smoke": str(Path(__file__).resolve()),
                     "factory": str(
                         Path(
-                            typevet.adapters.outbound.gemma_native_vision_factory.__file__
+                            typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory.__file__
                         ).resolve()
                     ),
                 },

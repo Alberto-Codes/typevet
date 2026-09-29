@@ -98,7 +98,7 @@ excluded. They are not in the closed field set.
 
 ### Adapter wiring (**sketch**)
 
-[`LlamaCppGenerationAdapter`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/llama_cpp.py) and
+[`LlamaCppGenerationAdapter`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/llama_cpp/generation.py) and
 [`FakeGenerationAdapter`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/fake.py) do not yet
 wrap `http_request_event`. The contract above is authoritative for the next
 adapter change.

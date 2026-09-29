@@ -53,8 +53,8 @@ from typevet.adapters.outbound.gemma import (
     classify_served_template,
 )
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
-from typevet.adapters.outbound.llama_cpp_multimodal import fetch_media_capability
-from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
+from typevet.adapters.outbound.llama_cpp.multimodal import fetch_media_capability
+from typevet.adapters.outbound.llama_cpp.scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.media import ImageInput
 from typevet.evaluation.cord_expense_call_accounting import (
     cord_expense_smoke_request_totals,

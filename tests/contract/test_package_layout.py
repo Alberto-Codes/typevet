@@ -1,14 +1,17 @@
 """Contract tests for the library package layout before 0.1.0 (#256).
 
 The root library shims and the root ``eval_*`` shims are removed, and
-``question_schema`` lives in ``typevet.domain``. Each old root path must not
+``question_schema`` lives in ``typevet.domain``. The llama.cpp modules live in
+the ``typevet.adapters.outbound.llama_cpp`` package. Each old path must not
 resolve, and each new path must import.
 """
 
 from __future__ import annotations
 
+import ast
 import importlib
 import importlib.util
+from pathlib import Path
 
 import pytest
 
@@ -51,7 +54,29 @@ REMOVED_ROOT_MODULES: tuple[str, ...] = (
     "typevet.question_schema",
 )
 
-NEW_MODULES: tuple[str, ...] = ("typevet.domain.question_schema",)
+REMOVED_OUTBOUND_MODULES: tuple[str, ...] = (
+    "typevet.adapters.outbound.async_llama_cpp",
+    "typevet.adapters.outbound.gemma_native_vision_factory",
+    "typevet.adapters.outbound.llama_cpp_http",
+    "typevet.adapters.outbound.llama_cpp_multimodal",
+    "typevet.adapters.outbound.llama_cpp_scoring",
+)
+
+NEW_MODULES: tuple[str, ...] = (
+    "typevet.domain.question_schema",
+    "typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory",
+    "typevet.adapters.outbound.llama_cpp.generation",
+    "typevet.adapters.outbound.llama_cpp.generation_async",
+    "typevet.adapters.outbound.llama_cpp.http_mapping",
+    "typevet.adapters.outbound.llama_cpp.multimodal",
+    "typevet.adapters.outbound.llama_cpp.scoring",
+)
+
+LLAMA_CPP_EXPORTS: dict[str, str] = {
+    "AsyncLlamaCppGenerationAdapter": "generation_async",
+    "LlamaCppCandidateScoringAdapter": "scoring",
+    "LlamaCppGenerationAdapter": "generation",
+}
 
 QUESTION_SCHEMA_NAMES: tuple[str, ...] = (
     "compile_question_records",
@@ -63,6 +88,46 @@ QUESTION_SCHEMA_NAMES: tuple[str, ...] = (
 @pytest.mark.parametrize("old_name", REMOVED_ROOT_MODULES)
 def test_removed_root_module_does_not_resolve(old_name: str) -> None:
     assert importlib.util.find_spec(old_name) is None
+
+
+@pytest.mark.parametrize("old_name", REMOVED_OUTBOUND_MODULES)
+def test_removed_outbound_module_does_not_resolve(old_name: str) -> None:
+    assert importlib.util.find_spec(old_name) is None
+
+
+def test_llama_cpp_is_a_package() -> None:
+    spec = importlib.util.find_spec("typevet.adapters.outbound.llama_cpp")
+    assert spec is not None
+    assert spec.submodule_search_locations is not None
+
+
+@pytest.mark.parametrize(("name", "submodule"), sorted(LLAMA_CPP_EXPORTS.items()))
+def test_llama_cpp_package_reexports_adapters(name: str, submodule: str) -> None:
+    package = importlib.import_module("typevet.adapters.outbound.llama_cpp")
+    module = importlib.import_module(f"typevet.adapters.outbound.llama_cpp.{submodule}")
+    outbound = importlib.import_module("typevet.adapters.outbound")
+    assert sorted(package.__all__) == sorted(LLAMA_CPP_EXPORTS)
+    assert getattr(package, name) is getattr(module, name)
+    assert getattr(outbound, name) is getattr(module, name)
+
+
+def test_llama_cpp_init_does_not_import_the_factory() -> None:
+    spec = importlib.util.find_spec("typevet.adapters.outbound.llama_cpp")
+    assert spec is not None
+    assert spec.origin is not None
+    init = Path(spec.origin)
+    assert init.name == "__init__.py"
+    tree = ast.parse(init.read_text(encoding="utf-8"))
+    imported = {
+        node.module or "" for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)
+    } | {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    }
+    assert imported
+    assert not [name for name in imported if "gemma_native_vision_factory" in name]
 
 
 @pytest.mark.parametrize("new_name", NEW_MODULES)

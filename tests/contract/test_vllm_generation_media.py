@@ -19,8 +19,10 @@ import pytest
 
 from typevet import domain
 from typevet.adapters.inbound import api
-from typevet.adapters.outbound.async_llama_cpp import AsyncLlamaCppGenerationAdapter
-from typevet.adapters.outbound.llama_cpp import LlamaCppGenerationAdapter
+from typevet.adapters.outbound.llama_cpp.generation import LlamaCppGenerationAdapter
+from typevet.adapters.outbound.llama_cpp.generation_async import (
+    AsyncLlamaCppGenerationAdapter,
+)
 from typevet.adapters.outbound.vllm_generation import VllmGenerationAdapter
 from typevet.domain import errors as domain_errors
 from typevet.domain.media import MEDIA_MARKER, ImageInput

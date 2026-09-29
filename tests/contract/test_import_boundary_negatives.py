@@ -42,6 +42,7 @@ _CONTRACT_NAMES = (
     "Fakes stay off the adapters",
     "Domain is IO-free",
     "The library does not import the evals",
+    "Model framing stays off the serving backends",
 )
 
 
@@ -82,6 +83,11 @@ _EDGES = (
         "The library does not import the evals",
         "domain/errors.py",
         "import typevet_evals",
+    ),
+    _Edge(
+        "Model framing stays off the serving backends",
+        "adapters/outbound/gemma/served_template.py",
+        "import typevet.adapters.outbound.llama_cpp",
     ),
 )
 

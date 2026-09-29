@@ -20,7 +20,7 @@ Examples:
 See Also:
     - [typevet.adapters.outbound.vllm_scoring][]: Scoring adapter consumer
     - [typevet.adapters.outbound.http_errors][]: Shared status and snippet limits
-    - [typevet.adapters.outbound.llama_cpp_http][]: llama.cpp counterpart
+    - [typevet.adapters.outbound.llama_cpp.http_mapping][]: llama.cpp counterpart
     - [typevet.domain.errors][]: Transport and backend error types
 """
 

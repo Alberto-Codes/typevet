@@ -5,7 +5,7 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from typevet.adapters.outbound.llama_cpp_http import (
+from typevet.adapters.outbound.llama_cpp.http_mapping import (
     BODY_SNIPPET_MAX,
     map_http_status,
     map_transport_error,

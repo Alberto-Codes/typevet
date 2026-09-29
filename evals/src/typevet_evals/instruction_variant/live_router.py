@@ -18,7 +18,7 @@ Examples:
 
 See Also:
     - [typevet_evals.instruction_variant.live][]: receipt orchestration
-    - [typevet.adapters.outbound.gemma_native_vision_factory][]: native vision factory
+    - [typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory][]: native vision factory
 
 ``run_live_variant_matrix`` opens a scoring-backed judgment port when the live
 gate and native Gemma template class allow; otherwise it returns ``None``.
@@ -36,7 +36,7 @@ from typing import Any
 import httpx
 
 from typevet.adapters.inbound.settings import load_llama_settings
-from typevet.adapters.outbound.gemma_native_vision_factory import (
+from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
     open_gemma_native_vision_judgment,
 )
 from typevet.evaluation.psai_vision_consumer_dispatch import wrap_scoring_port

@@ -18,10 +18,10 @@ import pytest
 
 from typevet.adapters.inbound.settings import LlamaSettings
 from typevet.adapters.outbound.gemma import ServedTemplateClass
-from typevet.adapters.outbound.gemma_native_vision_factory import (
+from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
     GemmaNativeVisionSession,
 )
-from typevet.adapters.outbound.llama_cpp_multimodal import MediaCapability
+from typevet.adapters.outbound.llama_cpp.multimodal import MediaCapability
 from typevet.evaluation.psai_vision_consumer_live_router import run_consumer_live_matrix
 
 FIXTURE_ROOT = (

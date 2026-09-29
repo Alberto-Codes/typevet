@@ -12,7 +12,7 @@ from typevet.adapters.inbound.settings import (
     llama_cpp_adapter,
     load_llama_settings,
 )
-from typevet.adapters.outbound.llama_cpp import LlamaCppGenerationAdapter
+from typevet.adapters.outbound.llama_cpp.generation import LlamaCppGenerationAdapter
 
 
 @pytest.mark.unit

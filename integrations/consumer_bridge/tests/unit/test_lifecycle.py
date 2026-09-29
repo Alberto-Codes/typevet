@@ -103,7 +103,7 @@ def test_ownership_all_exits(router: Router, caller_owned: bool, failure: str) -
     try:
         with (
             patch(
-                "typevet.adapters.outbound.gemma_native_vision_factory.httpx.Client",
+                "typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory.httpx.Client",
                 return_value=client,
             ),
             patch.object(transport, "close", wraps=transport.close) as close,

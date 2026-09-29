@@ -24,7 +24,7 @@ import pytest
 
 from tests.fixtures.gemma_vision_two_model_negative import OTHER_MODEL, PINNED_MODEL
 from typevet.adapters.inbound.settings import LlamaSettings
-from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
+from typevet.adapters.outbound.llama_cpp.scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.errors import JudgmentValidationError
 from typevet.domain.judgment_answers import ChoiceAnswer, NoulAnswer, ScoreAnswer
 from typevet.domain.judgment_questions import Choice, Noul, Score
@@ -308,7 +308,7 @@ def test_factory_http_client_ownership(caller_owned: bool, outcome: str) -> None
 
     try:
         with patch(
-            "typevet.adapters.outbound.gemma_native_vision_factory.httpx.Client",
+            "typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory.httpx.Client",
             return_value=client,
         ) as constructor:
             if outcome == "success":

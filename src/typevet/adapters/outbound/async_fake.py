@@ -26,7 +26,7 @@ Examples:
 See Also:
     - [typevet.adapters.outbound.generation_finite][]: Non-finite float guard
     - [typevet.adapters.outbound.fake][]: Sync fake
-    - [typevet.adapters.outbound.async_llama_cpp][]: Live llama.cpp adapter
+    - [typevet.adapters.outbound.llama_cpp.generation_async][]: Live llama.cpp adapter
 """
 
 from __future__ import annotations

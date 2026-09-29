@@ -3,7 +3,7 @@
 Examples:
     ```python
     from typevet.adapters.inbound.settings import load_llama_settings
-    from typevet.adapters.outbound.gemma_native_vision_factory import (
+    from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
         open_gemma_native_vision_judgment,
     )
 
@@ -39,11 +39,11 @@ from typevet.adapters.outbound.gemma import (
     classify_served_template,
 )
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
-from typevet.adapters.outbound.llama_cpp_multimodal import (
+from typevet.adapters.outbound.llama_cpp.multimodal import (
     MediaCapability,
     fetch_media_capability,
 )
-from typevet.adapters.outbound.llama_cpp_scoring import (
+from typevet.adapters.outbound.llama_cpp.scoring import (
     DEFAULT_N_VOCAB,
     LlamaCppCandidateScoringAdapter,
 )
@@ -100,7 +100,7 @@ class GemmaNativeVisionSession:
 
     Examples:
         ```python
-        from typevet.adapters.outbound.gemma_native_vision_factory import (
+        from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
             GemmaNativeVisionSession,
         )
 

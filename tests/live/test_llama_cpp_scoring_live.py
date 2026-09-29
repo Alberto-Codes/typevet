@@ -8,7 +8,7 @@ import pytest
 
 from tests.live.gate import gate_live
 from typevet.adapters.inbound.settings import load_llama_settings
-from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
+from typevet.adapters.outbound.llama_cpp.scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.candidate_scoring_request import (
     CandidateScoringRequest,
     CandidateTokenSpec,

@@ -10,7 +10,7 @@ Examples:
 
 See Also:
     - [typevet.domain.models][]: Request and result types
-    - [typevet.adapters.outbound.llama_cpp_http][]: httpx to domain error mapping
+    - [typevet.adapters.outbound.llama_cpp.http_mapping][]: httpx to domain error mapping
 
 Attributes:
     BackendHttpError (type): llama.cpp HTTP status 400 or above.

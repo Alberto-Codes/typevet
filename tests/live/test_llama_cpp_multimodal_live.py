@@ -22,8 +22,8 @@ from typevet.adapters.outbound.gemma import (
     classify_served_template,
 )
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
-from typevet.adapters.outbound.llama_cpp_multimodal import fetch_media_capability
-from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
+from typevet.adapters.outbound.llama_cpp.multimodal import fetch_media_capability
+from typevet.adapters.outbound.llama_cpp.scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.judgment_questions import Choice
 from typevet.domain.judgment_response import JudgmentResponse
 

@@ -27,7 +27,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.adapters.outbound.llama_cpp_scoring][]: llama.cpp counterpart
+    - [typevet.adapters.outbound.llama_cpp.scoring][]: llama.cpp counterpart
     - [typevet.adapters.outbound.vllm_content][]: Image content blocks
     - [typevet.domain.candidate_scoring_validate][]: Fail-closed result assembly
     - [typevet.ports.framing][]: ModelFramingPort protocol

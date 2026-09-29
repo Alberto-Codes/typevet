@@ -19,7 +19,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.adapters.outbound.llama_cpp][]: Sync llama.cpp adapter
+    - [typevet.adapters.outbound.llama_cpp][]: llama.cpp adapter package; the sync
+      adapter lives in its ``generation`` module
     - [typevet.adapters.diagnostics.settings][]: ``TYPEVET_LOG__*`` settings
     - docs/reference/configuration.md: Environment variable reference
     - docs/how-to/run-a-multimodal-live-smoke.md: ``multimodal_model`` consumer
@@ -31,7 +32,7 @@ import os
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from typevet.adapters.outbound.llama_cpp import LlamaCppGenerationAdapter
+from typevet.adapters.outbound.llama_cpp.generation import LlamaCppGenerationAdapter
 
 _DEFAULT_BASE_URL = "http://127.0.0.1:8090"
 _DEFAULT_TIMEOUT = 300.0

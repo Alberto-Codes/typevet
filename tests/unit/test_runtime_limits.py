@@ -10,8 +10,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.adapters.outbound.gemma_native_vision_factory][]: Factory client
-    - [typevet.adapters.outbound.llama_cpp_scoring][]: Media marker cache
+    - [typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory][]: Factory client
+    - [typevet.adapters.outbound.llama_cpp.scoring][]: Media marker cache
     - [typevet.domain.media][]: ``ImageInput`` validation
 
 [i202]: https://github.com/Alberto-Codes/typevet/issues/202
@@ -29,11 +29,11 @@ import httpx
 import pytest
 
 from typevet.adapters.inbound.settings import load_llama_settings
-from typevet.adapters.outbound.gemma_native_vision_factory import (
+from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
     GemmaNativeVisionSession,
     open_gemma_native_vision_judgment,
 )
-from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
+from typevet.adapters.outbound.llama_cpp.scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.candidate_scoring_request import (
     CandidateScoringRequest,
     CandidateTokenSpec,
@@ -146,7 +146,7 @@ def _open_with_env_timeout(
     )
     with (
         patch(
-            "typevet.adapters.outbound.gemma_native_vision_factory.httpx.Client",
+            "typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory.httpx.Client",
             side_effect=build,
         ),
         open_gemma_native_vision_judgment(settings=settings, model=_MODEL) as session,

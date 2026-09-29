@@ -38,7 +38,7 @@ Examples:
 See Also:
     - [typevet.adapters.outbound.vllm_generation][]: Sync adapter and body builder
     - [typevet.adapters.outbound.chat_completion][]: Content and schema checks
-    - [typevet.adapters.outbound.async_llama_cpp][]: llama.cpp async counterpart
+    - [typevet.adapters.outbound.llama_cpp.generation_async][]: llama.cpp async counterpart
     - [typevet.adapters.outbound.vllm_http][]: Shared vLLM HTTP error mapping
     - [typevet.ports.async_generation][]: AsyncGenerationPort
 """

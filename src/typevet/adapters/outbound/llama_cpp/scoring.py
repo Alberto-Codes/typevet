@@ -2,7 +2,7 @@
 
 Examples:
     ```python
-    from typevet.adapters.outbound.llama_cpp_scoring import (
+    from typevet.adapters.outbound.llama_cpp.scoring import (
         LlamaCppCandidateScoringAdapter,
     )
     from typevet.domain.candidate_scoring_request import (
@@ -20,8 +20,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.adapters.outbound.llama_cpp_http][]: Shared HTTP error mapping
-    - [typevet.adapters.outbound.llama_cpp_multimodal][]: Media probe and shaping
+    - [typevet.adapters.outbound.llama_cpp.http_mapping][]: Shared HTTP error mapping
+    - [typevet.adapters.outbound.llama_cpp.multimodal][]: Media probe and shaping
     - [typevet.domain.candidate_scoring_validate][]: Fail-closed result assembly
     - [typevet.ports.scoring][]: CandidateScoringPort protocol
 
@@ -37,12 +37,12 @@ from urllib.parse import urljoin
 
 import httpx
 
-from typevet.adapters.outbound.llama_cpp_http import (
+from typevet.adapters.outbound.llama_cpp.http_mapping import (
     ensure_success_status,
     map_transport_error,
     parse_json_response,
 )
-from typevet.adapters.outbound.llama_cpp_multimodal import (
+from typevet.adapters.outbound.llama_cpp.multimodal import (
     MediaCapability,
     fetch_media_capability,
     media_prompt_field,

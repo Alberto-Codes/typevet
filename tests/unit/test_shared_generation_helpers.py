@@ -15,7 +15,7 @@ import httpx
 import jsonschema
 import pytest
 
-from typevet.adapters.outbound import llama_cpp_http, vllm_http
+from typevet.adapters.outbound import vllm_http
 from typevet.adapters.outbound.chat_completion import (
     check_request_schema,
     extract_content,
@@ -26,6 +26,7 @@ from typevet.adapters.outbound.http_errors import (
     HTTP_ERROR_STATUS,
     body_snippet,
 )
+from typevet.adapters.outbound.llama_cpp import http_mapping
 from typevet.adapters.outbound.vllm_generation import generation_body
 from typevet.domain.errors import GenerationError, SchemaValidationError
 from typevet.domain.media import MEDIA_MARKER, ImageInput
@@ -48,9 +49,9 @@ def test_http_error_constants_are_shared_and_reexported_by_llama_cpp_http() -> N
     assert HTTP_ERROR_STATUS == 400
     assert BODY_SNIPPET_MAX == 500
     assert body_snippet("x" * 600) == "x" * 500
-    assert llama_cpp_http.HTTP_ERROR_STATUS is HTTP_ERROR_STATUS
-    assert llama_cpp_http.BODY_SNIPPET_MAX is BODY_SNIPPET_MAX
-    assert llama_cpp_http.body_snippet is body_snippet
+    assert http_mapping.HTTP_ERROR_STATUS is HTTP_ERROR_STATUS
+    assert http_mapping.BODY_SNIPPET_MAX is BODY_SNIPPET_MAX
+    assert http_mapping.body_snippet is body_snippet
 
 
 @pytest.mark.unit
@@ -103,7 +104,7 @@ def test_backends_keep_their_own_json_body_parse_exception_class() -> None:
     with pytest.raises(GenerationError, match="vLLM returned non-JSON"):
         vllm_http.parse_json_response(bad_bytes)
     with pytest.raises(UnicodeDecodeError):
-        llama_cpp_http.parse_json_response(bad_bytes)
+        http_mapping.parse_json_response(bad_bytes)
 
 
 @pytest.mark.unit

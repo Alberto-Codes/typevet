@@ -15,7 +15,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.adapters.outbound.llama_cpp_http][]: llama.cpp error mapping
+    - [typevet.adapters.outbound.llama_cpp.http_mapping][]: llama.cpp error mapping
     - [typevet.adapters.outbound.vllm_http][]: vLLM error mapping
     - [typevet.domain.errors][]: BackendHttpError
 """

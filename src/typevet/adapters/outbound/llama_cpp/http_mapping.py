@@ -5,14 +5,14 @@ The module also exports ``HTTP_ERROR_STATUS``, ``BODY_SNIPPET_MAX`` and
 
 Examples:
     ```python
-    from typevet.adapters.outbound.llama_cpp_http import (
+    from typevet.adapters.outbound.llama_cpp.http_mapping import (
         ensure_success_status,
         map_transport_error,
     )
     ```
 
 See Also:
-    - [typevet.adapters.outbound.llama_cpp][]: Sync adapter consumer
+    - [typevet.adapters.outbound.llama_cpp.generation][]: Sync adapter consumer
     - [typevet.adapters.outbound.http_errors][]: Shared status and snippet limits
     - [typevet.domain.errors][]: Transport and backend error types
 """

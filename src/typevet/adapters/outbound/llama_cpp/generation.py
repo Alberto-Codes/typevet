@@ -14,7 +14,7 @@ Examples:
 See Also:
     - [typevet.adapters.outbound.fake][]: Offline fake for tests
     - [typevet.adapters.outbound.chat_completion][]: Content and schema checks
-    - [typevet.adapters.outbound.llama_cpp_http][]: Shared HTTP error mapping
+    - [typevet.adapters.outbound.llama_cpp.http_mapping][]: Shared HTTP error mapping
     - [typevet.domain.errors][]: TransportError, BackendHttpError,
       GenerationUnsupportedCapabilityError
     - [typevet.domain.models][]: GenerationRequest
@@ -32,7 +32,7 @@ from typevet.adapters.outbound.chat_completion import (
     extract_content,
     validated_value,
 )
-from typevet.adapters.outbound.llama_cpp_http import (
+from typevet.adapters.outbound.llama_cpp.http_mapping import (
     ensure_success_status,
     map_transport_error,
     parse_json_response,

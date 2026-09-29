@@ -5,16 +5,18 @@ malformed schema with ``ValueError``; no request is sent.
 
 Examples:
     ```python
-    from typevet.adapters.outbound.async_llama_cpp import AsyncLlamaCppGenerationAdapter
+    from typevet.adapters.outbound.llama_cpp.generation_async import (
+        AsyncLlamaCppGenerationAdapter,
+    )
 
     async with AsyncLlamaCppGenerationAdapter() as port:
         pass  # await port.generate(...)
     ```
 
 See Also:
-    - [typevet.adapters.outbound.llama_cpp][]: Sync adapter
+    - [typevet.adapters.outbound.llama_cpp.generation][]: Sync adapter
     - [typevet.adapters.outbound.chat_completion][]: Content and schema checks
-    - [typevet.adapters.outbound.llama_cpp_http][]: Shared HTTP error mapping
+    - [typevet.adapters.outbound.llama_cpp.http_mapping][]: Shared HTTP error mapping
     - [typevet.adapters.outbound.async_fake][]: Offline fake for tests
     - [typevet.domain.errors][]: TransportError, BackendHttpError,
       GenerationUnsupportedCapabilityError
@@ -32,8 +34,8 @@ from typevet.adapters.outbound.chat_completion import (
     extract_content,
     validated_value,
 )
-from typevet.adapters.outbound.llama_cpp import LlamaCppGenerationAdapter
-from typevet.adapters.outbound.llama_cpp_http import (
+from typevet.adapters.outbound.llama_cpp.generation import LlamaCppGenerationAdapter
+from typevet.adapters.outbound.llama_cpp.http_mapping import (
     ensure_success_status,
     map_transport_error,
     parse_json_response,
@@ -52,7 +54,7 @@ class AsyncLlamaCppGenerationAdapter:
 
     Examples:
         ```python
-        from typevet.adapters.outbound.async_llama_cpp import (
+        from typevet.adapters.outbound.llama_cpp.generation_async import (
             AsyncLlamaCppGenerationAdapter,
         )
 

@@ -106,7 +106,7 @@ not a malformed document the caller can correct by editing one field.
 
 ## llama.cpp adapter mapping
 
-[`LlamaCppGenerationAdapter`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/llama_cpp.py)
+[`LlamaCppGenerationAdapter`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/llama_cpp/generation.py)
 POSTs to `v1/chat/completions` with `response_format` `json_schema`. HTTP status
 **400 and above** are treated as adapter failure (constant `_HTTP_ERROR_STATUS`).
 
@@ -161,7 +161,7 @@ Use these boundaries when a caller adds retries:
 need distinct handling (for example logging `payload`).
 
 Shared mapping lives in
-[`llama_cpp_http.py`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/llama_cpp_http.py).
+[`llama_cpp/http_mapping.py`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/llama_cpp/http_mapping.py).
 Adapters map `httpx.HTTPError` to `TransportError` and HTTP status ≥ 400 to
 `BackendHttpError`. Other library or application errors propagate unless the
 caller handles them.

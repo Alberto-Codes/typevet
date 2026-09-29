@@ -41,6 +41,8 @@ Examples:
 
 See Also:
     - [typevet.adapters.inbound.settings][]: ``TYPEVET_LLAMA__*`` settings
+    - [typevet.adapters.outbound.llama_cpp][]: llama.cpp adapters and the Gemma
+      native vision factory module
     - [typevet.adapters.outbound.vllm_generation][]: vLLM generation adapter
     - [typevet.adapters.outbound.vllm_generation_async][]: Async vLLM adapter
     - [typevet.adapters.outbound.vllm_judgment_factory][]: vLLM judgment factory
@@ -61,11 +63,11 @@ import httpx
 
 from typevet.adapters.diagnostics.redaction import REDACTED
 from typevet.adapters.inbound.settings import llama_cpp_adapter, load_llama_settings
-from typevet.adapters.outbound.gemma_native_vision_factory import (
+from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
     GemmaNativeVisionSession,
     open_gemma_native_vision_judgment,
 )
-from typevet.adapters.outbound.llama_cpp import LlamaCppGenerationAdapter
+from typevet.adapters.outbound.llama_cpp.generation import LlamaCppGenerationAdapter
 from typevet.adapters.outbound.vllm_generation import VllmGenerationAdapter
 from typevet.adapters.outbound.vllm_generation_async import AsyncVllmGenerationAdapter
 from typevet.adapters.outbound.vllm_judgment_factory import (
