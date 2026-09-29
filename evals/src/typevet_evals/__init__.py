@@ -31,6 +31,7 @@ See Also:
     - [typevet_evals.outcome_replay_metrics][]: Replay comparison metrics
     - [typevet_evals.psai_vision_consumer][]: PSAI vision consumer proof
     - [typevet_evals.psai_vision_probability_evidence][]: Choice mass evidence
+    - [typevet_evals.cord][]: CORD expense smoke and semantic acceptance
 """
 
 __all__: list[str] = []

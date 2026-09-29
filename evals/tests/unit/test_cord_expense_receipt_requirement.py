@@ -2,11 +2,11 @@
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_cord_expense_receipt_requirement.py
+    uv run pytest -q evals/tests/unit/test_cord_expense_receipt_requirement.py
     ```
 
 See Also:
-    - [typevet.evaluation.cord_expense_receipt_requirement][]: mode gate
+    - [typevet_evals.cord.expense_receipt_requirement][]: mode gate
     - [typevet.evaluation.datasets.cord_expense][]: three-label question
 
 [i183]: https://github.com/Alberto-Codes/typevet/issues/183
@@ -21,16 +21,16 @@ import pytest
 from typevet.domain.judgment_answers import ChoiceAnswer
 from typevet.domain.judgment_response import JudgmentResponse, TokenUsage
 from typevet.domain.media import ImageInput
-from typevet.evaluation.cord_expense_receipt_requirement import (
-    DETERMINISTIC_MISSING_RECEIPT,
-    MODEL_ROUTING,
-    judge_cord_expense_arm,
-)
 from typevet.evaluation.datasets.cord_expense import (
     INSUFFICIENT_EVIDENCE,
     MATCH,
     MISMATCH,
     expense_question,
+)
+from typevet_evals.cord.expense_receipt_requirement import (
+    DETERMINISTIC_MISSING_RECEIPT,
+    MODEL_ROUTING,
+    judge_cord_expense_arm,
 )
 
 pytestmark = pytest.mark.unit

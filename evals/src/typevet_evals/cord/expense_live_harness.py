@@ -6,7 +6,7 @@ without live inference.
 
 Examples:
     ```python
-    from typevet.evaluation.cord_expense_live_harness import (
+    from typevet_evals.cord.expense_live_harness import (
         orchestrate_cord_expense_live_smoke,
     )
 
@@ -28,8 +28,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.cord_expense_smoke][]: gate and attachment floors
-    - [tests.live.test_cord_expense_smoke_live][]: opt-in live smoke
+    - [typevet_evals.cord.expense_smoke][]: gate and attachment floors
+    - [evals.tests.live.test_cord_expense_smoke_live][]: opt-in live smoke
 
 [i185]: https://github.com/Alberto-Codes/typevet/issues/185
 """
@@ -38,7 +38,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from typevet.evaluation.cord_expense_smoke import (
+from typevet_evals.cord.expense_smoke import (
     CordExpenseAttachmentProfile,
     assert_cord_expense_live_smoke_gate,
 )

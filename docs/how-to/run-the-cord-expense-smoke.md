@@ -27,7 +27,7 @@ quality beyond these 18 claims.
 ```bash
 TYPEVET_LLAMA__MULTIMODAL_MODEL=gemma-4-31b-kv9-q4km-mm \
   TYPEVET_LLAMA__TIMEOUT=900 \
-  uv run pytest tests/live/test_cord_expense_smoke_live.py -m live -q
+  uv run pytest evals/tests/live/test_cord_expense_smoke_live.py -m live -q
 ```
 
 Each pass writes an immutable receipt under
@@ -89,7 +89,7 @@ One Gemma 3 image costs 256 prompt tokens on the CORD smoke router; one Gemma 4
 image costs 245. A silently dropped image grows the count by about 30 tokens,
 the marker as plain text. The live harness calls
 `assert_cord_expense_live_smoke_gate` before scoring and uses
-`typevet.evaluation.cord_expense_smoke` verified profiles for those measured
+`typevet_evals.cord.expense_smoke` verified profiles for those measured
 costs. For `image_only`, compare each receipt row to
 `image_only.omission_tokens_evaluated`, the same claim text with no image.
 The test passes the served family to `ScoringJudgmentAdapter` as

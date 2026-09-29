@@ -2,12 +2,12 @@
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_cord_expense_smoke_gemma4.py
+    uv run pytest -q evals/tests/unit/test_cord_expense_smoke_gemma4.py
     ```
 
 See Also:
-    - [typevet.evaluation.cord_expense_smoke][]: attachment floors and capability
-    - [typevet.evaluation.cord_semantic_acceptance][]: #161 revision 1 floors
+    - [typevet_evals.cord.expense_smoke][]: attachment floors and capability
+    - [typevet_evals.cord.semantic_acceptance][]: #161 revision 1 floors
 
 [i185]: https://github.com/Alberto-Codes/typevet/issues/185
 """
@@ -20,7 +20,8 @@ from typing import Any
 
 import pytest
 
-from typevet.evaluation.cord_expense_smoke import (
+from typevet.evaluation.datasets.cord_expense import load_expense_cases
+from typevet_evals.cord.expense_smoke import (
     GEMMA4_DIRECT_RECEIPT_MODEL,
     GEMMA4_NATIVE_TURN,
     assert_cord_expense_attachment,
@@ -30,25 +31,26 @@ from typevet.evaluation.cord_expense_smoke import (
     resolve_cord_expense_attachment_profile,
     validate_gemma4_smoke_capability,
 )
-from typevet.evaluation.cord_semantic_acceptance import (
+from typevet_evals.cord.semantic_acceptance import (
     ACCURACY_CHECK,
     CONTRADICTED_RECALL_CHECK,
     CheckStatus,
     accept_combined_receipt,
 )
-from typevet.evaluation.datasets.cord_expense import load_expense_cases
 
 pytestmark = pytest.mark.unit
 
 _FIXTURE = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[3]
+    / "tests"
     / "fixtures"
     / "cord"
     / "expense_smoke"
     / "gemma4_kv9_direct_receipt.json"
 )
 _MANIFEST = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[3]
+    / "tests"
     / "fixtures"
     / "cord"
     / "expense_smoke"

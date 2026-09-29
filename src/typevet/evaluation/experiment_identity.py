@@ -41,7 +41,7 @@ Examples:
 
 See Also:
     - [typevet.evaluation.datasets.cord_expense][]: CORD expense smoke prompts
-    - tests/live/test_cord_expense_smoke_live.py: live receipt wiring
+    - evals/tests/live/test_cord_expense_smoke_live.py: live receipt wiring
 
 [i186]: https://github.com/Alberto-Codes/typevet/issues/186
 [i209]: https://github.com/Alberto-Codes/typevet/issues/209

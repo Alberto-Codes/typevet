@@ -19,7 +19,7 @@ Examples:
 
 See Also:
     - [typevet_evals.vllm_acceptance.core][]: caps, gates and receipt
-    - [typevet.evaluation.cord_expense_receipt_requirement][]: CORD arm rows
+    - [typevet_evals.cord.expense_receipt_requirement][]: CORD arm rows
 
 [i170]: https://github.com/Alberto-Codes/typevet/issues/170
 """
@@ -38,7 +38,6 @@ from typevet.domain.judgment_answers import NoulAnswer
 from typevet.domain.judgment_questions import Choice, Question
 from typevet.domain.media import MEDIA_MARKER, ImageInput
 from typevet.domain.models import GenerationRequest
-from typevet.evaluation.cord_expense_receipt_requirement import judge_cord_expense_arm
 from typevet.evaluation.datasets.cord_expense import (
     LABEL_ORDER,
     ExpenseCase,
@@ -54,6 +53,7 @@ from typevet.evaluation.datasets.psai_vision_controls import (
     annotation_state,
     noul_polarity,
 )
+from typevet_evals.cord.expense_receipt_requirement import judge_cord_expense_arm
 from typevet_evals.vllm_acceptance.core import (
     RunState,
     cord_acceptance,

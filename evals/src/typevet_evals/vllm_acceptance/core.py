@@ -35,7 +35,7 @@ See Also:
     - [typevet_evals.vllm_acceptance.transport][]: call caps and
       ``/metrics`` read
     - [typevet.adapters.inbound.backend_settings][]: backend selection
-    - [typevet.evaluation.cord_semantic_acceptance][]: CORD floors
+    - [typevet_evals.cord.semantic_acceptance][]: CORD floors
 
 [i170]: https://github.com/Alberto-Codes/typevet/issues/170
 """
@@ -60,9 +60,9 @@ from typevet.adapters.inbound.backend_settings import (
     load_vllm_settings,
     open_judgment,
 )
-from typevet.evaluation.cord_semantic_acceptance import accept_combined_receipt
 from typevet.evaluation.experiment_identity import read_baseline_commit
 from typevet.evaluation.runner.live_gate import require_live_enabled
+from typevet_evals.cord.semantic_acceptance import accept_combined_receipt
 from typevet_evals.vllm_acceptance.transport import (
     AcceptanceStoppedError,
     CallCaps,

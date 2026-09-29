@@ -2,8 +2,8 @@
 
 Examples:
     ```python
-    from typevet.evaluation.cord_semantic_acceptance import accept_combined_receipt
-    from typevet.evaluation.cord_semantic_acceptance_report import (
+    from typevet_evals.cord.semantic_acceptance import accept_combined_receipt
+    from typevet_evals.cord.semantic_acceptance_report import (
         format_semantic_acceptance_report,
     )
 
@@ -11,7 +11,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.cord_semantic_acceptance][]: acceptance floors
+    - [typevet_evals.cord.semantic_acceptance][]: acceptance floors
     - [typevet_evals.cli.cord_semantic_acceptance][]: operator CLI
 
 [i184]: https://github.com/Alberto-Codes/typevet/issues/184
@@ -22,7 +22,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from typevet.evaluation.cord_semantic_acceptance import (
+from typevet_evals.cord.semantic_acceptance import (
     CheckStatus,
     SemanticAcceptanceOutcome,
     accept_combined_receipt,

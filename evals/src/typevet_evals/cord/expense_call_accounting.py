@@ -6,7 +6,7 @@ attempt, including the ``image_only`` omission control, and must sum
 
 Examples:
     ```python
-    from typevet.evaluation.cord_expense_call_accounting import (
+    from typevet_evals.cord.expense_call_accounting import (
         cord_expense_smoke_request_totals,
     )
 
@@ -20,8 +20,8 @@ Examples:
     ```
 
 See Also:
-    - [tests.live.test_cord_expense_smoke_live][]: live wiring
-    - [typevet.evaluation.cord_expense_receipt_requirement][]: deterministic rows
+    - [evals.tests.live.test_cord_expense_smoke_live][]: live wiring
+    - [typevet_evals.cord.expense_receipt_requirement][]: deterministic rows
 
 [i186]: https://github.com/Alberto-Codes/typevet/issues/186
 """

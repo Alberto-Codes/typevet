@@ -8,7 +8,7 @@ Examples:
 
 See Also:
     - [typevet_evals.cli.cord_semantic_acceptance][]: CLI implementation
-    - [typevet.evaluation.cord_semantic_acceptance][]: acceptance floors
+    - [typevet_evals.cord.semantic_acceptance][]: acceptance floors
 """
 
 from __future__ import annotations

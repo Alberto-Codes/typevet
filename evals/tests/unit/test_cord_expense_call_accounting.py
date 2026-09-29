@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from typevet.evaluation.cord_expense_call_accounting import (
+from typevet_evals.cord.expense_call_accounting import (
     cord_expense_smoke_request_totals,
     summarize_cord_expense_judgment_calls,
 )

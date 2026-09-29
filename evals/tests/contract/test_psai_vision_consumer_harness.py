@@ -11,7 +11,6 @@ import typevet_evals.psai_vision_consumer.harness as consumer_harness
 from typevet_evals.cli.cord_semantic_acceptance import main as cord_cli_main
 from typevet_evals.psai_vision_consumer.harness import (
     consumer_proof_main,
-    cord_semantic_cli_exit_code,
     run_offline_consumer_proof,
 )
 
@@ -174,5 +173,4 @@ def test_historical_accounting_sidecar_documents_fourteen_vs_sixteen() -> None:
 @pytest.mark.skipif(not CORD_PASS.is_file(), reason="CORD PASS fixture")
 def test_cord_semantic_cli_exit_codes_unchanged() -> None:
     """#184 CLI still returns 0 on the vendored PASS combined receipt."""
-    assert cord_semantic_cli_exit_code(CORD_PASS) == 0
     assert cord_cli_main([str(CORD_PASS)]) == 0

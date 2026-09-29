@@ -14,8 +14,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.cord_semantic_acceptance][]: ``accept_combined_receipt``
-    - [typevet.evaluation.cord_semantic_acceptance_report][]: table formatting
+    - [typevet_evals.cord.semantic_acceptance][]: ``accept_combined_receipt``
+    - [typevet_evals.cord.semantic_acceptance_report][]: table formatting
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from typevet.evaluation.cord_semantic_acceptance_report import (
+from typevet_evals.cord.semantic_acceptance_report import (
     evaluate_combined_receipt,
     format_semantic_acceptance_report,
 )

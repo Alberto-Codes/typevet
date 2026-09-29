@@ -268,6 +268,7 @@ does not hold them, and the old paths do not resolve.
 | `typevet.evaluation.psai_vision_consumer_*` (12 modules) | `typevet_evals.psai_vision_consumer.*`, with the prefix removed (for example `…_harness` → `harness`) |
 | `typevet.evaluation.consumer_http_accounting` | `typevet_evals.psai_vision_consumer.http_accounting` |
 | `typevet.evaluation.psai_vision_probability_evidence` | `typevet_evals.psai_vision_probability_evidence` |
+| `typevet.evaluation.cord_*` (7 modules) | `typevet_evals.cord.*`, with the `cord_` prefix removed (for example `…_semantic_acceptance` → `semantic_acceptance`) |
 
 ## Command-line entry
 

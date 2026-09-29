@@ -6,7 +6,7 @@ path is application validation, not model abstention.
 
 Examples:
     ```python
-    from typevet.evaluation.cord_expense_receipt_requirement import (
+    from typevet_evals.cord.expense_receipt_requirement import (
         evaluate_receipt_requirement,
         judge_cord_expense_arm,
     )
@@ -18,7 +18,7 @@ Examples:
 
 See Also:
     - [typevet.evaluation.datasets.cord_expense][]: ``expense_question``
-    - [tests.live.test_cord_expense_smoke_live][]: live wiring
+    - [evals.tests.live.test_cord_expense_smoke_live][]: live wiring
 
 [i183]: https://github.com/Alberto-Codes/typevet/issues/183
 """

@@ -185,7 +185,7 @@ Offline unit proof on the pinned Gemma 4 direct receipt (attachment pass,
 semantic fail on combined arm):
 
 ```bash
-uv run pytest -q tests/unit/test_cord_expense_smoke_gemma4.py
+uv run pytest -q evals/tests/unit/test_cord_expense_smoke_gemma4.py
 ```
 
 The test `test_vendored_gemma4_combined_arm_fails_issue_161_answerable_and_contradicted`
@@ -195,7 +195,7 @@ calls `accept_combined_receipt` on
 Broader semantic acceptance fixtures:
 
 ```bash
-uv run pytest -q tests/unit/test_cord_semantic_acceptance.py
+uv run pytest -q evals/tests/unit/test_cord_semantic_acceptance.py
 ```
 
 Operator acceptance on an exact saved receipt path (nonzero exit when
@@ -224,8 +224,8 @@ uv run pytest -q evals/tests/contract/test_cord_semantic_acceptance_cli.py
 ### Attachment and live wiring gates ([#185](https://github.com/Alberto-Codes/typevet/issues/185))
 
 ```bash
-uv run pytest -q tests/unit/test_cord_expense_smoke_harness_gate.py \
-  tests/unit/test_cord_expense_smoke_gemma4.py
+uv run pytest -q evals/tests/unit/test_cord_expense_smoke_harness_gate.py \
+  evals/tests/unit/test_cord_expense_smoke_gemma4.py
 ```
 
 Opt-in live orchestration (router + multimodal model required):
@@ -233,7 +233,7 @@ Opt-in live orchestration (router + multimodal model required):
 ```bash
 TYPEVET_LLAMA__MULTIMODAL_MODEL=gemma-4-31b-kv9-q4km-mm \
   TYPEVET_LLAMA__TIMEOUT=900 \
-  uv run pytest tests/live/test_cord_expense_smoke_live.py -m live -q
+  uv run pytest evals/tests/live/test_cord_expense_smoke_live.py -m live -q
 ```
 
 Steps and failure table: [Run the CORD expense smoke](../how-to/run-the-cord-expense-smoke.md).
@@ -260,8 +260,8 @@ The receipt path must not exist before the run.
 ```bash
 uv run pytest -q tests/unit/test_experiment_identity.py \
   tests/unit/test_experiment_identity_snapshot.py \
-  tests/unit/test_cord_expense_call_accounting.py \
-  tests/contract/test_cord_expense_receipt_snapshot.py
+  evals/tests/unit/test_cord_expense_call_accounting.py \
+  evals/tests/contract/test_cord_expense_receipt_snapshot.py
 ```
 
 ### Default non-live release floor

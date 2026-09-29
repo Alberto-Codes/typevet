@@ -50,7 +50,6 @@ from typevet.evaluation.experiment_identity import (
     write_receipt_exclusive,
 )
 from typevet.ports.judgment import JudgmentPort
-from typevet_evals.cli.cord_semantic_acceptance import main as cord_cli_main
 from typevet_evals.psai_vision_consumer.accounting import (
     ANNOTATION_QUESTIONS_PER_JUDGE_CALL,
     ConsumerCallBudgetError,
@@ -271,18 +270,6 @@ def run_offline_consumer_proof(
     return ConsumerProofResult(
         exit_code=exit_code, receipt=receipt, receipt_path=receipt_path
     )
-
-
-def cord_semantic_cli_exit_code(receipt_path: Path) -> int:
-    """Run the #184 operator CLI on a saved CORD combined receipt.
-
-    Args:
-        receipt_path: Path to combined receipt JSON.
-
-    Returns:
-        CLI exit code (0 pass, 1 fail, 2 invalid).
-    """
-    return cord_cli_main([str(receipt_path)])
 
 
 def consumer_proof_main(argv: Sequence[str] | None = None) -> int:

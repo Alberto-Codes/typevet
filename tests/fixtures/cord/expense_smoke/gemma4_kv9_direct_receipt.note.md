@@ -15,7 +15,7 @@ preserved as recorded; only identity fields are unreliable.
    request. Digests and `run_id` therefore do not bound the code that actually
    scored the arms.
 3. **`code_path_digests` omits the live smoke harness path** (for example
-   `tests/live/test_cord_expense_smoke_live.py`). Receipt digests do not prove
+   `tests/live/test_cord_expense_smoke_live.py`, now under `evals/`). Receipt digests do not prove
    which test module drove the run.
 4. **`runtime.server_build` is `unknown`.** Router build identity was not
    recorded on this historical run.

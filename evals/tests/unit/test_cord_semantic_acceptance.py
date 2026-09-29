@@ -8,7 +8,8 @@ from typing import Any
 
 import pytest
 
-from typevet.evaluation.cord_semantic_acceptance import (
+from typevet.evaluation.datasets.cord_expense import load_expense_cases
+from typevet_evals.cord.semantic_acceptance import (
     ABSTENTION_CHECK,
     ABSTENTION_FLOOR,
     ACCURACY_CHECK,
@@ -26,15 +27,19 @@ from typevet.evaluation.cord_semantic_acceptance import (
     accept_combined_receipt,
     accept_semantic_outcome,
 )
-from typevet.evaluation.datasets.cord_expense import load_expense_cases
 
 pytestmark = pytest.mark.unit
 
 FIXTURE_DIR = (
-    Path(__file__).resolve().parents[1] / "fixtures" / "cord" / "semantic_acceptance"
+    Path(__file__).resolve().parents[3]
+    / "tests"
+    / "fixtures"
+    / "cord"
+    / "semantic_acceptance"
 )
 MANIFEST = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[3]
+    / "tests"
     / "fixtures"
     / "cord"
     / "expense_smoke"

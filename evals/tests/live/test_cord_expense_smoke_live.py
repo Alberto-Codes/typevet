@@ -23,11 +23,11 @@ gates are request budget, typed-label validity and image attachment.
 
 Examples:
     ```bash
-    uv run pytest tests/live/test_cord_expense_smoke_live.py -m live -q
+    uv run pytest evals/tests/live/test_cord_expense_smoke_live.py -m live -q
     ```
 
 See Also:
-    - [typevet.evaluation.cord_expense_receipt_requirement][]: receipt gate
+    - [typevet_evals.cord.expense_receipt_requirement][]: receipt gate
     - [typevet.evaluation.datasets.cord_expense][]: cases, question and routing
 
 [i183]: https://github.com/Alberto-Codes/typevet/issues/183
@@ -56,14 +56,6 @@ from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.adapters.outbound.llama_cpp.multimodal import fetch_media_capability
 from typevet.adapters.outbound.llama_cpp.scoring import LlamaCppCandidateScoringAdapter
 from typevet.domain.media import ImageInput
-from typevet.evaluation.cord_expense_call_accounting import (
-    cord_expense_smoke_request_totals,
-)
-from typevet.evaluation.cord_expense_live_harness import (
-    orchestrate_cord_expense_live_smoke,
-)
-from typevet.evaluation.cord_expense_receipt_requirement import judge_cord_expense_arm
-from typevet.evaluation.cord_expense_smoke import assert_cord_expense_attachment
 from typevet.evaluation.datasets.cord_expense import (
     INSUFFICIENT,
     INSUFFICIENT_EVIDENCE,
@@ -89,13 +81,25 @@ from typevet.evaluation.experiment_identity import (
     snapshot_evaluated_inputs,
     write_receipt_exclusive,
 )
+from typevet_evals.cord.expense_call_accounting import (
+    cord_expense_smoke_request_totals,
+)
+from typevet_evals.cord.expense_live_harness import (
+    orchestrate_cord_expense_live_smoke,
+)
+from typevet_evals.cord.expense_receipt_requirement import judge_cord_expense_arm
+from typevet_evals.cord.expense_smoke import assert_cord_expense_attachment
 
 _LLAMA = load_llama_settings()
 _N_VOCAB = 262144
 FIXTURE_DIR = (
-    Path(__file__).resolve().parents[1] / "fixtures" / "cord" / "expense_smoke"
+    Path(__file__).resolve().parents[3]
+    / "tests"
+    / "fixtures"
+    / "cord"
+    / "expense_smoke"
 )
-_REPO_ROOT = Path(__file__).resolve().parents[2]
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 _OUTPUT_DIR = _REPO_ROOT / "scratchpad" / "cord-expense"
 _QUESTION = "expense"
 _IMAGE_ONLY_STATE = (

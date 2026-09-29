@@ -10,8 +10,10 @@ import.
 
 from __future__ import annotations
 
+import ast
 import importlib
 import importlib.util
+from pathlib import Path
 
 import pytest
 
@@ -72,3 +74,27 @@ def test_package_reexports_are_the_defining_objects() -> None:
 def test_cli_package_lists_the_cord_command() -> None:
     cli = importlib.import_module("typevet_evals.cli")
     assert "cord_semantic_acceptance" in cli.__all__
+
+
+def _imported_modules(path: Path) -> set[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.module:
+            names.add(node.module)
+        elif isinstance(node, ast.Import):
+            names.update(alias.name for alias in node.names)
+    return names
+
+
+def test_family_does_not_import_the_cli_package() -> None:
+    """The family sits below ``typevet_evals.cli`` (#256 E5 finding 1)."""
+    package = importlib.import_module("typevet_evals.psai_vision_consumer")
+    assert package.__file__
+    offenders = sorted(
+        f"{path.name}: {name}"
+        for path in Path(package.__file__).parent.glob("*.py")
+        for name in _imported_modules(path)
+        if name == "typevet_evals.cli" or name.startswith("typevet_evals.cli.")
+    )
+    assert offenders == []

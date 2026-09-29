@@ -8,7 +8,7 @@ Examples:
     import json
     from pathlib import Path
 
-    from typevet.evaluation.cord_semantic_acceptance import accept_combined_receipt
+    from typevet_evals.cord.semantic_acceptance import accept_combined_receipt
 
     receipt = json.loads(
         Path(
@@ -20,7 +20,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.cord_semantic_metrics][]: shared confusion metrics
+    - [typevet_evals.cord.semantic_metrics][]: shared confusion metrics
     - [typevet.evaluation.datasets.cord_expense][]: routing from judge labels
 
 [i161]: https://github.com/Alberto-Codes/typevet/issues/161
@@ -35,7 +35,6 @@ from enum import Enum, auto
 from math import isfinite
 from typing import Any, Final
 
-from typevet.evaluation.cord_semantic_metrics import semantic_metrics
 from typevet.evaluation.datasets.cord_expense import (
     CONTRADICTED,
     INSUFFICIENT,
@@ -44,6 +43,7 @@ from typevet.evaluation.datasets.cord_expense import (
     VERDICTS,
     route,
 )
+from typevet_evals.cord.semantic_metrics import semantic_metrics
 
 ANSWERABLE_ACCURACY_FLOOR: Final[float] = 0.67
 CONTRADICTED_RECALL_FLOOR: Final[float] = 0.5
@@ -67,7 +67,7 @@ class Bound(Enum):
 
     Examples:
         ```python
-        from typevet.evaluation.cord_semantic_acceptance import Bound
+        from typevet_evals.cord.semantic_acceptance import Bound
 
         assert Bound.FLOOR.value == "floor"
         ```
@@ -82,7 +82,7 @@ class CheckStatus(Enum):
 
     Examples:
         ```python
-        from typevet.evaluation.cord_semantic_acceptance import CheckStatus
+        from typevet_evals.cord.semantic_acceptance import CheckStatus
 
         assert CheckStatus.PASS is CheckStatus.PASS
         ```
@@ -106,7 +106,7 @@ class ThresholdCheck:
 
     Examples:
         ```python
-        from typevet.evaluation.cord_semantic_acceptance import (
+        from typevet_evals.cord.semantic_acceptance import (
             Bound,
             ThresholdCheck,
         )
@@ -156,7 +156,7 @@ class SemanticAcceptanceOutcome:
 
     Examples:
         ```python
-        from typevet.evaluation.cord_semantic_acceptance import (
+        from typevet_evals.cord.semantic_acceptance import (
             accept_semantic_outcome,
         )
 

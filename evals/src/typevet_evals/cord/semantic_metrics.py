@@ -2,7 +2,7 @@
 
 Examples:
     ```python
-    from typevet.evaluation.cord_semantic_metrics import semantic_metrics
+    from typevet_evals.cord.semantic_metrics import semantic_metrics
 
     gold = {"R01-C1": "supported", "R01-C2": "contradicted"}
     predicted = {"R01-C1": "supported", "R01-C2": "contradicted"}
@@ -11,7 +11,7 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.cord_semantic_acceptance][]: offline acceptance floors
+    - [typevet_evals.cord.semantic_acceptance][]: offline acceptance floors
     - [typevet.evaluation.datasets.cord_expense][]: gold verdict vocabulary
 
 [i184]: https://github.com/Alberto-Codes/typevet/issues/184

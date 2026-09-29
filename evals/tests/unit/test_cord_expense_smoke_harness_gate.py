@@ -2,13 +2,13 @@
 
 Examples:
     ```bash
-    uv run pytest -q tests/unit/test_cord_expense_smoke_harness_gate.py
+    uv run pytest -q evals/tests/unit/test_cord_expense_smoke_harness_gate.py
     ```
 
 See Also:
-    - [typevet.evaluation.cord_expense_smoke][]: capability gate and attachment
-    - [typevet.evaluation.cord_expense_live_harness][]: live orchestration entry
-    - [tests.live.test_cord_expense_smoke_live][]: opt-in live wiring
+    - [typevet_evals.cord.expense_smoke][]: capability gate and attachment
+    - [typevet_evals.cord.expense_live_harness][]: live orchestration entry
+    - [evals.tests.live.test_cord_expense_smoke_live][]: opt-in live wiring
 
 [i185]: https://github.com/Alberto-Codes/typevet/issues/185
 """
@@ -19,10 +19,10 @@ from typing import Any
 
 import pytest
 
-from typevet.evaluation.cord_expense_live_harness import (
+from typevet_evals.cord.expense_live_harness import (
     orchestrate_cord_expense_live_smoke,
 )
-from typevet.evaluation.cord_expense_smoke import (
+from typevet_evals.cord.expense_smoke import (
     GEMMA3_DIRECT_RECEIPT_MODEL,
     GEMMA3_NATIVE_TURN,
     GEMMA4_DIRECT_RECEIPT_MODEL,

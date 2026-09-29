@@ -8,7 +8,7 @@ for offline regression.
 
 Examples:
     ```python
-    from typevet.evaluation.cord_expense_smoke import (
+    from typevet_evals.cord.expense_smoke import (
         assert_cord_expense_attachment,
         assert_cord_expense_live_smoke_gate,
         cord_combined_attachment_floor,
@@ -19,8 +19,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.evaluation.cord_semantic_acceptance][]: #161 revision 1 floors
-    - [tests.live.test_cord_expense_smoke_live][]: opt-in live smoke
+    - [typevet_evals.cord.semantic_acceptance][]: #161 revision 1 floors
+    - [evals.tests.live.test_cord_expense_smoke_live][]: opt-in live smoke
 
 [i185]: https://github.com/Alberto-Codes/typevet/issues/185
 """
@@ -57,7 +57,7 @@ class CordExpenseAttachmentProfile:
 
     Examples:
         ```python
-        from typevet.evaluation.cord_expense_smoke import (
+        from typevet_evals.cord.expense_smoke import (
             GEMMA4_DIRECT_RECEIPT_MODEL,
             resolve_cord_expense_attachment_profile,
         )
@@ -105,7 +105,7 @@ class CordExpenseLiveSmokeGateError(ValueError):
 
     Examples:
         ```python
-        from typevet.evaluation.cord_expense_smoke import (
+        from typevet_evals.cord.expense_smoke import (
             CordExpenseLiveSmokeGateError,
         )
 
