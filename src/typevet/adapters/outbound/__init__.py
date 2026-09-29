@@ -8,12 +8,14 @@ Examples:
         FakeGenerationAdapter,
         LlamaCppCandidateScoringAdapter,
         LlamaCppGenerationAdapter,
+        VllmCandidateScoringAdapter,
     )
     ```
 
 See Also:
     - [typevet.adapters.outbound.llama_cpp][]: Local llama.cpp router adapter
     - [typevet.adapters.outbound.fake][]: Offline validating fake
+    - [typevet.adapters.outbound.vllm_scoring][]: vLLM chat logprob scorer
 
 Attributes:
     AsyncFakeGenerationAdapter (type): Offline async validating fake.
@@ -21,6 +23,7 @@ Attributes:
     FakeGenerationAdapter (type): Offline adapter that validates a fixed value.
     LlamaCppCandidateScoringAdapter (type): Pre-sampling ``/completion`` scorer.
     LlamaCppGenerationAdapter (type): OpenAI-compat llama.cpp adapter.
+    VllmCandidateScoringAdapter (type): vLLM chat completions logprob scorer.
 """
 
 from typevet.adapters.outbound.async_fake import AsyncFakeGenerationAdapter
@@ -28,6 +31,7 @@ from typevet.adapters.outbound.async_llama_cpp import AsyncLlamaCppGenerationAda
 from typevet.adapters.outbound.fake import FakeGenerationAdapter
 from typevet.adapters.outbound.llama_cpp import LlamaCppGenerationAdapter
 from typevet.adapters.outbound.llama_cpp_scoring import LlamaCppCandidateScoringAdapter
+from typevet.adapters.outbound.vllm_scoring import VllmCandidateScoringAdapter
 
 __all__ = [
     "AsyncFakeGenerationAdapter",
@@ -35,4 +39,5 @@ __all__ = [
     "FakeGenerationAdapter",
     "LlamaCppCandidateScoringAdapter",
     "LlamaCppGenerationAdapter",
+    "VllmCandidateScoringAdapter",
 ]

@@ -1,0 +1,208 @@
+{
+  "probe": "P2",
+  "purpose": "text 3-way scores + far id + label id + top20",
+  "path": "/v1/chat/completions",
+  "request": {
+    "model": "gemma-4-31b-it",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Expense claim for this receipt: total 2,352,460.\n\nverdict: Does the receipt image support the expense claim?\n\nOptions:\nControl 0 → supported\nControl 1 → contradicted\nControl 2 → insufficient\n\nAnswer with exactly one control string (the digit shown), not the original label text."
+      }
+    ],
+    "max_tokens": 1,
+    "temperature": 0,
+    "logprobs": true,
+    "top_logprobs": 20,
+    "logprob_token_ids": [
+      236771,
+      236770,
+      236778,
+      250000,
+      30809
+    ],
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    },
+    "return_tokens_as_token_ids": true
+  },
+  "http_status": 200,
+  "response": {
+    "object": "chat.completion",
+    "model": "gemma-4-31b-it",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "Please",
+          "refusal": null,
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "reasoning": null
+        },
+        "logprobs": {
+          "content": [
+            {
+              "token": "token_id:9366",
+              "logprob": -0.01791861467063427,
+              "bytes": [
+                80,
+                108,
+                101,
+                97,
+                115,
+                101
+              ],
+              "top_logprobs": [
+                {
+                  "token": "token_id:9366",
+                  "logprob": -0.01791861467063427,
+                  "bytes": [
+                    116,
+                    111,
+                    107,
+                    101,
+                    110,
+                    95,
+                    105,
+                    100,
+                    58,
+                    57,
+                    51,
+                    54,
+                    54
+                  ]
+                },
+                {
+                  "token": "token_id:236771",
+                  "logprob": -12.330418586730957,
+                  "bytes": [
+                    116,
+                    111,
+                    107,
+                    101,
+                    110,
+                    95,
+                    105,
+                    100,
+                    58,
+                    50,
+                    51,
+                    54,
+                    55,
+                    55,
+                    49
+                  ]
+                },
+                {
+                  "token": "token_id:236770",
+                  "logprob": -15.392918586730957,
+                  "bytes": [
+                    116,
+                    111,
+                    107,
+                    101,
+                    110,
+                    95,
+                    105,
+                    100,
+                    58,
+                    50,
+                    51,
+                    54,
+                    55,
+                    55,
+                    48
+                  ]
+                },
+                {
+                  "token": "token_id:236778",
+                  "logprob": -10.892918586730957,
+                  "bytes": [
+                    116,
+                    111,
+                    107,
+                    101,
+                    110,
+                    95,
+                    105,
+                    100,
+                    58,
+                    50,
+                    51,
+                    54,
+                    55,
+                    55,
+                    56
+                  ]
+                },
+                {
+                  "token": "token_id:250000",
+                  "logprob": -28.986669540405273,
+                  "bytes": [
+                    116,
+                    111,
+                    107,
+                    101,
+                    110,
+                    95,
+                    105,
+                    100,
+                    58,
+                    50,
+                    53,
+                    48,
+                    48,
+                    48,
+                    48
+                  ]
+                },
+                {
+                  "token": "token_id:30809",
+                  "logprob": -22.084325790405273,
+                  "bytes": [
+                    116,
+                    111,
+                    107,
+                    101,
+                    110,
+                    95,
+                    105,
+                    100,
+                    58,
+                    51,
+                    48,
+                    56,
+                    48,
+                    57
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "finish_reason": "length",
+        "stop_reason": null,
+        "token_ids": null,
+        "routed_experts": null
+      }
+    ],
+    "service_tier": null,
+    "system_fingerprint": "vllm-0.30.0-2d965b6e",
+    "usage": {
+      "prompt_tokens": 83,
+      "total_tokens": 84,
+      "completion_tokens": 1,
+      "prompt_tokens_details": null,
+      "completion_tokens_details": null
+    },
+    "prompt_logprobs": null,
+    "prompt_token_ids": null,
+    "prompt_text": null,
+    "kv_transfer_params": null,
+    "ec_transfer_params": null,
+    "metrics": null
+  }
+}
