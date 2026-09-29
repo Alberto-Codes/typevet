@@ -17,6 +17,7 @@ Attributes:
     BASELINE_ECE (float): finvet #5 validation ECE.
     BASELINE_BASE_RATE (float): finvet #5 validation engaged base rate.
     PARITY_MAX_ECE (float): Highest validation ECE that keeps parity.
+    COLLECTIONS_BASELINE (Baseline): The three finvet #5 values above.
 
 Examples:
     ```python
@@ -28,6 +29,7 @@ Examples:
 
 See Also:
     - [typevet.ports.judgment.JudgmentPort][]: the port each record reaches
+    - [typevet.evaluation.public_workload][]: public records with a baseline
 
 [i236]: https://github.com/Alberto-Codes/typevet/issues/236
 """
@@ -83,6 +85,40 @@ class CollectionsRecord:
             True when ``label`` is ``engaged``.
         """
         return self.label == ENGAGED
+
+    @property
+    def positive(self) -> bool:
+        """Return the positive label that parity scores.
+
+        Returns:
+            The same value as ``engaged``.
+        """
+        return self.engaged
+
+
+@dataclass(frozen=True, slots=True)
+class Baseline:
+    """Reference values that one parity check compares against.
+
+    Attributes:
+        ece (float): Baseline ECE.
+        base_rate (float): Baseline positive base rate.
+        max_ece (float): Highest ECE that keeps parity.
+
+    Examples:
+        ```python
+        Baseline(ece=0.17, base_rate=0.5, max_ece=0.20)
+        ```
+    """
+
+    ece: float
+    base_rate: float
+    max_ece: float
+
+
+COLLECTIONS_BASELINE: Final[Baseline] = Baseline(
+    BASELINE_ECE, BASELINE_BASE_RATE, PARITY_MAX_ECE
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -279,18 +315,24 @@ def ece(probs: Sequence[float], labels: Sequence[bool], n_bins: int = 10) -> flo
     return _ece_from_bins(reliability(probs, labels, n_bins), len(probs))
 
 
-def parity(rows: Sequence[tuple[float | None, bool]]) -> dict[str, Any]:
+def parity(
+    rows: Sequence[tuple[float | None, bool]],
+    baseline: Baseline | None = COLLECTIONS_BASELINE,
+) -> dict[str, Any]:
     """Build the quality parity record for one set of answered records.
 
     Parity holds when every record has a probability and ECE is at most
-    ``PARITY_MAX_ECE`` (baseline 0.1423 + 0.03).
+    ``baseline.max_ece``. The default is the collections baseline (0.1423 +
+    0.03).
 
     Args:
-        rows: ``(P(engaged) or None when the call failed, engaged label)``.
+        rows: ``(P(positive) or None when the call failed, positive label)``.
+        baseline: Reference values; ``None`` records the measures only.
 
     Returns:
         ECE, base rate over all rows, scored and failed counts, baseline
-        values, delta, the bin table and ``meets_parity``.
+        values, delta, the bin table and ``meets_parity``. With no baseline,
+        the baseline values, ``delta`` and ``meets_parity`` are ``None``.
     """
     scored = [(p, y) for p, y in rows if p is not None]
     probs = [p for p, _ in scored]
@@ -298,16 +340,19 @@ def parity(rows: Sequence[tuple[float | None, bool]]) -> dict[str, Any]:
     bins = reliability(probs, labels)
     value = _ece_from_bins(bins, len(scored))
     failures = len(rows) - len(scored)
+    meets = None
+    if baseline is not None:
+        meets = bool(scored) and failures == 0 and value <= baseline.max_ece
     return {
         "ece": value,
         "base_rate": sum(1 for _, y in rows if y) / len(rows) if rows else 0.0,
         "scored": len(scored),
         "failures": failures,
-        "baseline_ece": BASELINE_ECE,
-        "baseline_base_rate": BASELINE_BASE_RATE,
-        "delta": value - BASELINE_ECE,
-        "max_ece": PARITY_MAX_ECE,
-        "meets_parity": bool(scored) and failures == 0 and value <= PARITY_MAX_ECE,
+        "baseline_ece": None if baseline is None else baseline.ece,
+        "baseline_base_rate": None if baseline is None else baseline.base_rate,
+        "delta": None if baseline is None else value - baseline.ece,
+        "max_ece": None if baseline is None else baseline.max_ece,
+        "meets_parity": meets,
         "bins": [
             {
                 "lower": b.lower,

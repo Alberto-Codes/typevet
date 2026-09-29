@@ -9,9 +9,11 @@ retry. A level stops when its errors exceed 1% of its records, when a call
 cap is reached or when its time cap passes. Records not yet sent are then
 skipped, and no higher level runs. The ``/metrics`` text is read before and
 after each level, and ``kv_cache_usage`` is read while calls are in flight.
-A1 ``parity`` scores each level; a skipped or failed record counts as a
-failure. ``cold_start_seconds``, ``hourly_usd``, ``gpu_memory`` and
-``pod_cost_usd`` are ``unknown`` unless the caller supplies them.
+A1 ``parity`` scores each level against ``baseline``; a skipped or failed
+record counts as a failure. Any record with ``state`` and ``positive`` fits,
+and ``noul`` names the question whose probability is scored.
+``cold_start_seconds``, ``hourly_usd``, ``gpu_memory`` and ``pod_cost_usd``
+are ``unknown`` unless the caller supplies them.
 
 Attributes:
     LEVELS (tuple[int, ...]): Pre-registered in-flight record counts.
@@ -21,6 +23,8 @@ Attributes:
     RUN_SECONDS (float): Time budget shared by every run of one measurement.
     METHOD (dict[str, str]): Measurement rules copied into each receipt.
     SUPPLIED (tuple[str, ...]): Receipt fields only the caller can supply.
+    ScoredRecord (Protocol): A record with a ``state`` and a ``positive`` label.
+    Scoring (TypedDict): Optional ``noul`` and ``baseline`` run keywords.
 
 Examples:
     ```python
@@ -34,6 +38,7 @@ Examples:
 
 See Also:
     - [typevet.evaluation.collections_workload][]: records, questions, parity
+    - [typevet.evaluation.public_workload][]: Banking77 and DIFrauD workloads
     - [typevet.evaluation.collections_metrics][]: /metrics deltas
     - [typevet.evaluation.vllm_acceptance][]: caps, counter and receipt writer
 
@@ -47,7 +52,7 @@ from collections.abc import Mapping, Sequence
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import asdict, dataclass, field
 from time import perf_counter
-from typing import Any, Final
+from typing import Any, Final, Protocol, TypedDict, Unpack
 
 import httpx
 
@@ -64,7 +69,11 @@ from typevet.evaluation.collections_metrics import (
     read_metrics,
     server_delta,
 )
-from typevet.evaluation.collections_workload import CollectionsRecord, parity
+from typevet.evaluation.collections_workload import (
+    COLLECTIONS_BASELINE,
+    Baseline,
+    parity,
+)
 from typevet.evaluation.vllm_acceptance import (
     AcceptanceStoppedError,
     CallCaps,
@@ -105,6 +114,42 @@ _POLL_SECONDS: Final[float] = 0.05
 _ERROR_STOP: Final[str] = f"error rate above {MAX_ERROR_RATE}"
 
 
+class ScoredRecord(Protocol):
+    """A record the runner can send and score.
+
+    Examples:
+        ```python
+        from typevet.evaluation.public_workload import PublicRecord
+
+        record: ScoredRecord = PublicRecord(state="text", positive=True)
+        ```
+    """
+
+    @property
+    def state(self) -> str | dict[str, Any]:
+        """Return the state sent to the judgment port."""
+        ...
+
+    @property
+    def positive(self) -> bool:
+        """Return True when the logged label is positive."""
+        ...
+
+
+class Scoring(TypedDict, total=False):
+    """Optional ``run_throughput`` keywords that choose what parity scores.
+
+    Attributes:
+        noul (str): Question whose probability is scored; default
+            ``will_engage``.
+        baseline (Baseline | None): Parity reference; default the collections
+            baseline; ``None`` records the measures only.
+    """
+
+    noul: str
+    baseline: Baseline | None
+
+
 @dataclass(frozen=True, slots=True)
 class RunOptions:
     """Time caps and caller-supplied receipt values.
@@ -131,8 +176,10 @@ class _Run:
     client: httpx.Client
     counter: CountingTransport
     model: str
-    records: Sequence[CollectionsRecord]
+    records: Sequence[ScoredRecord]
     questions: Mapping[str, Noul | Choice]
+    noul: str
+    baseline: Baseline | None
 
 
 class _Level:
@@ -204,7 +251,10 @@ def _one(run: _Run, level: _Level, index: int) -> None:
             "error": {"type": type(exc).__name__, "message": str(exc)}
         }
     else:
-        row = {"p": response.nouls[_NOUL].noul, "tokens": response.usage.input_tokens}
+        row = {
+            "p": response.nouls[run.noul].noul,
+            "tokens": response.usage.input_tokens,
+        }
     level.record(index, {**row, "started": started, "ended": perf_counter()})
 
 
@@ -293,7 +343,8 @@ def _run_level(run: _Run, width: int, deadline: float) -> dict[str, Any]:
         "server": server_delta(before, after),
         "kv_cache_usage": kv,
         "parity": parity(
-            [(p, rec.engaged) for p, rec in zip(probs, run.records, strict=True)]
+            [(p, rec.positive) for p, rec in zip(probs, run.records, strict=True)],
+            run.baseline,
         ),
     }
 
@@ -356,24 +407,32 @@ def _costs(receipt: dict[str, Any], supplied: Mapping[str, Any]) -> None:
 
 def run_throughput(
     environ: Mapping[str, str],
-    records: Sequence[CollectionsRecord],
+    records: Sequence[ScoredRecord],
     questions: Mapping[str, Noul | Choice],
     *,
     transport: httpx.BaseTransport,
     levels: Sequence[int] = LEVELS,
     caps: CallCaps = CAPS,
     options: RunOptions | None = None,
+    **scoring: Unpack[Scoring],
 ) -> dict[str, Any]:
     """Run the concurrency sweep once and return the receipt mapping.
 
     Args:
         environ: Mapping with ``TYPEVET_BACKEND=vllm`` and ``TYPEVET_VLLM__*``.
-        records: Mapped records from ``load_records``.
-        questions: Questions from ``load_questions``.
+        records: Records with ``state`` and ``positive``, for example from
+            ``load_records`` or a public workload.
+        questions: Questions from ``load_questions`` or a public workload.
         transport: Transport that sends requests; the caller closes it.
         levels: In-flight record counts, run in order.
         caps: Call caps for the whole run.
         options: Time caps and supplied values. Defaults to ``RunOptions()``.
+
+    Other Parameters:
+        noul (str): Question whose probability each level scores; default
+            ``will_engage``.
+        baseline (Baseline | None): Parity reference values; default the
+            collections baseline; ``None`` records the measures only.
 
     Returns:
         Receipt with ``pins``, ``caps``, ``time_caps``, ``method``,
@@ -382,8 +441,12 @@ def run_throughput(
         ``cost_per_1000``. A stop leaves ``stopped`` set and still returns.
 
     Raises:
+        TypeError: When a keyword is not a ``Scoring`` key.
         ValueError: When the backend is not ``vllm`` or a setting is invalid.
     """
+    unknown = sorted(set(scoring) - set(Scoring.__annotations__))
+    if unknown:
+        raise TypeError(f"run_throughput got unknown keywords: {unknown}")
     if load_backend(environ) != "vllm":
         raise ValueError("TYPEVET_BACKEND must be vllm for the collections run")
     opts = options or RunOptions()
@@ -406,6 +469,8 @@ def run_throughput(
                 receipt["pins"]["configured_model"],
                 records,
                 questions,
+                scoring.get("noul", _NOUL),
+                scoring.get("baseline", COLLECTIONS_BASELINE),
             )
             for width in levels:
                 deadline = min(perf_counter() + opts.level_seconds, run_deadline)
