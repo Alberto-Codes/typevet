@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import io
 import json
 import traceback
@@ -14,7 +15,9 @@ import structlog
 from typevet.adapters.diagnostics.logs import configure
 from typevet.adapters.diagnostics.settings import LogSettings
 from typevet.adapters.inbound.backend_settings import (
+    MASK,
     VllmSettings,
+    async_vllm_generation_adapter,
     generation_adapter,
     load_backend,
     load_vllm_settings,
@@ -23,8 +26,14 @@ from typevet.adapters.inbound.backend_settings import (
 from typevet.adapters.inbound.settings import load_llama_settings
 from typevet.adapters.outbound.llama_cpp import LlamaCppGenerationAdapter
 from typevet.adapters.outbound.vllm_generation import VllmGenerationAdapter
-from typevet.domain.errors import BackendHttpError, GenerationError, TransportError
-from typevet.domain.models import GenerationRequest
+from typevet.adapters.outbound.vllm_generation_async import AsyncVllmGenerationAdapter
+from typevet.domain.errors import (
+    BackendHttpError,
+    GenerationError,
+    SchemaValidationError,
+    TransportError,
+)
+from typevet.domain.models import GenerationRequest, GenerationResult
 
 SENTINEL = "sk-SENTINEL-4f1c9e"
 _SCHEMA = {
@@ -344,3 +353,172 @@ def test_non_ascii_api_key_rejected_by_name() -> None:
     assert key not in str(info.value)
     assert info.value.__cause__ is None
     assert info.value.__context__ is None
+
+
+_OPEN_SCHEMA = {"type": "object", "properties": {"ok": {"type": "boolean"}}}
+
+
+def _content_reply(content: str) -> Callable[[httpx.Request], httpx.Response]:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200, json={"choices": [{"message": {"content": content}}]}
+        )
+
+    return handler
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("content", "schema"),
+    [
+        (json.dumps({"ok": SENTINEL}), _SCHEMA),
+        (json.dumps({"note": f"x {SENTINEL}", "extra": [SENTINEL]}), _NOTE_SCHEMA),
+        (json.dumps([SENTINEL]), _SCHEMA),
+        (json.dumps({"ok": "x", SENTINEL: 1}), _OPEN_SCHEMA),
+    ],
+)
+def test_schema_failure_echoing_the_key_masks_payload_and_drops_chain(
+    content: str, schema: Mapping[str, object]
+) -> None:
+    err = _raised(_keyed_adapter(SENTINEL, _content_reply(content)), schema)
+    assert isinstance(err, SchemaValidationError)
+    assert SENTINEL not in repr(err.payload)
+    assert SENTINEL not in str(err)
+    assert SENTINEL not in _all_text(err)
+    assert MASK in repr(err.payload)
+    assert err.__cause__ is None
+    assert err.__context__ is None
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("name", "raw"),
+    [
+        ("TYPEVET_VLLM__TIMEOUT", "soon-ish-5b7e"),
+        ("TYPEVET_VLLM__MAX_CONCURRENCY", "many-5b7e"),
+    ],
+)
+def test_invalid_number_drops_the_parse_error_chain(name: str, raw: str) -> None:
+    with pytest.raises(ValueError, match=name) as info:
+        load_vllm_settings(_vllm_env(**{name: raw}))
+    err = info.value
+    assert err.__cause__ is None
+    assert err.__suppress_context__
+    assert raw not in "".join(traceback.format_exception(err))
+
+
+async def _gathered(
+    adapter: AsyncVllmGenerationAdapter, count: int
+) -> list[GenerationResult]:
+    async with adapter:
+        return await asyncio.gather(
+            *(adapter.generate(_request()) for _ in range(count))
+        )
+
+
+@pytest.mark.unit
+def test_async_adapter_applies_bearer_user_agent_timeout_and_limit() -> None:
+    seen: list[httpx.Request] = []
+    in_flight: list[int] = [0]
+    peaks: list[int] = []
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        in_flight[0] += 1
+        peaks.append(in_flight[0])
+        for _ in range(5):
+            await asyncio.sleep(0)
+        in_flight[0] -= 1
+        return httpx.Response(200, json=_REPLY)
+
+    env = _vllm_env(
+        TYPEVET_VLLM__API_KEY=SENTINEL,
+        TYPEVET_VLLM__TIMEOUT="4",
+        TYPEVET_VLLM__USER_AGENT="typevet-test/1",
+        TYPEVET_VLLM__MAX_CONCURRENCY="2",
+    )
+    adapter = async_vllm_generation_adapter(env, transport=httpx.MockTransport(handler))
+    assert isinstance(adapter, AsyncVllmGenerationAdapter)
+    results = asyncio.run(_gathered(adapter, 5))
+    assert [result.value for result in results] == [{"ok": True}] * 5
+    assert max(peaks) == 2
+    for request in seen:
+        assert str(request.url) == "http://vllm.test:9000/v1/chat/completions"
+        assert request.headers["Authorization"] == f"Bearer {SENTINEL}"
+        assert request.headers["User-Agent"] == "typevet-test/1"
+        assert request.extensions["timeout"]["read"] == 4.0
+
+
+@pytest.mark.unit
+def test_async_adapter_without_key_or_user_agent_sends_defaults() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json=_REPLY)
+
+    adapter = async_vllm_generation_adapter(
+        _vllm_env(), transport=httpx.MockTransport(handler)
+    )
+    asyncio.run(_gathered(adapter, 1))
+    assert "Authorization" not in seen[0].headers
+    assert seen[0].headers["User-Agent"].startswith("python-httpx/")
+    assert seen[0].extensions["timeout"]["read"] == 300.0
+
+
+@pytest.mark.unit
+def test_async_401_echoing_the_key_is_masked_without_chain() -> None:
+    adapter = async_vllm_generation_adapter(
+        _vllm_env(TYPEVET_VLLM__API_KEY=SENTINEL),
+        transport=httpx.MockTransport(_echoing_401),
+    )
+    with pytest.raises(BackendHttpError) as info:
+        asyncio.run(_gathered(adapter, 1))
+    err = info.value
+    assert err.status_code == 401
+    assert "bad key Bearer ***" in str(err)
+    assert SENTINEL not in err.body_snippet
+    assert SENTINEL not in _all_text(err)
+    assert err.__cause__ is None
+    assert err.__context__ is None
+
+
+@pytest.mark.unit
+def test_async_error_without_the_key_is_raised_unchanged() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(500, text="boom")
+
+    adapter = async_vllm_generation_adapter(
+        _vllm_env(TYPEVET_VLLM__API_KEY=SENTINEL),
+        transport=httpx.MockTransport(handler),
+    )
+    with pytest.raises(BackendHttpError) as info:
+        asyncio.run(_gathered(adapter, 1))
+    assert info.value.body_snippet == "boom"
+
+
+@pytest.mark.unit
+def test_async_adapter_closes_its_client() -> None:
+    adapter = async_vllm_generation_adapter(
+        _vllm_env(), transport=httpx.MockTransport(_echoing_401)
+    )
+    client = adapter._ensure_client()
+    asyncio.run(adapter.close())
+    assert client.is_closed
+
+
+@pytest.mark.unit
+def test_async_proxy_mounts_match_sync_client_with_and_without_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for name in ("HTTP_PROXY", "ALL_PROXY", "NO_PROXY"):
+        monkeypatch.delenv(name, raising=False)
+        monkeypatch.delenv(name.lower(), raising=False)
+    monkeypatch.setenv("HTTPS_PROXY", "http://proxy.test:3128")
+    for env in (_vllm_env(TYPEVET_VLLM__API_KEY=SENTINEL), _vllm_env()):
+        with vllm_http_client(load_vllm_settings(env)) as sync_client:
+            expected = sorted(p.pattern for p in sync_client._mounts)
+        adapter = async_vllm_generation_adapter(env)
+        client = adapter._ensure_client()
+        assert sorted(p.pattern for p in client._mounts) == expected == ["https://"]
+        asyncio.run(adapter.close())

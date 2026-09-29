@@ -31,11 +31,13 @@ Attributes:
     load_vllm_settings (function): Read ``TYPEVET_VLLM__*`` from the environment.
     vllm_http_client (function): Build the shared vLLM ``httpx.Client``.
     generation_adapter (function): Build the adapter ``TYPEVET_BACKEND`` selects.
+    async_vllm_generation_adapter (function): Build the async vLLM adapter.
 """
 
 from typevet.adapters.inbound.api import generate
 from typevet.adapters.inbound.backend_settings import (
     VllmSettings,
+    async_vllm_generation_adapter,
     generation_adapter,
     load_backend,
     load_vllm_settings,
@@ -51,6 +53,7 @@ from typevet.adapters.inbound.settings import (
 __all__ = [
     "LlamaSettings",
     "VllmSettings",
+    "async_vllm_generation_adapter",
     "generate",
     "generation_adapter",
     "llama_cpp_adapter",

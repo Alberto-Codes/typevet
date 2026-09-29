@@ -3,9 +3,18 @@
 The request body, the error mapping and the result validation are the same as
 for ``VllmGenerationAdapter``. An ``asyncio.Semaphore`` limits the number of
 POSTs that one adapter has in flight; the default of 1 sends requests one at a
-time. A caller that cancels ``generate`` gets ``asyncio.CancelledError``
-unchanged, and the slot is released for the next queued call. An httpx
-timeout, like every other httpx client failure, becomes ``TransportError``.
+time. The limit holds per event loop: when a call runs on a new loop, the
+adapter makes a new semaphore for that loop, and it keeps a weak reference to
+one loop only. The semaphore does not move the HTTP client. An httpx
+``AsyncClient`` with a connection pool binds to the first loop that uses it,
+and a call from a later loop can raise ``RuntimeError: Event loop is closed``.
+Only an injected client whose transport works on any loop, such as
+``httpx.MockTransport``, can serve a second ``asyncio.run``. Otherwise build
+one adapter per event loop. A caller that cancels ``generate`` gets
+``asyncio.CancelledError`` unchanged, and the slot is released for the next
+queued call. An httpx timeout, like every other ``httpx.HTTPError``, becomes
+``TransportError``. Other exceptions from the client, such as that
+``RuntimeError``, propagate unchanged.
 The adapter makes one POST per call. It does not retry and does not fall back
 to unconstrained generation.
 
@@ -30,6 +39,7 @@ See Also:
 from __future__ import annotations
 
 import asyncio
+import weakref
 from typing import Any, Self
 from urllib.parse import urljoin
 
@@ -56,7 +66,10 @@ class AsyncVllmGenerationAdapter:
         _timeout (float): HTTP timeout in seconds.
         _client (httpx.AsyncClient | None): Shared or owned HTTP client.
         _owns_client (bool): Whether ``close`` should close the client.
-        _slots (asyncio.Semaphore): Limit on POSTs in flight for this adapter.
+        _max_concurrency (int): Maximum POSTs in flight for this adapter.
+        _slots (asyncio.Semaphore): Limit on POSTs in flight on the current loop.
+        _slots_loop (weakref.ref[asyncio.AbstractEventLoop] | None): Loop that
+            ``_slots`` serves, or ``None`` before the first call.
 
     Examples:
         ```python
@@ -84,7 +97,8 @@ class AsyncVllmGenerationAdapter:
             client: Optional caller-built httpx async client, for example one
                 that carries authentication headers. The adapter does not
                 close it.
-            max_concurrency: Maximum POSTs in flight for this adapter.
+            max_concurrency: Maximum POSTs in flight for this adapter on
+                each event loop.
 
         Raises:
             ValueError: When ``max_concurrency`` is less than 1.
@@ -96,7 +110,9 @@ class AsyncVllmGenerationAdapter:
         self._timeout = timeout
         self._client = client
         self._owns_client = client is None
+        self._max_concurrency = max_concurrency
         self._slots = asyncio.Semaphore(max_concurrency)
+        self._slots_loop: weakref.ref[asyncio.AbstractEventLoop] | None = None
 
     async def close(self) -> None:
         """Close the owned HTTP client when the adapter created it."""
@@ -115,8 +131,9 @@ class AsyncVllmGenerationAdapter:
     async def generate(self, request: GenerationRequest) -> GenerationResult:
         """POST one constrained chat completion and validate the result.
 
-        The call waits for a free slot before the POST and releases the slot
-        when the POST ends, fails or is cancelled.
+        The call waits for a free slot of the running loop's semaphore before
+        the POST and releases the slot when the POST ends, fails or is
+        cancelled.
 
         Args:
             request: Prompt, schema, served model name and optional images.
@@ -125,8 +142,8 @@ class AsyncVllmGenerationAdapter:
             Validated structured value.
 
         Raises:
-            TransportError: When the HTTP client fails before a response,
-                including an httpx timeout.
+            TransportError: When the HTTP client raises an
+                ``httpx.HTTPError`` before a response, including a timeout.
             BackendHttpError: When vLLM returns HTTP status 400 or above.
             GenerationError: On a non-JSON body, bad shape or non-JSON content.
             SchemaValidationError: When the value is not an object, is
@@ -136,11 +153,29 @@ class AsyncVllmGenerationAdapter:
         body = _request_body(request, schema_obj)
         url = urljoin(self._base_url, "v1/chat/completions")
         client = self._ensure_client()
-        async with self._slots:
+        async with self._loop_slots():
             payload = await _post_json(client, url, body)
         raw_text = _extract_content(payload)
         value = _validated_value(raw_text, schema_obj)
         return GenerationResult(value=value, model=request.model, raw_text=raw_text)
+
+    def _loop_slots(self) -> asyncio.Semaphore:
+        """Return the semaphore for the running event loop.
+
+        An ``asyncio.Semaphore`` binds to one loop. When the running loop is
+        not the loop that ``_slots`` serves, a new semaphore replaces it, so
+        the adapter keeps one semaphore and a weak reference to one loop.
+
+        Returns:
+            The semaphore that limits POSTs on the running loop.
+        """
+        loop = asyncio.get_running_loop()
+        owner = None if self._slots_loop is None else self._slots_loop()
+        if owner is not loop:
+            if self._slots_loop is not None:
+                self._slots = asyncio.Semaphore(self._max_concurrency)
+            self._slots_loop = weakref.ref(loop)
+        return self._slots
 
     def _ensure_client(self) -> httpx.AsyncClient:
         """Return the HTTP client, creating one when needed.
@@ -191,7 +226,8 @@ async def _post_json(client: httpx.AsyncClient, url: str, body: dict[str, Any]) 
         Parsed JSON value from a successful response.
 
     Raises:
-        TransportError: When the httpx client fails, including a timeout.
+        TransportError: When the httpx client raises an ``httpx.HTTPError``,
+            including a timeout. Other exceptions propagate unchanged.
     """
     try:
         response = await client.post(url, json=body)

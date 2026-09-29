@@ -4,26 +4,30 @@
 branch reads ``TYPEVET_VLLM__*`` variables and builds one ``httpx.Client``
 that carries the base URL, timeout and optional bearer key.
 ``TYPEVET_VLLM__MAX_CONCURRENCY`` sets ``VllmSettings.max_concurrency``, the
-POST limit for an ``AsyncVllmGenerationAdapter``. The optional
+POST limit for the ``AsyncVllmGenerationAdapter`` that
+``async_vllm_generation_adapter`` builds on an ``httpx.AsyncClient`` with the
+same settings. The optional
 ``TYPEVET_VLLM__USER_AGENT`` sets the ``User-Agent`` header; when it is unset
 the client sends the httpx default. Outbound adapters never read the
 environment.
 
 The configured key never reaches the caller in clear text. ``VllmSettings``
-leaves it out of ``repr``. The adapter that ``generation_adapter`` returns
-catches each ``GenerationError`` from ``generate``, and the port that
-``open_judgment`` yields catches each one from ``judge``. When the error text
-or its cause chain holds the raw or JSON-escaped key, the error is raised
-again as the same type with the key replaced by ``***`` and with no cause or
-context. A server that echoes the ``Authorization`` header therefore cannot
-put the key into a ``BackendHttpError``. Successful results are not changed.
-The HTTP client is built the same way with or without a key, so environment
+leaves it out of ``repr``. The adapters that ``generation_adapter`` and
+``async_vllm_generation_adapter`` return catch each ``GenerationError`` from
+``generate``, and the port that ``open_judgment`` yields catches each one from
+``judge``. When the error text, an attribute such as a parsed payload, or the
+cause chain holds the raw or JSON-escaped key, the error is raised again as
+the same type with the key replaced by ``***`` and with no cause or context.
+A server that echoes the ``Authorization`` header therefore cannot put the key
+into a ``BackendHttpError``. Successful results are not changed.
+The HTTP clients are built the same way with or without a key, so environment
 proxy settings apply in both cases. Error messages name variables, never
-values.
+values, and a parse failure raises with no cause or context.
 
 Examples:
     ```python
     from typevet.adapters.inbound.backend_settings import (
+        async_vllm_generation_adapter,
         generation_adapter,
         open_judgment,
     )
@@ -32,11 +36,13 @@ Examples:
         pass  # port.generate(...)
     with open_judgment() as session:
         pass  # session.port.judge(...)
+    async_port = async_vllm_generation_adapter()  # await async_port.generate(...)
     ```
 
 See Also:
     - [typevet.adapters.inbound.settings][]: ``TYPEVET_LLAMA__*`` settings
     - [typevet.adapters.outbound.vllm_generation][]: vLLM generation adapter
+    - [typevet.adapters.outbound.vllm_generation_async][]: Async vLLM adapter
     - [typevet.adapters.outbound.vllm_judgment_factory][]: vLLM judgment factory
     - [typevet.adapters.diagnostics.redaction][]: ``REDACTED`` (``***``) mask
     - docs/reference/configuration.md: Environment variable reference
@@ -61,6 +67,7 @@ from typevet.adapters.outbound.gemma_native_vision_factory import (
 )
 from typevet.adapters.outbound.llama_cpp import LlamaCppGenerationAdapter
 from typevet.adapters.outbound.vllm_generation import VllmGenerationAdapter
+from typevet.adapters.outbound.vllm_generation_async import AsyncVllmGenerationAdapter
 from typevet.adapters.outbound.vllm_judgment_factory import (
     VllmJudgmentSession,
     open_vllm_judgment,
@@ -110,10 +117,51 @@ class VllmSettings:
     user_agent: str | None = None
 
 
-def _masked(text: str, needles: tuple[str, ...]) -> str:
-    for needle in needles:
-        text = text.replace(needle, MASK)
-    return text
+def _masked(value: Any, needles: tuple[str, ...]) -> Any:
+    """Replace each key form in ``value`` with ``MASK``.
+
+    Strings are masked in place of each needle. Dicts, lists and tuples are
+    copied as plain containers with each key and item masked, so a parsed payload that holds the
+    key loses it. Other values are returned unchanged.
+
+    Args:
+        value: String, container or other attribute value.
+        needles: Key forms to replace.
+
+    Returns:
+        The masked value.
+    """
+    if isinstance(value, str):
+        for needle in needles:
+            value = value.replace(needle, MASK)
+        return value
+    if isinstance(value, dict):
+        return {_masked(k, needles): _masked(v, needles) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_masked(item, needles) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_masked(item, needles) for item in value)
+    return value
+
+
+def _texts(value: Any) -> Iterator[str]:
+    """Yield every string inside ``value``, including dict keys.
+
+    Args:
+        value: String, container or other attribute value.
+
+    Yields:
+        Each string that ``_masked`` would mask.
+    """
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for key, item in value.items():
+            yield from _texts(key)
+            yield from _texts(item)
+    elif isinstance(value, list | tuple):
+        for item in value:
+            yield from _texts(item)
 
 
 def _chain_text(exc: BaseException) -> str:
@@ -123,7 +171,7 @@ def _chain_text(exc: BaseException) -> str:
     while current is not None and id(current) not in seen:
         seen.add(id(current))
         parts += [str(current), repr(current)]
-        parts += [v for v in vars(current).values() if isinstance(v, str)]
+        parts += [text for v in vars(current).values() for text in _texts(v)]
         current = current.__cause__ or current.__context__
     return "\n".join(parts)
 
@@ -139,16 +187,13 @@ def _masked_error(exc: GenerationError, needles: tuple[str, ...]) -> GenerationE
         needles: Key forms to replace with ``MASK``.
 
     Returns:
-        A new error whose arguments and string attributes are masked.
+        A new error whose arguments and attributes are masked, including
+        strings inside dict, list and tuple values such as a payload.
     """
     masked = type(exc).__new__(type(exc))
-    masked.args = tuple(
-        _masked(arg, needles) if isinstance(arg, str) else arg for arg in exc.args
-    )
+    masked.args = _masked(exc.args, needles)
     for name, value in vars(exc).items():
-        setattr(
-            masked, name, _masked(value, needles) if isinstance(value, str) else value
-        )
+        setattr(masked, name, _masked(value, needles))
     return masked
 
 
@@ -274,17 +319,73 @@ class _ClientOwningVllmAdapter(VllmGenerationAdapter):
         self._settings_client.close()
 
 
+class _ClientOwningAsyncVllmAdapter(AsyncVllmGenerationAdapter):
+    """Async vLLM adapter that owns its client and masks the key in errors.
+
+    Attributes:
+        _settings_client (httpx.AsyncClient): Client with the same base URL,
+            timeout and headers as ``vllm_http_client``.
+        _needles (tuple[str, ...]): Raw and JSON-escaped key, or empty.
+
+    Examples:
+        ```python
+        settings = VllmSettings(base_url="http://127.0.0.1:8000", model="m")
+        _ClientOwningAsyncVllmAdapter(settings, httpx.AsyncClient())
+        ```
+    """
+
+    def __init__(self, settings: VllmSettings, client: httpx.AsyncClient) -> None:
+        super().__init__(
+            settings.base_url,
+            timeout=settings.timeout,
+            client=client,
+            max_concurrency=settings.max_concurrency,
+        )
+        self._settings_client = client
+        self._needles = _key_needles(settings.api_key)
+
+    async def generate(self, request: GenerationRequest) -> GenerationResult:
+        """Generate, and mask the configured key in any raised error.
+
+        Masking follows ``_ClientOwningVllmAdapter.generate``: an error whose
+        text, attributes or cause chain holds the key is raised again as the
+        same type with the key replaced by ``MASK`` and with no cause or
+        context. A successful result is returned unchanged.
+
+        Args:
+            request: Prompt, schema and served model name.
+
+        Returns:
+            The result from ``AsyncVllmGenerationAdapter.generate``.
+
+        Raises:
+            GenerationError: The adapter error, masked when it holds the key.
+        """
+        try:
+            return await super().generate(request)
+        except GenerationError as exc:
+            masked = _masked_if_keyed(exc, self._needles)
+            if masked is None:
+                raise
+        raise masked
+
+    async def close(self) -> None:
+        """Close the composition-root client."""
+        await super().close()
+        await self._settings_client.aclose()
+
+
 def _read_timeout(source: Mapping[str, str], name: str) -> float:
     raw = source.get(name, "").strip()
     if not raw:
         return _DEFAULT_TIMEOUT
-    msg = f"{name} must be a positive number of seconds"
     try:
         timeout = float(raw)
-    except ValueError as exc:
-        raise ValueError(msg) from exc
+    except ValueError:
+        timeout = 0.0
     if timeout <= 0:
-        raise ValueError(msg)
+        msg = f"{name} must be a positive number of seconds"
+        raise ValueError(msg) from None
     return timeout
 
 
@@ -292,13 +393,13 @@ def _read_max_concurrency(source: Mapping[str, str], name: str) -> int:
     raw = source.get(name, "").strip()
     if not raw:
         return 1
-    msg = f"{name} must be a positive integer"
     try:
         limit = int(raw)
     except ValueError:
-        raise ValueError(msg) from None
+        limit = 0
     if limit < 1:
-        raise ValueError(msg)
+        msg = f"{name} must be a positive integer"
+        raise ValueError(msg) from None
     return limit
 
 
@@ -379,19 +480,24 @@ def vllm_http_client(
         A client with ``base_url`` and ``timeout`` set. When a key is set, the
         client also sends ``Authorization: Bearer <key>``. When a user agent
         is set, the client sends it as ``User-Agent``. Nothing else changes,
-        so environment proxy settings apply with or without a key.
+        so environment proxy settings apply with or without a key. The async
+        client from ``async_vllm_generation_adapter`` gets the same headers.
     """
+    return httpx.Client(
+        base_url=settings.base_url,
+        timeout=settings.timeout,
+        headers=_vllm_headers(settings),
+        transport=transport,
+    )
+
+
+def _vllm_headers(settings: VllmSettings) -> dict[str, str]:
     headers: dict[str, str] = {}
     if settings.api_key is not None:
         headers["Authorization"] = f"Bearer {settings.api_key}"
     if settings.user_agent is not None:
         headers["User-Agent"] = settings.user_agent
-    return httpx.Client(
-        base_url=settings.base_url,
-        timeout=settings.timeout,
-        headers=headers,
-        transport=transport,
-    )
+    return headers
 
 
 def generation_adapter(
@@ -420,6 +526,41 @@ def generation_adapter(
     settings = load_vllm_settings(source)
     client = vllm_http_client(settings, transport=transport)
     return _ClientOwningVllmAdapter(settings, client)
+
+
+def async_vllm_generation_adapter(
+    environ: Mapping[str, str] | None = None,
+    *,
+    transport: httpx.AsyncBaseTransport | None = None,
+) -> AsyncVllmGenerationAdapter:
+    """Build the async vLLM generation adapter from ``TYPEVET_VLLM__*``.
+
+    The adapter reads the vLLM settings whatever ``TYPEVET_BACKEND`` says. Its
+    ``httpx.AsyncClient`` has the same base URL, timeout, headers and proxy
+    handling as ``vllm_http_client``, and ``TYPEVET_VLLM__MAX_CONCURRENCY``
+    sets its POST limit. That client binds to the first event loop that uses
+    it, so build one adapter per event loop, for example per ``asyncio.run``.
+
+    Args:
+        environ: Mapping to read. Defaults to ``os.environ``.
+        transport: Optional async transport, for example
+            ``httpx.MockTransport``.
+
+    Returns:
+        An adapter that closes its client on ``close`` and whose errors never
+        show the configured key.
+
+    Raises:
+        ValueError: When a vLLM variable is invalid.
+    """
+    settings = load_vllm_settings(environ)
+    client = httpx.AsyncClient(
+        base_url=settings.base_url,
+        timeout=settings.timeout,
+        headers=_vllm_headers(settings),
+        transport=transport,
+    )
+    return _ClientOwningAsyncVllmAdapter(settings, client)
 
 
 @contextmanager

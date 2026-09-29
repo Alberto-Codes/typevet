@@ -244,3 +244,26 @@ def test_vllm_settings_rejects_bad_max_concurrency_without_echoing(raw: str) -> 
         load_vllm_settings(_env(**{_VAR: raw}))
     assert raw not in str(caught.value)
     assert caught.value.__cause__ is None or raw not in str(caught.value.__cause__)
+
+
+@pytest.mark.unit
+def test_one_adapter_serves_queued_calls_across_two_event_loops() -> None:
+    in_flight: list[int] = [0]
+    peaks: list[int] = []
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        in_flight[0] += 1
+        peaks.append(in_flight[0])
+        await _yield_loop(5)
+        in_flight[0] -= 1
+        return _reply()
+
+    adapter = _adapter(handler, max_concurrency=1)
+
+    async def run() -> list[Any]:
+        return await asyncio.gather(*(adapter.generate(_request()) for _ in range(3)))
+
+    for _ in range(2):
+        results = asyncio.run(run())
+        assert [result.value for result in results] == [{"n": 1}] * 3
+    assert peaks == [1] * 6

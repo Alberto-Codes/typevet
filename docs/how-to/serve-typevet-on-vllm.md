@@ -107,8 +107,11 @@ default and its validation rule. These rules apply most often:
 - `TYPEVET_VLLM__USER_AGENT` replaces the httpx default `User-Agent` header.
 
 `generation_adapter` builds the sync adapter. That adapter does not read
-`TYPEVET_VLLM__MAX_CONCURRENCY`. To send parallel requests, pass
-`settings.max_concurrency` to `AsyncVllmGenerationAdapter` yourself.
+`TYPEVET_VLLM__MAX_CONCURRENCY`. To send parallel requests, use
+`async_vllm_generation_adapter`. It builds an `AsyncVllmGenerationAdapter`
+with the same variables and uses `TYPEVET_VLLM__MAX_CONCURRENCY` as its limit.
+Its HTTP client binds to the first event loop that uses it. Build one adapter
+for each event loop, for example inside each `asyncio.run` call.
 
 Some proxies block requests that carry a library `User-Agent` header. In that
 case, set `TYPEVET_VLLM__USER_AGENT` to a value that the proxy accepts. The
@@ -119,10 +122,12 @@ tested run used `curl/8.9.1`.
 - The client sends the key as `Authorization: Bearer <key>`.
 - `repr(VllmSettings)` does not show the key.
 - Error messages name the variable, never its value.
-- The adapter from `generation_adapter` and the port from `open_judgment`
-  mask the key in errors. Each error shows `***` in place of the raw or
-  JSON-escaped key, and has no cause.
-- The async adapter that you build yourself does not mask the key.
+- The adapters from `generation_adapter` and `async_vllm_generation_adapter`
+  mask the key in errors. The port from `open_judgment` also masks it. Each
+  error shows `***` in place of the raw or JSON-escaped key. This includes a
+  parsed payload. The error has no cause or context.
+- An `AsyncVllmGenerationAdapter` that you build yourself does not mask the
+  key.
 - typevet sets no TLS or proxy options. The httpx defaults apply, so the
   client verifies certificates and reads `HTTPS_PROXY` and the other proxy
   variables.

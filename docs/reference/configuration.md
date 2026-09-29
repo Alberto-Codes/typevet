@@ -76,24 +76,33 @@ mapping below.
 | `TYPEVET_VLLM__MAX_CONCURRENCY` | `max_concurrency` | integer | `1` | Must be a positive integer; POST limit for one `AsyncVllmGenerationAdapter` |
 | `TYPEVET_VLLM__USER_AGENT` | `user_agent` | string or empty | none | Sent as `User-Agent` only when set; otherwise the httpx default |
 
-The key does not appear in `repr(VllmSettings)`. The client is built the same
-way with or without a key. Only the `Authorization` header differs. So
-`HTTPS_PROXY` and the other proxy variables apply in both cases. The key must
-be ASCII. The adapter
-from `generation_adapter` masks the key in errors. It checks each generation
-error and its cause for the raw or JSON-escaped key. On a match, it raises the
-same error type again. The new error shows `***` for the key and has no cause. A server that echoes
-the `Authorization` header therefore cannot put the key into a
-`BackendHttpError` message. Successful results are not changed. Error messages
-name the variable, not its value.
+The key does not appear in `repr(VllmSettings)`. The sync and async clients
+are built the same way with or without a key. Only the `Authorization` header
+differs. So `HTTPS_PROXY` and the other proxy variables apply in both cases.
+The key must be ASCII. The adapters from `generation_adapter` and
+`async_vllm_generation_adapter` mask the key in errors. Each adapter checks
+each generation error, its attributes and its cause for the raw or
+JSON-escaped key. The attributes include strings inside a parsed payload, for
+example the `payload` of a `SchemaValidationError`. On a match, the adapter
+raises the same error type again. The new error shows `***` for the key and
+has no cause or context. A server that echoes the `Authorization` header
+therefore cannot put the key into a `BackendHttpError` message. Successful
+results are not changed. Error messages name the variable, not its value. An
+invalid `TYPEVET_VLLM__TIMEOUT` or `TYPEVET_VLLM__MAX_CONCURRENCY` error has
+no cause, so a traceback does not show the value.
 
 `generation_adapter` builds the sync adapter and does not read
-`max_concurrency`. Pass `settings.max_concurrency` to
-`AsyncVllmGenerationAdapter(max_concurrency=...)`. The limit applies to one
-adapter only. Two adapters do not share it. With the default of `1`, the
-adapter sends one request at a time. Build the async adapter's
-`httpx.AsyncClient` yourself. The key masking above applies only to the
-adapter from `generation_adapter`.
+`max_concurrency`. `async_vllm_generation_adapter` builds an
+`AsyncVllmGenerationAdapter` from the `TYPEVET_VLLM__*` variables and does not
+read `TYPEVET_BACKEND`. Its `httpx.AsyncClient` has the same base URL,
+timeout, headers and proxy behaviour as the sync client, and
+`max_concurrency` sets its POST limit. Closing the adapter closes its client.
+The limit applies to one adapter only. Two adapters do not share it. With the
+default of `1`, the adapter sends one request at a time. The adapter keeps one
+limit for each event loop. The `httpx.AsyncClient` of this adapter binds to
+the first event loop that uses it. A call from a second `asyncio.run` can fail
+with `RuntimeError: Event loop is closed`. Build one adapter for each event
+loop, for example inside each `asyncio.run` call.
 
 ### vLLM live acceptance run
 
