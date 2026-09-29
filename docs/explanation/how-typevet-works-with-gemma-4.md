@@ -36,43 +36,48 @@ typevet does not let the model write an answer. It reads the model's
 next-token distribution at the answer position, before any sampling. It then
 keeps only the tokens that stand for the allowed answers.
 
-```text
-1. The caller calls judge(state, questions, model).
-   adapters/outbound/judgment_scoring.py  ScoringJudgmentAdapter.judge
+The flowchart shows how one typed question goes from `judge()` to a typed
+answer.
 
-2. Each question becomes a Decision with ordered labels.
-   domain/judgment_normalize.py  normalize_question, judgment_original_labels
-   Noul -> (false, true). Choice -> the criteria keys. Score -> 0..n-1.
-
-3. Each label gets a digit control string: "0", "1", "2", ...
-   The tokenizer must encode each digit as exactly one token id.
-   domain/judgment_normalize.py  control_binding_pairs, bind_control_candidates
-
-4. The field block lists the options and asks for one digit.
-   domain/field_instructions.py  render_field_instructions
-   Choice:        "0 → billing: Money"
-   Noul, Score:   "Control 0 → false"
-   Last line:     "Answer with exactly one control string (the digit shown), ..."
-
-5. The state and the field block become one prefix that ends at the answer.
-   A framing or the served template family sets the turn markers.
-   adapters/outbound/judgment_scoring.py  _field_prefix, _compose_prefix
-
-6. One scoring request per question, at the PRE_SAMPLING stage.
-   domain/decision_execute.py  execute_categorical_decision
-   -> CandidateScoringPort.score_candidates(request)
-
-7. The result must score exactly the requested token ids, in order,
-   with finite logprobs. Otherwise the call fails closed.
-   domain/candidate_scoring_validate.py  validate_result_against_request
-
-8. A softmax over the candidate logprobs gives the probabilities
-   (temperature 1 by default). The highest probability wins.
-   domain/decision_execute.py  _softmax, _greedy_index
-
-9. The probabilities become a NoulAnswer, ChoiceAnswer or ScoreAnswer.
-   adapters/outbound/judgment_scoring.py  answer_from_execution
+```mermaid
+flowchart TD
+    J["Caller calls judge(state, questions, model)"] --> D["Question becomes a Decision with ordered labels"]
+    D --> C["Each label gets a digit control: 0, 1, 2, ..."]
+    C --> F["Field block lists each control with its label"]
+    F --> P["State and field block become one prefix; framing or served template sets turn markers"]
+    P --> R["One PRE_SAMPLING scoring request per question"]
+    R --> L["Server returns candidate logprobs"]
+    L --> V{"Exact token ids, in order, finite?"}
+    V -- no --> E["Call fails closed with an error"]
+    V -- yes --> S["Softmax turns the logprobs into probabilities"]
+    S --> A["Noul: P(true). Choice: top option. Score: expected level"]
 ```
+
+The steps in the code:
+
+1. `ScoringJudgmentAdapter.judge` in `adapters/outbound/judgment_scoring.py`
+   receives the call.
+2. `normalize_question` and `judgment_original_labels` in
+   `domain/judgment_normalize.py` make the Decision. Noul gives
+   `(false, true)`. Choice gives the criteria keys. Score gives `0` to `n-1`.
+3. `control_binding_pairs` and `bind_control_candidates` bind the controls.
+   The tokenizer must encode each digit as exactly one token id.
+4. `render_field_instructions` in `domain/field_instructions.py` writes the
+   field block. A Choice line reads `0 → billing: Money`. A Noul or Score line
+   reads `Control 0 → false`. The last line asks for exactly one control
+   string.
+5. `_field_prefix` and `_compose_prefix` make one prefix that ends at the
+   answer. An injected framing, such as `ChatContentFraming` for vLLM, composes
+   it. Otherwise `adapters/outbound/gemma/scoring_prefix.py` uses the served
+   template family.
+6. `execute_categorical_decision` in `domain/decision_execute.py` sends the
+   request to `CandidateScoringPort.score_candidates`. The llama.cpp and vLLM
+   adapters implement it.
+7. `validate_result_against_request` in
+   `domain/candidate_scoring_validate.py` checks the result.
+8. `_softmax` and `_greedy_index` compute the probabilities at temperature 1
+   by default.
+9. `answer_from_execution` builds the typed answer.
 
 The probabilities are conditional on the listed options. Mass that the model
 puts on other tokens does not show in the answer. The #207 study below shows
