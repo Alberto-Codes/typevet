@@ -21,6 +21,8 @@ The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.
   supported APIs, tested pins, evidence commands and exclusions.
 - [Judgment live receipts](reference/judgment-live-receipts.md):
   measured live predictions, latencies and known limitations.
+- [Performance on one H100](reference/performance.md):
+  vLLM throughput per concurrency level, calibration per set, cost and limits.
 - [Eval partner data policy](reference/eval-partner-data-policy.md):
   which datasets typevet may ship in public artifacts.
 
@@ -36,6 +38,8 @@ The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.
 
 - [Serve typevet on vLLM](how-to/serve-typevet-on-vllm.md):
   the tested vLLM 0.30.0 pin, the server flags and the settings.
+- [Serve Gemma 4 31B on a rented H100](how-to/serve-gemma-4-31b-on-a-rented-h100.md):
+  rent one RunPod H100, serve the model and run one judgment.
 
 ## Run typevet on llama.cpp locally
 

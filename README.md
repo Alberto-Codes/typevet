@@ -32,8 +32,10 @@ Read the documentation at <https://alberto-codes.github.io/typevet/>.
 | llama.cpp | Build `b11223-4da633776`, local alias `gemma-4-31b-kv9-q4km-mm` | [#203](https://github.com/Alberto-Codes/typevet/issues/203#issuecomment-5882379255) |
 | llama.cpp grammar | Build `b11243-fc07d781e`, Gemma 4 31B QAT Q4_0 GGUF | [#129](https://github.com/Alberto-Codes/typevet/issues/129#issuecomment-5892208050) |
 
-The H100 throughput measurement is in progress
-([#236](https://github.com/Alberto-Codes/typevet/issues/236)).
+Performance: on one H100 at concurrency level 64, 480 Banking77 records took 12.1 s at 39.6 records/s.
+That run had 0 errors. Banking77 calibration passed; DIFrauD SMS failed parity (ECE 0.158 against 0.10). One run, one pod, one pin.
+See [Performance on one H100](https://alberto-codes.github.io/typevet/reference/performance/)
+and [Serve Gemma 4 31B on a rented H100](https://alberto-codes.github.io/typevet/how-to/serve-gemma-4-31b-on-a-rented-h100/).
 A valid structure does not prove accuracy or calibration.
 The receipts are small samples.
 

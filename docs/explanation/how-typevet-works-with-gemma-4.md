@@ -208,12 +208,12 @@ pin and its limits.
   the off-menu mass on that prompt was 1.99e-7. The winning label did not
   change. This was one prompt on llama.cpp only.
 - **H100 throughput** ([#236](https://github.com/Alberto-Codes/typevet/issues/236)):
-  in progress. [Attempt 1](https://github.com/Alberto-Codes/typevet/issues/236#issuecomment-5897655847)
+  [Attempt 1](https://github.com/Alberto-Codes/typevet/issues/236#issuecomment-5897655847)
   made no model call. One question had 13 options, and native Choice
   supports 10 on the Gemma 4 tokenizer ([#234](https://github.com/Alberto-Codes/typevet/issues/234)).
-  No throughput measurement exists yet.
-  [Attempt 2](https://github.com/Alberto-Codes/typevet/issues/236#issuecomment-5897713570)
-  on public datasets is planned.
+  [Attempt 2](https://github.com/Alberto-Codes/typevet/issues/236#issuecomment-5898660690)
+  measured public datasets on one H100, and
+  [Performance on one H100](../reference/performance.md) gives its numbers, calibration and limits.
 
 ## What is not claimed
 

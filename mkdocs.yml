@@ -93,6 +93,7 @@ nav:
       - Call typevet from Python: how-to/call-typevet-from-python.md
       - Run Gemma 4 on llama.cpp: how-to/run-gemma4-llamacpp.md
       - Serve typevet on vLLM: how-to/serve-typevet-on-vllm.md
+      - Serve Gemma 4 31B on a rented H100: how-to/serve-gemma-4-31b-on-a-rented-h100.md
       - Connect Gemma 4 native vision judgment: how-to/connect-gemma4-native-vision-judgment.md
       - Run a small live judgment eval: how-to/run-a-small-live-judgment-eval.md
       - Run the image-conditioned live smoke: how-to/run-a-multimodal-live-smoke.md
@@ -115,6 +116,7 @@ nav:
       - Question schema map: reference/question-schema-map.md
       - Typed-judgment release support matrix: reference/typed-judgment-release-support-matrix.md
       - Judgment live receipts: reference/judgment-live-receipts.md
+      - Performance on one H100: reference/performance.md
       - PSAI vision Choice probability evidence: reference/psai-vision-choice-probability-evidence.md
       - Testing pyramid: reference/testing.md
       - LOC gate: reference/loc-gate.md

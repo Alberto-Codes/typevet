@@ -45,6 +45,8 @@ answers a question, and a reference gives facts.
   `llama-server`, nested `json_schema`, and opt-in live pytest.
 - [Serve typevet on vLLM](how-to/serve-typevet-on-vllm.md): the tested
   vLLM v0.30.0 pin, `TYPEVET_VLLM__*` settings and the live acceptance test (#170).
+- [Serve Gemma 4 31B on a rented H100](how-to/serve-gemma-4-31b-on-a-rented-h100.md):
+  one RunPod H100, stock vLLM, one judgment (#236).
 - [Call typevet from Python](how-to/call-typevet-from-python.md): Fake and
   llama.cpp adapters, `generate()` vs port injection; link to Gemma howto.
 
@@ -89,6 +91,8 @@ answers a question, and a reference gives facts.
 - [BoolQ loader and answer Noul fixture](reference/eval-boolq-loader.md) (reference): validation split, no/yes Noul, CC BY-SA smoke cap, HF bulk stream.
 - [Live eval runner](reference/eval-live-runner.md) (reference): opt-in Banking77/BoolQ slice via GenerationPort; attempted / schema-valid / gold-match counts.
 - [Judgment live receipts](reference/judgment-live-receipts.md) (reference): measured #133 live predictions, latencies, semantic controls, known limitations.
+- [Performance on one H100](reference/performance.md) (reference): vLLM
+  throughput per concurrency level, calibration per set, cold start, cost and limits (#236).
 - [Hyperpartisan loader and hyperpartisan Noul fixture](reference/eval-hyperpartisan-loader.md) (reference): byarticle train only, HTML cleanup, stratified holdout, excludes bypublisher.
 - [Complementary eval manifest](reference/eval-complementary-manifest.md) (reference): JevBench-primary ranked open sets; see also `evals/`.
 - [Question records → JSON Schema](reference/question-schema-map.md) (reference): Noul/Choice/Score export records to `compile_json_schema` fixtures ([#102](https://github.com/Alberto-Codes/typevet/issues/102)).

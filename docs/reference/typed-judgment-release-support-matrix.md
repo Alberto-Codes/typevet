@@ -279,7 +279,7 @@ Full gate table: [CLAUDE.md](https://github.com/Alberto-Codes/typevet/blob/main/
 |---|---|---|
 | Async judgment as a supported release API | Async generation adapters exist for llama.cpp and vLLM. There is no async `JudgmentPort` release claim | [Testing pyramid](testing.md) |
 | vLLM beyond the tested pin | Other vLLM versions, models, precisions and GPUs are not tested | [#167](https://github.com/Alberto-Codes/typevet/issues/167) |
-| vLLM throughput | No throughput claim. The measurement is in progress | [#236](https://github.com/Alberto-Codes/typevet/issues/236) |
+| vLLM throughput | One measured run only: one H100, one pin, short public texts, proxy in client latency. No general throughput claim. See [Performance on one H100](performance.md) | [#236](https://github.com/Alberto-Codes/typevet/issues/236) |
 | Smoke pass ⇒ model quality / calibration | **Excluded** — smokes prove typed wiring, attachment, and controls | [#50](https://github.com/Alberto-Codes/typevet/issues/50), [#161](https://github.com/Alberto-Codes/typevet/issues/161) |
 | TypeLLM / SGLang byte parity | Research references only | [Native typed judgments](../explanation/native-typed-judgments.md) |
 | Shipped CLI / MCP composition root | Env-backed scripts and tests only | [Configuration](configuration.md) |
