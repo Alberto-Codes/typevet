@@ -71,7 +71,7 @@ mapping below.
 |---|---|---|---|---|
 | `TYPEVET_VLLM__BASE_URL` | `base_url` | URL string | none | Required; trailing slash stripped |
 | `TYPEVET_VLLM__MODEL` | `model` | string | none | Required; served model name |
-| `TYPEVET_VLLM__TIMEOUT` | `timeout` | float, seconds | `300` | Must be positive |
+| `TYPEVET_VLLM__TIMEOUT` | `timeout` | float, seconds | `300` | Must be positive and finite; `nan`, `inf` and `-inf` fail |
 | `TYPEVET_VLLM__API_KEY` | `api_key` | string or empty | none | Sent as `Authorization: Bearer <key>` |
 | `TYPEVET_VLLM__MAX_CONCURRENCY` | `max_concurrency` | integer | `1` | Must be a positive integer; POST limit for one `AsyncVllmGenerationAdapter` |
 | `TYPEVET_VLLM__USER_AGENT` | `user_agent` | string or empty | none | Sent as `User-Agent` only when set; otherwise the httpx default |

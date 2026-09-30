@@ -100,7 +100,9 @@ has the same type, and it has no cause or context. The copy is made even when
 the key text is absent. The httpx error in the cause chain holds the request,
 and its headers hold `Authorization: Bearer <key>`. Thus the copy drops that
 chain. Without a key, the wrappers raise the original error. Masking
-applies to strings inside a dict, list or tuple, for example a parsed payload.
+applies to strings and bytes inside a dict, list, tuple, set or frozenset, for
+example a parsed payload. A masked bytes value stays bytes, with `***` in place
+of the key. A masked set or frozenset stays the same kind.
 Masking applies only to a `GenerationError`. Other exceptions, such as a
 `RuntimeError` from the httpx client, pass through without masking.
 [Serve typevet on vLLM](../how-to/serve-typevet-on-vllm.md#key-and-network-behaviour)
@@ -108,13 +110,12 @@ gives the steps and the limits.
 
 Known gaps:
 
+- Masking does not walk `bytearray` or `memoryview` values.
 - Masking exists only in the wrappers from `generation_adapter`,
   `async_vllm_generation_adapter` and `open_judgment`. A vLLM adapter or
   client that you build yourself does not mask the key. This includes the
   sync and async generation adapters, the scoring adapter and the judgment
   factory.
-- Masking does not look inside a set or a bytes value.
-  [#227](https://github.com/Alberto-Codes/typevet/issues/227) tracks this gap.
 - The default pytest options omit `--showlocals`
   ([#251](https://github.com/Alberto-Codes/typevet/issues/251)). A run with
   `--showlocals` or `-l` can still print a key from a test environment.

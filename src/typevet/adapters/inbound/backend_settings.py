@@ -15,17 +15,19 @@ The configured key never reaches the caller in clear text. ``VllmSettings``
 leaves it out of ``repr``. The adapters that ``generation_adapter`` and
 ``async_vllm_generation_adapter`` return catch each ``GenerationError`` from
 ``generate``, and the port that ``open_judgment`` yields catches each one from
-``judge``. When a key is configured, each such error is raised again as a
-copy of the same type with no cause or context. In the copy, the raw or
-JSON-escaped key in the text or an attribute, such as a parsed payload, is
-replaced by ``***``. The copy is made even when the key text is absent,
-because an httpx error in the cause chain holds the request headers. A server
-that echoes the ``Authorization`` header therefore cannot put the key into a
-``BackendHttpError``. Without a key, errors pass through unchanged.
-Successful results are not changed.
-The HTTP clients are built the same way with or without a key, so environment
-proxy settings apply in both cases. Error messages name variables, never
-values, and a parse failure raises with no cause or context.
+``judge``. When a key is configured, each such error is raised again as a copy
+of the same type with no cause or context. In the copy, the raw or JSON-escaped
+key in the text or an attribute, such as a parsed payload, is replaced by
+``***``. Strings and bytes inside dicts, lists, tuples, sets and frozensets are
+masked too, and masked bytes stay bytes. The copy is made even when the key
+text is absent, because an httpx error in the cause chain holds the request
+headers. A server that echoes the ``Authorization`` header therefore cannot put
+the key into a ``BackendHttpError``. Without a key, errors pass through
+unchanged. Successful results are not changed. The HTTP clients are built the
+same way with or without a key, so environment proxy settings apply in both
+cases. ``TYPEVET_VLLM__TIMEOUT`` must be finite and positive, so ``nan`` and
+``inf`` fail. Error messages name variables, never values, and a parse failure
+raises with no cause or context.
 
 Examples:
     ```python
@@ -56,6 +58,7 @@ See Also:
 from __future__ import annotations
 
 import json
+import math
 import os
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
@@ -122,30 +125,53 @@ class VllmSettings:
     user_agent: str | None = None
 
 
-def _masked(value: Any, needles: tuple[str, ...]) -> Any:
-    """Replace each key form in ``value`` with ``MASK``.
+_PLAIN_CONTAINERS: tuple[type, ...] = (list, tuple, set, frozenset)
 
-    Strings are masked in place of each needle. Dicts, lists and tuples are
-    copied as plain containers with each key and item masked, so a parsed payload that holds the
-    key loses it. Other values are returned unchanged.
+
+def _masked_text(value: str | bytes, needles: tuple[str, ...]) -> str | bytes:
+    """Replace each needle in ``value`` with ``MASK``, keeping its type.
+
+    Bytes stay bytes: each needle and ``MASK`` are ASCII-encoded first, which
+    is safe because the key must be ASCII.
 
     Args:
-        value: String, container or other attribute value.
+        value: String or bytes to mask.
         needles: Key forms to replace.
 
     Returns:
-        The masked value.
+        The masked string or bytes.
     """
     if isinstance(value, str):
         for needle in needles:
             value = value.replace(needle, MASK)
         return value
+    for needle in needles:
+        value = value.replace(needle.encode("ascii"), MASK.encode("ascii"))
+    return value
+
+
+def _masked(value: Any, needles: tuple[str, ...]) -> Any:
+    """Replace each key form in ``value`` with ``MASK``.
+
+    Strings and bytes are masked by ``_masked_text`` and keep their type.
+    Dicts, lists, tuples, sets and frozensets are copied as plain containers
+    of the same kind with each key and item masked, so a parsed payload that
+    holds the key loses it. Other values are returned unchanged.
+
+    Args:
+        value: String, bytes, container or other attribute value.
+        needles: Key forms to replace.
+
+    Returns:
+        The masked value.
+    """
+    if isinstance(value, (str, bytes)):
+        return _masked_text(value, needles)
     if isinstance(value, dict):
         return {_masked(k, needles): _masked(v, needles) for k, v in value.items()}
-    if isinstance(value, list):
-        return [_masked(item, needles) for item in value]
-    if isinstance(value, tuple):
-        return tuple(_masked(item, needles) for item in value)
+    for kind in _PLAIN_CONTAINERS:
+        if isinstance(value, kind):
+            return kind(_masked(item, needles) for item in value)
     return value
 
 
@@ -161,7 +187,8 @@ def _masked_error(exc: GenerationError, needles: tuple[str, ...]) -> GenerationE
 
     Returns:
         A new error whose arguments and attributes are masked, including
-        strings inside dict, list and tuple values such as a payload.
+        strings and bytes inside dict, list, tuple, set and frozenset
+        values such as a payload.
     """
     masked = type(exc).__new__(type(exc))
     masked.args = _masked(exc.args, needles)
@@ -363,8 +390,8 @@ def _read_timeout(source: Mapping[str, str], name: str) -> float:
         timeout = float(raw)
     except ValueError:
         timeout = 0.0
-    if timeout <= 0:
-        msg = f"{name} must be a positive number of seconds"
+    if not math.isfinite(timeout) or timeout <= 0:
+        msg = f"{name} must be a finite positive number of seconds"
         raise ValueError(msg) from None
     return timeout
 
@@ -426,7 +453,8 @@ def load_vllm_settings(environ: Mapping[str, str] | None = None) -> VllmSettings
 
     Raises:
         ValueError: When ``TYPEVET_VLLM__BASE_URL`` or ``TYPEVET_VLLM__MODEL``
-            is missing, ``TYPEVET_VLLM__TIMEOUT`` is not a positive number,
+            is missing, ``TYPEVET_VLLM__TIMEOUT`` is not a finite positive
+            number,
             ``TYPEVET_VLLM__MAX_CONCURRENCY`` is not a positive integer, or
             ``TYPEVET_VLLM__API_KEY`` holds a non-ASCII character.
     """

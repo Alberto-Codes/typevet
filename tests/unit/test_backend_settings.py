@@ -422,6 +422,43 @@ def test_invalid_number_drops_the_parse_error_chain(name: str, raw: str) -> None
     assert raw not in "".join(traceback.format_exception(err))
 
 
+@pytest.mark.unit
+@pytest.mark.parametrize("raw", ["nan", "inf", "-inf"])
+def test_non_finite_timeout_rejected_without_chain_or_value(raw: str) -> None:
+    with pytest.raises(ValueError, match="TYPEVET_VLLM__TIMEOUT") as info:
+        load_vllm_settings(_vllm_env(TYPEVET_VLLM__TIMEOUT=raw))
+    err = info.value
+    assert err.__cause__ is None
+    assert err.__suppress_context__
+    assert raw not in "".join(traceback.format_exception(err))
+
+
+@pytest.mark.unit
+def test_key_inside_set_frozenset_and_bytes_attributes_is_masked(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def raiser(self: VllmGenerationAdapter, request: GenerationRequest) -> None:
+        exc = GenerationError(f"failed {SENTINEL}")
+        extra = {
+            "tags": {f"t {SENTINEL}", "plain"},
+            "frozen": frozenset({SENTINEL}),
+            "raw": f"body {SENTINEL} end".encode(),
+        }
+        for name, value in extra.items():
+            setattr(exc, name, value)
+        raise exc
+
+    monkeypatch.setattr(VllmGenerationAdapter, "generate", raiser)
+    err = _raised(_keyed_adapter(SENTINEL, _content_reply("{}")), _SCHEMA)
+    attrs = vars(err)
+    assert attrs["tags"] == {f"t {MASK}", "plain"}
+    assert attrs["frozen"] == frozenset({MASK})
+    assert attrs["raw"] == f"body {MASK} end".encode()
+    assert SENTINEL not in _all_text(err) + repr(attrs)
+    assert SENTINEL.encode() not in attrs["raw"]
+    assert err.__cause__ is None
+
+
 async def _gathered(
     adapter: AsyncVllmGenerationAdapter, count: int
 ) -> list[GenerationResult]:
