@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.4.0](https://github.com/Alberto-Codes/typevet/compare/v0.3.0...v0.4.0) (2026-09-30)
+
+
+### Features
+
+* **evals:** CEDAR signature pair loader and two-image request builder ([46de94e](https://github.com/Alberto-Codes/typevet/commit/46de94e9a3b211fca63e9e17ccc9f60ac5105bea)), closes [#318](https://github.com/Alberto-Codes/typevet/issues/318)
+* **evals:** check-versus-register runner, metrics and opt-in live test ([38cada3](https://github.com/Alberto-Codes/typevet/commit/38cada3ff234b44b16df26224a188014a657a0c1)), closes [#316](https://github.com/Alberto-Codes/typevet/issues/316)
+* **evals:** DIFrauD train, validation and held-out splits without [#236](https://github.com/Alberto-Codes/typevet/issues/236) overlap ([d14dcf0](https://github.com/Alberto-Codes/typevet/commit/d14dcf0940666aafc4863714caed9082de3a11e0)), closes [#307](https://github.com/Alberto-Codes/typevet/issues/307)
+* **evals:** gepa-adk wording evolution runner with Brier scorer and length cap ([6f9f740](https://github.com/Alberto-Codes/typevet/commit/6f9f7400ba8344390b788fb83035878e7dfe3947)), closes [#308](https://github.com/Alberto-Codes/typevet/issues/308)
+* **evals:** harness for the DIFrauD wording evolution and its held-out check ([502ebc9](https://github.com/Alberto-Codes/typevet/commit/502ebc973962a92f4eaeae88098c4fe07bdc89da)), closes [#309](https://github.com/Alberto-Codes/typevet/issues/309)
+* **evals:** signature-pair runner, metrics and opt-in live test for CEDAR ([e3e4643](https://github.com/Alberto-Codes/typevet/commit/e3e4643f395f195fb287a75820450b997706f91a)), closes [#319](https://github.com/Alberto-Codes/typevet/issues/319)
+* **evals:** synthetic check generator and check-versus-register request builder ([b3d5457](https://github.com/Alberto-Codes/typevet/commit/b3d5457420edcd30e59b51570b71d4ec5c3fc8f6)), closes [#315](https://github.com/Alberto-Codes/typevet/issues/315)
+* **evals:** top-label and classwise ECE for Choice and Score above 10 options ([38f9272](https://github.com/Alberto-Codes/typevet/commit/38f927237240d9b8e4f7cd334eab70d117652f97)), closes [#296](https://github.com/Alberto-Codes/typevet/issues/296)
+* **scoring:** report off-option probability mass in scoring results ([db5ff12](https://github.com/Alberto-Codes/typevet/commit/db5ff12d2b6c909a1e3390c3a38e02e915eb144b)), closes [#297](https://github.com/Alberto-Codes/typevet/issues/297)
+
+
+### Fixes
+
+* **adapters:** exact vocabulary size for the llama.cpp off-option completeness check ([81a2e02](https://github.com/Alberto-Codes/typevet/commit/81a2e02f45d50774293f9b6e956c3a26945b5c8e)), closes [#321](https://github.com/Alberto-Codes/typevet/issues/321)
+* **adapters:** media-marker refresh edge cases after a model swap ([ce63ddd](https://github.com/Alberto-Codes/typevet/commit/ce63dddd013445066c0768e5e2049de1e6e50f9a)), closes [#323](https://github.com/Alberto-Codes/typevet/issues/323)
+* **adapters:** refresh the llama.cpp media marker after a router model reload ([e3dd4cb](https://github.com/Alberto-Codes/typevet/commit/e3dd4cbed8c07f39a6f3a2c6c69952129a584085)), closes [#322](https://github.com/Alberto-Codes/typevet/issues/322)
+
+
+### Documentation
+
+* **explanation:** check images against a synthetic register and what the typed answers mean ([7299fd6](https://github.com/Alberto-Codes/typevet/commit/7299fd626d3502b2ea2a0d09dfb1add2dad37f83)), closes [#317](https://github.com/Alberto-Codes/typevet/issues/317) [#316](https://github.com/Alberto-Codes/typevet/issues/316) [#303](https://github.com/Alberto-Codes/typevet/issues/303)
+* **explanation:** DIFrauD wording evolution and its pre-registered held-out check ([3133817](https://github.com/Alberto-Codes/typevet/commit/3133817497b997b8a4ca4053f1ad7e60a87bf45f)), closes [#309](https://github.com/Alberto-Codes/typevet/issues/309)
+* **explanation:** two-image signature comparison on CEDAR and what its probability means ([c418b0c](https://github.com/Alberto-Codes/typevet/commit/c418b0c79b20f103438e103979f5ad810132f9d1)), closes [#320](https://github.com/Alberto-Codes/typevet/issues/320) [#319](https://github.com/Alberto-Codes/typevet/issues/319) [#304](https://github.com/Alberto-Codes/typevet/issues/304)
+* **reference:** record the Molmo2-4B single-token control check ([643b68a](https://github.com/Alberto-Codes/typevet/commit/643b68a52ff5911c2a306b1631c4b4b4c17a2a83)), closes [#299](https://github.com/Alberto-Codes/typevet/issues/299)
+
 ## [0.3.0](https://github.com/Alberto-Codes/typevet/compare/v0.2.0...v0.3.0) (2026-09-30)
 
 
