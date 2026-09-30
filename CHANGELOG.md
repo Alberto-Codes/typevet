@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.3.0](https://github.com/Alberto-Codes/typevet/compare/v0.2.0...v0.3.0) (2026-09-30)
+
+
+### Features
+
+* **evals:** LFW View 2 pair loader and two-image face-match requests ([dc3d7ca](https://github.com/Alberto-Codes/typevet/commit/dc3d7caec6ceeb83a5462e56119994d101537906)), closes [#300](https://github.com/Alberto-Codes/typevet/issues/300) [#292](https://github.com/Alberto-Codes/typevet/issues/292)
+
+
+### Fixes
+
+* **adapters:** map errors from the vision factory's /apply-template probe ([64814a0](https://github.com/Alberto-Codes/typevet/commit/64814a08d5ce1a952cdbe6c422ffa83dd5c4168b)), closes [#311](https://github.com/Alberto-Codes/typevet/issues/311)
+* **adapters:** map vision tokenizer errors and characterize runtime limits ([597ce88](https://github.com/Alberto-Codes/typevet/commit/597ce88f57784c7f1f7d1d50a3bf73dc69de6e61)), closes [#204](https://github.com/Alberto-Codes/typevet/issues/204) [#298](https://github.com/Alberto-Codes/typevet/issues/298)
+* **adapters:** retry one early close on llama.cpp scoring calls ([fdae661](https://github.com/Alberto-Codes/typevet/commit/fdae6619f6f5d8a950f8a5a3018df2345b421b2d)), closes [#305](https://github.com/Alberto-Codes/typevet/issues/305) [#310](https://github.com/Alberto-Codes/typevet/issues/310)
+* **evals:** wider PSAI leak check, key-free receipt frames, prompt-read controls ([09f6787](https://github.com/Alberto-Codes/typevet/commit/09f6787f39241b3506aa99f3dedf8f4299aa1a6d)), closes [#295](https://github.com/Alberto-Codes/typevet/issues/295)
+
+
+### Documentation
+
+* **explanation:** two-image face matching and what its probability means ([cd76f82](https://github.com/Alberto-Codes/typevet/commit/cd76f820f9ad56b0210f532ca03068bb24e49a5d)), closes [#302](https://github.com/Alberto-Codes/typevet/issues/302) [#292](https://github.com/Alberto-Codes/typevet/issues/292)
+* **integrations:** explain why the judgevet bridge keeps text-only instructions ([f7560b3](https://github.com/Alberto-Codes/typevet/commit/f7560b37995ed7165236a59ee51d3073133ae8c4)), closes [#291](https://github.com/Alberto-Codes/typevet/issues/291)
+* split long sentences in the docs index, CORD smoke and judgevet pages ([4ce5971](https://github.com/Alberto-Codes/typevet/commit/4ce59710dc885f032490d9b55eadd1add9a00b04)), closes [#295](https://github.com/Alberto-Codes/typevet/issues/295)
+* state the 0.2.0 release where pages said 0.1.0 is current ([04e8b81](https://github.com/Alberto-Codes/typevet/commit/04e8b819f66c519f3a8ac997d1c3db7b125aca93)), closes [#294](https://github.com/Alberto-Codes/typevet/issues/294)
+* **vllm:** record the live KV-cache gauge reading on the tested pin ([02db15d](https://github.com/Alberto-Codes/typevet/commit/02db15d2a0b7e94044407d565af842266fcb0604)), closes [#231](https://github.com/Alberto-Codes/typevet/issues/231)
+
 ## [0.2.0](https://github.com/Alberto-Codes/typevet/compare/v0.1.0...v0.2.0) (2026-09-30)
 
 
