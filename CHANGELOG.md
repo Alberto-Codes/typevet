@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.6.0](https://github.com/Alberto-Codes/typevet/compare/v0.5.0...v0.6.0) (2026-09-30)
+
+
+### Features
+
+* **adapters:** reach a vLLM server behind an API gateway ([58eebce](https://github.com/Alberto-Codes/typevet/commit/58eebce135252b43c9461d7807c095fb7cdfa7dc)), closes [#331](https://github.com/Alberto-Codes/typevet/issues/331)
+* **evals:** post-hoc calibration of the committed Noul receipts ([78aea74](https://github.com/Alberto-Codes/typevet/commit/78aea7429308654c4d5011ae104403a5ce4cb5fa)), closes [#343](https://github.com/Alberto-Codes/typevet/issues/343)
+* **evals:** record the vLLM server configuration in receipts ([d34c3b9](https://github.com/Alberto-Codes/typevet/commit/d34c3b90b3d6fef5b3b63b15c7e94b981021afc0)), closes [#341](https://github.com/Alberto-Codes/typevet/issues/341)
+* **evals:** seed the synthetic check run from the environment ([1dfbc36](https://github.com/Alberto-Codes/typevet/commit/1dfbc36f8b453e86a2d25f8fd4990bec8f21d46d)), closes [#344](https://github.com/Alberto-Codes/typevet/issues/344)
+
+
+### Fixes
+
+* **adapters:** close the owned scoring client under the lock ([5f5caaa](https://github.com/Alberto-Codes/typevet/commit/5f5caaa8cc580c0f908e4c530f156f30bdfc3e0c)), closes [#345](https://github.com/Alberto-Codes/typevet/issues/345)
+* **adapters:** create the lazy scoring client under a lock ([6b44d72](https://github.com/Alberto-Codes/typevet/commit/6b44d7262432f6bd41c88f7ed5884e1063df4e23)), closes [#340](https://github.com/Alberto-Codes/typevet/issues/340)
+* **adapters:** mask gateway header values as whole tokens and protect owned headers ([2719ad6](https://github.com/Alberto-Codes/typevet/commit/2719ad6a46fa56ac0a20e5e936fe273e48c2144d)), closes [#348](https://github.com/Alberto-Codes/typevet/issues/348)
+* **evals:** one seed rule for the check sheets command and the live run ([6fdc464](https://github.com/Alberto-Codes/typevet/commit/6fdc4642ac003062fd723182be06f3ad8d648b23)), closes [#349](https://github.com/Alberto-Codes/typevet/issues/349)
+* **evals:** refuse a wrong split and a two-engine gauge in receipts ([e030ee4](https://github.com/Alberto-Codes/typevet/commit/e030ee4288628db105036c448d79481fe57c15da)), closes [#339](https://github.com/Alberto-Codes/typevet/issues/339)
+
+
+### Documentation
+
+* **explanation:** record the [#342](https://github.com/Alberto-Codes/typevet/issues/342) design outcome on the throughput page ([9c6afa5](https://github.com/Alberto-Codes/typevet/commit/9c6afa5a5bf957c626f700ef74bffe79796c1731))
+* **reference:** receipt blocks page, and a timestamped metrics sample ([2492d95](https://github.com/Alberto-Codes/typevet/commit/2492d95facdb4dc86224b47895ca779923d6ca67)), closes [#347](https://github.com/Alberto-Codes/typevet/issues/347)
+
 ## [0.5.0](https://github.com/Alberto-Codes/typevet/compare/v0.4.0...v0.5.0) (2026-09-30)
 
 
