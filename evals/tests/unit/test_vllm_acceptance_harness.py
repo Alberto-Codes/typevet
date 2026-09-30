@@ -79,6 +79,9 @@ def _env(**extra: str) -> dict[str, str]:
     }
 
 
+_SETTINGS = load_vllm_settings(_env())
+
+
 def _inputs() -> AcceptanceInputs:
     return AcceptanceInputs(fixtures_root=_TESTS / "fixtures", repo_root=_REPO)
 
@@ -188,7 +191,7 @@ def test_offline_run_writes_a_receipt_with_every_set(tmp_path: Path) -> None:
     server = _Vllm()
     receipt = _run(server)
     path = tmp_path / "receipt.json"
-    digest = write_receipt(path, receipt, api_key=_KEY)
+    digest = write_receipt(path, receipt, settings=_SETTINGS)
 
     assert set(receipt["sets"]) == _SETS
     assert receipt["stopped"] is None
@@ -241,7 +244,7 @@ def test_offline_receipt_records_pins_and_set_details(tmp_path: Path) -> None:
     assert sets["psai"]["omitted_rule"] == OMITTED_RULE
     assert len(sets["concurrency"]["rows"]) == 8
     path = tmp_path / "receipt.json"
-    write_receipt(path, receipt, api_key=_KEY)
+    write_receipt(path, receipt, settings=_SETTINGS)
     assert cord_cli([str(path)]) in (0, 1)
 
 
@@ -264,7 +267,7 @@ def test_call_cap_stops_the_run_and_still_writes_a_receipt(
     assert server.count(kind) == limit
     assert receipt["calls"][kind] == limit
     assert receipt["passed"] is False
-    write_receipt(tmp_path / "receipt.json", receipt, api_key=_KEY)
+    write_receipt(tmp_path / "receipt.json", receipt, settings=_SETTINGS)
     assert json.loads((tmp_path / "receipt.json").read_text())["stopped"]
 
 
@@ -272,7 +275,7 @@ def test_write_receipt_refuses_to_overwrite(tmp_path: Path) -> None:
     path = tmp_path / "receipt.json"
     path.write_text("{}", encoding="utf-8")
     with pytest.raises(FileExistsError):
-        write_receipt(path, {"issue": 170}, api_key=None)
+        write_receipt(path, {"issue": 170}, settings=None)
 
 
 def test_receipt_never_holds_the_api_key(tmp_path: Path) -> None:
@@ -280,7 +283,7 @@ def test_receipt_never_holds_the_api_key(tmp_path: Path) -> None:
     error = receipt["sets"]["generation"]["rows"][2]["error"]
     assert _KEY not in error
     path = tmp_path / "receipt.json"
-    write_receipt(path, receipt, api_key=_KEY)
+    write_receipt(path, receipt, settings=_SETTINGS)
     assert _KEY not in path.read_text(encoding="utf-8")
 
 
@@ -495,7 +498,7 @@ def test_error_message_is_masked_before_write_receipt(
 ) -> None:
     captured: list[dict[str, Any]] = []
 
-    def spy(path: Path, receipt: dict[str, Any], *, api_key: str | None) -> str:
+    def spy(path: Path, receipt: dict[str, Any], *, settings: object) -> str:
         captured.append(copy.deepcopy(receipt))
         return ""
 
@@ -513,14 +516,28 @@ def test_write_receipt_masks_the_raw_and_json_escaped_key(tmp_path: Path) -> Non
     key = 'sk-"QUOTED"\\SENTINEL'
     escaped = json.dumps(key)[1:-1]
     path = tmp_path / "receipt.json"
-    write_receipt(path, {"x": key}, api_key=key)
+    env = _env(TYPEVET_VLLM__API_KEY=key)
+    write_receipt(path, {"x": key}, settings=load_vllm_settings(env))
     text = path.read_text(encoding="utf-8")
     assert escaped not in text
     assert key not in text
     assert json.loads(text) == {"x": "***"}
     plain = tmp_path / "plain.json"
-    write_receipt(plain, {"x": f"near {_KEY}"}, api_key=_KEY)
+    write_receipt(plain, {"x": f"near {_KEY}"}, settings=_SETTINGS)
     assert _KEY not in plain.read_text(encoding="utf-8")
+
+
+def test_write_receipt_frames_never_hold_the_raw_key(tmp_path: Path) -> None:
+    """``write_receipt`` takes the settings, so no frame local is the raw key."""
+    path = tmp_path / "receipt.json"
+    path.write_text("{}", encoding="utf-8")
+    settings = load_vllm_settings(_env())
+    with pytest.raises(FileExistsError) as caught:
+        write_receipt(path, {"issue": 170}, settings=settings)
+    frames = [entry.frame.f_locals for entry in caught.traceback]
+    assert len(frames) >= 2
+    for local_values in frames:
+        assert all(_KEY not in repr(value) for value in local_values.values())
 
 
 def test_swap_needs_a_correct_present_answer_to_count_as_moved() -> None:

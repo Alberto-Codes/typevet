@@ -206,6 +206,42 @@ def _gold_label_soft_hyphen_inside(m: Manifest) -> None:
     row["model_input"]["claim"] = "The claim is sup\u00adported by the page."
 
 
+def _gold_label_minus_sign(m: Manifest) -> None:
+    row = m["rows"][DEV + 20]
+    assert row["gold_label"] == "insufficient_evidence"
+    row["model_input"]["claim"] = "The page gives insufficient\u2212evidence here."
+
+
+def _gold_label_hyphen_bullet(m: Manifest) -> None:
+    row = m["rows"][DEV + 20]
+    assert row["gold_label"] == "insufficient_evidence"
+    row["model_input"]["claim"] = "The page gives insufficient\u2043evidence here."
+
+
+def _gold_label_zero_width_space_inside(m: Manifest) -> None:
+    row = m["rows"][DEV]
+    assert row["gold_label"] == "supported"
+    row["model_input"]["claim"] = "The claim is sup\u200bported by the page."
+
+
+def _gold_label_byte_order_mark_inside(m: Manifest) -> None:
+    row = m["rows"][DEV]
+    assert row["gold_label"] == "supported"
+    row["model_input"]["claim"] = "The claim is supp\ufefforted by the page."
+
+
+def _gold_label_word_joiner_between(m: Manifest) -> None:
+    row = m["rows"][DEV + 20]
+    assert row["gold_label"] == "insufficient_evidence"
+    row["model_input"]["claim"] = "The page gives insufficient\u2060evidence here."
+
+
+def _gold_label_zero_width_next_to_dash(m: Manifest) -> None:
+    row = m["rows"][DEV + 20]
+    assert row["gold_label"] == "insufficient_evidence"
+    row["model_input"]["claim"] = "The page gives insufficient\u200b-\ufeffevidence."
+
+
 def _gold_label_fullwidth(m: Manifest) -> None:
     row = m["rows"][DEV]
     assert row["gold_label"] == "supported"
@@ -254,6 +290,12 @@ MUTATIONS: list[tuple[str, FunctionType]] = [
     ("gold_label_leak", _gold_label_unicode_hyphen),
     ("gold_label_leak", _gold_label_soft_hyphen_inside),
     ("gold_label_leak", _gold_label_fullwidth),
+    ("gold_label_leak", _gold_label_minus_sign),
+    ("gold_label_leak", _gold_label_hyphen_bullet),
+    ("gold_label_leak", _gold_label_zero_width_space_inside),
+    ("gold_label_leak", _gold_label_byte_order_mark_inside),
+    ("gold_label_leak", _gold_label_word_joiner_between),
+    ("gold_label_leak", _gold_label_zero_width_next_to_dash),
     ("rejected_items", _rejected_is_row_id),
     ("rejected_items", _rejected_twice),
     ("rejected_items", _rejected_in_fixtures),
@@ -378,8 +420,17 @@ def test_label_inside_a_longer_word_is_not_a_gold_label_leak(tmp_path: Path):
     [
         (DEV, "The claim is supportedly true."),
         (PROMPT + 6, "The page says synthetic task 7 is done."),
+        (DEV, "The button is un\u200bsupported."),
+        (DEV, "The claim is support\u2060edly true."),
+        (DEV, "The claim is supported\ufeffly true."),
     ],
-    ids=["label-prefix-of-longer-word", "three-task-words"],
+    ids=[
+        "label-prefix-of-longer-word",
+        "three-task-words",
+        "zero-width-before-label",
+        "zero-width-inside-longer-word",
+        "zero-width-after-label",
+    ],
 )
 def test_near_miss_claim_loads(tmp_path: Path, case: int, claim: str):
     """A label inside a longer word and a 3-word task run are not leaks."""

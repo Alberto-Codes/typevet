@@ -2,9 +2,11 @@
 
 One opt-in call runs a 24-option native ``Choice`` end to end through
 ``ScoringJudgmentAdapter`` on the pinned text-only Gemma 4 router model. The
-state names option 20, whose control is the letter ``"K"``. The test asserts
-structure only: the answer is one of the 24 labels and the 24 probabilities are
-finite and sum to 1. It does not assert the answer, and one run is not a
+state names option 20, whose control is the letter ``"K"``. The test reads
+each option's control from its option line in the rendered prompt and the
+vocabulary size from ``meta.n_vocab`` of the model's ``/v1/models`` entry.
+The test asserts structure only: the answer is one of the 24 labels and the
+24 probabilities are finite and sum to 1. It does not assert the answer, and one run is not a
 calibration claim. Set ``TYPEVET_LIVE_RECEIPT_DIR`` to write the receipt JSON.
 """
 
@@ -14,7 +16,9 @@ import hashlib
 import json
 import math
 import os
+import re
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
@@ -35,8 +39,6 @@ from typevet.domain.judgment_questions import Choice
 
 _LLAMA = load_llama_settings()
 _PINNED_MODEL = "gemma-4-31b-24gib-kv11-decoder"
-_N_VOCAB = 262144
-_CONTROLS = "0123456789ABCDEFGHIJKLMN"
 _CRITERIA = {
     "groceries": "Food and household staples bought for the kitchen.",
     "clothing": "Garments, shoes and fashion accessories.",
@@ -106,8 +108,11 @@ def gemma4_choice_model() -> str:
     return _PINNED_MODEL
 
 
-def _props_summary(client: httpx.Client, model: str) -> dict[str, object]:
-    props = client.get("/props", params={"model": model}).raise_for_status().json()
+def _router_props(client: httpx.Client, model: str) -> dict[str, object]:
+    return client.get("/props", params={"model": model}).raise_for_status().json()
+
+
+def _props_summary(props: dict[str, object]) -> dict[str, object]:
     return {
         "model_alias": props.get("model_alias"),
         "model_ftype": props.get("model_ftype"),
@@ -118,6 +123,57 @@ def _props_summary(client: httpx.Client, model: str) -> dict[str, object]:
             str(props.get("chat_template", "")).encode()
         ).hexdigest(),
     }
+
+
+def _models_n_vocab(models: dict[str, object], model: str) -> int:
+    """Read ``meta.n_vocab`` from the ``/v1/models`` entry for ``model``.
+
+    Args:
+        models: Parsed ``GET /v1/models`` body from the router.
+        model: Served model id.
+
+    Returns:
+        The positive ``n_vocab`` of that entry.
+
+    Raises:
+        AssertionError: When no single entry has id ``model``, or its
+            ``meta.n_vocab`` is absent or not a positive int.
+    """
+    data = models.get("data")
+    rows = data if isinstance(data, list) else []
+    entries = [e for e in rows if isinstance(e, dict) and e.get("id") == model]
+    assert len(entries) == 1, f"/v1/models has {len(entries)} entries for {model}"
+    meta = entries[0].get("meta")
+    size = meta.get("n_vocab") if isinstance(meta, dict) else None
+    assert type(size) is int and size > 0, f"{model} meta.n_vocab is {size!r}"
+    return size
+
+
+def _prompt_controls(prompt: str, labels: Sequence[str]) -> dict[str, str]:
+    """Read each label's control from its option line in the rendered prompt.
+
+    An option line is ``<control> → <label>`` or ``Control <control> →
+    <label>``, with an optional ``: <description>`` after the label.
+
+    Args:
+        prompt: Rendered prompt that the scorer received.
+        labels: Option labels in question order.
+
+    Returns:
+        Label to control, in ``labels`` order.
+
+    Raises:
+        AssertionError: When a label has no option line or more than one.
+    """
+    controls: dict[str, str] = {}
+    for label in labels:
+        line = re.compile(
+            rf"^(?:Control )?([0-9A-Z]) → {re.escape(label)}(?::|$)", re.MULTILINE
+        )
+        found = line.findall(prompt)
+        assert len(found) == 1, f"prompt has {len(found)} option lines for {label}"
+        controls[label] = found[0]
+    return controls
 
 
 def _served_class(client: httpx.Client, model: str) -> ServedTemplateClass:
@@ -149,11 +205,13 @@ def _write_receipt(receipt: dict[str, object]) -> None:
 def test_native_choice_24_options_live_receipt(gemma4_choice_model: str) -> None:
     """One 24-option native Choice call returns a valid full distribution."""
     labels = list(_CRITERIA)
-    assert len(labels) == len(_CONTROLS) == 24
+    assert len(labels) == 24
     base = _LLAMA.base_url.rstrip("/")
     timeout = max(_LLAMA.timeout, 600.0)
     with httpx.Client(base_url=base, timeout=timeout) as client:
-        props = _props_summary(client, gemma4_choice_model)
+        props = _props_summary(_router_props(client, gemma4_choice_model))
+        models = client.get("/v1/models").raise_for_status().json()
+        n_vocab = _models_n_vocab(models, gemma4_choice_model)
         served = _served_class(client, gemma4_choice_model)
 
         def tokenize(text: str) -> tuple[int, ...]:
@@ -168,7 +226,7 @@ def test_native_choice_24_options_live_receipt(gemma4_choice_model: str) -> None
             return tuple(body.raise_for_status().json()["tokens"])
 
         with LlamaCppCandidateScoringAdapter(
-            base_url=base, timeout=timeout, client=client, n_vocab=_N_VOCAB
+            base_url=base, timeout=timeout, client=client, n_vocab=n_vocab
         ) as scorer:
             recorder = _RecordingPort(scorer)
             port = ScoringJudgmentAdapter(
@@ -184,15 +242,14 @@ def test_native_choice_24_options_live_receipt(gemma4_choice_model: str) -> None
     answer = response.choices["category"]
     distribution = dict(answer.probabilities)
     (request,) = recorder.requests
-    controls = {
-        spec.label: control
-        for spec, control in zip(request.candidates, _CONTROLS, strict=True)
-    }
+    controls = _prompt_controls(request.prefix, labels)
+    digits = [label for label in labels if controls[label].isdigit()]
     ranked = sorted(distribution.items(), key=lambda item: item[1], reverse=True)
     receipt: dict[str, object] = {
         "issue": 288,
         "model": response.model,
         "router_props": props,
+        "n_vocab": n_vocab,
         "served_template_class": served.value,
         "prompt_sha256": hashlib.sha256(request.prefix.encode()).hexdigest(),
         "prompt_chars": len(request.prefix),
@@ -206,8 +263,10 @@ def test_native_choice_24_options_live_receipt(gemma4_choice_model: str) -> None
         "confidence": answer.confidence,
         "distribution": {label: distribution[label] for label in labels},
         "top5": [[label, controls[label], prob] for label, prob in ranked[:5]],
-        "digit_mass": sum(distribution[label] for label in labels[:10]),
-        "letter_mass": sum(distribution[label] for label in labels[10:]),
+        "digit_mass": sum(distribution[label] for label in digits),
+        "letter_mass": sum(
+            distribution[label] for label in labels if label not in digits
+        ),
         "wall_seconds": round(wall_seconds, 3),
     }
     _write_receipt(receipt)

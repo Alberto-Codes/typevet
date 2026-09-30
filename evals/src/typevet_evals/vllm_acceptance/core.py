@@ -27,7 +27,7 @@ Examples:
         runners=SET_RUNNERS,
         deviations=DEVIATIONS,
     )
-    write_receipt(path, receipt, api_key=None)
+    write_receipt(path, receipt, settings=load_vllm_settings(env))
     ```
 
 See Also:
@@ -57,6 +57,7 @@ import httpx
 
 from typevet.adapters.diagnostics.redaction import REDACTED
 from typevet.adapters.inbound.backend_settings import (
+    VllmSettings,
     generation_adapter,
     load_backend,
     load_vllm_settings,
@@ -363,7 +364,8 @@ def run_acceptance(
         deviations: Recorded differences from the pre-registered protocol.
         caps: Call limits. Defaults to ``CallCaps()``.
         receipt_path: When set, the receipt is written there with
-            ``write_receipt`` even when the run raises.
+            ``write_receipt`` and the loaded settings, even when the run
+            raises.
 
     Returns:
         Receipt with ``pins``, ``sets``, ``calls``, ``coverage``, ``stopped``,
@@ -397,14 +399,14 @@ def run_acceptance(
     except AcceptanceStoppedError as exc:
         receipt["stopped"] = str(exc)
     except Exception as exc:
-        message = _masked(str(exc), settings.api_key)
+        message = _masked(str(exc), settings)
         receipt["stopped"] = f"error: {type(exc).__name__}"
         receipt["error"] = {"type": type(exc).__name__, "message": message}
         raise
     finally:
         _finish(receipt, counter)
         if receipt_path is not None:
-            write_receipt(receipt_path, receipt, api_key=settings.api_key)
+            write_receipt(receipt_path, receipt, settings=settings)
     return receipt
 
 
@@ -425,21 +427,37 @@ def _finish(receipt: dict[str, Any], counter: CountingTransport) -> dict[str, An
     return receipt
 
 
-def _masked(text: str, api_key: str | None) -> str:
-    for needle in {api_key, json.dumps(api_key)[1:-1]} if api_key else ():
-        text = text.replace(needle, REDACTED)
+def _key_needle(settings: VllmSettings, *, escaped: bool) -> str:
+    """Return the configured key, raw or JSON-escaped, without binding it.
+
+    Returns:
+        The key text to replace with ``REDACTED``.
+    """
+    return json.dumps(settings.api_key)[1:-1] if escaped else str(settings.api_key)
+
+
+def _masked(text: str, settings: VllmSettings | None) -> str:
+    if settings is None or not settings.api_key:
+        return text
+    for escaped in (False, True):
+        text = text.replace(_key_needle(settings, escaped=escaped), REDACTED)
     return text
 
 
 def write_receipt(
-    path: Path, receipt: Mapping[str, Any], *, api_key: str | None
+    path: Path, receipt: Mapping[str, Any], *, settings: VllmSettings | None
 ) -> str:
     """Write the receipt JSON once, with the key masked, and return its sha256.
+
+    The key is read from ``settings`` only inside the masking step, so no
+    frame of this function binds the raw key to a local. ``VllmSettings``
+    leaves the key out of its ``repr``.
 
     Args:
         path: New file path; parent directories are created.
         receipt: Mapping from ``run_acceptance``.
-        api_key: Configured key to mask, raw and JSON-escaped, or ``None``.
+        settings: vLLM settings whose ``api_key`` is masked, raw and
+            JSON-escaped, or ``None`` for no masking.
 
     Returns:
         Hex sha256 of the written bytes.
@@ -447,7 +465,7 @@ def write_receipt(
     Raises:
         FileExistsError: When ``path`` already exists.
     """
-    text = _masked(json.dumps(receipt, indent=2) + "\n", api_key)
+    text = _masked(json.dumps(receipt, indent=2) + "\n", settings)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("x", encoding="utf-8") as handle:
         handle.write(text)

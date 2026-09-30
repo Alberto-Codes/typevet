@@ -109,9 +109,7 @@ def test_collections_throughput_run() -> None:
                 options=RunOptions(run_seconds=remaining_run_seconds(sweep)),
             )
     path = Path(os.environ["TYPEVET_VLLM_RECEIPT"])
-    digest = write_receipt(
-        path, receipt, api_key=load_vllm_settings(os.environ).api_key
-    )
+    digest = write_receipt(path, receipt, settings=load_vllm_settings(os.environ))
     print(f"receipt {path} sha256 {digest} best level {best}")
     assert "audit" in receipt, f"no usable level: {sweep['stopped']}"
     assert receipt["audit"]["stopped"] is None, receipt["audit"]["stopped"]
