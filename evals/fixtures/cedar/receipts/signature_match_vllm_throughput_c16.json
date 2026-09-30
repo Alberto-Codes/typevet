@@ -1,0 +1,1741 @@
+{
+  "issue": 319,
+  "backend": "vllm",
+  "model": "google/gemma-4-31B-it",
+  "pins": {
+    "finished_utc": "2026-09-30T19:25:14.118372+00:00",
+    "dataset": "CEDAR offline signatures",
+    "archive_sha256": "f74b859352783b82399c1be48078b79ad637160ba11f16baf92911dd5568f4d6",
+    "slice_seed": 0,
+    "slice_per_kind": 20,
+    "concurrency": 16,
+    "slice_ids_sha256": "92e22934e428e33517fdea8734959e8cef961f0dc6d97f4ff679a86604e03a8a",
+    "server": {
+      "served": [
+        {
+          "id": "google/gemma-4-31B-it",
+          "root": "google/gemma-4-31B-it",
+          "max_model_len": 8192
+        }
+      ],
+      "build_info": "0.30.0"
+    },
+    "model_revision": "842da3794eaa0b77d5f08bae87a17459d91ff475"
+  },
+  "identity": {
+    "run_id": "89d2662cd55f48b7b11d3de33e9b7290",
+    "baseline_commit": "93a13fbbf63f043165266ce0eb2752bcfb774c5e",
+    "working_tree": {
+      "dirty": false,
+      "dirty_paths": [],
+      "dirty_digest": ""
+    },
+    "prompt_digests": {
+      "same_writer": "cfe0a648310938468b0bbfce8a31c51e0c45aa552cc2cf1a1af6468dc9cf1a3d",
+      "verdict": "9c552e98b61dd37511debe11817d3f973290780d9ce6741d4b58bdd14b590738",
+      "image_quality": "495cf5c145e46df3ae495a3a95dc62f81900c1745c14d081eb1b97a5b1c1c60c"
+    },
+    "code_path_digests": {
+      "metrics": "2316b6f5c8c52cf7993c932b8a96ae5eb7aec4a1ec7650beac53d6fb3c532ff0",
+      "pool": "12c9a8e9ad52cc803e9bf2c713f1367d7de3aace89ab8e53e2184ec4547392ef",
+      "request": "9729e1eb2b9e9be0660e473d6aa01ef293b220cee6f797420ecb4420b35a8c9d",
+      "runner": "86492d54aef7917518442518009184c9505c0cf8c855341de2aacc12ff1c3052",
+      "serving_metrics": "4d553282c0840a414c65ce3c651ba4e6120826d09bd2881c8a3b0bce1daab7a0"
+    },
+    "fixture_digests": {
+      "default_slice_ids": "e047c55d0f3161ad347f00b3014a3379e19bad061665349075ee14dee66308fa"
+    },
+    "runtime": {
+      "model": "google/gemma-4-31B-it",
+      "served_template": "vllm_chat",
+      "server_build": "0.30.0",
+      "template_identity": "unknown",
+      "projector_identity": "unknown",
+      "config_identity": "unknown"
+    },
+    "arm_call_counts": {
+      "judgments": 60
+    },
+    "identity_digest": "2245055db5f4cf2efc7fdc7479ce171c9ab8c0780b461f798bfc9b2f4591d8d5"
+  },
+  "stopped": null,
+  "wall_seconds": 13.363,
+  "throughput": {
+    "concurrency": 16,
+    "wall_seconds": 13.363,
+    "judgments": 60,
+    "images": 120,
+    "judgments_per_second": 4.489868611455695,
+    "images_per_second": 8.97973722291139,
+    "latency_seconds": {
+      "n": 60,
+      "p50": 3.4076462700031698,
+      "p95": 3.9685543871019036,
+      "p99": 3.9721462880261242
+    },
+    "discarded": 0,
+    "server": {
+      "e2e": {
+        "count": 180.0,
+        "sum": 139.33619737625122,
+        "percentile_basis": "bucket_upper_bound",
+        "p50": 0.5,
+        "p95": 2.5,
+        "p99": 2.5
+      },
+      "queue": {
+        "count": 180.0,
+        "sum": 0.004182375967502594,
+        "percentile_basis": "bucket_upper_bound",
+        "p50": 0.3,
+        "p95": 0.3,
+        "p99": 0.3
+      },
+      "prefill": {
+        "count": 180.0,
+        "sum": 104.11733736470342,
+        "percentile_basis": "bucket_upper_bound",
+        "p50": 0.3,
+        "p95": 2.0,
+        "p99": 2.0
+      },
+      "prefix_cache_hit_rate": 0.5459789782449279,
+      "counters": {
+        "prefix_cache_hits": 67008.0,
+        "prefix_cache_queries": 122730.0,
+        "mm_cache_hits": 360.0,
+        "mm_cache_queries": 360.0,
+        "prompt_tokens": 122730.0,
+        "prompt_tokens_cached": 67008.0,
+        "generation_tokens": 180.0,
+        "request_success": 180.0,
+        "preemptions": 0.0
+      },
+      "gauges": {
+        "kv_cache_usage_perc": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "num_requests_running": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "num_requests_waiting": {
+          "before": 0.0,
+          "after": 0.0
+        }
+      }
+    }
+  },
+  "metrics": {
+    "pairs": 60,
+    "same_writer_pairs": 20,
+    "accuracy": 0.7833333333333333,
+    "kind_accuracy": 0.7666666666666667,
+    "roc_auc": 0.9175,
+    "roc_auc_by_negative_kind": {
+      "genuine_skilled": 0.835,
+      "genuine_random": 1.0
+    },
+    "ece": 0.3011090379021938,
+    "reliability": [
+      {
+        "lower": 0.0,
+        "upper": 0.1,
+        "count": 22,
+        "mean_confidence": 0.0034518014563264298,
+        "fraction_same_writer": 0.0
+      },
+      {
+        "lower": 0.1,
+        "upper": 0.2,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_writer": null
+      },
+      {
+        "lower": 0.2,
+        "upper": 0.3,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_writer": null
+      },
+      {
+        "lower": 0.3,
+        "upper": 0.4,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_writer": null
+      },
+      {
+        "lower": 0.4,
+        "upper": 0.5,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_writer": null
+      },
+      {
+        "lower": 0.5,
+        "upper": 0.6,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_writer": null
+      },
+      {
+        "lower": 0.6,
+        "upper": 0.7,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_writer": null
+      },
+      {
+        "lower": 0.7,
+        "upper": 0.8,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_writer": null
+      },
+      {
+        "lower": 0.8,
+        "upper": 0.9,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_writer": null
+      },
+      {
+        "lower": 0.9,
+        "upper": 1.0,
+        "count": 38,
+        "mean_confidence": 0.999752701107696,
+        "fraction_same_writer": 0.5263157894736842
+      }
+    ],
+    "cannot_tell_rate": 0.0,
+    "skilled_false_accept": {
+      "threshold": 0.5,
+      "pairs": 20,
+      "noul_rate": 0.9,
+      "verdict_rate": 0.65
+    },
+    "noul_choice_agreement": {
+      "pairs": 60,
+      "decided": 60,
+      "agree": 55,
+      "rate": 0.9166666666666666,
+      "cannot_tell": 0,
+      "cannot_tell_rate": 0.0
+    },
+    "by_kind": {
+      "genuine_genuine": {
+        "pairs": 20,
+        "accuracy": 1.0,
+        "kind_accuracy": 1.0,
+        "cannot_tell_rate": 0.0,
+        "noul_accept_rate": 1.0,
+        "verdict_accept_rate": 1.0,
+        "mean_same_writer_confidence": 0.9997039951024206,
+        "verdict_counts": {
+          "same_writer": 20,
+          "different_writer": 0,
+          "skilled_forgery_suspected": 0,
+          "cannot_tell": 0
+        },
+        "quality_levels": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 20
+        }
+      },
+      "genuine_skilled": {
+        "pairs": 20,
+        "accuracy": 0.35,
+        "kind_accuracy": 0.3,
+        "cannot_tell_rate": 0.0,
+        "noul_accept_rate": 0.9,
+        "verdict_accept_rate": 0.65,
+        "mean_same_writer_confidence": 0.9036216177480186,
+        "verdict_counts": {
+          "same_writer": 13,
+          "different_writer": 1,
+          "skilled_forgery_suspected": 6,
+          "cannot_tell": 0
+        },
+        "quality_levels": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 20
+        }
+      },
+      "genuine_random": {
+        "pairs": 20,
+        "accuracy": 1.0,
+        "kind_accuracy": 1.0,
+        "cannot_tell_rate": 0.0,
+        "noul_accept_rate": 0.0,
+        "verdict_accept_rate": 0.0,
+        "mean_same_writer_confidence": 1.5008561422947432e-06,
+        "verdict_counts": {
+          "same_writer": 0,
+          "different_writer": 20,
+          "skilled_forgery_suspected": 0,
+          "cannot_tell": 0
+        },
+        "quality_levels": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 1,
+          "4": 19
+        }
+      }
+    },
+    "mean_latency_seconds": 3.3510636862056953,
+    "confidence_note": "same_writer_confidence is model confidence from the Noul answer. It is not a match percentage or a forensic score."
+  },
+  "pairs": [
+    {
+      "pair_id": "genuine_genuine:original_31_15:original_31_6",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.999999987373896,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999998027921506,
+        "different_writer": 1.197930891392035e-07,
+        "skilled_forgery_suspected": 7.734423147897186e-08,
+        "cannot_tell": 7.052880982534833e-11
+      },
+      "quality_score": 3.9999997588896044,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 4.113909855579365e-11,
+        "1": 4.3113405117547194e-11,
+        "2": 1.2898374380002987e-09,
+        "3": 2.38236824465103e-07,
+        "4": 0.9999997603890857
+      },
+      "latency_seconds": 3.553,
+      "input_tokens": 2059
+    },
+    {
+      "pair_id": "genuine_random:original_2_18:original_33_24",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 7.582555902598633e-10,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 9.83322076481627e-09,
+        "different_writer": 0.9999999747675992,
+        "skilled_forgery_suspected": 1.5229990253705742e-08,
+        "cannot_tell": 1.6918990900588116e-10
+      },
+      "quality_score": 3.999966584633985,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 4.320271855030311e-10,
+        "1": 2.789377156968216e-10,
+        "2": 9.930870557924316e-08,
+        "3": 3.321418368210357e-05,
+        "4": 0.9999666857966474
+      },
+      "latency_seconds": 3.448,
+      "input_tokens": 2026
+    },
+    {
+      "pair_id": "genuine_random:original_21_10:original_48_10",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 2.9989593858448655e-09,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 2.672943421678386e-08,
+        "different_writer": 0.9999998840228977,
+        "skilled_forgery_suspected": 8.764244068525501e-08,
+        "cannot_tell": 1.6052272949184353e-09
+      },
+      "quality_score": 3.999996198219483,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 3.471533168552777e-10,
+        "1": 2.2766870355969996e-10,
+        "2": 3.653465414155657e-08,
+        "3": 3.726639590054878e-06,
+        "4": 0.9999962362509339
+      },
+      "latency_seconds": 3.972,
+      "input_tokens": 2089
+    },
+    {
+      "pair_id": "genuine_genuine:original_41_14:original_41_3",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9940889317539477,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9190912783480468,
+        "different_writer": 0.0754436035079435,
+        "skilled_forgery_suspected": 0.00546511630790383,
+        "cannot_tell": 1.836105799182656e-09
+      },
+      "quality_score": 3.9999809901847403,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 2.461649086155081e-10,
+        "1": 2.923280619861094e-10,
+        "2": 4.139857221121805e-08,
+        "3": 1.8925156471666552e-05,
+        "4": 0.9999810329064632
+      },
+      "latency_seconds": 3.972,
+      "input_tokens": 2071
+    },
+    {
+      "pair_id": "genuine_skilled:original_6_2:forgeries_6_18",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9975273764792724,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.8922518613807774,
+        "different_writer": 0.10656428348241709,
+        "skilled_forgery_suspected": 0.0011838225385516971,
+        "cannot_tell": 3.259825382785549e-08
+      },
+      "quality_score": 3.999987567522163,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 2.6204314034068e-10,
+        "1": 3.063594690644732e-10,
+        "2": 1.0571574795068798e-07,
+        "3": 1.2219079090136778e-05,
+        "4": 0.9999876746367593
+      },
+      "latency_seconds": 3.813,
+      "input_tokens": 2071
+    },
+    {
+      "pair_id": "genuine_skilled:original_49_22:forgeries_49_8",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9999999530883508,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999972248013725,
+        "different_writer": 2.4061017384511665e-06,
+        "skilled_forgery_suspected": 3.689876523257033e-07,
+        "cannot_tell": 1.0923674575074714e-10
+      },
+      "quality_score": 3.999999804310381,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 3.3315443044336455e-11,
+        "1": 4.277787563714084e-11,
+        "2": 4.944450149111935e-09,
+        "3": 1.8553912302187325e-07,
+        "4": 0.9999998094403334
+      },
+      "latency_seconds": 3.969,
+      "input_tokens": 2077
+    },
+    {
+      "pair_id": "genuine_random:original_26_19:original_5_18",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 4.099092445400765e-09,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 9.422428222708997e-07,
+        "different_writer": 0.9999971775347893,
+        "skilled_forgery_suspected": 1.8738736060951063e-06,
+        "cannot_tell": 6.34878219673003e-09
+      },
+      "quality_score": 3.999997690641793,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 3.111872017391627e-10,
+        "1": 2.040815494033178e-10,
+        "2": 2.358861987298239e-08,
+        "3": 2.260323973921637e-06,
+        "4": 0.9999977155721375
+      },
+      "latency_seconds": 3.969,
+      "input_tokens": 1999
+    },
+    {
+      "pair_id": "genuine_skilled:original_47_6:forgeries_47_13",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9999999176674553,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999991139064492,
+        "different_writer": 6.47594720953209e-07,
+        "skilled_forgery_suspected": 2.3823678404984265e-07,
+        "cannot_tell": 2.620458256084135e-10
+      },
+      "quality_score": 3.999998314149148,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 9.640136873037004e-11,
+        "1": 1.1628224704815819e-10,
+        "2": 1.5713419947689017e-08,
+        "3": 1.6536895596475847e-06,
+        "4": 0.9999983303843368
+      },
+      "latency_seconds": 3.852,
+      "input_tokens": 2017
+    },
+    {
+      "pair_id": "genuine_skilled:original_39_2:forgeries_39_5",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.07585817270885642,
+      "verdict": "skilled_forgery_suspected",
+      "verdict_probabilities": {
+        "same_writer": 0.0004412696879209044,
+        "different_writer": 0.20172410495886275,
+        "skilled_forgery_suspected": 0.7978343119747855,
+        "cannot_tell": 3.1337843093397065e-07
+      },
+      "quality_score": 3.9996644930512146,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 3.363609968896239e-10,
+        "1": 2.538986010167894e-10,
+        "2": 7.731822517038809e-08,
+        "3": 0.00033535020519487617,
+        "4": 0.9996645718863203
+      },
+      "latency_seconds": 3.694,
+      "input_tokens": 2035
+    },
+    {
+      "pair_id": "genuine_skilled:original_16_2:forgeries_16_11",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9999998362623722,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999987357434285,
+        "different_writer": 1.1365631590684772e-06,
+        "skilled_forgery_suspected": 1.2751885232746197e-07,
+        "cannot_tell": 1.7456016966494832e-10
+      },
+      "quality_score": 3.999290038948045,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 2.701723797062243e-10,
+        "1": 2.701723797062243e-10,
+        "2": 1.4439547267899522e-07,
+        "3": 0.0007096703698029907,
+        "4": 0.9992901846943796
+      },
+      "latency_seconds": 3.694,
+      "input_tokens": 2038
+    },
+    {
+      "pair_id": "genuine_genuine:original_6_14:original_6_23",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999983463098225,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.999959628233833,
+        "different_writer": 1.892474008609237e-05,
+        "skilled_forgery_suspected": 2.1444539953247326e-05,
+        "cannot_tell": 2.4861275472658385e-09
+      },
+      "quality_score": 3.999994512120361,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.7185330880360835e-10,
+        "1": 1.6398357282926447e-10,
+        "2": 3.224171071627613e-08,
+        "3": 5.422216854065428e-06,
+        "4": 0.9999945452055984
+      },
+      "latency_seconds": 3.852,
+      "input_tokens": 2071
+    },
+    {
+      "pair_id": "genuine_skilled:original_27_19:forgeries_27_17",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9993736657413675,
+      "verdict": "skilled_forgery_suspected",
+      "verdict_probabilities": {
+        "same_writer": 0.43693756593331934,
+        "different_writer": 0.0020234223594650263,
+        "skilled_forgery_suspected": 0.5610389401640579,
+        "cannot_tell": 7.154315779552324e-08
+      },
+      "quality_score": 3.999992031723542,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.6656558587343795e-10,
+        "1": 1.8874353596665582e-10,
+        "2": 3.889084446113079e-08,
+        "3": 7.88926227619131e-06,
+        "4": 0.9999920714915702
+      },
+      "latency_seconds": 3.695,
+      "input_tokens": 2077
+    },
+    {
+      "pair_id": "genuine_genuine:original_39_16:original_39_1",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999997761970248,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999302301913926,
+        "different_writer": 1.147809487686351e-05,
+        "skilled_forgery_suspected": 5.8290575533222804e-05,
+        "cannot_tell": 1.138197310917435e-09
+      },
+      "quality_score": 3.999999335406161,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.1095728869936183e-10,
+        "1": 8.375495563960567e-11,
+        "2": 8.152014395370434e-09,
+        "3": 6.475947155959519e-07,
+        "4": 0.9999993440585576
+      },
+      "latency_seconds": 3.912,
+      "input_tokens": 2017
+    },
+    {
+      "pair_id": "genuine_random:original_53_9:original_17_6",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 2.409731278250405e-09,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 6.412063504267686e-08,
+        "different_writer": 0.9999997986745316,
+        "skilled_forgery_suspected": 1.357432559956436e-07,
+        "cannot_tell": 1.4615773535348689e-09
+      },
+      "quality_score": 3.9999985900296604,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.5893887998119834e-10,
+        "1": 1.5647476104312003e-10,
+        "2": 1.8953989682477956e-08,
+        "3": 1.3709571804178735e-06,
+        "4": 0.9999986097734163
+      },
+      "latency_seconds": 3.968,
+      "input_tokens": 2101
+    },
+    {
+      "pair_id": "genuine_skilled:original_38_8:forgeries_38_23",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9999986290429564,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9202036799441214,
+        "different_writer": 0.004261388682368196,
+        "skilled_forgery_suspected": 0.07553492174137287,
+        "cannot_tell": 9.632137560370884e-09
+      },
+      "quality_score": 3.9999756203387453,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 2.96929999197434e-10,
+        "1": 1.540452542612436e-10,
+        "2": 3.8890155207772966e-08,
+        "3": 2.430023108860808e-05,
+        "4": 0.999975660427781
+      },
+      "latency_seconds": 3.85,
+      "input_tokens": 2080
+    },
+    {
+      "pair_id": "genuine_skilled:original_14_17:forgeries_14_4",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 5.1442207479139826e-05,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.000379592260220213,
+        "different_writer": 0.9985882994197695,
+        "skilled_forgery_suspected": 0.0010318387431803024,
+        "cannot_tell": 2.695768299554705e-07
+      },
+      "quality_score": 3.9998598855944345,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 4.4569307050728254e-10,
+        "1": 5.210679900599895e-10,
+        "2": 1.444778497805599e-07,
+        "3": 0.00013982210389026933,
+        "4": 0.999860032451499
+      },
+      "latency_seconds": 3.85,
+      "input_tokens": 2035
+    },
+    {
+      "pair_id": "genuine_skilled:original_25_9:forgeries_25_22",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9997040429347599,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9556489912457712,
+        "different_writer": 0.007296468946698323,
+        "skilled_forgery_suspected": 0.03705453563759474,
+        "cannot_tell": 4.169935659546267e-09
+      },
+      "quality_score": 3.99999644789552,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.1997304742835513e-10,
+        "1": 1.8293705149978023e-10,
+        "2": 2.5109891038888745e-08,
+        "3": 3.500855994677755e-06,
+        "4": 0.9999964737312043
+      },
+      "latency_seconds": 3.502,
+      "input_tokens": 2038
+    },
+    {
+      "pair_id": "genuine_random:original_1_8:original_7_14",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 1.5229977697181206e-08,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 8.31524802909072e-07,
+        "different_writer": 0.99999540959783,
+        "skilled_forgery_suspected": 3.7266356209126014e-06,
+        "cannot_tell": 3.2241746273338714e-08
+      },
+      "quality_score": 3.9998599192167563,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 6.285280571653435e-10,
+        "1": 3.812215371603955e-10,
+        "2": 1.2750127227783557e-07,
+        "3": 0.0001398221229216897,
+        "4": 0.9998600493660563
+      },
+      "latency_seconds": 3.527,
+      "input_tokens": 2092
+    },
+    {
+      "pair_id": "genuine_genuine:original_47_8:original_47_17",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999999804443122,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999991829561031,
+        "different_writer": 6.893609575011719e-07,
+        "skilled_forgery_suspected": 1.2751895496000648e-07,
+        "cannot_tell": 1.6398439199913243e-10
+      },
+      "quality_score": 3.999999881785117,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 2.8719709230112582e-11,
+        "1": 9.056077024996303e-11,
+        "2": 2.6465736492321384e-09,
+        "3": 1.1253517515820516e-07,
+        "4": 0.9999998846989708
+      },
+      "latency_seconds": 3.38,
+      "input_tokens": 2008
+    },
+    {
+      "pair_id": "genuine_genuine:original_1_14:original_1_2",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999952149037938,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.999724399700347,
+        "different_writer": 9.60851828896532e-05,
+        "skilled_forgery_suspected": 0.0001795107545027303,
+        "cannot_tell": 4.3622605544057666e-09
+      },
+      "quality_score": 3.9999483893608265,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 5.90500393959807e-10,
+        "1": 4.744803963189885e-10,
+        "2": 8.232830916563138e-08,
+        "3": 5.144219711271163e-05,
+        "4": 0.9999484744095974
+      },
+      "latency_seconds": 3.254,
+      "input_tokens": 2062
+    },
+    {
+      "pair_id": "genuine_random:original_42_18:original_30_12",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 3.028843768268833e-08,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 7.734425896398364e-08,
+        "different_writer": 0.9999998005271293,
+        "skilled_forgery_suspected": 1.1979301746524397e-07,
+        "cannot_tell": 2.3355942434505083e-09
+      },
+      "quality_score": 3.9999968653397957,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.3383980504440164e-10,
+        "1": 1.0423454497470415e-10,
+        "2": 2.215943402275632e-08,
+        "3": 3.0894932738205177e-06,
+        "4": 0.9999968881092179
+      },
+      "latency_seconds": 3.253,
+      "input_tokens": 2035
+    },
+    {
+      "pair_id": "genuine_random:original_48_10:original_2_18",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 2.1940873899114697e-09,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 5.602794300689789e-09,
+        "different_writer": 0.9999999762528934,
+        "skilled_forgery_suspected": 1.7257821406006606e-08,
+        "cannot_tell": 8.864907884483067e-10
+      },
+      "quality_score": 3.999986861444255,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 5.211347468988543e-10,
+        "1": 3.695398709089264e-10,
+        "2": 6.411980974818635e-08,
+        "3": 1.3007122967167943e-05,
+        "4": 0.9999869278665485
+      },
+      "latency_seconds": 3.628,
+      "input_tokens": 2056
+    },
+    {
+      "pair_id": "genuine_skilled:original_12_2:forgeries_12_6",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.999999789756709,
+      "verdict": "skilled_forgery_suspected",
+      "verdict_probabilities": {
+        "same_writer": 0.4072842853236829,
+        "different_writer": 0.0001205743878654277,
+        "skilled_forgery_suspected": 0.5925951384548684,
+        "cannot_tell": 1.8335833520710076e-09
+      },
+      "quality_score": 3.99999771447784,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.0587596284377517e-10,
+        "1": 9.946126253339659e-11,
+        "2": 1.2237597413924859e-08,
+        "3": 2.26032507807627e-06,
+        "4": 0.9999977272319874
+      },
+      "latency_seconds": 3.513,
+      "input_tokens": 2035
+    },
+    {
+      "pair_id": "genuine_genuine:original_35_4:original_35_19",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999999397643083,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9692732396704915,
+        "different_writer": 0.001457243713801586,
+        "skilled_forgery_suspected": 0.029269515441247763,
+        "cannot_tell": 1.174459238367373e-09
+      },
+      "quality_score": 3.9999904339705985,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.4699323640341884e-10,
+        "1": 1.7185250414139167e-10,
+        "2": 2.433720613080967e-08,
+        "3": 9.516251458427741e-06,
+        "4": 0.9999904590924896
+      },
+      "latency_seconds": 3.331,
+      "input_tokens": 2041
+    },
+    {
+      "pair_id": "genuine_genuine:original_26_16:original_26_24",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999999973534257,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999998843685804,
+        "different_writer": 1.0571702613795768e-07,
+        "skilled_forgery_suspected": 9.833215187092495e-09,
+        "cannot_tell": 8.117815945147866e-11
+      },
+      "quality_score": 3.999975603922105,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 3.2611388092545504e-10,
+        "1": 2.38590012101507e-10,
+        "2": 4.691049241852352e-08,
+        "3": 2.430023668430221e-05,
+        "4": 0.9999756522881192
+      },
+      "latency_seconds": 3.589,
+      "input_tokens": 2029
+    },
+    {
+      "pair_id": "genuine_genuine:original_49_23:original_49_7",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999999677581258,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999975891773191,
+        "different_writer": 2.1233773458197e-06,
+        "skilled_forgery_suspected": 2.8736787451471606e-07,
+        "cannot_tell": 7.746060002829607e-11
+      },
+      "quality_score": 3.999999984304737,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.09434271578389e-11,
+        "1": 1.5706382234094555e-11,
+        "2": 6.485702121745484e-10,
+        "3": 1.4307229765257242e-08,
+        "4": 0.9999999850175503
+      },
+      "latency_seconds": 3.588,
+      "input_tokens": 1984
+    },
+    {
+      "pair_id": "genuine_random:original_29_13:original_26_19",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 7.734415776743497e-08,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 2.6995769471299863e-07,
+        "different_writer": 0.9999989466997293,
+        "skilled_forgery_suspected": 7.811484905194913e-07,
+        "cannot_tell": 2.1940853452335144e-09
+      },
+      "quality_score": 3.9994463803740246,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 6.687885680073467e-10,
+        "1": 8.860009017082362e-10,
+        "2": 4.1788768044694196e-07,
+        "3": 0.0005527785174575145,
+        "4": 0.9994468020400725
+      },
+      "latency_seconds": 3.527,
+      "input_tokens": 2017
+    },
+    {
+      "pair_id": "genuine_genuine:original_20_23:original_20_18",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.999999974890021,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999795814056375,
+        "different_writer": 1.3007030509934952e-05,
+        "skilled_forgery_suspected": 7.411182585312035e-06,
+        "cannot_tell": 3.812672518676221e-10
+      },
+      "quality_score": 3.999992971704012,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 2.2066338722645797e-10,
+        "1": 2.2413832994425125e-10,
+        "2": 3.224161877964886e-08,
+        "3": 6.962257682088041e-06,
+        "4": 0.9999930050558975
+      },
+      "latency_seconds": 3.214,
+      "input_tokens": 2041
+    },
+    {
+      "pair_id": "genuine_skilled:original_18_7:forgeries_18_9",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9999921107392948,
+      "verdict": "skilled_forgery_suspected",
+      "verdict_probabilities": {
+        "same_writer": 0.41328236202654356,
+        "different_writer": 0.1184073650630557,
+        "skilled_forgery_suspected": 0.46831026921018193,
+        "cannot_tell": 3.7002188266572927e-09
+      },
+      "quality_score": 3.9988297934925967,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 5.045163478897829e-10,
+        "1": 6.683755682139343e-10,
+        "2": 3.462271160298082e-07,
+        "3": 0.0011695100299786074,
+        "4": 0.9988301425700133
+      },
+      "latency_seconds": 3.291,
+      "input_tokens": 2065
+    },
+    {
+      "pair_id": "genuine_skilled:original_9_22:forgeries_9_18",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9999995262094985,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9978944282845379,
+        "different_writer": 0.00017918209203186545,
+        "skilled_forgery_suspected": 0.0019263890341433324,
+        "cannot_tell": 5.892868757337163e-10
+      },
+      "quality_score": 3.999619435312464,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 6.483239267470151e-10,
+        "1": 1.0360186850358578e-09,
+        "2": 2.872592676085455e-07,
+        "3": 0.0003799844676495398,
+        "4": 0.9996197265887403
+      },
+      "latency_seconds": 3.472,
+      "input_tokens": 2014
+    },
+    {
+      "pair_id": "genuine_random:original_5_18:original_21_10",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 3.8891118846193854e-08,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 2.1024312882327256e-07,
+        "different_writer": 0.9999987803942019,
+        "skilled_forgery_suspected": 1.0030138709578758e-06,
+        "cannot_tell": 6.348798427667377e-09
+      },
+      "quality_score": 3.9999929859090435,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.9171594880295658e-10,
+        "1": 2.8333780506323157e-10,
+        "2": 2.5109834051475887e-08,
+        "3": 6.962254411723118e-06,
+        "4": 0.9999930121607006
+      },
+      "latency_seconds": 3.469,
+      "input_tokens": 2059
+    },
+    {
+      "pair_id": "genuine_genuine:original_24_8:original_24_12",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999980052698029,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9044840009749694,
+        "different_writer": 0.021271425182724554,
+        "skilled_forgery_suspected": 0.07424456908169912,
+        "cannot_tell": 4.760607038891847e-09
+      },
+      "quality_score": 3.999992068178194,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.4930830432014987e-10,
+        "1": 1.0923628897214305e-10,
+        "2": 2.0816751969689896e-08,
+        "3": 7.889263359911524e-06,
+        "4": 0.9999920896613435
+      },
+      "latency_seconds": 3.145,
+      "input_tokens": 1999
+    },
+    {
+      "pair_id": "genuine_skilled:original_34_7:forgeries_34_12",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9999975938979471,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.5311021165431897,
+        "different_writer": 0.00020188724595015308,
+        "skilled_forgery_suspected": 0.46869597280548775,
+        "cannot_tell": 2.340537240213933e-08
+      },
+      "quality_score": 3.9999997377748304,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 7.391356241097185e-11,
+        "1": 4.3113399193074506e-11,
+        "2": 4.099094337277162e-09,
+        "3": 2.536019865579266e-07,
+        "4": 0.9999997421818921
+      },
+      "latency_seconds": 3.538,
+      "input_tokens": 2071
+    },
+    {
+      "pair_id": "genuine_genuine:original_44_8:original_44_4",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999999953551142,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999999155105785,
+        "different_writer": 8.233250530422056e-08,
+        "skilled_forgery_suspected": 2.1265819891367575e-09,
+        "cannot_tell": 3.0334062919711627e-11
+      },
+      "quality_score": 3.9999998589337653,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 3.129697148546175e-11,
+        "1": 7.507753167246694e-11,
+        "2": 2.4862263932767795e-09,
+        "3": 1.3574336163648868e-07,
+        "4": 0.9999998616640375
+      },
+      "latency_seconds": 3.426,
+      "input_tokens": 2035
+    },
+    {
+      "pair_id": "genuine_random:original_14_4:original_53_9",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 3.224184711459407e-08,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 9.422424731519788e-07,
+        "different_writer": 0.9999969262293332,
+        "skilled_forgery_suspected": 2.123376191237792e-06,
+        "cannot_tell": 8.152002459497162e-09
+      },
+      "quality_score": 3.999993807262101,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.829367426508466e-10,
+        "1": 2.1724275708485203e-10,
+        "2": 2.358851982366573e-08,
+        "3": 6.144177384141476e-06,
+        "4": 0.9999938318339165
+      },
+      "latency_seconds": 3.597,
+      "input_tokens": 2110
+    },
+    {
+      "pair_id": "genuine_genuine:original_25_20:original_25_3",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999999468421311,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999905233396316,
+        "different_writer": 8.939693635418477e-06,
+        "skilled_forgery_suspected": 5.368703323608547e-07,
+        "cannot_tell": 9.640054716575029e-11
+      },
+      "quality_score": 3.999998521946153,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.4471558922559725e-10,
+        "1": 6.421715344565728e-11,
+        "2": 8.953236469763845e-09,
+        "3": 1.4593758597487176e-06,
+        "4": 0.9999985314619709
+      },
+      "latency_seconds": 3.408,
+      "input_tokens": 2023
+    },
+    {
+      "pair_id": "genuine_skilled:original_51_10:forgeries_51_22",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9999724642957666,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9519301392058721,
+        "different_writer": 0.0006760363116493605,
+        "skilled_forgery_suspected": 0.047393815689077246,
+        "cannot_tell": 8.79340133755975e-09
+      },
+      "quality_score": 3.9998763778098945,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 4.598486775007799e-10,
+        "1": 2.5395255885403025e-10,
+        "2": 1.1252126144681216e-07,
+        "3": 0.00012339454633077197,
+        "4": 0.9998764922186066
+      },
+      "latency_seconds": 3.467,
+      "input_tokens": 2041
+    },
+    {
+      "pair_id": "genuine_random:original_23_23:original_29_13",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 7.73441485453245e-08,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 2.8736863926494513e-07,
+        "different_writer": 0.9999995351410962,
+        "skilled_forgery_suspected": 1.7429789035408893e-07,
+        "cannot_tell": 3.1923741743069673e-09
+      },
+      "quality_score": 3.9999982209593425,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.3383993684540225e-10,
+        "1": 8.507383996137404e-11,
+        "2": 8.953229505736413e-09,
+        "3": 1.7603436168629804e-06,
+        "4": 0.9999982304842397
+      },
+      "latency_seconds": 3.367,
+      "input_tokens": 2017
+    },
+    {
+      "pair_id": "genuine_skilled:original_36_5:forgeries_36_7",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9999957771660519,
+      "verdict": "skilled_forgery_suspected",
+      "verdict_probabilities": {
+        "same_writer": 7.48453832359096e-05,
+        "different_writer": 1.1477911264638882e-05,
+        "skilled_forgery_suspected": 0.9999136688049706,
+        "cannot_tell": 7.900528908939036e-09
+      },
+      "quality_score": 3.9999149300638774,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 3.6951304697106363e-10,
+        "1": 8.070906968011467e-10,
+        "2": 1.2750821202742993e-07,
+        "3": 8.481102037449148e-05,
+        "4": 0.9999150602948098
+      },
+      "latency_seconds": 3.235,
+      "input_tokens": 2065
+    },
+    {
+      "pair_id": "genuine_genuine:original_32_20:original_32_2",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999999918479764,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999960944810162,
+        "different_writer": 2.9023097655236822e-06,
+        "skilled_forgery_suspected": 1.0030114160788317e-06,
+        "cannot_tell": 1.9780218167160326e-10
+      },
+      "quality_score": 3.9999997229986257,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 3.7751362122074045e-11,
+        "1": 3.2039164905836566e-11,
+        "2": 3.398269320916285e-09,
+        "3": 2.699577121571024e-07,
+        "4": 0.9999997265742279
+      },
+      "latency_seconds": 3.428,
+      "input_tokens": 2050
+    },
+    {
+      "pair_id": "genuine_skilled:original_22_4:forgeries_22_14",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9999977396751633,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.5923464573870229,
+        "different_writer": 0.0005401500840467858,
+        "skilled_forgery_suspected": 0.40711336949191435,
+        "cannot_tell": 2.303701599522994e-08
+      },
+      "quality_score": 3.9999934115279454,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.3383926320158657e-10,
+        "1": 1.0754286922838645e-10,
+        "2": 2.3588499232899983e-08,
+        "3": 6.540437070778371e-06,
+        "4": 0.9999934357330479
+      },
+      "latency_seconds": 3.345,
+      "input_tokens": 2059
+    },
+    {
+      "pair_id": "genuine_random:original_7_14:original_9_11",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 5.101408439999894e-09,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 8.315259172909863e-07,
+        "different_writer": 0.9999967497479949,
+        "skilled_forgery_suspected": 2.406100021746901e-06,
+        "cannot_tell": 1.2626066175536879e-08
+      },
+      "quality_score": 3.9999988279500758,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.0754346388032292e-10,
+        "1": 1.80101409979288e-10,
+        "2": 1.7257810127698506e-08,
+        "3": 1.1365638262063587e-06,
+        "4": 0.9999988458907189
+      },
+      "latency_seconds": 3.378,
+      "input_tokens": 2032
+    },
+    {
+      "pair_id": "genuine_skilled:original_3_22:forgeries_3_1",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9999724643187435,
+      "verdict": "skilled_forgery_suspected",
+      "verdict_probabilities": {
+        "same_writer": 0.022963309945617096,
+        "different_writer": 0.00061195148190565,
+        "skilled_forgery_suspected": 0.976424726990991,
+        "cannot_tell": 1.158148617340965e-08
+      },
+      "quality_score": 3.9148999435981775,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 6.937288565008801e-10,
+        "1": 7.619120944976568e-10,
+        "2": 5.228663615153721e-07,
+        "3": 0.0850990056084479,
+        "4": 0.9149004700695497
+      },
+      "latency_seconds": 3.276,
+      "input_tokens": 2011
+    },
+    {
+      "pair_id": "genuine_genuine:original_29_14:original_29_15",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999999837877616,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999999226206859,
+        "different_writer": 7.26581727680838e-08,
+        "skilled_forgery_suspected": 4.644881584251041e-09,
+        "cannot_tell": 7.625981723009587e-11
+      },
+      "quality_score": 3.999999739043571,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 4.625390893605587e-11,
+        "1": 5.2412545359185563e-11,
+        "2": 3.5061399358148956e-09,
+        "3": 2.5360189601659e-07,
+        "4": 0.9999997427932976
+      },
+      "latency_seconds": 3.315,
+      "input_tokens": 2083
+    },
+    {
+      "pair_id": "genuine_skilled:original_2_2:forgeries_2_3",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9999921107336521,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9851567460917192,
+        "different_writer": 0.012401294047818721,
+        "skilled_forgery_suspected": 0.002441959585655785,
+        "cannot_tell": 2.7480621759129624e-10
+      },
+      "quality_score": 3.9999338465604386,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.8292573433200472e-10,
+        "1": 2.276547546040586e-10,
+        "2": 4.993389187840661e-08,
+        "3": 6.605215711051341e-05,
+        "4": 0.9999338974984171
+      },
+      "latency_seconds": 3.162,
+      "input_tokens": 2038
+    },
+    {
+      "pair_id": "genuine_random:original_33_24:original_44_2",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 8.152013845252428e-09,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 3.028839465979457e-08,
+        "different_writer": 0.9999996526668863,
+        "skilled_forgery_suspected": 3.059022413790376e-07,
+        "cannot_tell": 1.1142477701425321e-08
+      },
+      "quality_score": 3.9999966448475988,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 2.312541213522813e-10,
+        "1": 3.3125623451399575e-10,
+        "2": 3.2241741061078684e-08,
+        "3": 3.28875013363941e-06,
+        "4": 0.9999966784456149
+      },
+      "latency_seconds": 3.109,
+      "input_tokens": 2023
+    },
+    {
+      "pair_id": "genuine_genuine:original_8_15:original_8_21",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999999715466322,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9994667878477058,
+        "different_writer": 4.537570466298718e-05,
+        "skilled_forgery_suspected": 0.00048783503177709625,
+        "cannot_tell": 1.415854243913038e-09
+      },
+      "quality_score": 3.9999990284663363,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 9.056073723057419e-11,
+        "1": 1.0423476961842244e-10,
+        "2": 1.4307236757805747e-08,
+        "3": 9.422442432611334e-07,
+        "4": 0.9999990432537246
+      },
+      "latency_seconds": 3.301,
+      "input_tokens": 2053
+    },
+    {
+      "pair_id": "genuine_random:original_41_22:original_1_8",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 1.4738988999940383e-05,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 3.53498817082271e-05,
+        "different_writer": 0.9997846549173768,
+        "skilled_forgery_suspected": 0.00017952151222912444,
+        "cannot_tell": 4.7368868585206474e-07
+      },
+      "quality_score": 3.0038083200935564,
+      "quality_level": 3,
+      "quality_probabilities": {
+        "0": 7.162983162873989e-09,
+        "1": 3.0457779443363395e-07,
+        "2": 0.000260127334206934,
+        "3": 0.9956704828527142,
+        "4": 0.00406907807230142
+      },
+      "latency_seconds": 3.169,
+      "input_tokens": 2074
+    },
+    {
+      "pair_id": "genuine_skilled:original_19_20:forgeries_19_4",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9999999956365413,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999957004732977,
+        "different_writer": 3.0894903412779685e-06,
+        "skilled_forgery_suspected": 1.2098618012080765e-06,
+        "cannot_tell": 1.7455984791675314e-10
+      },
+      "quality_score": 3.9999966788737265,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.2378150196375903e-10,
+        "1": 1.5166026648263883e-10,
+        "2": 1.571338114208471e-08,
+        "3": 3.2887494048686086e-06,
+        "4": 0.9999966952617724
+      },
+      "latency_seconds": 2.56,
+      "input_tokens": 2077
+    },
+    {
+      "pair_id": "genuine_random:original_9_11:original_3_5",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 9.146321380123337e-10,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 2.358864636298009e-08,
+        "different_writer": 0.9999999114315484,
+        "skilled_forgery_suspected": 6.412058876643534e-08,
+        "cannot_tell": 8.592163809635763e-10
+      },
+      "quality_score": 3.9992899286219052,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 9.139827465002488e-10,
+        "1": 8.586073312484714e-10,
+        "2": 1.9736512935122355e-07,
+        "3": 0.0007096704160831593,
+        "4": 0.9992901304461974
+      },
+      "latency_seconds": 2.481,
+      "input_tokens": 2014
+    },
+    {
+      "pair_id": "genuine_random:original_40_18:original_41_22",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 1.522998859053551e-08,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 1.444978557345727e-07,
+        "different_writer": 0.9999990697092404,
+        "skilled_forgery_suspected": 7.811480278935168e-07,
+        "cannot_tell": 4.644875961434378e-09
+      },
+      "quality_score": 3.99682401246969,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.065917999270983e-09,
+        "1": 2.9894409570170925e-09,
+        "2": 1.6484428582308637e-06,
+        "3": 0.003172677412598813,
+        "4": 0.996825670089184
+      },
+      "latency_seconds": 2.845,
+      "input_tokens": 2035
+    },
+    {
+      "pair_id": "genuine_random:original_30_12:original_23_23",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 4.1399375473642086e-08,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 1.7429775448591956e-07,
+        "different_writer": 0.9999994709177559,
+        "skilled_forgery_suspected": 3.466324752102032e-07,
+        "cannot_tell": 8.152014457432937e-09
+      },
+      "quality_score": 3.9999925299548056,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 2.969350881132413e-10,
+        "1": 2.241383637279699e-10,
+        "2": 2.8453132996010785e-08,
+        "3": 7.4112787732728256e-06,
+        "4": 0.9999925597470204
+      },
+      "latency_seconds": 2.726,
+      "input_tokens": 1999
+    },
+    {
+      "pair_id": "genuine_genuine:original_4_19:original_4_14",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999999586006098,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999577260068747,
+        "different_writer": 2.7535285248732935e-05,
+        "skilled_forgery_suspected": 1.4738576116914671e-05,
+        "cannot_tell": 1.3175969799672533e-10
+      },
+      "quality_score": 3.999975552087633,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 3.0635585089944387e-10,
+        "1": 3.812660165761497e-10,
+        "2": 7.265644206900301e-08,
+        "3": 2.4300230261710098e-05,
+        "4": 0.9999756264256744
+      },
+      "latency_seconds": 2.322,
+      "input_tokens": 2047
+    },
+    {
+      "pair_id": "genuine_random:original_44_2:original_14_4",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 2.0816896353964197e-08,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 1.87386403311343e-06,
+        "different_writer": 0.9999919497307631,
+        "skilled_forgery_suspected": 6.144163622859393e-06,
+        "cannot_tell": 3.224158091055332e-08
+      },
+      "quality_score": 3.9999914449048566,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 2.1724212620533458e-10,
+        "1": 4.895626886518837e-10,
+        "2": 7.734355426565282e-08,
+        "3": 8.398070377626095e-06,
+        "4": 0.9999915238792632
+      },
+      "latency_seconds": 2.779,
+      "input_tokens": 2062
+    },
+    {
+      "pair_id": "genuine_random:original_3_5:original_28_16",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 1.4738981972564636e-05,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 1.6536575983059357e-06,
+        "different_writer": 0.9999793609988336,
+        "skilled_forgery_suspected": 1.892510903712275e-05,
+        "cannot_tell": 6.023453105930368e-08
+      },
+      "quality_score": 3.999796026241086,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.004321885343784e-09,
+        "1": 9.734221493871359e-10,
+        "2": 2.6990298316599053e-07,
+        "3": 0.0002034270153932499,
+        "4": 0.9997963011038795
+      },
+      "latency_seconds": 2.608,
+      "input_tokens": 2020
+    },
+    {
+      "pair_id": "genuine_skilled:original_52_19:forgeries_52_6",
+      "kind": "genuine_skilled",
+      "gold_same_writer": false,
+      "same_writer_confidence": 0.9999997463981333,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.999082003839304,
+        "different_writer": 0.0004303471950994574,
+        "skilled_forgery_suspected": 0.0004876472584085978,
+        "cannot_tell": 1.707188033887265e-09
+      },
+      "quality_score": 3.9999484496398066,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 2.385837619229859e-10,
+        "1": 2.9692228909963485e-10,
+        "2": 5.315515941100653e-08,
+        "3": 5.144220477256574e-05,
+        "4": 0.9999485041045619
+      },
+      "latency_seconds": 2.734,
+      "input_tokens": 2047
+    },
+    {
+      "pair_id": "genuine_genuine:original_34_3:original_34_1",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.999999990762546,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999988601594667,
+        "different_writer": 9.422447446953178e-07,
+        "skilled_forgery_suspected": 1.975052279714176e-07,
+        "cannot_tell": 9.056061269346246e-11
+      },
+      "quality_score": 3.9999999671998965,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 2.380946585928047e-11,
+        "1": 2.2542349200053514e-11,
+        "2": 1.1744094761841452e-09,
+        "3": 3.028841959276175e-08,
+        "4": 0.9999999684908191
+      },
+      "latency_seconds": 2.75,
+      "input_tokens": 2083
+    },
+    {
+      "pair_id": "genuine_random:original_17_6:original_40_18",
+      "kind": "genuine_random",
+      "gold_same_writer": false,
+      "same_writer_confidence": 1.6373774480535133e-07,
+      "verdict": "different_writer",
+      "verdict_probabilities": {
+        "same_writer": 4.737889933873149e-07,
+        "different_writer": 0.9999962240231716,
+        "skilled_forgery_suspected": 3.2887474630479894e-06,
+        "cannot_tell": 1.3440372018037167e-08
+      },
+      "quality_score": 3.99896646446242,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 8.319216262548027e-10,
+        "1": 2.6438414604651846e-09,
+        "2": 6.469260586044235e-07,
+        "3": 0.0010322304262518729,
+        "4": 0.9989671191719264
+      },
+      "latency_seconds": 2.726,
+      "input_tokens": 2053
+    },
+    {
+      "pair_id": "genuine_genuine:original_3_22:original_3_14",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999999434137435,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9998839922741449,
+        "different_writer": 3.119925755557013e-05,
+        "skilled_forgery_suspected": 8.480837487471985e-05,
+        "cannot_tell": 9.342470426395888e-11
+      },
+      "quality_score": 3.9999942010978367,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 1.3383931960644643e-10,
+        "1": 1.317643332837746e-10,
+        "2": 1.3026811987019908e-08,
+        "3": 5.7719178890119344e-06,
+        "4": 0.9999942147896953
+      },
+      "latency_seconds": 2.719,
+      "input_tokens": 2047
+    },
+    {
+      "pair_id": "genuine_genuine:original_36_2:original_36_21",
+      "kind": "genuine_genuine",
+      "gold_same_writer": true,
+      "same_writer_confidence": 0.9999999978734166,
+      "verdict": "same_writer",
+      "verdict_probabilities": {
+        "same_writer": 0.9999987992446197,
+        "different_writer": 1.136563231241683e-06,
+        "skilled_forgery_suspected": 6.412050980859474e-08,
+        "cannot_tell": 7.16393538352466e-11
+      },
+      "quality_score": 3.9999989078601224,
+      "quality_level": 4,
+      "quality_probabilities": {
+        "0": 9.791938707591018e-11,
+        "1": 1.0754340777352232e-10,
+        "2": 1.1861101688085759e-08,
+        "3": 1.0677033662660491e-06,
+        "4": 0.9999989202300692
+      },
+      "latency_seconds": 2.546,
+      "input_tokens": 2023
+    }
+  ]
+}

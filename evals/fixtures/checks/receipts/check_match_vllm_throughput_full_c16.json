@@ -1,0 +1,5214 @@
+{
+  "issue": 316,
+  "backend": "vllm",
+  "model": "google/gemma-4-31B-it",
+  "pins": {
+    "finished_utc": "2026-09-30T19:28:23.701106+00:00",
+    "dataset": "synthetic checks (#315 generator)",
+    "generator_seed": 0,
+    "register_rows": 20,
+    "variants_per_row": 7,
+    "concurrency": 16,
+    "pillow_version": "12.3.0",
+    "slice_sha256": "64a9621a2d556d9ba798af084249796ec634788c82cda978b057934545fbe295",
+    "server": {
+      "served": [
+        {
+          "id": "google/gemma-4-31B-it",
+          "root": "google/gemma-4-31B-it",
+          "max_model_len": 8192
+        }
+      ],
+      "build_info": "0.30.0"
+    },
+    "model_revision": "842da3794eaa0b77d5f08bae87a17459d91ff475"
+  },
+  "identity": {
+    "run_id": "02e4dfc3373042268027c27fc43767a8",
+    "baseline_commit": "93a13fbbf63f043165266ce0eb2752bcfb774c5e",
+    "working_tree": {
+      "dirty": true,
+      "dirty_paths": [
+        "evals/fixtures/cedar/receipts/signature_match_vllm_throughput_c1.json",
+        "evals/fixtures/cedar/receipts/signature_match_vllm_throughput_c16.json",
+        "evals/fixtures/cedar/receipts/signature_match_vllm_throughput_c32.json",
+        "evals/fixtures/cedar/receipts/signature_match_vllm_throughput_c4.json",
+        "evals/fixtures/checks/receipts/check_match_vllm_throughput_c1.json",
+        "evals/fixtures/checks/receipts/check_match_vllm_throughput_c16.json",
+        "evals/fixtures/checks/receipts/check_match_vllm_throughput_c32.json",
+        "evals/fixtures/checks/receipts/check_match_vllm_throughput_c4.json",
+        "evals/fixtures/difraud/receipts/wording252_held_out_gemma_vllm.json",
+        "evals/fixtures/lfw/receipts/face_match_vllm_throughput_c1.json",
+        "evals/fixtures/lfw/receipts/face_match_vllm_throughput_c16.json",
+        "evals/fixtures/lfw/receipts/face_match_vllm_throughput_c32.json",
+        "evals/fixtures/lfw/receipts/face_match_vllm_throughput_c4.json"
+      ],
+      "dirty_digest": "b3556327a4a4f42e144180238b9c5e989e3d220764d3fb65422186e7b9c97a42"
+    },
+    "prompt_digests": {
+      "payee_matches": "d8a42dca122de8824ef6bbfe792f30e9888b58da5ca01f5a5e37c9e6b8387c0b",
+      "amounts_match": "fe4a0b38de231349b211a79356bf9b6c003f00a391d517a762fc5d2fdae84b34",
+      "verdict": "b7ef7c4a0c25b12827252fdacba3011e1bb064231d047cac8b1626b29fcb522a",
+      "legibility": "109aca8b397e0cfeabf8e461c84b8a4af614d6ef9bba30ceeade3da9bcea1ab6"
+    },
+    "code_path_digests": {
+      "cases": "6e02498cc68f04cf9e262349384a916d6bff2c413d7717f3e7380795f451936a",
+      "metrics": "f2df037d4dccd038e544612881dd51cbbc223a95fe2cb50daf018b8d1a49409d",
+      "pool": "12c9a8e9ad52cc803e9bf2c713f1367d7de3aace89ab8e53e2184ec4547392ef",
+      "render": "a2a248cfdb0d67cfd752cc2b6ff958a7336a725f5e1d3a5b32bf910eefcd6c3f",
+      "request": "2f5eebda5074664516d7f47c7ff5add48199b90ac22d93c403a609c8788d13d1",
+      "runner": "a8455504617f92e61423bfcd5fab47cae83d2cd74c80f6407c073d26fb77dc36",
+      "serving_metrics": "4d553282c0840a414c65ce3c651ba4e6120826d09bd2881c8a3b0bce1daab7a0",
+      "words": "d706a3b0b702a59d49e92614f4b98ead48be10e414aa4c28569f9c5bd70a8b91"
+    },
+    "fixture_digests": {},
+    "runtime": {
+      "model": "google/gemma-4-31B-it",
+      "served_template": "vllm_chat",
+      "server_build": "0.30.0",
+      "template_identity": "unknown",
+      "projector_identity": "unknown",
+      "config_identity": "unknown"
+    },
+    "arm_call_counts": {
+      "judgments": 140
+    },
+    "identity_digest": "554c80cf511d47dd8e912797a5978ccc6cf26e48a2be3dff576b06688ff72566"
+  },
+  "stopped": null,
+  "wall_seconds": 26.358,
+  "throughput": {
+    "concurrency": 16,
+    "wall_seconds": 26.358,
+    "judgments": 140,
+    "images": 140,
+    "judgments_per_second": 5.311437749496848,
+    "images_per_second": 5.311437749496848,
+    "latency_seconds": {
+      "n": 140,
+      "p50": 2.918103490024805,
+      "p95": 3.424170918064192,
+      "p99": 3.450666488846764
+    },
+    "discarded": 0,
+    "server": {
+      "e2e": {
+        "count": 560.0,
+        "sum": 251.01483130455017,
+        "percentile_basis": "bucket_upper_bound",
+        "p50": 0.3,
+        "p95": 1.5,
+        "p99": 1.5
+      },
+      "queue": {
+        "count": 560.0,
+        "sum": 0.011581696569919586,
+        "percentile_basis": "bucket_upper_bound",
+        "p50": 0.3,
+        "p95": 0.3,
+        "p99": 0.3
+      },
+      "prefill": {
+        "count": 560.0,
+        "sum": 170.15122301504016,
+        "percentile_basis": "bucket_upper_bound",
+        "p50": 0.3,
+        "p95": 1.5,
+        "p99": 1.5
+      },
+      "prefix_cache_hit_rate": 0.5504587155963303,
+      "counters": {
+        "prefix_cache_hits": 147840.0,
+        "prefix_cache_queries": 268576.0,
+        "mm_cache_hits": 483.0,
+        "mm_cache_queries": 560.0,
+        "prompt_tokens": 268576.0,
+        "prompt_tokens_cached": 147840.0,
+        "generation_tokens": 560.0,
+        "request_success": 560.0,
+        "preemptions": 0.0
+      },
+      "gauges": {
+        "kv_cache_usage_perc": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "num_requests_running": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "num_requests_waiting": {
+          "before": 0.0,
+          "after": 0.0
+        }
+      }
+    }
+  },
+  "metrics": {
+    "cases": 140,
+    "accuracy": 0.9285714285714286,
+    "accuracy_by_class": {
+      "amount_mismatch": 1.0,
+      "cannot_tell|consistent": 0.55,
+      "consistent": 0.95,
+      "date_mismatch": 1.0,
+      "payee_mismatch": 1.0,
+      "unsigned": 1.0
+    },
+    "accuracy_by_variant": {
+      "both_amounts_changed": 1.0,
+      "clean": 0.95,
+      "low_legibility": 0.55,
+      "payee_changed": 1.0,
+      "unsigned": 1.0,
+      "written_amount_changed": 1.0,
+      "wrong_date": 1.0
+    },
+    "false_clear_rate": 0.0,
+    "false_clear_cases": 100,
+    "false_clear_by_variant": {
+      "payee_changed": 0.0,
+      "written_amount_changed": 0.0,
+      "both_amounts_changed": 0.0,
+      "wrong_date": 0.0,
+      "unsigned": 0.0
+    },
+    "cannot_tell_rate": 0.0,
+    "cannot_tell_by_variant": {
+      "clean": 0.0,
+      "payee_changed": 0.0,
+      "written_amount_changed": 0.0,
+      "both_amounts_changed": 0.0,
+      "wrong_date": 0.0,
+      "unsigned": 0.0,
+      "low_legibility": 0.0
+    },
+    "nouls": {
+      "payee_matches": {
+        "positives": 120,
+        "negatives": 20,
+        "roc_auc": 1.0,
+        "ece": 7.833526510585366e-09,
+        "reliability": [
+          {
+            "lower": 0.0,
+            "upper": 0.1,
+            "count": 20,
+            "mean_confidence": 9.34148873473565e-10,
+            "fraction_true": 0.0
+          },
+          {
+            "lower": 0.1,
+            "upper": 0.2,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.2,
+            "upper": 0.3,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.3,
+            "upper": 0.4,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.4,
+            "upper": 0.5,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.5,
+            "upper": 0.6,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.6,
+            "upper": 0.7,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.7,
+            "upper": 0.8,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.8,
+            "upper": 0.9,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.9,
+            "upper": 1.0,
+            "count": 120,
+            "mean_confidence": 0.9999999910165772,
+            "fraction_true": 1.0
+          }
+        ]
+      },
+      "amounts_match": {
+        "positives": 100,
+        "negatives": 40,
+        "roc_auc": 1.0,
+        "ece": 0.007225564613862017,
+        "reliability": [
+          {
+            "lower": 0.0,
+            "upper": 0.1,
+            "count": 41,
+            "mean_confidence": 2.109487927070138e-06,
+            "fraction_true": 0.024390243902439025
+          },
+          {
+            "lower": 0.1,
+            "upper": 0.2,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.2,
+            "upper": 0.3,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.3,
+            "upper": 0.4,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.4,
+            "upper": 0.5,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.5,
+            "upper": 0.6,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.6,
+            "upper": 0.7,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.7,
+            "upper": 0.8,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.8,
+            "upper": 0.9,
+            "count": 0,
+            "mean_confidence": null,
+            "fraction_true": null
+          },
+          {
+            "lower": 0.9,
+            "upper": 1.0,
+            "count": 99,
+            "mean_confidence": 0.9998821663136799,
+            "fraction_true": 1.0
+          }
+        ]
+      }
+    },
+    "score_by_variant": {
+      "clean": {
+        "count": 20,
+        "mean": 3.9999999991247455,
+        "distribution": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 20
+        }
+      },
+      "payee_changed": {
+        "count": 20,
+        "mean": 3.9999999988862327,
+        "distribution": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 20
+        }
+      },
+      "written_amount_changed": {
+        "count": 20,
+        "mean": 3.999999998918457,
+        "distribution": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 20
+        }
+      },
+      "both_amounts_changed": {
+        "count": 20,
+        "mean": 3.999999998904093,
+        "distribution": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 20
+        }
+      },
+      "wrong_date": {
+        "count": 20,
+        "mean": 3.999999998813775,
+        "distribution": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 20
+        }
+      },
+      "unsigned": {
+        "count": 20,
+        "mean": 3.9999999990266275,
+        "distribution": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 20
+        }
+      },
+      "low_legibility": {
+        "count": 20,
+        "mean": 2.8651560109803955,
+        "distribution": {
+          "0": 0,
+          "1": 1,
+          "2": 5,
+          "3": 9,
+          "4": 5
+        }
+      }
+    },
+    "legibility_gap_clean_minus_low": 1.13484398814435,
+    "noul_choice_agreement": {
+      "rate": 0.9928571428571429,
+      "counted": 140,
+      "excluded_cannot_tell": 0
+    },
+    "mean_latency_seconds": 2.931097711093857,
+    "confidence_note": "Noul values are model confidence, not calibrated match percentages. The checks are generated; the results are not evidence about real checks. VOID crosses the signature line on every render, including unsigned."
+  },
+  "cases": [
+    {
+      "case_id": "r00:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999130366324,
+        "payee_mismatch": 6.825601895978576e-08,
+        "amount_mismatch": 2.6465730649126913e-09,
+        "date_mismatch": 7.823255036731491e-10,
+        "unsigned": 1.5229976441591264e-08,
+        "cannot_tell": 4.84736765495913e-11
+      },
+      "payee_confidence": 0.9999999953551175,
+      "amounts_confidence": 0.999999973270576,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999313379,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 7.566642758647462e-11,
+        "1": 1.271754024379693e-12,
+        "2": 1.6492357126805434e-11,
+        "3": 3.4715524407324166e-10,
+        "4": 0.9999999995594142
+      },
+      "render_sha256": "41ca84bdfdc552eaa216c6963f5fc7d00e05cab3f184e566e170d75783586d64",
+      "latency_seconds": 3.008,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r00:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 3.8507398387449e-09,
+        "payee_mismatch": 0.999999793086163,
+        "amount_mismatch": 1.6373762444418044e-07,
+        "date_mismatch": 1.1861113732101943e-08,
+        "unsigned": 2.672943241038402e-08,
+        "cannot_tell": 7.34926559173043e-10
+      },
+      "payee_confidence": 9.146315928495457e-10,
+      "amounts_confidence": 0.9999978766217906,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999990151514,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.1492769595189782e-10,
+        "1": 2.197393641813436e-12,
+        "2": 2.2020183173725055e-11,
+        "3": 4.745049024293487e-10,
+        "4": 0.9999999993863498
+      },
+      "render_sha256": "a2cb76a81d4b715546a7c2662f474eb654d8f53e5a21e6c7c4c84b8dbc1e6120",
+      "latency_seconds": 3.431,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r00:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.1142487440678901e-08,
+        "payee_mismatch": 2.3588646097023753e-08,
+        "amount_mismatch": 0.9999998107484703,
+        "date_mismatch": 1.125351366527618e-07,
+        "unsigned": 3.889110256718062e-08,
+        "cannot_tell": 3.0941570137550932e-09
+      },
+      "payee_confidence": 0.999999992805866,
+      "amounts_confidence": 5.60279974459352e-09,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999194896,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 7.74607959635875e-11,
+        "1": 1.3750938039351812e-12,
+        "2": 1.5614648027818258e-11,
+        "3": 4.599059213837493e-10,
+        "4": 0.9999999994456434
+      },
+      "render_sha256": "473fa602e87e001037d01913329c31b8c0724995400b6492d428c5da543e8229",
+      "latency_seconds": 3.254,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r00:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 7.433683187587448e-12,
+        "payee_mismatch": 1.7556011981256915e-11,
+        "amount_mismatch": 0.9999999997189695,
+        "date_mismatch": 1.5404911101736602e-10,
+        "unsigned": 9.343550893350772e-11,
+        "cannot_tell": 8.556116901982568e-12
+      },
+      "payee_confidence": 0.9999999956365366,
+      "amounts_confidence": 8.327809465508084e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998985307,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.3176509549858347e-10,
+        "1": 2.1633236322101725e-12,
+        "2": 1.7693693164569333e-11,
+        "3": 4.4575557233513773e-10,
+        "4": 0.9999999994026223
+      },
+      "render_sha256": "472069565219dfebbaf5ca985705134f1f649d094531fb670016e90511a8552e",
+      "latency_seconds": 3.425,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r00:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 3.364738508922707e-10,
+        "payee_mismatch": 1.5079711799984492e-09,
+        "amount_mismatch": 8.233243673121288e-08,
+        "date_mismatch": 0.9999997406107175,
+        "unsigned": 1.7429776992773965e-07,
+        "cannot_tell": 9.146307546320977e-10
+      },
+      "payee_confidence": 0.9999999913222172,
+      "amounts_confidence": 0.9999938558232009,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999988501678,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.4814758500522007e-10,
+        "1": 2.2319964920947877e-12,
+        "2": 2.2719167986631745e-11,
+        "3": 5.051075984793532e-10,
+        "4": 0.9999999993217936
+      },
+      "render_sha256": "301326a5e8d10c89b66b57894c75559b16569c2e1499c06accbfae15997502e4",
+      "latency_seconds": 3.355,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r00:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 5.723619594256259e-10,
+        "payee_mismatch": 4.847370991896296e-11,
+        "amount_mismatch": 9.146318068869789e-10,
+        "date_mismatch": 3.1923786858385663e-09,
+        "unsigned": 0.9999999950017893,
+        "cannot_tell": 2.7036464569397537e-10
+      },
+      "payee_confidence": 0.9999999943972029,
+      "amounts_confidence": 0.999999974890021,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999106911,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.2671719355124405e-10,
+        "1": 1.1223169804504638e-12,
+        "2": 2.3189871115069624e-11,
+        "3": 3.364737984000184e-10,
+        "4": 0.9999999995124969
+      },
+      "render_sha256": "548f64b2d1c7255d64330f97af8af1cd92822bb9367bb3e63bc8e7bd8d628538",
+      "latency_seconds": 3.425,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r00:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999998275923263,
+        "payee_mismatch": 1.0571692937106041e-07,
+        "amount_mismatch": 5.6027919970309e-09,
+        "date_mismatch": 5.051070178588717e-10,
+        "unsigned": 6.023569063892227e-08,
+        "cannot_tell": 3.4715463801648265e-10
+      },
+      "payee_confidence": 0.9999999966017314,
+      "amounts_confidence": 0.9999998362622747,
+      "noul_choice_agreement": true,
+      "legibility_score": 2.524314394972313,
+      "legibility_level": 3,
+      "legibility_probabilities": {
+        "0": 2.36252452035754e-06,
+        "1": 0.007496790559079137,
+        "2": 0.46381006358953175,
+        "3": 0.5255656560733042,
+        "4": 0.003125127253564503
+      },
+      "render_sha256": "fa22751c9f746a0c76b9f7360b7502c816a3f45aa9858984d472d84c43f924b6",
+      "latency_seconds": 3.424,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r01:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999892938684,
+        "payee_mismatch": 1.046741166517142e-08,
+        "amount_mismatch": 1.2378201299914728e-10,
+        "date_mismatch": 3.775138104110828e-11,
+        "unsigned": 6.835891996488994e-11,
+        "cannot_tell": 8.82772254474995e-12
+      },
+      "payee_confidence": 0.9999999957707868,
+      "amounts_confidence": 0.9999999979388459,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.99999999897337,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.2378183717479544e-10,
+        "1": 1.4637778152176979e-12,
+        "2": 2.6303250204279717e-11,
+        "3": 4.745042802038008e-10,
+        "4": 0.9999999993739468
+      },
+      "render_sha256": "4efeb9a368f32191aa1e9d276a8ae0f8b0db9e442d4887f8a321e199785b2f00",
+      "latency_seconds": 3.23,
+      "input_tokens": 1925
+    },
+    {
+      "case_id": "r01:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.3307798314004384e-09,
+        "payee_mismatch": 0.9999999298461666,
+        "amount_mismatch": 6.023569457884277e-08,
+        "date_mismatch": 2.730582918878491e-09,
+        "unsigned": 5.602792363500591e-09,
+        "cannot_tell": 2.539837754468454e-10
+      },
+      "payee_confidence": 8.07159644003385e-10,
+      "amounts_confidence": 0.9999999907625526,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998603584,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.5770226450535532e-10,
+        "1": 1.4187431207755988e-12,
+        "2": 1.8908567069109886e-11,
+        "3": 7.235331423925399e-10,
+        "4": 0.9999999990984372
+      },
+      "render_sha256": "8f538a9ac0a7e18bfccc9b7214ff89f45e4297c69c97602b538ae846a9bfe9c7",
+      "latency_seconds": 3.154,
+      "input_tokens": 1925
+    },
+    {
+      "case_id": "r01:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 8.198704169583886e-10,
+        "payee_mismatch": 7.701969795050414e-10,
+        "amount_mismatch": 0.9999999937526636,
+        "date_mismatch": 3.5061410639073463e-09,
+        "unsigned": 8.198704169583886e-10,
+        "cannot_tell": 3.3125759312228216e-10
+      },
+      "payee_confidence": 0.9999999923418844,
+      "amounts_confidence": 4.099093911080427e-09,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998578394,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.3023015635728977e-10,
+        "1": 2.5690137454079362e-12,
+        "2": 3.009802540990307e-11,
+        "3": 8.327821377161453e-10,
+        "4": 0.9999999990043207
+      },
+      "render_sha256": "98bef102882f443b3890262af753b3efd27c3063c091eeeed40fe28ecad2e2ac",
+      "latency_seconds": 3.153,
+      "input_tokens": 1925
+    },
+    {
+      "case_id": "r01:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 5.744303882497312e-12,
+        "payee_mismatch": 1.0986269157667084e-11,
+        "amount_mismatch": 0.999999999661425,
+        "date_mismatch": 2.620463075928933e-10,
+        "unsigned": 5.3237936519034547e-11,
+        "cannot_tell": 6.560200947193866e-12
+      },
+      "payee_confidence": 0.9999999907625482,
+      "amounts_confidence": 2.7036477597859065e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999989577275,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 8.574127489917604e-11,
+        "1": 2.0007494401045486e-12,
+        "2": 2.2366947931788478e-11,
+        "3": 6.48571226503917e-10,
+        "4": 0.9999999992413198
+      },
+      "render_sha256": "d97e8c2e0fc3ad406e16a8221efeb2937e82e83f59e69ceee8e0684f82ac41f6",
+      "latency_seconds": 3.231,
+      "input_tokens": 1925
+    },
+    {
+      "case_id": "r01:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 3.658988849222773e-11,
+        "payee_mismatch": 1.206606457155046e-11,
+        "amount_mismatch": 6.348805294157835e-09,
+        "date_mismatch": 0.9999999875644744,
+        "unsigned": 5.964150626591222e-09,
+        "cannot_tell": 7.391360650696945e-11
+      },
+      "payee_confidence": 0.9999999943972029,
+      "amounts_confidence": 0.9999999434137906,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999981305474,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.672186114520955e-10,
+        "1": 2.821505921040486e-12,
+        "2": 3.574224265661255e-11,
+        "3": 1.1206293845759921e-09,
+        "4": 0.9999999986735884
+      },
+      "render_sha256": "7f97b36274842606addceaeee62e5cf20f5580618bc25ed58ff926a570adda39",
+      "latency_seconds": 3.231,
+      "input_tokens": 1925
+    },
+    {
+      "case_id": "r01:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 8.864908073522507e-10,
+        "payee_mismatch": 1.8688264422450524e-11,
+        "amount_mismatch": 1.3384009357894234e-10,
+        "date_mismatch": 1.138276728300326e-09,
+        "unsigned": 0.9999999975687202,
+        "cannot_tell": 2.539838686788825e-10
+      },
+      "payee_confidence": 0.9999999976644067,
+      "amounts_confidence": 0.9999999970933069,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998434727,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.453686503893633e-11,
+        "1": 9.160091865809201e-13,
+        "2": 4.056065298585738e-11,
+        "3": 1.1032560309442135e-09,
+        "4": 0.9999999987607304
+      },
+      "render_sha256": "75884d085a2897842920d5c806876205da435602414b4496224d3ec0908de66e",
+      "latency_seconds": 3.153,
+      "input_tokens": 1925
+    },
+    {
+      "case_id": "r01:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999994338839898,
+        "payee_mismatch": 8.764243798617285e-08,
+        "amount_mismatch": 3.850739980392077e-09,
+        "date_mismatch": 7.123152722519519e-10,
+        "unsigned": 4.737905434281025e-07,
+        "cannot_tell": 1.1997346718138033e-10
+      },
+      "payee_confidence": 0.9999999968076221,
+      "amounts_confidence": 0.9999999873738928,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9971574953782847,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.353603497756722e-07,
+        "1": 3.050392570288249e-07,
+        "2": 2.0089257127437255e-05,
+        "3": 0.0028008695482904166,
+        "4": 0.9971786007949753
+      },
+      "render_sha256": "5393e7a01b884f67ca9c5802cd61c340e4f04974854105f455ec76989170be9a",
+      "latency_seconds": 3.422,
+      "input_tokens": 1925
+    },
+    {
+      "case_id": "r02:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999967522075,
+        "payee_mismatch": 2.8172606133884104e-09,
+        "amount_mismatch": 1.4930934252583297e-10,
+        "date_mismatch": 5.241250868030558e-11,
+        "unsigned": 2.2413987033239473e-10,
+        "cannot_tell": 4.670081522245435e-12
+      },
+      "payee_confidence": 0.9999999963825619,
+      "amounts_confidence": 0.9999999959009085,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999987301287,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.7456030699163885e-10,
+        "1": 1.7113290326931846e-12,
+        "2": 2.6717456566090446e-11,
+        "3": 5.130612741075963e-10,
+        "4": 0.9999999992839497
+      },
+      "render_sha256": "b586d9286891e0ea7b2f46b7318bd37ffb1d786dcfdf4f0aabb615637b59de68",
+      "latency_seconds": 3.229,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r02:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 2.1940851937228683e-09,
+        "payee_mismatch": 0.9999998280506532,
+        "amount_mismatch": 1.4449793133359404e-07,
+        "date_mismatch": 6.3487960177238036e-09,
+        "unsigned": 1.8370850407259428e-08,
+        "cannot_tell": 5.376837007243503e-10
+      },
+      "payee_confidence": 7.349272192059874e-10,
+      "amounts_confidence": 0.9999987901340283,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998831377,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.3701415083335033e-10,
+        "1": 2.489972612072326e-12,
+        "2": 2.9171996094639533e-11,
+        "3": 5.547523019042198e-10,
+        "4": 0.9999999992765716
+      },
+      "render_sha256": "d4f7ac3157bc3d571b078b27d1da59d783c581458861897e51f7de20a4a53f4a",
+      "latency_seconds": 3.429,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r02:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.2898370559908292e-09,
+        "payee_mismatch": 1.656183563277914e-09,
+        "amount_mismatch": 0.9999999857577777,
+        "date_mismatch": 6.758262951582692e-09,
+        "unsigned": 4.0990936865349e-09,
+        "cannot_tell": 4.388449563935179e-10
+      },
+      "payee_confidence": 0.9999999936511983,
+      "amounts_confidence": 3.6174359553443703e-09,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999987036743,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.199734274749683e-10,
+        "1": 1.6847973349095255e-12,
+        "2": 2.656136670504195e-11,
+        "3": 7.582554093625179e-10,
+        "4": 0.9999999990935251
+      },
+      "render_sha256": "759638447fd7b544556b701fc7947444ee55aa2e1971be7d345aeefe21d9022d",
+      "latency_seconds": 2.678,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r02:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.2645117621786526e-11,
+        "payee_mismatch": 1.598492645971279e-11,
+        "amount_mismatch": 0.9999999993730104,
+        "date_mismatch": 3.8127510766367916e-10,
+        "unsigned": 1.978029200898676e-10,
+        "cannot_tell": 1.928150183047539e-11
+      },
+      "payee_confidence": 0.9999999881388771,
+      "amounts_confidence": 1.7456041113279914e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999987590824,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.6527063303712693e-10,
+        "1": 2.2671461331286666e-12,
+        "2": 2.5946113522234354e-11,
+        "3": 5.21141621164057e-10,
+        "4": 0.9999999992853745
+      },
+      "render_sha256": "59330397596137129cc628a2f1e171f8a0798bee50f5b06ff68b3c3e425cee00",
+      "latency_seconds": 2.713,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r02:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 8.777450508851852e-11,
+        "payee_mismatch": 7.50775127841859e-11,
+        "amount_mismatch": 4.993717945818236e-08,
+        "date_mismatch": 0.9999999108888806,
+        "unsigned": 3.8891114466409697e-08,
+        "cannot_tell": 1.1997352382273958e-10
+      },
+      "payee_confidence": 0.9999999940358528,
+      "amounts_confidence": 0.9999999006880905,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999987657833,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.7730927411766728e-10,
+        "1": 1.213514286638902e-12,
+        "2": 2.3417449666462682e-11,
+        "3": 4.745042236146831e-10,
+        "4": 0.9999999993235555
+      },
+      "render_sha256": "df9ddcadeac6d9f2888a5c5c09c2c334d9afe615bd68b8773870f6c6d00e3bf1",
+      "latency_seconds": 2.631,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r02:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 6.092756978882808e-10,
+        "payee_mismatch": 3.894969225122191e-11,
+        "amount_mismatch": 7.823254818587142e-10,
+        "date_mismatch": 3.732266135402162e-09,
+        "unsigned": 0.9999999945210949,
+        "cannot_tell": 3.160880680634439e-10
+      },
+      "payee_confidence": 0.9999999963825619,
+      "amounts_confidence": 0.999999996382565,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998926806,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.6144214297136866e-10,
+        "1": 7.360345860962975e-13,
+        "2": 2.7836116456010798e-11,
+        "3": 3.695447455501853e-10,
+        "4": 0.9999999994404409
+      },
+      "render_sha256": "cf2bc4a8067ad0b87b2c2fc596f806c7ab308b4020122ef0a41a9b139289ae75",
+      "latency_seconds": 2.786,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r02:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": false,
+      "verdict_probabilities": {
+        "consistent": 1.5079734491816654e-09,
+        "payee_mismatch": 7.507757721133118e-11,
+        "amount_mismatch": 4.457561001421666e-10,
+        "date_mismatch": 1.5558416648768667e-09,
+        "unsigned": 0.9999999948101217,
+        "cannot_tell": 1.6052293808491352e-09
+      },
+      "payee_confidence": 0.9999999791830838,
+      "amounts_confidence": 0.9999996310116359,
+      "noul_choice_agreement": true,
+      "legibility_score": 1.0138886765895507,
+      "legibility_level": 1,
+      "legibility_probabilities": {
+        "0": 0.0005449146306236742,
+        "1": 0.9852289405979091,
+        "2": 0.014053533549636258,
+        "3": 0.0001377759949549825,
+        "4": 3.483522687601457e-05
+      },
+      "render_sha256": "0979fa45275f01745b937866b47ad1ae6834e609f8eb1c2d676489476f865272",
+      "latency_seconds": 2.851,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r03:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999910313545,
+        "payee_mismatch": 8.15201965147036e-09,
+        "amount_mismatch": 2.4616966308172566e-10,
+        "date_mismatch": 8.915674367001425e-11,
+        "unsigned": 4.745044448907731e-10,
+        "cannot_tell": 6.794933327300163e-12
+      },
+      "payee_confidence": 0.9999999963825623,
+      "amounts_confidence": 0.9999999987101627,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999183991,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.056071587075747e-11,
+        "1": 8.211048392691723e-13,
+        "2": 2.2719146323488176e-11,
+        "3": 4.0586497051996475e-10,
+        "4": 0.9999999994800342
+      },
+      "render_sha256": "3b71f4ff1bd72328b760f1f19d814ca28a292c8e9a6648c5e5f7d1398f8dff3a",
+      "latency_seconds": 2.786,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r03:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.4615777595659159e-09,
+        "payee_mismatch": 0.9999998808677759,
+        "amount_mismatch": 9.931200991095826e-08,
+        "date_mismatch": 4.363465187464952e-09,
+        "unsigned": 1.3440418990096823e-08,
+        "cannot_tell": 5.547523447317787e-10
+      },
+      "payee_confidence": 6.286165629257078e-10,
+      "amounts_confidence": 0.999996711250151,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999987591326,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.3808878258774452e-10,
+        "1": 1.607647339352042e-12,
+        "2": 2.2586445176222415e-11,
+        "3": 6.385160616104405e-10,
+        "4": 0.999999999199201
+      },
+      "render_sha256": "904a260fab77dba2fee1ce464b4bc048f9c66aa184a31034b5b05c1186e979b3",
+      "latency_seconds": 2.786,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r03:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 2.0611519856376542e-09,
+        "payee_mismatch": 5.263335981989783e-09,
+        "amount_mismatch": 0.9999999621147858,
+        "date_mismatch": 2.358863534400068e-08,
+        "unsigned": 5.263335981989783e-09,
+        "cannot_tell": 1.708755013088966e-09
+      },
+      "payee_confidence": 0.999999995355118,
+      "amounts_confidence": 8.327810457564524e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999989407105,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.181135104729307e-10,
+        "1": 1.1761790781779948e-12,
+        "2": 2.6979669887313454e-11,
+        "3": 5.293480289457941e-10,
+        "4": 0.9999999993243827
+      },
+      "render_sha256": "854e5c1f02fb0a870265be296cf249c1bc7056449a40758e0d46b3a837cdcb58",
+      "latency_seconds": 2.787,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r03:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.3046518790610356e-11,
+        "payee_mismatch": 7.79043219308119e-12,
+        "amount_mismatch": 0.9999999995996589,
+        "date_mismatch": 2.2414010808437221e-10,
+        "unsigned": 1.4471573049806338e-10,
+        "cannot_tell": 1.0648258299645157e-11
+      },
+      "payee_confidence": 0.9999999895325945,
+      "amounts_confidence": 2.4616951904654724e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999990912385,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.946160709698367e-11,
+        "1": 1.3121233611653915e-12,
+        "2": 1.6236661020041367e-11,
+        "3": 4.745047893094044e-10,
+        "4": 0.9999999994084847
+      },
+      "render_sha256": "c333c8bcf6d0185cd4a50acd69e568fc8c66eb9e0d7e916effac6f36e4a2d385",
+      "latency_seconds": 2.765,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r03:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.745603616490801e-10,
+        "payee_mismatch": 2.2413994110362293e-10,
+        "amount_mismatch": 6.023570693155728e-08,
+        "date_mismatch": 0.9999999047078476,
+        "unsigned": 3.4321271245126746e-08,
+        "cannot_tell": 3.364739036780938e-10
+      },
+      "payee_confidence": 0.9999999918479775,
+      "amounts_confidence": 0.9999999226558423,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999988529313,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.1997345609607515e-10,
+        "1": 1.2917792338337991e-12,
+        "2": 2.2214541158948656e-11,
+        "3": 6.188701761561067e-10,
+        "4": 0.99999999923765
+      },
+      "render_sha256": "8524401b71232d05944b8059e5b672251c370922176982f3571d8e3ef9eba938",
+      "latency_seconds": 2.588,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r03:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 3.4715482907580935e-10,
+        "payee_mismatch": 1.098626519220959e-11,
+        "amount_mismatch": 3.160880688766391e-10,
+        "date_mismatch": 2.8172622914119484e-09,
+        "unsigned": 0.9999999963107056,
+        "cannot_tell": 1.978028591297954e-10
+      },
+      "payee_confidence": 0.9999999971827367,
+      "amounts_confidence": 0.9999999989954735,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999030061,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.1628235795679818e-10,
+        "1": 9.599696148215789e-13,
+        "2": 3.15424372598709e-11,
+        "3": 4.388450343144756e-10,
+        "4": 0.9999999994123703
+      },
+      "render_sha256": "a4cc6a69982ab20052dd4bdbbcb88729297567c189f19ef53862b1319c04e499",
+      "latency_seconds": 2.656,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r03:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": false,
+      "verdict_probabilities": {
+        "consistent": 1.8189631879308028e-09,
+        "payee_mismatch": 7.746079526232081e-11,
+        "amount_mismatch": 6.691591610874089e-10,
+        "date_mismatch": 2.2637362626662026e-09,
+        "unsigned": 0.9999999948342062,
+        "cannot_tell": 3.364743568832929e-10
+      },
+      "payee_confidence": 0.9999999975902667,
+      "amounts_confidence": 0.9999999950555536,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9931518597835,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.9616838747777488e-07,
+        "1": 2.1090089204648934e-06,
+        "2": 7.434512713389412e-05,
+        "3": 0.006692338261920532,
+        "4": 0.9932310114336376
+      },
+      "render_sha256": "704745ed841c163a7fe1ef572407bd134199dac7d832d6c605c06795a377ef23",
+      "latency_seconds": 2.747,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r04:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999702101179,
+        "payee_mismatch": 2.8453359687750687e-08,
+        "amount_mismatch": 3.1608827427258555e-10,
+        "date_mismatch": 1.237819467317038e-10,
+        "unsigned": 8.864914878908012e-10,
+        "cannot_tell": 1.016064092713542e-11
+      },
+      "payee_confidence": 0.9999999971827362,
+      "amounts_confidence": 0.99999999800226,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999088072,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.1358858525544943e-10,
+        "1": 1.1761783772772078e-12,
+        "2": 2.4090119310967845e-11,
+        "3": 4.0586497050991796e-10,
+        "4": 0.9999999994552802
+      },
+      "render_sha256": "a4cb1fe3c44a613f8f3ce5cb0fd3b0761e84b5b2fd32c4636af764937497906a",
+      "latency_seconds": 2.656,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r04:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.876701258025118e-09,
+        "payee_mismatch": 0.9999998116881165,
+        "amount_mismatch": 1.637376719130124e-07,
+        "date_mismatch": 5.964144263457694e-09,
+        "unsigned": 1.6212224973665308e-08,
+        "cannot_tell": 5.211411178299362e-10
+      },
+      "payee_confidence": 6.286165629257078e-10,
+      "amounts_confidence": 0.9999997617629764,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998931821,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.209144484124188e-10,
+        "1": 1.821701141402916e-12,
+        "2": 2.068602305782927e-11,
+        "3": 5.376838551535858e-10,
+        "4": 0.9999999993188939
+      },
+      "render_sha256": "2b55c7c37df40058d91f5774edd52e56419c6a06fd9c5356b4d65b1d86196cac",
+      "latency_seconds": 2.657,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r04:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 5.905307139737369e-10,
+        "payee_mismatch": 6.092761710681412e-10,
+        "amount_mismatch": 0.9999999898298398,
+        "date_mismatch": 3.73226903398022e-09,
+        "unsigned": 4.792328301547206e-09,
+        "cannot_tell": 4.4575596909821985e-10
+      },
+      "payee_confidence": 0.9999999953551175,
+      "amounts_confidence": 7.658112859937473e-09,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999992429385,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 8.507403102792682e-11,
+        "1": 1.176179919681109e-12,
+        "2": 1.893629449948097e-11,
+        "3": 3.7536422854250746e-10,
+        "4": 0.9999999995194493
+      },
+      "render_sha256": "fd87b859359785f717055475fe98297b0bd8939c6d41c6073cfb896a3a73dd6d",
+      "latency_seconds": 2.717,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r04:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 6.4082293932274895e-12,
+        "payee_mismatch": 1.1603804367614544e-11,
+        "amount_mismatch": 0.9999999996294788,
+        "date_mismatch": 1.402631788831826e-10,
+        "unsigned": 2.0408172106208765e-10,
+        "cannot_tell": 8.164296049332426e-12
+      },
+      "payee_confidence": 0.9999999943972016,
+      "amounts_confidence": 3.581747502016987e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999988827604,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.4471580165210478e-10,
+        "1": 2.096767410731242e-12,
+        "2": 2.125948355004949e-11,
+        "3": 4.895672465252054e-10,
+        "4": 0.9999999993423607
+      },
+      "render_sha256": "a9032196a461072633e1740764b4449a53e226f4110c32dac24a4476c0d1bffa",
+      "latency_seconds": 2.755,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r04:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 9.946148219341335e-11,
+        "payee_mismatch": 8.245646487572105e-11,
+        "amount_mismatch": 3.43212664993486e-08,
+        "date_mismatch": 0.9999999445481502,
+        "unsigned": 2.0816900412023012e-08,
+        "cannot_tell": 1.3176505569041645e-10
+      },
+      "payee_confidence": 0.9999999950555483,
+      "amounts_confidence": 0.9999999764113633,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999991649244,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.0670662622186503e-10,
+        "1": 1.5102432911311091e-12,
+        "2": 1.995192131675169e-11,
+        "3": 3.638150950004423e-10,
+        "4": 0.9999999995080162
+      },
+      "render_sha256": "09319d72d99874fe5aa9c36cc502b3c7d78eda7427ab62fb3f3d4cea14633e36",
+      "latency_seconds": 2.886,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r04:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 4.599053707399171e-10,
+        "payee_mismatch": 2.805440757821906e-11,
+        "amount_mismatch": 8.864908044041986e-10,
+        "date_mismatch": 3.617435949228955e-09,
+        "unsigned": 0.9999999946920255,
+        "cannot_tell": 3.160880305679323e-10
+      },
+      "payee_confidence": 0.9999999970010385,
+      "amounts_confidence": 0.9999999979388479,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999991628323,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.791948108372252e-11,
+        "1": 7.360336209631661e-13,
+        "2": 2.4952100807640605e-11,
+        "3": 3.933778181388839e-10,
+        "4": 0.9999999994830147
+      },
+      "render_sha256": "48eac7162536e7445841e3d14e8faf424f822dbe3f3aeb4ffba3f6ec7d72660d",
+      "latency_seconds": 2.787,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r04:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": false,
+      "verdict_probabilities": {
+        "consistent": 5.602798341604153e-09,
+        "payee_mismatch": 2.703646100932739e-10,
+        "amount_mismatch": 3.9729789429815075e-09,
+        "date_mismatch": 4.363463735832484e-09,
+        "unsigned": 0.9999999828837008,
+        "cannot_tell": 2.90669348816118e-09
+      },
+      "payee_confidence": 0.999999993651197,
+      "amounts_confidence": 0.9998911031173107,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.0061716971812773,
+      "legibility_level": 3,
+      "legibility_probabilities": {
+        "0": 1.4278799564653189e-06,
+        "1": 0.0001550411857723826,
+        "2": 0.0074703062388836615,
+        "3": 0.9784168552638124,
+        "4": 0.01395636943157511
+      },
+      "render_sha256": "f72d14dd782609b4f502a62b0aec3a1823cbef9a3837e415899f20055bfa3cdf",
+      "latency_seconds": 3.114,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r05:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9980731948629701,
+        "payee_mismatch": 5.3055461963219794e-08,
+        "amount_mismatch": 5.952657857393632e-09,
+        "date_mismatch": 9.219656846933798e-09,
+        "unsigned": 0.0019267348520697087,
+        "cannot_tell": 2.057183508769906e-09
+      },
+      "payee_confidence": 0.9999999963825623,
+      "amounts_confidence": 0.9999999987498467,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999991312714,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.715760461836417e-11,
+        "1": 1.1223188534519557e-12,
+        "2": 2.569396976411445e-11,
+        "3": 4.253434455850091e-10,
+        "4": 0.9999999994506827
+      },
+      "render_sha256": "8d45da11536cca3754011bdb877b7b37bda0584971878fe8ab17f063a9123b6d",
+      "latency_seconds": 2.928,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r05:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 3.2937139677704016e-09,
+        "payee_mismatch": 0.9999998620210832,
+        "amount_mismatch": 1.0571700858235864e-07,
+        "date_mismatch": 6.3487998412989676e-09,
+        "unsigned": 2.2159488814412706e-08,
+        "cannot_tell": 4.5990551796279143e-10
+      },
+      "payee_confidence": 3.581748782955541e-10,
+      "amounts_confidence": 0.9999999500627916,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999164903,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 7.566636443467673e-11,
+        "1": 1.6329631281933903e-12,
+        "2": 1.8982570851263565e-11,
+        "3": 4.895669547562883e-10,
+        "4": 0.9999999994141511
+      },
+      "render_sha256": "f38940a9efd6c88bf1afbad2d374c476a9c22328128b70a874d50135386da36b",
+      "latency_seconds": 2.928,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r05:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 2.7305866974715173e-09,
+        "payee_mismatch": 1.2626104968718232e-08,
+        "amount_mismatch": 0.9999999227776872,
+        "date_mismatch": 1.6726871424668716e-08,
+        "unsigned": 4.4069436557739646e-08,
+        "cannot_tell": 1.0693131148586644e-09
+      },
+      "payee_confidence": 0.9999999956365373,
+      "amounts_confidence": 1.555841119432047e-09,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998943586,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 8.777458110152757e-11,
+        "1": 1.9697309299327584e-12,
+        "2": 3.044537392612599e-11,
+        "3": 6.38516137754078e-10,
+        "4": 0.9999999992412942
+      },
+      "render_sha256": "ad437be450b51ba73b46ff4c6e4f3e3df9a35fe67db29d7d68b54394a7c6dbdb",
+      "latency_seconds": 2.957,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r05:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 5.209857384617058e-12,
+        "payee_mismatch": 7.375832166504571e-12,
+        "amount_mismatch": 0.9999999997763998,
+        "date_mismatch": 1.3176515799467612e-10,
+        "unsigned": 7.163947379209595e-11,
+        "cannot_tell": 7.609966212610914e-12
+      },
+      "payee_confidence": 0.9999999918479775,
+      "amounts_confidence": 2.539841720058419e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999988654142,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.1182773074459623e-10,
+        "1": 1.6586799394635046e-12,
+        "2": 2.189153853339562e-11,
+        "3": 6.385162138612945e-10,
+        "4": 0.9999999992261059
+      },
+      "render_sha256": "b9b233665cfe2546cfa5061b7093f6b506d9d058d67ebaa6189780f347816120",
+      "latency_seconds": 3.063,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r05:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 3.58174792868753e-10,
+        "payee_mismatch": 8.592166615346342e-10,
+        "amount_mismatch": 6.023573835203007e-08,
+        "date_mismatch": 0.9999991565915153,
+        "unsigned": 7.811481955211245e-07,
+        "cannot_tell": 8.071593556326203e-10
+      },
+      "payee_confidence": 0.9999999936511983,
+      "amounts_confidence": 0.99999994341373,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999987176547,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.639844476653397e-10,
+        "1": 3.1476199380311956e-12,
+        "2": 3.964043634195046e-11,
+        "3": 5.376843037997945e-10,
+        "4": 0.9999999992555433
+      },
+      "render_sha256": "ab522bc65d49d33631b6d9795fb348d316995ef0b8f4210585bd50e3788ed855",
+      "latency_seconds": 2.959,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r05:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 3.261219760025697e-10,
+        "payee_mismatch": 1.2256071794698133e-11,
+        "amount_mismatch": 1.745605147465713e-10,
+        "date_mismatch": 1.8189623332391358e-09,
+        "unsigned": 0.9999999975363338,
+        "cannot_tell": 1.3176518947429813e-10
+      },
+      "payee_confidence": 0.9999999973534262,
+      "amounts_confidence": 0.999999999287684,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999309593,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 7.991956078688429e-11,
+        "1": 1.0709227271389378e-12,
+        "2": 2.8164206217808104e-11,
+        "3": 3.111875044385263e-10,
+        "4": 0.9999999995796578
+      },
+      "render_sha256": "0c62be1bfd6facc516fc519230f389e30cb5c655f774feeddf3a097c9db769c5",
+      "latency_seconds": 2.957,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r05:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": false,
+      "verdict_probabilities": {
+        "consistent": 1.5229967488368927e-08,
+        "payee_mismatch": 4.895665027036542e-10,
+        "amount_mismatch": 4.229209229472333e-09,
+        "date_mismatch": 4.363458741442438e-09,
+        "unsigned": 0.9999999724954235,
+        "cannot_tell": 3.192374611503132e-09
+      },
+      "payee_confidence": 0.9999999956365346,
+      "amounts_confidence": 0.9999151889386722,
+      "noul_choice_agreement": true,
+      "legibility_score": 2.3191385097396537,
+      "legibility_level": 2,
+      "legibility_probabilities": {
+        "0": 1.9512916562583896e-05,
+        "1": 0.06591205511017353,
+        "2": 0.5518748148806693,
+        "3": 0.3792976435022365,
+        "4": 0.0028959735903580663
+      },
+      "render_sha256": "230123326070d725d140867cddfdaf5bbf24cd92d076fb7612bdf173338d9cbc",
+      "latency_seconds": 2.912,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r06:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999888926804,
+        "payee_mismatch": 8.67777855989422e-09,
+        "amount_mismatch": 4.3204115444263734e-10,
+        "date_mismatch": 1.639843257596234e-10,
+        "unsigned": 1.8189612013294832e-09,
+        "cannot_tell": 1.4554436316471673e-11
+      },
+      "payee_confidence": 0.9999999964938588,
+      "amounts_confidence": 0.9999999968076199,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999029751,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.2671738991816217e-10,
+        "1": 1.8503907455846337e-12,
+        "2": 2.2785833795906944e-11,
+        "3": 4.122569543771047e-10,
+        "4": 0.9999999994363895
+      },
+      "render_sha256": "87802c76939a1c32c6f2a147b742d066c9668613baecbbd7a9c0bfa9b3ba758b",
+      "latency_seconds": 3.025,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r06:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.7629979548381664e-09,
+        "payee_mismatch": 0.9999998674522117,
+        "amount_mismatch": 1.1253516418846913e-07,
+        "date_mismatch": 4.363461844620662e-09,
+        "unsigned": 1.3440408693411516e-08,
+        "cannot_tell": 4.457556903058767e-10
+      },
+      "payee_confidence": 3.581748782955541e-10,
+      "amounts_confidence": 0.9999999123574733,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998708099,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.2475275935329e-10,
+        "1": 2.0967664104229165e-12,
+        "2": 2.0049592983093755e-11,
+        "3": 7.465005497767064e-10,
+        "4": 0.9999999991066004
+      },
+      "render_sha256": "334b88459f8c19ff1d20bec41f0d113c0a22119e6385a7383829569fd216ad26",
+      "latency_seconds": 2.894,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r06:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 2.1940845547626054e-09,
+        "payee_mismatch": 8.677772750661139e-09,
+        "amount_mismatch": 0.9999999722244594,
+        "date_mismatch": 5.780642872989747e-09,
+        "unsigned": 9.833204768477128e-09,
+        "cannot_tell": 1.2898357700110819e-09
+      },
+      "payee_confidence": 0.9999999936511983,
+      "amounts_confidence": 3.850742825670697e-09,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999987630956,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.5893913872183017e-10,
+        "1": 1.3750929840677831e-12,
+        "2": 2.1135270415387434e-11,
+        "3": 5.547521035027906e-10,
+        "4": 0.9999999992637985
+      },
+      "render_sha256": "fb1843d94c4ff8ed809f82557a8cbfea3c357f23b5cc1b612a461c80beb166bb",
+      "latency_seconds": 3.056,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r06:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 7.790429404356754e-12,
+        "payee_mismatch": 1.501644570536634e-11,
+        "amount_mismatch": 0.9999999995215259,
+        "date_mismatch": 1.978028803223334e-10,
+        "unsigned": 2.461696619351944e-10,
+        "cannot_tell": 1.169481967428854e-11
+      },
+      "payee_confidence": 0.9999999865595854,
+      "amounts_confidence": 2.461696070835035e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999991673665,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.0505236845929455e-10,
+        "1": 1.7382806161691645e-12,
+        "2": 1.592261177303767e-11,
+        "3": 3.75364094295585e-10,
+        "4": 0.9999999995019226
+      },
+      "render_sha256": "6b66bdea120fbba93c7a79e0eb02598d8a7bb5c36cff3d1a8f984bca645f676c",
+      "latency_seconds": 2.829,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r06:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 8.507390792372033e-11,
+        "payee_mismatch": 7.991954040813374e-11,
+        "amount_mismatch": 4.406937534914081e-08,
+        "date_mismatch": 0.999999925259978,
+        "unsigned": 3.028840920047964e-08,
+        "cannot_tell": 2.1724383443022834e-10
+      },
+      "payee_confidence": 0.9999999950555483,
+      "amounts_confidence": 0.9999999677581451,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999026254,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.3073978490818303e-10,
+        "1": 1.7113310730312012e-12,
+        "2": 1.989356819080391e-11,
+        "3": 4.05865357568733e-10,
+        "4": 0.9999999994417899
+      },
+      "render_sha256": "bc01498936a32446911ea3a001c431fcc7587a7c12bb0b4a20770c59e0816f94",
+      "latency_seconds": 2.934,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r06:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 5.211416805057861e-10,
+        "payee_mismatch": 1.928151653098212e-11,
+        "amount_mismatch": 5.376844932348485e-10,
+        "date_mismatch": 4.3634658676653175e-09,
+        "unsigned": 0.9999999942706246,
+        "cannot_tell": 2.878017699413943e-10
+      },
+      "payee_confidence": 0.9999999968076221,
+      "amounts_confidence": 0.9999999975137759,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999988030757,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.6144189276148365e-10,
+        "1": 1.0060384390890834e-12,
+        "2": 2.928613016615126e-11,
+        "3": 4.895664878211255e-10,
+        "4": 0.9999999993186994
+      },
+      "render_sha256": "6c901ef9e63f52162bf022fb554e67490f47ee1cea68710624e6c4d8e48898e8",
+      "latency_seconds": 2.926,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r06:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999992149752147,
+        "payee_mismatch": 5.043473807820143e-07,
+        "amount_mismatch": 9.237444500882285e-09,
+        "date_mismatch": 1.373023549138502e-09,
+        "unsigned": 2.699576995071921e-07,
+        "cannot_tell": 1.0923707902801656e-10
+      },
+      "payee_confidence": 0.9999999956365366,
+      "amounts_confidence": 0.9999999748900241,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.0188037002100354,
+      "legibility_level": 3,
+      "legibility_probabilities": {
+        "0": 2.3304666150108306e-07,
+        "1": 1.354453870510623e-05,
+        "2": 0.0014706840940877418,
+        "3": 0.9782133657990281,
+        "4": 0.02030217252151766
+      },
+      "render_sha256": "c8d62ec45e861608fc23b3957796ed1b2c48fb8e82476c54850bd3694426d1c0",
+      "latency_seconds": 3.14,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r07:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999876622122,
+        "payee_mismatch": 1.1142492150560399e-08,
+        "amount_mismatch": 5.211412927900874e-10,
+        "date_mismatch": 1.2771116623424933e-10,
+        "unsigned": 5.376840932117324e-10,
+        "cannot_tell": 8.759017142956787e-12
+      },
+      "payee_confidence": 0.9999999940358535,
+      "amounts_confidence": 0.9999999956365351,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998178774,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.6144206586945071e-10,
+        "1": 1.4187431202018042e-12,
+        "2": 3.3972541759917393e-11,
+        "3": 1.1032562939369583e-09,
+        "4": 0.9999999986999104
+      },
+      "render_sha256": "f1ecf1dccf86c0c9f15e43034d124a7cbb1642f16882889b8715f770af5a7ecb",
+      "latency_seconds": 2.855,
+      "input_tokens": 1925
+    },
+    {
+      "case_id": "r07:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.6561832187365975e-09,
+        "payee_mismatch": 0.9999999107871822,
+        "amount_mismatch": 7.734420764228222e-08,
+        "date_mismatch": 4.3634616081561165e-09,
+        "unsigned": 5.60279560961362e-09,
+        "cannot_tell": 2.461696588051121e-10
+      },
+      "payee_confidence": 1.1032564256814904e-09,
+      "amounts_confidence": 0.9999994956527724,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998591251,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.1903999970159132e-10,
+        "1": 1.850391185905007e-12,
+        "2": 2.7144870161583625e-11,
+        "3": 8.727481869447869e-10,
+        "4": 0.9999999989792165
+      },
+      "render_sha256": "0593e82b878f78cb2684591bbda0a3eda0265cca12b3851e0d61e24b9ac8faf9",
+      "latency_seconds": 2.687,
+      "input_tokens": 1925
+    },
+    {
+      "case_id": "r07:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 5.780651760838336e-09,
+        "payee_mismatch": 1.7257838355974585e-08,
+        "amount_mismatch": 0.9999997961088192,
+        "date_mismatch": 1.4449811142124596e-07,
+        "unsigned": 2.845336518379983e-08,
+        "cannot_tell": 7.901214151426953e-09
+      },
+      "payee_confidence": 0.9999999932417358,
+      "amounts_confidence": 1.444980011301808e-07,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999978193275,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 2.1055997267690796e-10,
+        "1": 2.0007468150246167e-12,
+        "2": 4.113905930961215e-11,
+        "3": 1.2501521193512081e-09,
+        "4": 0.9999999984961481
+      },
+      "render_sha256": "75a39609a1bb42832e6b3ea34b0728c068398eaa5f28157f51087f0ee1fbc7ef",
+      "latency_seconds": 2.75,
+      "input_tokens": 1925
+    },
+    {
+      "case_id": "r07:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 8.896956259392593e-12,
+        "payee_mismatch": 2.1176598442079672e-11,
+        "amount_mismatch": 0.9999999996720221,
+        "date_mismatch": 1.7456055908752926e-10,
+        "unsigned": 1.092372065846132e-10,
+        "cannot_tell": 1.4106655748624805e-11
+      },
+      "payee_confidence": 0.9999999827421663,
+      "amounts_confidence": 2.385960773766642e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998447804,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.3384006184450263e-10,
+        "1": 1.9697281114966837e-12,
+        "2": 2.620070041368128e-11,
+        "3": 9.585248794082918e-10,
+        "4": 0.9999999988794646
+      },
+      "render_sha256": "3edffaa5c267cd7761e8c73c64a8655a2aedad01adf886b0789e4ec1fdbeaa2a",
+      "latency_seconds": 2.785,
+      "input_tokens": 1925
+    },
+    {
+      "case_id": "r07:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.0587624507608426e-10,
+        "payee_mismatch": 6.032646599135478e-11,
+        "amount_mismatch": 1.955567711497912e-08,
+        "date_mismatch": 0.9999999682064423,
+        "unsigned": 1.1861117741675532e-08,
+        "cannot_tell": 2.1056005572148643e-10
+      },
+      "payee_confidence": 0.9999999913222183,
+      "amounts_confidence": 0.9999997617630049,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998135845,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.5893906283552357e-10,
+        "1": 2.0967654096406514e-12,
+        "2": 3.295343759698677e-11,
+        "3": 1.1562021175880612e-09,
+        "4": 0.9999999986498087
+      },
+      "render_sha256": "91639ddfc7eeb500c1fe494a7a1d659a82026f5f6e02f8f8cf44d29a7b47f236",
+      "latency_seconds": 2.738,
+      "input_tokens": 1925
+    },
+    {
+      "case_id": "r07:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 4.3204121641915105e-10,
+        "payee_mismatch": 2.676970913317381e-11,
+        "amount_mismatch": 3.581747486655563e-10,
+        "date_mismatch": 3.3982673985929063e-09,
+        "unsigned": 0.9999999954969454,
+        "cannot_tell": 2.8780149587818025e-10
+      },
+      "payee_confidence": 0.9999999936511983,
+      "amounts_confidence": 0.9999999961492545,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.99999999879057,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.6144216219477188e-10,
+        "1": 8.878272880856674e-13,
+        "2": 2.7945067262932082e-11,
+        "3": 5.051078393241175e-10,
+        "4": 0.9999999993046171
+      },
+      "render_sha256": "6e58161c0f6aa082f22851924ecad9262ec8eb905c70c14929ecfa7b4a866106",
+      "latency_seconds": 2.786,
+      "input_tokens": 1925
+    },
+    {
+      "case_id": "r07:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999953836312,
+        "payee_mismatch": 4.363462752834652e-09,
+        "amount_mismatch": 1.2378191045757325e-10,
+        "date_mismatch": 4.698231388120748e-11,
+        "unsigned": 7.391355469045075e-11,
+        "cannot_tell": 8.228335369424294e-12
+      },
+      "payee_confidence": 0.9999999936511976,
+      "amounts_confidence": 0.9999999966017326,
+      "noul_choice_agreement": true,
+      "legibility_score": 1.8314777674215992,
+      "legibility_level": 2,
+      "legibility_probabilities": {
+        "0": 2.5754611790606813e-05,
+        "1": 0.28524777608412455,
+        "2": 0.6038695467088202,
+        "3": 0.10493679246122445,
+        "4": 0.005920130134040216
+      },
+      "render_sha256": "2248c23eb968e0a55abc17745f8e5a7fe46de33ac72bb396ccb6af9f85caf698",
+      "latency_seconds": 2.952,
+      "input_tokens": 1925
+    },
+    {
+      "case_id": "r08:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999878154723,
+        "payee_mismatch": 1.1142497710059444e-08,
+        "amount_mismatch": 3.1608832983031485e-10,
+        "date_mismatch": 1.6398446525891976e-10,
+        "unsigned": 5.547522952794969e-10,
+        "cannot_tell": 7.2049745653511174e-12
+      },
+      "payee_confidence": 0.9999999961492576,
+      "amounts_confidence": 0.9999999975137728,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999994094164,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 7.220128910030165e-11,
+        "1": 5.643364856129434e-13,
+        "2": 1.9019666548029203e-11,
+        "3": 2.620460889502392e-10,
+        "4": 0.9999999996461686
+      },
+      "render_sha256": "bc4ad54f74206b832722a9399a7bc7c51ad81a149418eac3928a77ad9838912e",
+      "latency_seconds": 2.806,
+      "input_tokens": 1909
+    },
+    {
+      "case_id": "r08:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.7629987117100463e-09,
+        "payee_mismatch": 0.999999868207778,
+        "amount_mismatch": 1.1253521250089117e-07,
+        "date_mismatch": 5.263341928777762e-09,
+        "unsigned": 1.1861124133498553e-08,
+        "cannot_tell": 3.695446055071412e-10
+      },
+      "payee_confidence": 1.289837745399705e-09,
+      "amounts_confidence": 0.999999900687972,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999174705,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 8.985605248153388e-11,
+        "1": 1.5581846737933743e-12,
+        "2": 2.4469506826096973e-11,
+        "3": 4.1225680695755277e-10,
+        "4": 0.9999999994718594
+      },
+      "render_sha256": "2a3884da770d3e73ff88d1e9d8e2aeb19b3a12e643be1e1a3a46e7aac1d677cd",
+      "latency_seconds": 2.972,
+      "input_tokens": 1909
+    },
+    {
+      "case_id": "r08:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 5.051078782821015e-10,
+        "payee_mismatch": 1.0364140724740532e-09,
+        "amount_mismatch": 0.9999999944724149,
+        "date_mismatch": 2.1940886086451808e-09,
+        "unsigned": 1.416610077023985e-09,
+        "cannot_tell": 3.7536430215971756e-10
+      },
+      "payee_confidence": 0.9999999936511983,
+      "amounts_confidence": 1.3307803213544092e-09,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999990663424,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 8.054637765127411e-11,
+        "1": 9.904416130002083e-13,
+        "2": 2.6874473308237673e-11,
+        "3": 5.5475170675206e-10,
+        "4": 0.9999999993368369
+      },
+      "render_sha256": "7bc548c0ff117833d315b28351036399b9f459109940bb87157c7d6a5e714447",
+      "latency_seconds": 2.595,
+      "input_tokens": 1909
+    },
+    {
+      "case_id": "r08:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 7.433682133201314e-12,
+        "payee_mismatch": 1.3672633939300953e-11,
+        "amount_mismatch": 0.9999999996301732,
+        "date_mismatch": 2.3125507276803302e-10,
+        "unsigned": 1.0923716152730826e-10,
+        "cannot_tell": 8.228336043774903e-12
+      },
+      "payee_confidence": 0.9999999907625482,
+      "amounts_confidence": 2.5398377840151526e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999991506394,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 6.52284211284883e-11,
+        "1": 1.5581828161355704e-12,
+        "2": 2.304454247061529e-11,
+        "3": 5.376835987955542e-10,
+        "4": 0.9999999993724853
+      },
+      "render_sha256": "acf74fc4b85607ec15e76f8fa7dd804432b8349ffa52803328949ba2f835c610",
+      "latency_seconds": 2.703,
+      "input_tokens": 1909
+    },
+    {
+      "case_id": "r08:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 9.946152465848037e-11,
+        "payee_mismatch": 6.032646416713246e-11,
+        "amount_mismatch": 3.224185984744265e-08,
+        "date_mismatch": 0.9999999478625741,
+        "unsigned": 1.9555676523631658e-08,
+        "cannot_tell": 1.8010155433284208e-10
+      },
+      "payee_confidence": 0.9999999907625482,
+      "amounts_confidence": 0.9999999176674749,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999993648814,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 6.677538001628253e-11,
+        "1": 6.701671969624669e-13,
+        "2": 1.9942205320291404e-11,
+        "3": 3.261221322387179e-10,
+        "4": 0.9999999995864901
+      },
+      "render_sha256": "c2ee5dcab9de39a7cc6642e3a72b5a9e9c2a7c0694a684fc6304bf95b538f9a4",
+      "latency_seconds": 2.655,
+      "input_tokens": 1909
+    },
+    {
+      "case_id": "r08:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 4.1874900452342495e-10,
+        "payee_mismatch": 2.1510080933663618e-11,
+        "amount_mismatch": 4.3204152481385563e-10,
+        "date_mismatch": 4.79232857993755e-09,
+        "unsigned": 0.9999999940967748,
+        "cannot_tell": 2.385959906506191e-10
+      },
+      "payee_confidence": 0.9999999956365373,
+      "amounts_confidence": 0.9999999985384223,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999994039905,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 8.846301625881453e-11,
+        "1": 6.394780829544422e-13,
+        "2": 2.1218006710269278e-11,
+        "3": 1.9780309561440612e-10,
+        "4": 0.9999999996918765
+      },
+      "render_sha256": "e31d2a168502fe5c3f2a0ec16a83cd97628c25b2123d9c8cd552f52dea2938cc",
+      "latency_seconds": 2.654,
+      "input_tokens": 1909
+    },
+    {
+      "case_id": "r08:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999398335321,
+        "payee_mismatch": 4.691167318331237e-08,
+        "amount_mismatch": 4.944453976420729e-09,
+        "date_mismatch": 7.349274733513964e-10,
+        "unsigned": 7.194138085666987e-09,
+        "cannot_tell": 3.8127535042598537e-10
+      },
+      "payee_confidence": 0.9999999963825601,
+      "amounts_confidence": 0.9999999901667908,
+      "noul_choice_agreement": true,
+      "legibility_score": 2.9768533376812303,
+      "legibility_level": 3,
+      "legibility_probabilities": {
+        "0": 1.5662173496588555e-06,
+        "1": 0.0008636463611773716,
+        "2": 0.036723168987192044,
+        "3": 0.9471031203914551,
+        "4": 0.015308498042825957
+      },
+      "render_sha256": "ce640a28f2c7ffa1566d19d39c9589cddca79aae96daf53ac74a7e73e47853dd",
+      "latency_seconds": 2.845,
+      "input_tokens": 1909
+    },
+    {
+      "case_id": "r09:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999883507634,
+        "payee_mismatch": 1.046740915324364e-08,
+        "amount_mismatch": 2.6204646069066364e-10,
+        "date_mismatch": 1.237819832944326e-10,
+        "unsigned": 7.82326223314803e-10,
+        "cannot_tell": 1.3672640864137624e-11
+      },
+      "payee_confidence": 0.9999999964938588,
+      "amounts_confidence": 0.9999999976644056,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999990643054,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.946163080869321e-11,
+        "1": 1.1223188533851823e-12,
+        "2": 2.6251961230272246e-11,
+        "3": 4.819772673580912e-10,
+        "4": 0.9999999993911868
+      },
+      "render_sha256": "1e9b827113d2cfb7b74c0b8a4cbf7c113a58832cbbd43e58955cbd3d2ffb94d8",
+      "latency_seconds": 2.682,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r09:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.0364130798923789e-09,
+        "payee_mismatch": 0.9999998836857902,
+        "amount_mismatch": 9.931193847234648e-08,
+        "date_mismatch": 4.363462048671408e-09,
+        "unsigned": 1.114249068814497e-08,
+        "cannot_tell": 4.599055163350904e-10
+      },
+      "payee_confidence": 5.905306107358101e-10,
+      "amounts_confidence": 0.9999996072139403,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998665294,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.1811358084267222e-10,
+        "1": 1.71133148038007e-12,
+        "2": 3.123591598232225e-11,
+        "3": 7.946459829616496e-10,
+        "4": 0.9999999990542932
+      },
+      "render_sha256": "0de3dd20990e3a38ff0f6be22bea715a558ee26e9266edabad611715eddbc0fb",
+      "latency_seconds": 3.178,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r09:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.1979292422135865e-07,
+        "payee_mismatch": 1.855390875398011e-07,
+        "amount_mismatch": 0.9999994393811052,
+        "date_mismatch": 1.2751890405120331e-07,
+        "unsigned": 8.764237559756672e-08,
+        "cannot_tell": 4.012560345348446e-08
+      },
+      "payee_confidence": 0.9999999968076221,
+      "amounts_confidence": 4.406944178124443e-08,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998744668,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.4930936070920914e-10,
+        "1": 1.7382787507159747e-12,
+        "2": 3.1174926998497764e-11,
+        "3": 5.905299770551452e-10,
+        "4": 0.9999999992272475
+      },
+      "render_sha256": "c07e7af4f5df1f5f91492da93c99aec5ff877aab21b9eb07f84e792c47aff614",
+      "latency_seconds": 3.043,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r09:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.8982557374632198e-11,
+        "payee_mismatch": 3.1789801302927165e-11,
+        "amount_mismatch": 0.9999999992484303,
+        "date_mismatch": 2.2413992558063914e-10,
+        "unsigned": 4.5990526591098126e-10,
+        "cannot_tell": 1.6752048086247282e-11
+      },
+      "payee_confidence": 0.9999999873738988,
+      "amounts_confidence": 2.3125522024228903e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999990356216,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.715756986271605e-11,
+        "1": 1.7113312768853113e-12,
+        "2": 2.8775870816842984e-11,
+        "3": 5.130619469227299e-10,
+        "4": 0.9999999993592932
+      },
+      "render_sha256": "1167a1e0d4c455a7834f2596447bd73ac2dbcb4452536233b90737708d34d556",
+      "latency_seconds": 2.905,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r09:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 9.946162747414017e-11,
+        "payee_mismatch": 6.421725321479855e-11,
+        "amount_mismatch": 4.691167776297974e-08,
+        "date_mismatch": 0.9999999224383846,
+        "unsigned": 3.0288455619927985e-08,
+        "cannot_tell": 1.978030653434581e-10
+      },
+      "payee_confidence": 0.9999999943972022,
+      "amounts_confidence": 0.999999927341853,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999985707477,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 2.105601234377172e-10,
+        "1": 1.969729521065754e-12,
+        "2": 2.9980659318346425e-11,
+        "3": 5.211413105146987e-10,
+        "4": 0.9999999992363482
+      },
+      "render_sha256": "27a89a8d07ebcce8ed35a287c6ff081724cb32bd6e0b9442c1378736a06b47ab",
+      "latency_seconds": 2.98,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r09:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 5.211417416623415e-10,
+        "payee_mismatch": 4.6982352932669834e-11,
+        "amount_mismatch": 9.146322406408932e-10,
+        "date_mismatch": 5.602801736426631e-09,
+        "unsigned": 0.9999999925779675,
+        "cannot_tell": 3.3647439756435597e-10
+      },
+      "payee_confidence": 0.9999999968076225,
+      "amounts_confidence": 0.999999998181037,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999990372195,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.1811348232481413e-10,
+        "1": 1.1223176493067379e-12,
+        "2": 3.410549029102999e-11,
+        "3": 4.187486574026514e-10,
+        "4": 0.9999999994279101
+      },
+      "render_sha256": "e4305d09335075755fae4294bbe7d2730590314dd4dd5f2ab319c05c3ab58c08",
+      "latency_seconds": 2.761,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r09:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999814359107,
+        "payee_mismatch": 1.5229973418259284e-08,
+        "amount_mismatch": 1.0693119684971383e-09,
+        "date_mismatch": 1.8581855754450588e-10,
+        "unsigned": 2.0611527662462025e-09,
+        "cannot_tell": 1.7832465500631096e-11
+      },
+      "payee_confidence": 0.9999999950555465,
+      "amounts_confidence": 0.9999999656787243,
+      "noul_choice_agreement": true,
+      "legibility_score": 2.5968410432185838,
+      "legibility_level": 3,
+      "legibility_probabilities": {
+        "0": 2.7164961865318913e-05,
+        "1": 0.026289593436154845,
+        "2": 0.3629165996479095,
+        "3": 0.598348317329671,
+        "4": 0.012418324624399272
+      },
+      "render_sha256": "7af2ce4ae34491086ca52b55175b2b07a9a98eeff1f8d1ac722b80ae40355271",
+      "latency_seconds": 3.018,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r10:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.99999998717132,
+        "payee_mismatch": 1.1861131298922665e-08,
+        "amount_mismatch": 1.8010176563488814e-10,
+        "date_mismatch": 8.507405017552227e-11,
+        "unsigned": 6.904006324073001e-10,
+        "cannot_tell": 1.1972167199481502e-11
+      },
+      "payee_confidence": 0.9999999943972022,
+      "amounts_confidence": 0.9999999953551153,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999172323,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.0102789951037047e-10,
+        "1": 1.2717535694908715e-12,
+        "2": 2.2192884322204336e-11,
+        "3": 3.753641837884457e-10,
+        "4": 0.9999999995001432
+      },
+      "render_sha256": "727b75b4736df8f812d25ecc3bb96ad8c194ec679b99db0f26f94da28ef3a50d",
+      "latency_seconds": 2.953,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r10:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 2.5651448977402067e-09,
+        "payee_mismatch": 0.9999998974884222,
+        "amount_mismatch": 8.233242103684042e-08,
+        "date_mismatch": 5.2633355848553445e-09,
+        "unsigned": 1.1861109837248697e-08,
+        "cannot_tell": 4.895664709696286e-10
+      },
+      "payee_confidence": 6.092759919103245e-10,
+      "amounts_confidence": 0.9999996533672961,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999986245416,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.0923719203759554e-10,
+        "1": 2.3391125183066705e-12,
+        "2": 2.9372093686840514e-11,
+        "3": 8.727477707934969e-10,
+        "4": 0.9999999989863038
+      },
+      "render_sha256": "f775b6e89ed72d2cc8ebc39a2ab2499d43da0e0fae639293512321358d5134d7",
+      "latency_seconds": 2.954,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r10:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 3.345584566660222e-09,
+        "payee_mismatch": 7.901214143033338e-09,
+        "amount_mismatch": 0.9999999440580922,
+        "date_mismatch": 2.5907083788458056e-08,
+        "unsigned": 1.6726870472061877e-08,
+        "cannot_tell": 2.061154858531684e-09
+      },
+      "payee_confidence": 0.9999999901667825,
+      "amounts_confidence": 2.102432967107127e-07,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.99999999884594,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.1997358481357665e-10,
+        "1": 1.252036708325774e-12,
+        "2": 2.5769346219085547e-11,
+        "3": 6.188708401315012e-10,
+        "4": 0.9999999992341342
+      },
+      "render_sha256": "db78f35c60980d598a760d57c2b21da14eed5fc9a30da58b40e9031f3d94b4fe",
+      "latency_seconds": 2.955,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r10:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 2.2897328175600985e-11,
+        "payee_mismatch": 5.241250616905026e-11,
+        "amount_mismatch": 0.9999999989102455,
+        "date_mismatch": 3.3647378131633305e-10,
+        "unsigned": 6.485701886458738e-10,
+        "cannot_tell": 2.940075135171202e-11
+      },
+      "payee_confidence": 0.9999999827421663,
+      "amounts_confidence": 9.436651161563703e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999985714556,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.3594771994943492e-10,
+        "1": 3.737886705407346e-12,
+        "2": 3.9447304272506133e-11,
+        "3": 7.946449409177477e-10,
+        "4": 0.999999999026222
+      },
+      "render_sha256": "dee823fb0192c614313ed8ce6a1f6ad37b47a1f88541d72681687fe41d3136a5",
+      "latency_seconds": 2.953,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r10:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 5.667149662820444e-11,
+        "payee_mismatch": 5.001242023922376e-11,
+        "amount_mismatch": 2.3588660290313367e-08,
+        "date_mismatch": 0.9999999635508445,
+        "unsigned": 1.2626100003842312e-08,
+        "cannot_tell": 1.2771118909509475e-10
+      },
+      "payee_confidence": 0.9999999913222172,
+      "amounts_confidence": 0.9999998024946094,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999985666164,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.5048056996167578e-10,
+        "1": 2.267145321815742e-12,
+        "2": 3.3201780495258985e-11,
+        "3": 7.582563132468851e-10,
+        "4": 0.9999999990557942
+      },
+      "render_sha256": "060982f1a8a6aeef7d4d6bed4145e124deff27e714ca49f325edd9ffb360f991",
+      "latency_seconds": 2.932,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r10:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.4166084343509772e-09,
+        "payee_mismatch": 6.625565814896092e-11,
+        "amount_mismatch": 1.211689404946392e-09,
+        "date_mismatch": 6.348798537179493e-09,
+        "unsigned": 0.9999999905246068,
+        "cannot_tell": 4.320411624877999e-10
+      },
+      "payee_confidence": 0.9999999928058652,
+      "amounts_confidence": 0.9999999978059115,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999992392654,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 7.449331947450526e-11,
+        "1": 1.4637797348490282e-12,
+        "2": 2.625196123291683e-11,
+        "3": 4.0586555112025737e-10,
+        "4": 0.9999999994919253
+      },
+      "render_sha256": "768f4c623211377a7975ec5e99418c034ca689526e08de0bf475b634061e4b25",
+      "latency_seconds": 2.932,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r10:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": false,
+      "verdict_probabilities": {
+        "consistent": 1.4449806105383512e-07,
+        "payee_mismatch": 1.60522846002978e-09,
+        "amount_mismatch": 4.363463353424248e-09,
+        "date_mismatch": 6.758264248763173e-09,
+        "unsigned": 0.9999998364261812,
+        "cannot_tell": 6.348801717233427e-09
+      },
+      "payee_confidence": 0.999999996601731,
+      "amounts_confidence": 0.9999999959009052,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.114569720607956,
+      "legibility_level": 3,
+      "legibility_probabilities": {
+        "0": 7.764454559608972e-07,
+        "1": 3.9824054641112344e-05,
+        "2": 0.0040621640087904155,
+        "3": 0.8771833734287154,
+        "4": 0.11871386206239698
+      },
+      "render_sha256": "ae2de2f3afc963a821c5acb98e4f00e1a7e25f772d4fed8f737e9153dcd2c908",
+      "latency_seconds": 2.897,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r11:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999989868324966,
+        "payee_mismatch": 7.338205852013998e-07,
+        "amount_mismatch": 5.602789307751641e-09,
+        "date_mismatch": 3.6174326604357962e-09,
+        "unsigned": 2.699575068039917e-07,
+        "cannot_tell": 1.6918957696064274e-10
+      },
+      "payee_confidence": 0.9999999940358528,
+      "amounts_confidence": 0.9999999959009032,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999993014077,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 8.777456020451427e-11,
+        "1": 7.360344984594243e-13,
+        "2": 1.7049141261301748e-11,
+        "3": 3.111878383085034e-10,
+        "4": 0.9999999995832525
+      },
+      "render_sha256": "dff6d10cb0354bb1751ab80904e30760ac64b677f2ff201116ac79e85732bc00",
+      "latency_seconds": 2.867,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r11:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.6561824979131206e-09,
+        "payee_mismatch": 0.9999999008205355,
+        "amount_mismatch": 8.233244463089441e-08,
+        "date_mismatch": 3.732264873020885e-09,
+        "unsigned": 1.1142484713684825e-08,
+        "cannot_tell": 3.1608796115154517e-10
+      },
+      "payee_confidence": 3.261219378845878e-10,
+      "amounts_confidence": 0.9999997761972116,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999991040425,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.127110116442299e-11,
+        "1": 9.904426756893546e-13,
+        "2": 1.5312629744311787e-11,
+        "3": 4.972767496034225e-10,
+        "4": 0.9999999993951492
+      },
+      "render_sha256": "df335e6c4c8fa650647cad226df3fc4bd85357a7ebbd8a26d8bb60c80821d71d",
+      "latency_seconds": 2.825,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r11:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 7.901212988979642e-09,
+        "payee_mismatch": 2.286291785894873e-08,
+        "amount_mismatch": 0.9999998874047551,
+        "date_mismatch": 5.658626515161026e-08,
+        "unsigned": 2.358866477716385e-08,
+        "cannot_tell": 1.6561842147962946e-09
+      },
+      "payee_confidence": 0.9999999907625471,
+      "amounts_confidence": 6.3488015870988006e-09,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999991254223,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 8.507390931898416e-11,
+        "1": 1.1223171141228271e-12,
+        "2": 2.446948057154438e-11,
+        "3": 4.819765204358466e-10,
+        "4": 0.9999999994073578
+      },
+      "render_sha256": "14b3793550f07ac81e4c1729e2fec76b85470c6d47c8ea4ebe0c51f9072991e7",
+      "latency_seconds": 2.821,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r11:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 2.7191251282336143e-11,
+        "payee_mismatch": 3.491425775806275e-11,
+        "amount_mismatch": 0.9999999990949331,
+        "date_mismatch": 5.905299047957595e-10,
+        "unsigned": 2.3125483343893387e-10,
+        "cannot_tell": 2.117656779137473e-11
+      },
+      "payee_confidence": 0.9999999873738975,
+      "amounts_confidence": 2.1724391576692997e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999073002,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.380886673999216e-10,
+        "1": 1.291779850151501e-12,
+        "2": 1.4497696086589029e-11,
+        "3": 3.4177273417732425e-10,
+        "4": 0.9999999995043491
+      },
+      "render_sha256": "3e6c15b53b0f634f4c3c0306e0d27521b0436046d1fe454ff1c91b1c487e9d9f",
+      "latency_seconds": 3.302,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r11:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 9.343546835961487e-11,
+        "payee_mismatch": 5.323792509199815e-11,
+        "amount_mismatch": 2.5109989149682985e-08,
+        "date_mismatch": 0.9999999510269746,
+        "unsigned": 2.3588651814316837e-08,
+        "cannot_tell": 1.277111432052654e-10
+      },
+      "payee_confidence": 0.9999999928058652,
+      "amounts_confidence": 0.9999984465020619,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999991754245,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.0754362640684682e-10,
+        "1": 1.4187434596273118e-12,
+        "2": 1.8761423913733343e-11,
+        "3": 3.5262197553440684e-10,
+        "4": 0.9999999995196542
+      },
+      "render_sha256": "ac4b4d9622bfcca2af4238c80552ea90a0d0b48f89bd96e22609a179361ad614",
+      "latency_seconds": 3.432,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r11:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.6052278437047568e-09,
+        "payee_mismatch": 1.3176512534154897e-10,
+        "amount_mismatch": 1.507972005168157e-09,
+        "date_mismatch": 7.194132082533948e-09,
+        "unsigned": 0.9999999889885413,
+        "cannot_tell": 5.72361614140441e-10
+      },
+      "payee_confidence": 0.9999999928058652,
+      "amounts_confidence": 0.9999999953551209,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998897871,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.424720212679516e-10,
+        "1": 1.7113296448508941e-12,
+        "2": 3.716604733466074e-11,
+        "3": 4.527751471977238e-10,
+        "4": 0.9999999993658755
+      },
+      "render_sha256": "96ee60867e3953d450bc871fdf9de11daf2e8f240d0d977e1bc07b869a5c27d5",
+      "latency_seconds": 2.916,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r11:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": false,
+      "verdict_probabilities": {
+        "consistent": 1.1142484246567276e-08,
+        "payee_mismatch": 2.2413991805015246e-10,
+        "amount_mismatch": 2.409731214483263e-09,
+        "date_mismatch": 5.964142035067944e-09,
+        "unsigned": 0.999999973065374,
+        "cannot_tell": 7.194128534542162e-09
+      },
+      "payee_confidence": 0.9999999895325945,
+      "amounts_confidence": 0.9999999176675828,
+      "noul_choice_agreement": true,
+      "legibility_score": 2.253200667624775,
+      "legibility_level": 2,
+      "legibility_probabilities": {
+        "0": 1.4597154401239421e-05,
+        "1": 0.03388836714896465,
+        "2": 0.6806660090662127,
+        "3": 0.28374382417830063,
+        "4": 0.0016872024521207775
+      },
+      "render_sha256": "290cf333b366245161c16f7f020b4940e850551288be1feab2ef13a4ee51e69a",
+      "latency_seconds": 3.322,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r12:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999899333397,
+        "payee_mismatch": 9.53068223857308e-09,
+        "amount_mismatch": 2.385959612376027e-10,
+        "date_mismatch": 8.375505964931873e-11,
+        "unsigned": 2.0408194055900635e-10,
+        "cannot_tell": 9.545039377270849e-12
+      },
+      "payee_confidence": 0.9999999957707864,
+      "amounts_confidence": 0.9999999966017346,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999172463,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 6.835891250638383e-11,
+        "1": 9.750875177558735e-13,
+        "2": 1.905688016313872e-11,
+        "3": 5.130621304308359e-10,
+        "4": 0.9999999993985469
+      },
+      "render_sha256": "9a3507028730f0f5cd5b82246c85836b3a74ea26e82237d2dbf6879d418c530c",
+      "latency_seconds": 3.318,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r12:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.656184023185653e-09,
+        "payee_mismatch": 0.9999998739233632,
+        "amount_mismatch": 1.0571704888484988e-07,
+        "date_mismatch": 5.602798331029694e-09,
+        "unsigned": 1.2626100944715522e-08,
+        "cannot_tell": 4.745046671258979e-10
+      },
+      "payee_confidence": 2.1940876514723222e-09,
+      "amounts_confidence": 0.9999997897567343,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999988455386,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.135886935548172e-10,
+        "1": 2.0322559323952775e-12,
+        "2": 2.271916798416206e-11,
+        "3": 6.485709945390933e-10,
+        "4": 0.9999999992130888
+      },
+      "render_sha256": "a2e9872be296de7c23737f9c954cd2f0b1c6b7c122f2a4cb62969aba91a662be",
+      "latency_seconds": 3.062,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r12:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 2.5651489955215946e-09,
+        "payee_mismatch": 8.410799752269994e-09,
+        "amount_mismatch": 0.9999999679527122,
+        "date_mismatch": 1.5713442635950357e-08,
+        "unsigned": 3.094160312669991e-09,
+        "cannot_tell": 2.2637360432157937e-09
+      },
+      "payee_confidence": 0.9999999932417358,
+      "amounts_confidence": 2.2159507616448288e-08,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999990877764,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.490689455736134e-11,
+        "1": 1.1579443879090535e-12,
+        "2": 1.9777342785836667e-11,
+        "3": 4.895670131075331e-10,
+        "4": 0.9999999993945907
+      },
+      "render_sha256": "23c5fa7d7581f15f53d34f03b50781f3b0111f5ded096ed76645eed8fc84c3bc",
+      "latency_seconds": 3.231,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r12:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.64923553582208e-11,
+        "payee_mismatch": 3.081177622653167e-11,
+        "amount_mismatch": 0.999999999246169,
+        "date_mismatch": 3.364743639961554e-10,
+        "unsigned": 3.4715520684548674e-10,
+        "cannot_tell": 2.2897367827460518e-11
+      },
+      "payee_confidence": 0.9999999918479764,
+      "amounts_confidence": 5.211413727627708e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999989875206,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.270841185842683e-11,
+        "1": 2.5291839751962743e-12,
+        "2": 2.1763635078249453e-11,
+        "3": 5.905307514583567e-10,
+        "4": 0.999999999292468
+      },
+      "render_sha256": "658fc09ef206694c7dd119c31a54b6cb1bcaab4491f6b961a366dd27e8959a33",
+      "latency_seconds": 3.059,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r12:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 9.640147095503052e-11,
+        "payee_mismatch": 8.245654772694757e-11,
+        "amount_mismatch": 4.139939144750311e-08,
+        "date_mismatch": 0.9999999330876101,
+        "unsigned": 2.5110000206355617e-08,
+        "cannot_tell": 2.2414013532362759e-10
+      },
+      "payee_confidence": 0.9999999907625471,
+      "amounts_confidence": 0.9999999317439221,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999989428994,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.1095744076621525e-10,
+        "1": 1.6076471478631965e-12,
+        "2": 1.8042687197403483e-11,
+        "3": 5.723620302963404e-10,
+        "4": 0.9999999992970301
+      },
+      "render_sha256": "93638f27b3826f2564eed33c4cb83a438fcc1e891a96e4a9af644a6ece1c2e3a",
+      "latency_seconds": 3.205,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r12:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 6.691581264915022e-10,
+        "payee_mismatch": 4.1461711821721935e-11,
+        "amount_mismatch": 5.723612767242956e-10,
+        "date_mismatch": 3.732264357000341e-09,
+        "unsigned": 0.9999999946969531,
+        "cannot_tell": 2.8780132394473993e-10
+      },
+      "payee_confidence": 0.9999999953551175,
+      "amounts_confidence": 0.9999999978059115,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999989056563,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.4358958011867168e-10,
+        "1": 1.3750933120619356e-12,
+        "2": 3.1542444779033166e-11,
+        "3": 4.527755790013864e-10,
+        "4": 0.9999999993707174
+      },
+      "render_sha256": "05370fa4fef559b68a90a969a5d43f6900b6911622634248bd037f2e54e2a637",
+      "latency_seconds": 3.451,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r12:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.7772986971440289,
+        "payee_mismatch": 5.033748889014365e-07,
+        "amount_mismatch": 3.920287576549202e-07,
+        "date_mismatch": 2.694371621139709e-07,
+        "unsigned": 0.22269979205099805,
+        "cannot_tell": 3.459641643545541e-07
+      },
+      "payee_confidence": 0.9999999778405186,
+      "amounts_confidence": 0.9999997300421903,
+      "noul_choice_agreement": true,
+      "legibility_score": 2.9856595601271683,
+      "legibility_level": 3,
+      "legibility_probabilities": {
+        "0": 1.929374208913368e-06,
+        "1": 0.0005349617395157274,
+        "2": 0.022747151992844473,
+        "3": 0.9672335331717596,
+        "4": 0.009482423721671154
+      },
+      "render_sha256": "6fea8ee0f5858bdf706d1bcc4b8f05dab9406cb8cebb6a8d3100d669b5c051c6",
+      "latency_seconds": 3.457,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r13:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999905858502,
+        "payee_mismatch": 9.237444069052092e-09,
+        "amount_mismatch": 5.939116693227253e-11,
+        "date_mismatch": 3.7166042577973113e-11,
+        "unsigned": 7.052875580866189e-11,
+        "cannot_tell": 9.619891735103497e-12
+      },
+      "payee_confidence": 0.9999999966017317,
+      "amounts_confidence": 0.9999999987883099,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999992841735,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.1009387127961506e-10,
+        "1": 1.3121222665449045e-12,
+        "2": 1.830891435826954e-11,
+        "3": 2.348967080121146e-10,
+        "4": 0.9999999996353883
+      },
+      "render_sha256": "9c7e7064952ec404953c3a4ff675ef9ed4979b5d3fe110734be56d5180a5e08d",
+      "latency_seconds": 3.23,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r13:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.0045263000223834e-09,
+        "payee_mismatch": 0.9999999319648856,
+        "amount_mismatch": 5.6586253638416646e-08,
+        "date_mismatch": 3.398268669694772e-09,
+        "unsigned": 6.758264235129563e-09,
+        "cannot_tell": 2.878016035286314e-10
+      },
+      "payee_confidence": 7.123158857918306e-10,
+      "amounts_confidence": 0.9999967112505427,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998979092,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.3808858508010592e-10,
+        "1": 1.4410837001304167e-12,
+        "2": 1.6094560175267883e-11,
+        "3": 4.3204096065677957e-10,
+        "4": 0.9999999994123348
+      },
+      "render_sha256": "37cf747897874a6e429b4443987e3c391a4b441c67194d337627ae13d985e841",
+      "latency_seconds": 2.995,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r13:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.9171720708220666e-10,
+        "payee_mismatch": 7.34927170460102e-10,
+        "amount_mismatch": 0.9999999925421584,
+        "date_mismatch": 5.1014056913725045e-09,
+        "unsigned": 1.0364134295571216e-09,
+        "cannot_tell": 3.933781671178937e-10
+      },
+      "payee_confidence": 0.9999999956365366,
+      "amounts_confidence": 5.964149279317033e-09,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999989144928,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.4026333107697632e-10,
+        "1": 1.9391923891106956e-12,
+        "2": 2.574419312906793e-11,
+        "3": 4.671482187085544e-10,
+        "4": 0.9999999993649051
+      },
+      "render_sha256": "83a42415266420cdacb215c6de034bf0b522757619ad035c7e76973ece3e19b5",
+      "latency_seconds": 3.292,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r13:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.024033362067054e-11,
+        "payee_mismatch": 1.1513516571492766e-11,
+        "amount_mismatch": 0.999999999574724,
+        "date_mismatch": 2.7894697199541415e-10,
+        "unsigned": 1.1628239812921268e-10,
+        "cannot_tell": 8.292874890715434e-12
+      },
+      "payee_confidence": 0.9999999865595854,
+      "amounts_confidence": 2.0408177229184185e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999987905217,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.6398446722235105e-10,
+        "1": 2.7777651771061127e-12,
+        "2": 2.0049600157409604e-11,
+        "3": 5.051077188991323e-10,
+        "4": 0.9999999993080804
+      },
+      "render_sha256": "e4e5058bcbe455f7c9dcc9bbbbbd26ac1a900e94f64893d771d79ed0b49fba89",
+      "latency_seconds": 3.391,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r13:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 7.746080024211487e-11,
+        "payee_mismatch": 3.894973641663446e-11,
+        "amount_mismatch": 4.139941399777439e-08,
+        "date_mismatch": 0.9999999361657267,
+        "unsigned": 2.2159509476297803e-08,
+        "cannot_tell": 1.5893924226458492e-10
+      },
+      "payee_confidence": 0.9999999918479775,
+      "amounts_confidence": 0.999999712631481,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998641597,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.3917172677491533e-10,
+        "1": 3.651301265009818e-12,
+        "2": 2.7917767176869383e-11,
+        "3": 7.349269562488024e-10,
+        "4": 0.9999999990943322
+      },
+      "render_sha256": "fad2ca37e027664dc76d7803140b5a412247c9b130e00fbbd99a65c3de223e55",
+      "latency_seconds": 3.353,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r13:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.0102775486957937e-10,
+        "payee_mismatch": 5.209852423703567e-12,
+        "amount_mismatch": 1.3176503252568502e-10,
+        "date_mismatch": 1.2898358997649503e-09,
+        "unsigned": 0.999999998354048,
+        "cannot_tell": 1.181134117931162e-10
+      },
+      "payee_confidence": 0.9999999961492576,
+      "amounts_confidence": 0.999999999351429,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998769481,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.887449198249114e-10,
+        "1": 2.609468270840576e-12,
+        "2": 3.7166078349004603e-11,
+        "3": 3.933781932531873e-10,
+        "4": 0.9999999993781012
+      },
+      "render_sha256": "bd64b2613f4eb2460c7a1141c71b81552405d79df7b247e3895d9d6b4827df45",
+      "latency_seconds": 3.064,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r13:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": false,
+      "verdict_probabilities": {
+        "consistent": 2.4300156813134246e-05,
+        "payee_mismatch": 9.32922583800903e-08,
+        "amount_mismatch": 1.3709210367334473e-06,
+        "date_mismatch": 4.737776328083181e-07,
+        "unsigned": 0.9999720015548035,
+        "cannot_tell": 1.7602974554376552e-06
+      },
+      "payee_confidence": 0.9999997300421903,
+      "amounts_confidence": 0.9890130599601177,
+      "noul_choice_agreement": true,
+      "legibility_score": 1.9935886039545976,
+      "legibility_level": 2,
+      "legibility_probabilities": {
+        "0": 1.379917027268531e-05,
+        "1": 0.06371074223074853,
+        "2": 0.8794997199960327,
+        "3": 0.05622453268000115,
+        "4": 0.0005512059229450222
+      },
+      "render_sha256": "2d46707e4584784d7863e64609f60fd41b3a53811ccf10f87a0136d92045eb80",
+      "latency_seconds": 2.852,
+      "input_tokens": 1913
+    },
+    {
+      "case_id": "r14:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999781531868,
+        "payee_mismatch": 1.955568331169977e-08,
+        "amount_mismatch": 5.376841089585535e-10,
+        "date_mismatch": 1.8581865586366648e-10,
+        "unsigned": 1.5558405569280777e-09,
+        "cannot_tell": 1.1786546213984854e-11
+      },
+      "payee_confidence": 0.9999999943972022,
+      "amounts_confidence": 0.9999999973534244,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999154594,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 8.709152429149441e-11,
+        "1": 1.157945216184547e-12,
+        "2": 2.0395196609111292e-11,
+        "3": 4.527757949317669e-10,
+        "4": 0.9999999994385795
+      },
+      "render_sha256": "cded54d9f6ebb30cd1607a9e96cc5fd0897a6f86a849752ed1b42c0d36b8f5ab",
+      "latency_seconds": 3.091,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r14:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.8189623126715984e-09,
+        "payee_mismatch": 0.9999998842928829,
+        "amount_mismatch": 9.329496872424984e-08,
+        "date_mismatch": 4.944452201187046e-09,
+        "unsigned": 1.5229984978766188e-08,
+        "cannot_tell": 4.1874890139281327e-10
+      },
+      "payee_confidence": 9.146317018821086e-10,
+      "amounts_confidence": 0.9999999006881141,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999988951833,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.270838974667707e-11,
+        "1": 2.6505614162686183e-12,
+        "2": 2.3167263421114958e-11,
+        "3": 6.796965664382598e-10,
+        "4": 0.9999999992017772
+      },
+      "render_sha256": "7eab4055a8d7b01ea0b69bb3aea2bdd159c9b79bb59230d5f3d7c6670d23f9b7",
+      "latency_seconds": 2.91,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r14:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 7.031091722301111e-05,
+        "payee_mismatch": 5.093305760490291e-06,
+        "amount_mismatch": 0.9999160502618517,
+        "date_mismatch": 5.093305760490291e-06,
+        "unsigned": 3.2884853589072506e-06,
+        "cannot_tell": 1.637240453906349e-07
+      },
+      "payee_confidence": 0.9999999961492572,
+      "amounts_confidence": 5.658624699883606e-08,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999992768775,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.127097061663787e-11,
+        "1": 1.0709223441453897e-12,
+        "2": 2.423168092266337e-11,
+        "3": 3.063628797958944e-10,
+        "4": 0.9999999995770636
+      },
+      "render_sha256": "436f066a890ab11ddad3ca18dc41ca90f0e3a2d4daab5b6442c34b7a3b12a3c6",
+      "latency_seconds": 3.09,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r14:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 2.1848800171802395e-11,
+        "payee_mismatch": 1.2066053428000093e-11,
+        "amount_mismatch": 0.999999999423703,
+        "date_mismatch": 2.878015004592709e-10,
+        "unsigned": 2.385958241367454e-10,
+        "cannot_tell": 1.5984923679422704e-11
+      },
+      "payee_confidence": 0.9999999873738988,
+      "amounts_confidence": 2.312551099715488e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999988604196,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.2091457813129385e-10,
+        "1": 2.1297866926875732e-12,
+        "2": 2.0128074471934223e-11,
+        "3": 6.09276282346534e-10,
+        "4": 0.9999999992475512
+      },
+      "render_sha256": "9fd397158af46770e473c0a3e48a6d94a803353ab626867a407435305036e389",
+      "latency_seconds": 3.045,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r14:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 5.3237917155618905e-11,
+        "payee_mismatch": 1.0261877117929569e-10,
+        "amount_mismatch": 3.028842395976942e-08,
+        "date_mismatch": 0.9999999409530688,
+        "unsigned": 2.8453341119840054e-08,
+        "cannot_tell": 1.4930943104454493e-10
+      },
+      "payee_confidence": 0.9999999932417358,
+      "amounts_confidence": 0.9999999778405213,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998954602,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.4699477898185212e-10,
+        "1": 1.582723455250678e-12,
+        "2": 2.0206858349151094e-11,
+        "3": 4.122570526593664e-10,
+        "4": 0.9999999994189586
+      },
+      "render_sha256": "077fad306af51f740ec4f9319d1234f58ef1931b0f7af0bed9d42e04ccffc010",
+      "latency_seconds": 3.045,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r14:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 3.471548701178528e-10,
+        "payee_mismatch": 2.4374097534145136e-11,
+        "amount_mismatch": 6.092757714867852e-10,
+        "date_mismatch": 3.2937137019835416e-09,
+        "unsigned": 0.9999999954191185,
+        "cannot_tell": 3.063630975961626e-10
+      },
+      "payee_confidence": 0.9999999959009056,
+      "amounts_confidence": 0.9999999971827349,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999991657207,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.198693832445339e-11,
+        "1": 1.1579446640742225e-12,
+        "2": 2.8496224141531478e-11,
+        "3": 4.0586540596402603e-10,
+        "4": 0.9999999994724935
+      },
+      "render_sha256": "4023362f08f519bbb07ce20cf3ae258b22563db286ab66793809591eb0082097",
+      "latency_seconds": 3.046,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r14:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9964061132542014,
+        "payee_mismatch": 1.8487225713297369e-07,
+        "amount_mismatch": 6.389020340360533e-08,
+        "date_mismatch": 2.5019763142377023e-08,
+        "unsigned": 0.003593601861122336,
+        "cannot_tell": 1.110245259329555e-08
+      },
+      "payee_confidence": 0.9999999959009052,
+      "amounts_confidence": 0.9999999067050165,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.3466843105568245,
+      "legibility_level": 3,
+      "legibility_probabilities": {
+        "0": 7.392409193171382e-07,
+        "1": 1.682504577250032e-05,
+        "2": 0.0014227808719456368,
+        "3": 0.6504166955982896,
+        "4": 0.34814295924307287
+      },
+      "render_sha256": "9751b57bcaf697cc7ceb5686cf554f4e1c09c43a851c81fe8b72cf4543a63372",
+      "latency_seconds": 3.274,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r15:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": false,
+      "verdict_probabilities": {
+        "consistent": 0.11920288330726972,
+        "payee_mismatch": 6.812452378886452e-08,
+        "amount_mismatch": 7.719519874726605e-08,
+        "date_mismatch": 1.4421961799275675e-07,
+        "unsigned": 0.8807968050365951,
+        "cannot_tell": 2.211679473566746e-08
+      },
+      "payee_confidence": 0.9999999928058652,
+      "amounts_confidence": 0.9999999950555454,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999991941384,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.946150039724324e-11,
+        "1": 8.605105858820103e-13,
+        "2": 2.6406198218692012e-11,
+        "3": 3.526216392474348e-10,
+        "4": 0.9999999995206501
+      },
+      "render_sha256": "f0018aaf15a3852c6337a31833a0d03b5c818443b46f5f187572dd5a459e13f4",
+      "latency_seconds": 3.021,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r15:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.4166081337936427e-09,
+        "payee_mismatch": 0.9999998443870719,
+        "amount_mismatch": 1.275190003810895e-07,
+        "date_mismatch": 4.0990915504260115e-09,
+        "unsigned": 2.215947956108074e-08,
+        "cannot_tell": 4.1874856450039164e-10
+      },
+      "payee_confidence": 7.823259525156033e-10,
+      "amounts_confidence": 0.9999885212291442,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998798257,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.540491322396624e-10,
+        "1": 2.000748963178197e-12,
+        "2": 2.0929880816346525e-11,
+        "3": 5.376843038158136e-10,
+        "4": 0.9999999992853359
+      },
+      "render_sha256": "2caeb3ae695d3e1e7d372a1b3685428ebb16894a3daad9c4662598a6035796ca",
+      "latency_seconds": 2.867,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r15:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 3.732266529628287e-09,
+        "payee_mismatch": 5.101403499268997e-09,
+        "amount_mismatch": 0.9999999651676398,
+        "date_mismatch": 1.2626094920863324e-08,
+        "unsigned": 1.2626094920863324e-08,
+        "cannot_tell": 7.465002685973279e-10
+      },
+      "payee_confidence": 0.9999999913222172,
+      "amounts_confidence": 7.658113772827851e-09,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999139615,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 7.39134844985635e-11,
+        "1": 1.00603843915443e-12,
+        "2": 2.0285909481814627e-11,
+        "3": 5.211408135913162e-10,
+        "4": 0.9999999993836537
+      },
+      "render_sha256": "5fe2abe9796c5f1f0acf42b4879c472b29cbad2241e13c64ba29f1e60e1374ce",
+      "latency_seconds": 3.018,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r15:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 6.522844619492356e-11,
+        "payee_mismatch": 3.8127491062005833e-10,
+        "amount_mismatch": 0.9999999962246884,
+        "date_mismatch": 1.7629973250383247e-09,
+        "unsigned": 1.4615761177309269e-09,
+        "cannot_tell": 1.0423476022683755e-10
+      },
+      "payee_confidence": 0.9999999865595854,
+      "amounts_confidence": 2.335594146404887e-09,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999988781485,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 8.375499053916187e-11,
+        "1": 2.6505595203265936e-12,
+        "2": 2.7673461419663416e-11,
+        "3": 7.235327111769476e-10,
+        "4": 0.9999999991623882
+      },
+      "render_sha256": "210c508f0e8222e8ea0e9de304272f48aeb3be6908b2ff22ff07b30d29b45192",
+      "latency_seconds": 2.931,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r15:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.2378189167735773e-10,
+        "payee_mismatch": 2.1724398543570191e-10,
+        "amount_mismatch": 5.315785056904205e-08,
+        "date_mismatch": 0.9999998638896871,
+        "unsigned": 8.233248957159802e-08,
+        "cannot_tell": 2.789467989219828e-10
+      },
+      "payee_confidence": 0.9999999901667839,
+      "amounts_confidence": 0.9999996310114159,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999985731898,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.9626349885646882e-10,
+        "1": 1.821700924010867e-12,
+        "2": 2.7458101561937127e-11,
+        "3": 5.81374796945953e-10,
+        "4": 0.9999999991930819
+      },
+      "render_sha256": "2282557463d157f8110a0fbd2f2e3facde4988cc57ddf6865a7bff70ab1b8e0e",
+      "latency_seconds": 2.803,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r15:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 6.903995666665233e-10,
+        "payee_mismatch": 3.4372970426769835e-11,
+        "amount_mismatch": 1.0693117670169875e-09,
+        "date_mismatch": 4.363459618219664e-09,
+        "unsigned": 0.9999999935263681,
+        "cannot_tell": 3.160879545726001e-10
+      },
+      "payee_confidence": 0.9999999932417358,
+      "amounts_confidence": 0.999999995355122,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999992126387,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 8.985610604337843e-11,
+        "1": 8.340366515474748e-13,
+        "2": 2.7945070600027845e-11,
+        "3": 3.695448336826547e-10,
+        "4": 0.9999999995118201
+      },
+      "render_sha256": "10a085e39fbd6a0a1dd3803b22e4b4f7c94b04e81dbfd6e8d23124fff9d77846",
+      "latency_seconds": 2.918,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r15:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.6224588153152855,
+        "payee_mismatch": 3.139356485490409e-07,
+        "amount_mismatch": 3.139356485490409e-07,
+        "date_mismatch": 1.308678485032356e-07,
+        "unsigned": 0.3775403558971243,
+        "cannot_tell": 7.004844473361419e-08
+      },
+      "payee_confidence": 0.9999999932417343,
+      "amounts_confidence": 0.9999997761971314,
+      "noul_choice_agreement": true,
+      "legibility_score": 2.66773505823114,
+      "legibility_level": 3,
+      "legibility_probabilities": {
+        "0": 3.1905581914027476e-05,
+        "1": 0.05768664535846395,
+        "2": 0.22815510828063512,
+        "3": 0.7027671668045414,
+        "4": 0.01135917397444538
+      },
+      "render_sha256": "0810badb47bb993448d07d9fb971e06f018f4333b8214a7d552cee9dba37636b",
+      "latency_seconds": 3.028,
+      "input_tokens": 1921
+    },
+    {
+      "case_id": "r16:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.999999029555965,
+        "payee_mismatch": 1.8553894164813524e-07,
+        "amount_mismatch": 2.646570862897165e-09,
+        "date_mismatch": 1.004524995048541e-09,
+        "unsigned": 7.811481214771674e-07,
+        "cannot_tell": 1.0587615553112683e-10
+      },
+      "payee_confidence": 0.9999999959009056,
+      "amounts_confidence": 0.9999999963825597,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999991935544,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.2671726909173112e-10,
+        "1": 1.3121222664947425e-12,
+        "2": 2.0827918339926933e-11,
+        "3": 2.5398389947246653e-10,
+        "4": 0.9999999995971587
+      },
+      "render_sha256": "55aadb2956841b2ef52e56df6dc496c49e5661875770d9f800c58075fc0be4f3",
+      "latency_seconds": 2.965,
+      "input_tokens": 1929
+    },
+    {
+      "case_id": "r16:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.9362752697860027e-09,
+        "payee_mismatch": 0.9999997091406674,
+        "amount_mismatch": 2.102432534015741e-07,
+        "date_mismatch": 9.833217191302233e-09,
+        "unsigned": 6.825605605628434e-08,
+        "cannot_tell": 5.905305927660883e-10
+      },
+      "payee_confidence": 1.7087575893225689e-09,
+      "amounts_confidence": 0.9999998724810026,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998925274,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.2771106401961931e-10,
+        "1": 1.9091257218295855e-12,
+        "2": 1.85066434865708e-11,
+        "3": 5.211408756905809e-10,
+        "4": 0.9999999993307322
+      },
+      "render_sha256": "c39d36fee1623f8fd98d96151cd0b3c0326dc6888759fb90d88d0f3bfac0e81c",
+      "latency_seconds": 2.942,
+      "input_tokens": 1929
+    },
+    {
+      "case_id": "r16:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.5229983422310073e-08,
+        "payee_mismatch": 4.2713544802211797e-08,
+        "amount_mismatch": 0.9999997646337752,
+        "date_mismatch": 6.412062521639098e-08,
+        "unsigned": 1.0907285772342658e-07,
+        "cannot_tell": 4.229213654167987e-09
+      },
+      "payee_confidence": 0.9999999936511983,
+      "amounts_confidence": 3.0941587790026505e-09,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998708672,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.9780285974533045e-10,
+        "1": 2.821506259276366e-12,
+        "2": 2.980549438482856e-11,
+        "3": 4.320411666373987e-10,
+        "4": 0.999999999337529
+      },
+      "render_sha256": "f625cae9eb8c0bc6de069f165b7d01adf549686a2b4baf3e2adac7a1a43240aa",
+      "latency_seconds": 3.015,
+      "input_tokens": 1929
+    },
+    {
+      "case_id": "r16:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.0003113402590723e-11,
+        "payee_mismatch": 1.7556010761318827e-11,
+        "amount_mismatch": 0.9999999986100792,
+        "date_mismatch": 3.0636321794740584e-10,
+        "unsigned": 1.0364134070699214e-09,
+        "cannot_tell": 1.9585145275782064e-11
+      },
+      "payee_confidence": 0.999999984770015,
+      "amounts_confidence": 3.581747928974228e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999989322155,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.05876228644662e-10,
+        "1": 1.738279372466643e-12,
+        "2": 2.4267214123806243e-11,
+        "3": 5.90530188276969e-10,
+        "4": 0.9999999992775881
+      },
+      "render_sha256": "7bef22b27f7304df6eda339a0ac4a6cfc9c17bc33804c561c0fdb4386328beaa",
+      "latency_seconds": 2.712,
+      "input_tokens": 1929
+    },
+    {
+      "case_id": "r16:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 3.8127379223615224e-10,
+        "payee_mismatch": 2.998950676124817e-09,
+        "amount_mismatch": 9.3294620943971e-08,
+        "date_mismatch": 0.999996812541784,
+        "unsigned": 3.0894935378744815e-06,
+        "cannot_tell": 1.2898326133451748e-09
+      },
+      "payee_confidence": 0.9999999923418835,
+      "amounts_confidence": 0.9999999500627976,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999998822346,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.5404898533224614e-10,
+        "1": 1.7934580692092145e-12,
+        "2": 2.940076335336826e-11,
+        "3": 4.972762160460878e-10,
+        "4": 0.9999999993174806
+      },
+      "render_sha256": "c1e095a0ee0a983e6918c44c6702de08bcdc5553e75d0da9a4fd4b4712d31515",
+      "latency_seconds": 2.905,
+      "input_tokens": 1929
+    },
+    {
+      "case_id": "r16:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 3.6954447929833215e-10,
+        "payee_mismatch": 3.491428682780103e-11,
+        "amount_mismatch": 9.736200256601979e-10,
+        "date_mismatch": 3.97297756977809e-09,
+        "unsigned": 0.9999999943228217,
+        "cannot_tell": 3.261218583480153e-10
+      },
+      "payee_confidence": 0.9999999974348526,
+      "amounts_confidence": 0.9999999966017297,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999988895265,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.691897114884342e-10,
+        "1": 1.4637778153018504e-12,
+        "2": 2.697965702534476e-11,
+        "3": 3.753637810399393e-10,
+        "4": 0.999999999427003
+      },
+      "render_sha256": "3e06e869e1da4e3c1a5200c51df185e48bbf1e2b5d7ad80301b9716248c563c2",
+      "latency_seconds": 2.832,
+      "input_tokens": 1929
+    },
+    {
+      "case_id": "r16:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": false,
+      "verdict_probabilities": {
+        "consistent": 1.1382774036441267e-09,
+        "payee_mismatch": 5.579288482538413e-11,
+        "amount_mismatch": 3.812751714307227e-10,
+        "date_mismatch": 1.103256289665332e-09,
+        "unsigned": 0.9999999955583998,
+        "cannot_tell": 1.7629985310146186e-09
+      },
+      "payee_confidence": 0.9999999865595888,
+      "amounts_confidence": 0.9999999317439221,
+      "noul_choice_agreement": true,
+      "legibility_score": 1.7781553777083012,
+      "legibility_level": 2,
+      "legibility_probabilities": {
+        "0": 1.9541480571878334e-05,
+        "1": 0.27790623662404673,
+        "2": 0.6666623852087123,
+        "3": 0.05472297607984669,
+        "4": 0.0006888606068224235
+      },
+      "render_sha256": "9c4fb153b5065b1cb01d2a66f1742093002478420a544f6625a49fa555b35b0b",
+      "latency_seconds": 2.848,
+      "input_tokens": 1929
+    },
+    {
+      "case_id": "r17:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.999999973986702,
+        "payee_mismatch": 2.2159504974239024e-08,
+        "amount_mismatch": 1.656184599572086e-09,
+        "date_mismatch": 4.5990585334928686e-10,
+        "unsigned": 1.708757542210041e-09,
+        "cannot_tell": 2.89449804439864e-11
+      },
+      "payee_confidence": 0.9999999961492576,
+      "amounts_confidence": 0.9999999961492558,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999990766466,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.1358876128415711e-10,
+        "1": 9.750876340320383e-13,
+        "2": 1.701588073760879e-11,
+        "3": 4.3204168171243936e-10,
+        "4": 0.9999999994363786
+      },
+      "render_sha256": "d8bb18f66747f10adb7734123484682df81960385a861d65bde226fd5dff3355",
+      "latency_seconds": 2.735,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r17:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 2.335593084881582e-09,
+        "payee_mismatch": 0.9999998057590826,
+        "amount_mismatch": 1.6373771628969602e-07,
+        "date_mismatch": 8.152020875313006e-09,
+        "unsigned": 1.9555681473692407e-08,
+        "cannot_tell": 4.5990554693936364e-10
+      },
+      "payee_confidence": 2.9989626033834985e-09,
+      "amounts_confidence": 0.999983298584239,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999989518695,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.1447963532043314e-10,
+        "1": 2.0642602911312305e-12,
+        "2": 2.3167274470897272e-11,
+        "3": 5.376844961261669e-10,
+        "4": 0.9999999993226043
+      },
+      "render_sha256": "21fda26847f5c0492eef43e0e14ea3baaee2386b71b0bc3d399f1b55cb8508ef",
+      "latency_seconds": 2.806,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r17:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.001168900335731236,
+        "payee_mismatch": 7.954466611663175e-05,
+        "amount_mismatch": 0.9983095742510226,
+        "date_mismatch": 0.00040396114671283604,
+        "unsigned": 3.529773162055296e-05,
+        "cannot_tell": 2.7218687962408776e-06
+      },
+      "payee_confidence": 0.9999999962677326,
+      "amounts_confidence": 1.1365637268100883e-06,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999990053934,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.2186295199312133e-10,
+        "1": 1.3537751118315734e-12,
+        "2": 1.7972351855351725e-11,
+        "3": 4.671484414740988e-10,
+        "4": 0.9999999993916624
+      },
+      "render_sha256": "8eef07480996e6aeae89d9614ba0c1cfef4aa2ef78c18f91488873b345198ae2",
+      "latency_seconds": 2.808,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r17:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 7.550744977478702e-12,
+        "payee_mismatch": 6.82152961824009e-12,
+        "amount_mismatch": 0.9999999996252762,
+        "date_mismatch": 1.9171717341914617e-10,
+        "unsigned": 1.5893911921971366e-10,
+        "cannot_tell": 9.695348466009962e-12
+      },
+      "payee_confidence": 0.9999999907625482,
+      "amounts_confidence": 5.051069964329424e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999990462594,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.0182027113385005e-10,
+        "1": 1.2520368577535126e-12,
+        "2": 1.8798105365843432e-11,
+        "3": 5.051077189319348e-10,
+        "4": 0.999999999373022
+      },
+      "render_sha256": "445412a9bc7c019634d3ebf1b7ba4695409411908a3c8ac30add06999d47b501",
+      "latency_seconds": 2.87,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r17:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 4.277786308068784e-11,
+        "payee_mismatch": 9.946151158039607e-11,
+        "amount_mismatch": 2.8453337707636823e-08,
+        "date_mismatch": 0.9999999323815564,
+        "unsigned": 3.889110153182906e-08,
+        "cannot_tell": 1.3176509462184326e-10
+      },
+      "payee_confidence": 0.9999999928058652,
+      "amounts_confidence": 0.9999999006880905,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999986351216,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.7051678443468882e-10,
+        "1": 2.129785423084193e-12,
+        "2": 2.390266560505708e-11,
+        "3": 6.286164129270531e-10,
+        "4": 0.9999999991748343
+      },
+      "render_sha256": "c0c9f83c12cd0e6d3e51605d74d13e9f10a5d08c36231f087715dc52a78edd21",
+      "latency_seconds": 2.74,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r17:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.639843104125284e-10,
+        "payee_mismatch": 1.2449067929794158e-11,
+        "amount_mismatch": 3.812749449016354e-10,
+        "date_mismatch": 2.4097318507165323e-09,
+        "unsigned": 0.9999999968153159,
+        "cannot_tell": 2.1724391510518083e-10
+      },
+      "payee_confidence": 0.9999999961492576,
+      "amounts_confidence": 0.9999999980637242,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999106219,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 8.574128513275823e-11,
+        "1": 7.835048318299861e-13,
+        "2": 2.167879187674611e-11,
+        "3": 5.051078393655723e-10,
+        "4": 0.9999999993866886
+      },
+      "render_sha256": "b3611dc2b6ceb9f3ec22c26f9a814c18bd4bbb8841c8106919ba860d175f58a3",
+      "latency_seconds": 2.731,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r17:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999599777927,
+        "payee_mismatch": 3.2241889113336985e-08,
+        "amount_mismatch": 1.936275943018797e-09,
+        "date_mismatch": 5.547523457198734e-10,
+        "unsigned": 5.2633437107903975e-09,
+        "cannot_tell": 2.5946112478279665e-11
+      },
+      "payee_confidence": 0.9999999970933069,
+      "amounts_confidence": 0.9999999956365377,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9968003660593467,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 8.736329138849482e-08,
+        "1": 2.3747804745571806e-07,
+        "2": 1.2965862064565442e-05,
+        "3": 0.0031726403292167125,
+        "4": 0.99681406896738
+      },
+      "render_sha256": "a346af5222a87ed1760885e787492bd7ad13aeb27751343647c7da93953bcfb1",
+      "latency_seconds": 2.918,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r18:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999919057209,
+        "payee_mismatch": 6.7582664241183745e-09,
+        "amount_mismatch": 3.581749986508642e-10,
+        "date_mismatch": 1.3594789536540392e-10,
+        "unsigned": 8.327818224329232e-10,
+        "cannot_tell": 9.107941179006788e-12
+      },
+      "payee_confidence": 0.9999999969058415,
+      "amounts_confidence": 0.9999999989954735,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999995120463,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 5.98570566643175e-11,
+        "1": 7.360345862941945e-13,
+        "2": 1.6220814584035245e-11,
+        "3": 2.1387609048250036e-10,
+        "4": 0.9999999997093101
+      },
+      "render_sha256": "e4203f6c5c92a88b8da8f77b63786be578a807db5f39efce6a4314fe1a211705",
+      "latency_seconds": 2.821,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r18:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 8.86490704891699e-10,
+        "payee_mismatch": 0.9999998687697343,
+        "amount_mismatch": 1.1253512119247823e-07,
+        "date_mismatch": 4.644879180641708e-09,
+        "unsigned": 1.2626090672126094e-08,
+        "cannot_tell": 5.376837920670797e-10
+      },
+      "payee_confidence": 4.32041424254198e-10,
+      "amounts_confidence": 0.9999984465026159,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999991661697,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 8.70913685609237e-11,
+        "1": 1.1579431456332409e-12,
+        "2": 2.1573160409266328e-11,
+        "3": 4.388445635037804e-10,
+        "4": 0.9999999994513329
+      },
+      "render_sha256": "17998d595a021c0289004efdc623e444e77e659d01d586d93bd64c569f816f7b",
+      "latency_seconds": 2.819,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r18:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.7087576615243186e-09,
+        "payee_mismatch": 2.1940882683571343e-09,
+        "amount_mismatch": 0.999999980940315,
+        "date_mismatch": 1.1496200537632619e-08,
+        "unsigned": 2.4862277271809586e-09,
+        "cannot_tell": 1.1744108208175973e-09
+      },
+      "payee_confidence": 0.9999999923418844,
+      "amounts_confidence": 2.730587175321716e-09,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999990832564,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 7.806833781411964e-11,
+        "1": 1.418744135878355e-12,
+        "2": 1.836265429040566e-11,
+        "3": 5.634885810460594e-10,
+        "4": 0.9999999993386617
+      },
+      "render_sha256": "ec2468f05d3be26bf7ec889a48e7294641be174cbe6badecd6ecdeafb16d44b2",
+      "latency_seconds": 2.621,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r18:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 6.259787351577158e-12,
+        "payee_mismatch": 5.789356903091945e-12,
+        "amount_mismatch": 0.9999999996893176,
+        "date_mismatch": 1.7456047010007874e-10,
+        "unsigned": 1.1628234183856467e-10,
+        "cannot_tell": 7.790431229377644e-12
+      },
+      "payee_confidence": 0.9999999865595854,
+      "amounts_confidence": 2.789466096906566e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999990222426,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.190399429892954e-10,
+        "1": 1.8217026617050315e-12,
+        "2": 1.8113302121080174e-11,
+        "3": 4.5990575688865013e-10,
+        "4": 0.9999999994011193
+      },
+      "render_sha256": "154d759ef1536d32286d9bcdd93810c9131c1c56fa6342887a7128bfc5060154",
+      "latency_seconds": 2.513,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r18:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 6.835889167169752e-11,
+        "payee_mismatch": 1.9171725280878306e-10,
+        "amount_mismatch": 3.653484146690959e-08,
+        "date_mismatch": 0.9999999307011515,
+        "unsigned": 3.224188443096695e-08,
+        "cannot_tell": 2.620464151166533e-10
+      },
+      "payee_confidence": 0.9999999932417367,
+      "amounts_confidence": 0.9999998942829854,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999222518,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 7.746076826422682e-11,
+        "1": 1.939192389334497e-12,
+        "2": 2.1536351942162784e-11,
+        "3": 4.18748956938606e-10,
+        "4": 0.9999999994803148
+      },
+      "render_sha256": "d5b6f050796f0b5586503a1f1574d593bae974986232aea97f05334309d5f044",
+      "latency_seconds": 2.6,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r18:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 2.1724386350605876e-10,
+        "payee_mismatch": 1.0320637356677791e-11,
+        "amount_mismatch": 1.5404896670873257e-10,
+        "date_mismatch": 1.762997064812865e-09,
+        "unsigned": 0.9999999976914051,
+        "cannot_tell": 1.6398427146346762e-10
+      },
+      "payee_confidence": 0.9999999973534262,
+      "amounts_confidence": 0.9999999988967436,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999388232,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 7.276769227172235e-11,
+        "1": 5.914205460584726e-13,
+        "2": 2.4279098088373452e-11,
+        "3": 2.70364775949242e-10,
+        "4": 0.999999999631997
+      },
+      "render_sha256": "8ea136786c76d19c9290f76672a219ee00b51e6e58caad9665401ad00ef33a1a",
+      "latency_seconds": 2.444,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r18:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9994156216644731,
+        "payee_mismatch": 4.735139750550404e-07,
+        "amount_mismatch": 9.605549982347704e-05,
+        "date_mismatch": 3.430123730530973e-08,
+        "unsigned": 0.0004878100789293937,
+        "cannot_tell": 4.941561757910193e-09
+      },
+      "payee_confidence": 0.9999999968076221,
+      "amounts_confidence": 8.481101980794013e-05,
+      "noul_choice_agreement": false,
+      "legibility_score": 3.93207282182798,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 4.149404005221392e-07,
+        "1": 4.190749590171003e-06,
+        "2": 0.00018968781042037958,
+        "3": 0.06753357054080691,
+        "4": 0.9322721359587821
+      },
+      "render_sha256": "539f3d09ba87b634bd35ff25d94c5bb52838193b7f9cf780c93b7ff65f23a4f1",
+      "latency_seconds": 2.642,
+      "input_tokens": 1917
+    },
+    {
+      "case_id": "r19:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "consistent",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 0.9999999943131834,
+        "payee_mismatch": 4.36345949586595e-09,
+        "amount_mismatch": 2.969371451972184e-10,
+        "date_mismatch": 1.3176505944442067e-10,
+        "unsigned": 8.864905664123542e-10,
+        "cannot_tell": 8.164295861579154e-12
+      },
+      "payee_confidence": 0.9999999943972022,
+      "amounts_confidence": 0.9999999978734169,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999993311093,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.270830137272414e-11,
+        "1": 1.0877871765474196e-12,
+        "2": 2.040512601454607e-11,
+        "3": 2.5398380864858256e-10,
+        "4": 0.999999999631815
+      },
+      "render_sha256": "5e2fd1d8bda2eb7ebfdacf5aa3031a56d30d615b06a8eb8ab8fde98f2919b184",
+      "latency_seconds": 2.449,
+      "input_tokens": 1909
+    },
+    {
+      "case_id": "r19:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "payee_truth": false,
+      "amounts_truth": true,
+      "verdict": "payee_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.7087572352332318e-09,
+        "payee_mismatch": 0.9999998273340364,
+        "amount_mismatch": 1.4449795997004665e-07,
+        "date_mismatch": 6.348803330609512e-09,
+        "unsigned": 1.9555690989410332e-08,
+        "cannot_tell": 5.547522525349007e-10
+      },
+      "payee_confidence": 5.905306107358101e-10,
+      "amounts_confidence": 0.999569442934232,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999989893675,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.3176517403837443e-10,
+        "1": 2.16332492167902e-12,
+        "2": 2.2520360052297607e-11,
+        "3": 4.3204137268229975e-10,
+        "4": 0.9999999994115099
+      },
+      "render_sha256": "6c024b11e916df9d115beb947a36eff3f7eba0d95fd9cca936265266b39bbfe3",
+      "latency_seconds": 2.406,
+      "input_tokens": 1909
+    },
+    {
+      "case_id": "r19:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 6.092761366672089e-10,
+        "payee_mismatch": 8.375506037988118e-11,
+        "amount_mismatch": 0.9999999920411914,
+        "date_mismatch": 5.430419094874416e-09,
+        "unsigned": 1.4166094600957844e-09,
+        "cannot_tell": 4.1874895655455586e-10
+      },
+      "payee_confidence": 0.9999999932417358,
+      "amounts_confidence": 6.286163381104084e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999991840642,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 8.441187903375906e-11,
+        "1": 1.0709227270081774e-12,
+        "2": 1.8115496077172002e-11,
+        "3": 4.388447204491866e-10,
+        "4": 0.999999999457557
+      },
+      "render_sha256": "55eac4b7a74f75a10260aec89fd8176aafc13f6b44ca678850ee664df1dde2f4",
+      "latency_seconds": 2.558,
+      "input_tokens": 1909
+    },
+    {
+      "case_id": "r19:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": false,
+      "verdict": "amount_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.7556002113449796e-11,
+        "payee_mismatch": 2.1848797642172335e-11,
+        "amount_mismatch": 0.9999999993034181,
+        "date_mismatch": 4.745044006090085e-10,
+        "unsigned": 1.6398433290755344e-10,
+        "cannot_tell": 1.8688266970517538e-11
+      },
+      "payee_confidence": 0.9999999865595854,
+      "amounts_confidence": 1.9171708277545204e-10,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999985771124,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.715750032584332e-11,
+        "1": 1.582721567672968e-12,
+        "2": 2.7945037269758176e-11,
+        "3": 9.736197980944024e-10,
+        "4": 0.999999998899695
+      },
+      "render_sha256": "515724f5786e0b354a1b79200293d5dafbb34c5fbb526b2ca7ba2e499f09d35a",
+      "latency_seconds": 2.405,
+      "input_tokens": 1909
+    },
+    {
+      "case_id": "r19:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "date_mismatch",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 8.507397130333183e-11,
+        "payee_mismatch": 2.5398396336554226e-10,
+        "amount_mismatch": 3.0288431765184314e-08,
+        "date_mismatch": 0.999999942425819,
+        "unsigned": 2.672944721692003e-08,
+        "cannot_tell": 2.172439962757361e-10
+      },
+      "payee_confidence": 0.9999999913222172,
+      "amounts_confidence": 0.9999990577549581,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.999999999161454,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 9.946158339110035e-11,
+        "1": 1.6076467648724595e-12,
+        "2": 2.1249097880527345e-11,
+        "3": 3.9337819329496493e-10,
+        "4": 0.9999999994843034
+      },
+      "render_sha256": "d226a9f17d2c31639192b7a2f427a22b72e7d15fdf90fd71fc48a988813054c7",
+      "latency_seconds": 2.364,
+      "input_tokens": 1909
+    },
+    {
+      "case_id": "r19:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": true,
+      "verdict_probabilities": {
+        "consistent": 1.917171280115466e-10,
+        "payee_mismatch": 8.62321938993153e-12,
+        "amount_mismatch": 1.3176512664293235e-10,
+        "date_mismatch": 1.9977383487673202e-09,
+        "unsigned": 0.9999999975208467,
+        "cannot_tell": 1.4930944942359323e-10
+      },
+      "payee_confidence": 0.9999999936511983,
+      "amounts_confidence": 0.9999999981232968,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9999999989521524,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.7456039026730385e-10,
+        "1": 1.7519128669516778e-12,
+        "2": 2.8274441172772934e-11,
+        "3": 2.878014284554195e-10,
+        "4": 0.9999999995076119
+      },
+      "render_sha256": "ae26d7ccfcb92632d0972739829771462a1f46c99972bbd56136f4a9eb50c9c9",
+      "latency_seconds": 2.488,
+      "input_tokens": 1909
+    },
+    {
+      "case_id": "r19:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "payee_truth": true,
+      "amounts_truth": true,
+      "verdict": "unsigned",
+      "correct": false,
+      "verdict_probabilities": {
+        "consistent": 0.00010889686386276566,
+        "payee_mismatch": 2.6726550280644876e-08,
+        "amount_mismatch": 3.888690120069998e-08,
+        "date_mismatch": 7.265029596527396e-08,
+        "unsigned": 0.9998909581148596,
+        "cannot_tell": 6.757530170213485e-09
+      },
+      "payee_confidence": 0.9999999966017314,
+      "amounts_confidence": 0.9999998024945859,
+      "noul_choice_agreement": true,
+      "legibility_score": 3.9568552507337946,
+      "legibility_level": 4,
+      "legibility_probabilities": {
+        "0": 1.383421587473477e-07,
+        "1": 6.665698495862752e-06,
+        "2": 0.0005295222715109216,
+        "3": 0.04206515425906107,
+        "4": 0.9573985194287734
+      },
+      "render_sha256": "ded8b9b7a17973e884379c72e370995d1107f42a01868ec144df3d22df0f2607",
+      "latency_seconds": 2.529,
+      "input_tokens": 1909
+    }
+  ]
+}

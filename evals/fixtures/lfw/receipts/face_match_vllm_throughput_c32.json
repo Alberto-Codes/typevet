@@ -1,0 +1,1548 @@
+{
+  "issue": 301,
+  "backend": "vllm",
+  "model": "google/gemma-4-31B-it",
+  "pins": {
+    "finished_utc": "2026-09-30T19:25:34.106368+00:00",
+    "dataset": "LFW View 2",
+    "pairs_sha256": "ea42330c62c92989f9d7c03237ed5d591365e89b3e649747777b70e692dc1592",
+    "archive_sha256": "b47c8422c8cded889dc5a13418c4bc2abbda121092b3533a83306f90d900100a",
+    "slice_seed": 0,
+    "slice_per_class": 30,
+    "concurrency": 32,
+    "server": {
+      "served": [
+        {
+          "id": "google/gemma-4-31B-it",
+          "root": "google/gemma-4-31B-it",
+          "max_model_len": 8192
+        }
+      ],
+      "build_info": "0.30.0"
+    },
+    "model_revision": "842da3794eaa0b77d5f08bae87a17459d91ff475"
+  },
+  "identity": {
+    "run_id": "234215039d584291ab50df1f3cb98602",
+    "baseline_commit": "93a13fbbf63f043165266ce0eb2752bcfb774c5e",
+    "working_tree": {
+      "dirty": false,
+      "dirty_paths": [],
+      "dirty_digest": ""
+    },
+    "prompt_digests": {
+      "same_person": "4edee00f1cf4117a308d72f797022fc8d1b74c1479ebce00b5855c2e09346f1e",
+      "verdict": "e4158f400e8741b0dd998c02075ed69536c1705214e8b3f511d6d0deb9b9c6ec",
+      "face_visibility": "2c83791bb3a294e83116afee17125a25b50b732ce298b914efe47d6f6638a971"
+    },
+    "code_path_digests": {
+      "metrics": "f53e62cf78bd8a146526769fac7b6cc0cc40fc4a70fe56255ff3e8dd831f465f",
+      "pool": "12c9a8e9ad52cc803e9bf2c713f1367d7de3aace89ab8e53e2184ec4547392ef",
+      "request": "ca9e0ae076a12369b627d85db967f3a244191b3a661afc1aea593ce544c839a2",
+      "runner": "5e47add1a13be364ce6a7f3930635e4861d0d2da96944b13686c14cf99ee87ad",
+      "serving_metrics": "4d553282c0840a414c65ce3c651ba4e6120826d09bd2881c8a3b0bce1daab7a0"
+    },
+    "fixture_digests": {},
+    "runtime": {
+      "model": "google/gemma-4-31B-it",
+      "served_template": "vllm_chat",
+      "server_build": "0.30.0",
+      "template_identity": "unknown",
+      "projector_identity": "unknown",
+      "config_identity": "unknown"
+    },
+    "arm_call_counts": {
+      "judgments": 60
+    },
+    "identity_digest": "3668759476103b385b8ac3131a93d08cae52843955619851ab2f91a4ad946e1c"
+  },
+  "stopped": null,
+  "wall_seconds": 18.171,
+  "throughput": {
+    "concurrency": 32,
+    "wall_seconds": 18.171,
+    "judgments": 60,
+    "images": 120,
+    "judgments_per_second": 3.3019131510387525,
+    "images_per_second": 6.603826302077505,
+    "latency_seconds": {
+      "n": 60,
+      "p50": 8.546371578006074,
+      "p95": 10.447834249120206,
+      "p99": 10.451200738083571
+    },
+    "discarded": 0,
+    "server": {
+      "e2e": {
+        "count": 180.0,
+        "sum": 446.94816517829895,
+        "percentile_basis": "bucket_upper_bound",
+        "p50": 2.5,
+        "p95": 5.0,
+        "p99": 10.0
+      },
+      "queue": {
+        "count": 180.0,
+        "sum": 42.950233802199364,
+        "percentile_basis": "bucket_upper_bound",
+        "p50": 0.3,
+        "p95": 2.0,
+        "p99": 5.0
+      },
+      "prefill": {
+        "count": 180.0,
+        "sum": 318.345328386873,
+        "percentile_basis": "bucket_upper_bound",
+        "p50": 1.5,
+        "p95": 5.0,
+        "p99": 5.0
+      },
+      "prefix_cache_hit_rate": 0.05123019885406134,
+      "counters": {
+        "prefix_cache_hits": 6080.0,
+        "prefix_cache_queries": 118680.0,
+        "mm_cache_hits": 360.0,
+        "mm_cache_queries": 360.0,
+        "prompt_tokens": 118680.0,
+        "prompt_tokens_cached": 6080.0,
+        "generation_tokens": 180.0,
+        "request_success": 180.0,
+        "preemptions": 0.0
+      },
+      "gauges": {
+        "kv_cache_usage_perc": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "num_requests_running": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "num_requests_waiting": {
+          "before": 0.0,
+          "after": 0.0
+        }
+      }
+    }
+  },
+  "metrics": {
+    "pairs": 60,
+    "same_person_pairs": 30,
+    "accuracy": 0.9833333333333333,
+    "roc_auc": 1.0,
+    "ece": 0.014303387501268465,
+    "reliability": [
+      {
+        "lower": 0.0,
+        "upper": 0.1,
+        "count": 29,
+        "mean_confidence": 0.0007663428939148166,
+        "fraction_same_person": 0.0
+      },
+      {
+        "lower": 0.1,
+        "upper": 0.2,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_person": null
+      },
+      {
+        "lower": 0.2,
+        "upper": 0.3,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_person": null
+      },
+      {
+        "lower": 0.3,
+        "upper": 0.4,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_person": null
+      },
+      {
+        "lower": 0.4,
+        "upper": 0.5,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_person": null
+      },
+      {
+        "lower": 0.5,
+        "upper": 0.6,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_person": null
+      },
+      {
+        "lower": 0.6,
+        "upper": 0.7,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_person": null
+      },
+      {
+        "lower": 0.7,
+        "upper": 0.8,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_person": null
+      },
+      {
+        "lower": 0.8,
+        "upper": 0.9,
+        "count": 1,
+        "mean_confidence": 0.8354835432479661,
+        "fraction_same_person": 0.0
+      },
+      {
+        "lower": 0.9,
+        "upper": 1.0,
+        "count": 30,
+        "mean_confidence": 0.9999834745698463,
+        "fraction_same_person": 1.0
+      }
+    ],
+    "cannot_tell_rate": 0.0,
+    "score_distribution": {
+      "same_person": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 30
+      },
+      "different_person": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 30
+      }
+    },
+    "mean_latency_seconds": 8.856147731506887,
+    "confidence_note": "same_person_confidence is model confidence from the Noul answer. It is not a calibrated match percentage."
+  },
+  "pairs": [
+    {
+      "pair_id": "5:Miguel_Estrada_0001:Miguel_Estrada_0002",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999992176738,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.999999998570746,
+        "different_person": 1.416608953491429e-09,
+        "cannot_tell": 1.264511827665632e-11
+      },
+      "visibility_score": 3.999998329105914,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.1997342840076677e-10,
+        "1": 1.4026314819353273e-10,
+        "2": 8.152013967376768e-09,
+        "3": 1.6536893749398478e-06,
+        "4": 0.9999983378983744
+      },
+      "latency_seconds": 9.618,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "2:Mario_Kreutzberger_0001:Shavon_Earp_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 4.745046196703174e-10,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 7.746076823808482e-11,
+        "different_person": 0.9999999991402131,
+        "cannot_tell": 7.823260457154857e-10
+      },
+      "visibility_score": 3.999941331329871,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 9.43609818506678e-10,
+        "1": 8.591665168502639e-10,
+        "2": 1.8552830794220106e-07,
+        "3": 5.8291261574047756e-05,
+        "4": 0.9999415214073416
+      },
+      "latency_seconds": 8.093,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "7:Guennadi_Chipouline_0001:Tom_Lantos_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 4.36346275406913e-09,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 5.723620929754993e-10,
+        "different_person": 0.999999989594417,
+        "cannot_tell": 9.83322091064295e-09
+      },
+      "visibility_score": 3.99866878719681,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.99508621994073e-09,
+        "1": 5.256352091475467e-09,
+        "2": 3.08540209759608e-06,
+        "3": 0.0013250182495941343,
+        "4": 0.99867188909687
+      },
+      "latency_seconds": 8.967,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "6:Peter_Greenspun_0001:Rod_Thorn_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 0.0015011821604139508,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 0.00012339402449544311,
+        "different_person": 0.9998723836641754,
+        "cannot_tell": 4.2223113291376896e-06
+      },
+      "visibility_score": 3.99999842922068,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.3594757256443765e-10,
+        "1": 1.447154376981775e-10,
+        "2": 8.152006037871863e-09,
+        "3": 1.553497371089462e-06,
+        "4": 0.9999984380699598
+      },
+      "latency_seconds": 8.967,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "6:Emma_Watson_0003:Emma_Watson_0005",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999995812512,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999999121731,
+        "different_person": 7.991960844967884e-11,
+        "cannot_tell": 7.907319212714971e-12
+      },
+      "visibility_score": 3.999999044451513,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.4247203905132006e-10,
+        "1": 1.4247203905132006e-10,
+        "2": 6.1534659014556156e-09,
+        "3": 9.4224425084918e-07,
+        "4": 0.9999990513173391
+      },
+      "latency_seconds": 9.615,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "10:Leonid_Kuchma_0002:Leonid_Kuchma_0003",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999996304554,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999996436388,
+        "different_person": 3.471549544151098e-10,
+        "cannot_tell": 9.206303590222082e-12
+      },
+      "visibility_score": 3.999999875302914,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 8.117811083239304e-11,
+        "1": 9.198685071261355e-11,
+        "2": 5.780645535641262e-09,
+        "3": 1.1253512113774616e-07,
+        "4": 0.9999998815110682
+      },
+      "latency_seconds": 9.616,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "6:David_Surrett_0001:Michael_Taylor_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 0.8354835432479661,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 0.0010322288840099723,
+        "different_person": 0.9989655131244745,
+        "cannot_tell": 2.257991515703646e-06
+      },
+      "visibility_score": 3.9999973486155587,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 3.581740731357236e-10,
+        "1": 1.7730902355045278e-10,
+        "2": 4.406931904437569e-08,
+        "3": 2.56128118039939e-06,
+        "4": 0.9999973941140176
+      },
+      "latency_seconds": 9.616,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "8:Ciro_Gomes_0001:Ciro_Gomes_0002",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999995104336,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999994539743,
+        "different_person": 5.376841116170938e-10,
+        "cannot_tell": 8.341604713827469e-12
+      },
+      "visibility_score": 3.999999717593172,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.1997339447085758e-10,
+        "1": 1.3594766635382844e-10,
+        "2": 5.780641868748314e-09,
+        "3": 2.6995780800773913e-07,
+        "4": 0.9999997240056291
+      },
+      "latency_seconds": 10.451,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "2:David_Anderson_0001:David_Anderson_0003",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999995104327,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999992980413,
+        "different_person": 6.904002299620486e-10,
+        "cannot_tell": 1.1558576584735318e-11
+      },
+      "visibility_score": 3.9992895385160034,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 8.586064466621013e-10,
+        "1": 1.0038126347927153e-09,
+        "2": 3.9250739787018304e-07,
+        "3": 0.0007096700233370724,
+        "4": 0.999289935606846
+      },
+      "latency_seconds": 9.616,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "8:Ion_Tiriac_0001:Lawrence_MacAulay_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 3.0288441293887026e-08,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 5.964142500276135e-09,
+        "different_person": 0.9999999299152829,
+        "cannot_tell": 6.412057466410713e-08
+      },
+      "visibility_score": 3.9999960094310683,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 2.1055931098139737e-10,
+        "1": 1.5166018237793524e-10,
+        "2": 1.114244953568827e-08,
+        "3": 3.966986814984697e-06,
+        "4": 0.999996021508516
+      },
+      "latency_seconds": 8.972,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "1:Jose_Serra_0003:Jose_Serra_0007",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999982912424,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.999999998637922,
+        "different_person": 1.3307809558977727e-09,
+        "cannot_tell": 3.129696831082068e-11
+      },
+      "visibility_score": 3.999997561443082,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.6398385511241847e-10,
+        "1": 1.2378150792568098e-10,
+        "2": 1.5713381898917926e-08,
+        "3": 2.4061028748178156e-06,
+        "4": 0.999997577895978
+      },
+      "latency_seconds": 8.968,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "1:Bernard_Law_0003:Bernard_Law_0004",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999881388771,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999955431018,
+        "different_person": 4.3634627536614275e-09,
+        "cannot_tell": 9.343548804093741e-11
+      },
+      "visibility_score": 3.9999996438745953,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.424721596441743e-10,
+        "1": 1.3384020785698426e-10,
+        "2": 1.4761409817785904e-08,
+        "3": 3.2563117538662095e-07,
+        "4": 0.9999996593311024
+      },
+      "latency_seconds": 9.613,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "4:Fidel_Castro_0011:Fidel_Castro_0013",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999996187248,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.99999999934027,
+        "different_person": 6.485708399918402e-10,
+        "cannot_tell": 1.1159277720552391e-11
+      },
+      "visibility_score": 3.999999408511168,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.3594764105501933e-10,
+        "1": 1.2771098986576273e-10,
+        "2": 9.530665433721643e-09,
+        "3": 5.715005776852485e-07,
+        "4": 0.9999994187050982
+      },
+      "latency_seconds": 8.967,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "4:Fidel_Castro_0005:Fidel_Castro_0008",
+      "gold_same_person": true,
+      "same_person_confidence": 0.999999999287684,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999985120684,
+        "different_person": 1.4615769486832233e-09,
+        "cannot_tell": 2.6354689628025197e-11
+      },
+      "visibility_score": 3.999975619366429,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 3.9956322530074964e-10,
+        "1": 3.36465969684944e-10,
+        "2": 3.889017837378066e-08,
+        "3": 2.4300245563719774e-05,
+        "4": 0.9999756601282287
+      },
+      "latency_seconds": 10.449,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "8:Pedro_Malan_0001:Pedro_Malan_0005",
+      "gold_same_person": true,
+      "same_person_confidence": 0.999999855502048,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999995536648483,
+        "different_person": 4.4508499832632795e-07,
+        "cannot_tell": 1.2501533516079619e-09
+      },
+      "visibility_score": 3.9999997269274674,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.5893911596136247e-10,
+        "1": 1.1997353903275951e-10,
+        "2": 9.237450534703482e-09,
+        "3": 2.5360195497469097e-07,
+        "4": 0.999999736881682
+      },
+      "latency_seconds": 8.965,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "1:Bill_Frist_0002:Bill_Frist_0009",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9996646498886371,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 0.18242542721986688,
+        "different_person": 0.8175740433230295,
+        "cannot_tell": 5.2945710359319e-07
+      },
+      "visibility_score": 3.9770201327443346,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.3840583764543824e-09,
+        "1": 1.6181281784882346e-09,
+        "2": 1.2583027677002951e-06,
+        "3": 0.022977340259511397,
+        "4": 0.9770213984355343
+      },
+      "latency_seconds": 8.97,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "2:Alicia_Silverstone_0002:Serge_Tchuruk_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 2.2414008478989375e-10,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 5.492789657862657e-11,
+        "different_person": 0.9999999995130306,
+        "cannot_tell": 4.3204137272713103e-10
+      },
+      "visibility_score": 3.9999810317376103,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 2.661677348750785e-10,
+        "1": 1.359451767436427e-10,
+        "2": 2.0816509821996386e-08,
+        "3": 1.892515686376633e-05,
+        "4": 0.9999810536245135
+      },
+      "latency_seconds": 8.968,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "3:Jessica_Lynch_0001:Jessica_Lynch_0002",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9998415637074057,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9902914003707086,
+        "different_person": 0.009708473348288714,
+        "cannot_tell": 1.262810026077738e-07
+      },
+      "visibility_score": 3.999999775446884,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.6398443276367797e-10,
+        "1": 1.127047425270949e-10,
+        "2": 1.3026897027815162e-08,
+        "3": 1.9750527018963947e-07,
+        "4": 0.9999997891911436
+      },
+      "latency_seconds": 10.448,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "6:Hashan_Tillakaratne_0001:John_Warner_0003",
+      "gold_same_person": false,
+      "same_person_confidence": 9.436650036919033e-10,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 1.1997359899464177e-10,
+        "different_person": 0.9999999982238419,
+        "cannot_tell": 1.6561844476909972e-09
+      },
+      "visibility_score": 3.9999999010266665,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.614419163255186e-10,
+        "1": 5.282359293164972e-11,
+        "2": 5.263336534261725e-09,
+        "3": 8.764242179204439e-08,
+        "4": 0.9999999068799761
+      },
+      "latency_seconds": 8.092,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "9:George_Voinovich_0002:George_Voinovich_0003",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999994452478,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999990373525,
+        "different_person": 9.4366500367399e-10,
+        "cannot_tell": 1.898257084414967e-11
+      },
+      "visibility_score": 3.9999998601066244,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 9.640143636829275e-11,
+        "1": 1.424720872524176e-10,
+        "2": 5.780648205111212e-09,
+        "3": 1.2751905732048904e-07,
+        "4": 0.999999866461421
+      },
+      "latency_seconds": 9.618,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "9:Mike_Gable_0001:Mohamed_Hammam_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 3.0941584196731656e-09,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 7.507755987044343e-11,
+        "different_person": 0.9999999988216657,
+        "cannot_tell": 1.1032566886353957e-09
+      },
+      "visibility_score": 3.999995465397397,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 2.746206708900306e-10,
+        "1": 1.3808794528707255e-10,
+        "2": 1.8953914647228193e-08,
+        "3": 4.495182027150504e-06,
+        "4": 0.9999954854513495
+      },
+      "latency_seconds": 8.966,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "9:Oscar_DLeon_0001:Steven_Curtis_Chapman_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 1.7087565708243593e-09,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 1.277112769825377e-10,
+        "different_person": 0.9999999979360121,
+        "cannot_tell": 1.936276479963036e-09
+      },
+      "visibility_score": 3.999996865064236,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 2.1055944323795372e-10,
+        "1": 9.34351865490118e-11,
+        "2": 2.215942081332414e-08,
+        "3": 3.0894943785166253e-06,
+        "4": 0.999996888042206
+      },
+      "latency_seconds": 8.965,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "3:Bridget_Fonda_0002:Bridget_Fonda_0003",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999988967436,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999998756266,
+        "different_person": 1.1811352461912712e-10,
+        "cannot_tell": 6.259787475990703e-12
+      },
+      "visibility_score": 3.999999598920604,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.4026325879394023e-10,
+        "1": 8.915675180630048e-11,
+        "2": 3.732266902860962e-09,
+        "3": 3.9278633917488596e-07,
+        "4": 0.999999603251974
+      },
+      "latency_seconds": 9.613,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "3:Bernard_Landry_0003:Bernard_Landry_0004",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999950555483,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.999999991282032,
+        "different_person": 8.677781838356572e-09,
+        "cannot_tell": 4.018610248076001e-11
+      },
+      "visibility_score": 3.999999059923944,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.4930927800013158e-10,
+        "1": 2.878011660233447e-10,
+        "2": 2.6729412930587046e-08,
+        "3": 8.851565897869044e-07,
+        "4": 0.9999990876768868
+      },
+      "latency_seconds": 10.447,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "9:Jorge_Valdano_0001:Jorge_Valdano_0002",
+      "gold_same_person": true,
+      "same_person_confidence": 0.999999999652845,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999994657098,
+        "different_person": 5.211413106352913e-10,
+        "cannot_tell": 1.3148842535077042e-11
+      },
+      "visibility_score": 3.9999999796745924,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 7.163947274908759e-11,
+        "1": 4.589396915326078e-11,
+        "2": 2.3355932758828317e-09,
+        "3": 1.5229981290691214e-08,
+        "4": 0.999999982316892
+      },
+      "latency_seconds": 8.965,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "8:John_Malkovich_0002:Paradorn_Srichaphan_0007",
+      "gold_same_person": false,
+      "same_person_confidence": 6.691586884514273e-10,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 3.894973885778588e-11,
+        "different_person": 0.9999999981420868,
+        "cannot_tell": 1.818963418870614e-09
+      },
+      "visibility_score": 3.9999994024377097,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.4699467564557618e-10,
+        "1": 7.391356470819172e-11,
+        "2": 1.2626099835402444e-08,
+        "3": 5.715003715513205e-07,
+        "4": 0.9999994156526204
+      },
+      "latency_seconds": 10.447,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "7:Donald_Rumsfeld_0051:Donald_Rumsfeld_0083",
+      "gold_same_person": true,
+      "same_person_confidence": 0.999999999673878,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999996625313,
+        "different_person": 3.3125757163338577e-10,
+        "cannot_tell": 6.211073422051238e-12
+      },
+      "visibility_score": 3.999970430342345,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 3.9336614331401033e-10,
+        "1": 5.05092126079622e-10,
+        "2": 1.27515320123316e-07,
+        "3": 2.9311538273279527e-05,
+        "4": 0.9999705600479483
+      },
+      "latency_seconds": 10.447,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "3:Martina_McBride_0003:Peter_Schultz_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 9.436650036919033e-10,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 1.5893919542983484e-10,
+        "different_person": 0.9999999984244512,
+        "cannot_tell": 1.4166096287759037e-09
+      },
+      "visibility_score": 3.9999982254842523,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.19973272763616e-10,
+        "1": 5.892889166411818e-11,
+        "2": 6.758248183528539e-09,
+        "3": 1.7603425715585374e-06,
+        "4": 0.9999982327202781
+      },
+      "latency_seconds": 10.448,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "5:Chick_Hearn_0001:Mohammed_Salmane_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 1.9362750952787826e-09,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 1.19973598810339e-10,
+        "different_person": 0.9999999966876474,
+        "cannot_tell": 3.1923790728031524e-09
+      },
+      "visibility_score": 3.9999999660699266,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 9.640137729369133e-11,
+        "1": 3.9563045526682094e-11,
+        "2": 2.486224288889876e-09,
+        "3": 2.8453330245744735e-08,
+        "4": 0.9999999689244811
+      },
+      "latency_seconds": 10.445,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "1:Guy_Ritchie_0002:William_Macy_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 2.845335067214422e-08,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 4.644885141443586e-09,
+        "different_person": 0.9999999731956071,
+        "cannot_tell": 2.21595076707132e-08
+      },
+      "visibility_score": 3.99999877298007,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.5893885047466396e-10,
+        "1": 7.163935258114464e-11,
+        "2": 8.152007867784301e-09,
+        "3": 1.2098652406869276e-06,
+        "4": 0.9999987817521732
+      },
+      "latency_seconds": 8.962,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "3:Barry_Switzer_0001:Jiang_Zemin_0011",
+      "gold_same_person": false,
+      "same_person_confidence": 1.211689849254372e-09,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 1.0261888171313072e-10,
+        "different_person": 0.9999999977032927,
+        "cannot_tell": 2.194088435913697e-09
+      },
+      "visibility_score": 3.9999999053158515,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.3384020936168148e-10,
+        "1": 4.050130196767329e-11,
+        "2": 3.1923787927780905e-09,
+        "3": 8.764252645540745e-08,
+        "4": 0.9999999089907533
+      },
+      "latency_seconds": 10.446,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "1:Henry_Castellanos_0001:Tommy_Shane_Steiner_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 5.60279774195669e-09,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 6.286167842144278e-10,
+        "different_person": 0.9999999937685828,
+        "cannot_tell": 5.6028004100563365e-09
+      },
+      "visibility_score": 3.999999635700896,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.0923703613651502e-10,
+        "1": 1.3594768798466447e-10,
+        "2": 8.410785628263754e-09,
+        "3": 3.4663274206849063e-07,
+        "4": 0.9999996447112877
+      },
+      "latency_seconds": 9.616,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "5:Edmund_Hillary_0001:Edmund_Hillary_0003",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999856927533,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999935795596,
+        "different_person": 6.348800832117534e-09,
+        "cannot_tell": 7.163947355717663e-11
+      },
+      "visibility_score": 3.999999901571977,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 5.200469468784182e-11,
+        "1": 3.518813658510085e-11,
+        "2": 2.409733638577489e-09,
+        "3": 9.329497221053583e-08,
+        "4": 0.9999999042081013
+      },
+      "latency_seconds": 8.299,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "4:Alex_Ferguson_0001:Rainer_Gut_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 2.4300240735235055e-05,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 1.8738731164872469e-06,
+        "different_person": 0.9999969162634672,
+        "cannot_tell": 1.2098634163728327e-06
+      },
+      "visibility_score": 3.999972236387033,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 3.995615219588049e-10,
+        "1": 4.1873687976489873e-10,
+        "2": 1.125319826834981e-07,
+        "3": 2.753569454442109e-05,
+        "4": 0.9999723509551744
+      },
+      "latency_seconds": 8.299,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "5:Tiger_Woods_0003:Tiger_Woods_0021",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999998254396,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999999193412,
+        "different_person": 7.163947401135524e-11,
+        "cannot_tell": 9.019425227677004e-12
+      },
+      "visibility_score": 3.9999999178282004,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.109572737898665e-10,
+        "1": 1.2378178369355327e-10,
+        "2": 6.550326707541097e-09,
+        "3": 6.82559716825171e-08,
+        "4": 0.9999999249589625
+      },
+      "latency_seconds": 8.182,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "10:Curtis_Strange_0001:Raul_Chacon_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 1.5229984959425487e-08,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 1.237819688973937e-10,
+        "different_person": 0.999999990638763,
+        "cannot_tell": 9.23745508141788e-09
+      },
+      "visibility_score": 3.999999381882698,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.5893889275296225e-10,
+        "1": 8.507385878217715e-11,
+        "2": 2.2862877539397567e-08,
+        "3": 5.71500570070612e-07,
+        "4": 0.9999994053925397
+      },
+      "latency_seconds": 8.182,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "10:Kim_Chinn_0001:Ruth_Harlow_0002",
+      "gold_same_person": false,
+      "same_person_confidence": 1.6212232650137953e-08,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 1.5079718017242084e-09,
+        "different_person": 0.9999999717625884,
+        "cannot_tell": 2.6729439748766255e-08
+      },
+      "visibility_score": 3.9999797986996226,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 3.016072949006067e-10,
+        "1": 3.160817311984128e-10,
+        "2": 2.6728904467861864e-08,
+        "3": 2.0145687894395923e-05,
+        "4": 0.9999798269655122
+      },
+      "latency_seconds": 8.183,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "7:Juergen_Braehmer_0001:Travis_Rudolph_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 0.009708478182723187,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 0.0013250193530270611,
+        "different_person": 0.9986727233166969,
+        "cannot_tell": 2.257330276017118e-06
+      },
+      "visibility_score": 3.9999997384728077,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 6.625561807501198e-11,
+        "1": 6.522841992644044e-11,
+        "2": 3.7322638633544485e-09,
+        "3": 2.5360195641293353e-07,
+        "4": 0.9999997425342956
+      },
+      "latency_seconds": 8.183,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "2:Daniel_Radcliffe_0001:Daniel_Radcliffe_0004",
+      "gold_same_person": true,
+      "same_person_confidence": 0.999999999845951,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999998931868,
+        "different_person": 9.6401437740106e-11,
+        "cannot_tell": 1.0411752105615247e-11
+      },
+      "visibility_score": 3.9999996549838266,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.4026328415604664e-10,
+        "1": 1.1628234677697425e-10,
+        "2": 9.237450970723246e-09,
+        "3": 3.256313712794299e-07,
+        "4": 0.9999996648746321
+      },
+      "latency_seconds": 8.183,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "10:Joaquin_Phoenix_0001:Rainer_Geulen_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 8.15202161981131e-09,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 2.6465712992761544e-09,
+        "different_person": 0.99999995044183,
+        "cannot_tell": 4.6911598747357625e-08
+      },
+      "visibility_score": 3.9999999171438154,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 9.791947353283318e-11,
+        "1": 7.391349642849694e-11,
+        "2": 4.792322524200073e-09,
+        "3": 7.26581207803166e-08,
+        "4": 0.9999999223777236
+      },
+      "latency_seconds": 8.182,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "2:Javier_Vargas_0001:Jesse_Helms_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 2.902312331170226e-06,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 6.605201902852368e-05,
+        "different_person": 0.9999316878051697,
+        "cannot_tell": 2.2601758018424397e-06
+      },
+      "visibility_score": 3.999999390808318,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.7456020410016426e-10,
+        "1": 8.375490124410634e-11,
+        "2": 1.8370836094697883e-08,
+        "3": 5.71500504502028e-07,
+        "4": 0.9999994098703443
+      },
+      "latency_seconds": 8.183,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "3:Andrew_Bernard_0001:Don_Nickles_0002",
+      "gold_same_person": false,
+      "same_person_confidence": 7.658115601771002e-09,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 7.823252909744248e-10,
+        "different_person": 0.999999988075189,
+        "cannot_tell": 1.1142485763736528e-08
+      },
+      "visibility_score": 3.9998762733031104,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 8.591105930812417e-10,
+        "1": 4.1869706366014987e-10,
+        "2": 1.6371749991677274e-07,
+        "3": 0.00012339456935617265,
+        "4": 0.9998764404353362
+      },
+      "latency_seconds": 8.181,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "5:Carlos_Ghosn_0002:Ray_Allen_0003",
+      "gold_same_person": false,
+      "same_person_confidence": 5.05107478141025e-10,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 7.507754198684315e-11,
+        "different_person": 0.999999999038431,
+        "cannot_tell": 8.864914427281898e-10
+      },
+      "visibility_score": 3.9999999336582452,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 5.32379268302059e-11,
+        "1": 2.6561387214075828e-11,
+        "2": 2.906692316529137e-09,
+        "3": 6.023573456964121e-08,
+        "4": 0.9999999367777739
+      },
+      "latency_seconds": 8.18,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "2:Charles_Kartman_0001:Charles_Kartman_0002",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999865595823,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999968656554,
+        "different_person": 3.0941584195488234e-09,
+        "cannot_tell": 4.018610270514408e-11
+      },
+      "visibility_score": 3.999998767507457,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.6398405208220903e-10,
+        "1": 1.237816566062793e-10,
+        "2": 1.0799651884699092e-08,
+        "3": 1.2098659585381118e-06,
+        "4": 0.9999987790466239
+      },
+      "latency_seconds": 8.182,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "8:Colin_Montgomerie_0002:Colin_Montgomerie_0003",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999982396559473,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999687862245321,
+        "different_person": 3.120191472777991e-05,
+        "cannot_tell": 1.1860740017714327e-08
+      },
+      "visibility_score": 3.9999996975670333,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.10957421364581e-10,
+        "1": 7.746076393951433e-11,
+        "2": 7.194136055341972e-09,
+        "3": 2.8736848260216156e-07,
+        "4": 0.9999997052489632
+      },
+      "latency_seconds": 8.177,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "4:David_McKiernan_0001:Jane_Leeves_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 2.703645503688558e-10,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 1.1270471242078722e-10,
+        "different_person": 0.999999998882769,
+        "cannot_tell": 1.0045261673303806e-09
+      },
+      "visibility_score": 3.9999985630290245,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.978025114873943e-10,
+        "1": 2.461692029126963e-10,
+        "2": 3.2241802898072573e-08,
+        "3": 1.3709576523052842e-06,
+        "4": 0.9999985963565732
+      },
+      "latency_seconds": 8.178,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "5:Giovanny_Cordoba_0001:Jackie_Sherrill_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 5.05107478141025e-10,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 3.6589889163055704e-11,
+        "different_person": 0.9999999994738429,
+        "cannot_tell": 4.895673049520447e-10
+      },
+      "visibility_score": 3.9999994631450924,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.8293771043462962e-10,
+        "1": 1.1628228365344228e-10,
+        "2": 1.5713424894223984e-08,
+        "3": 5.043474602396689e-07,
+        "4": 0.9999994796398949
+      },
+      "latency_seconds": 8.186,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "6:Nan_Wang_0001:Nan_Wang_0003",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999963825619,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999975513172,
+        "different_person": 2.4097330017438657e-09,
+        "cannot_tell": 3.8949706332611686e-11
+      },
+      "visibility_score": 3.9999968630225426,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 2.789459409591895e-10,
+        "1": 2.1387527179941134e-10,
+        "2": 2.2862836317746406e-08,
+        "3": 3.089494375760049e-06,
+        "4": 0.9999968871499668
+      },
+      "latency_seconds": 8.186,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "10:Paul_Martin_0001:Paul_Martin_0007",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999881388758,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999674791831,
+        "different_person": 3.224187016756544e-08,
+        "cannot_tell": 2.789468334683642e-10
+      },
+      "visibility_score": 3.9999942043664625,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.4026243632892806e-10,
+        "1": 5.365516373758017e-11,
+        "2": 1.1496123988360067e-08,
+        "3": 5.771919274369644e-06,
+        "4": 0.9999942163906841
+      },
+      "latency_seconds": 8.186,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "6:Hosni_Mubarak_0006:Hosni_Mubarak_0007",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999993514288,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999995982796,
+        "different_person": 3.8727933740502387e-10,
+        "cannot_tell": 1.4441178370437058e-11
+      },
+      "visibility_score": 3.9997687488468596,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 7.347566452541251e-10,
+        "1": 1.2498631564911644e-09,
+        "2": 3.689034749016502e-07,
+        "3": 0.00023050665757458612,
+        "4": 0.9997691224543307
+      },
+      "latency_seconds": 8.184,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "9:Russell_Simmons_0001:Russell_Simmons_0002",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999986692185,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999988874926,
+        "different_person": 1.103256162634541e-09,
+        "cannot_tell": 9.251366164010928e-12
+      },
+      "visibility_score": 3.999999036593111,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.3594770401508775e-10,
+        "1": 1.0923704901732196e-10,
+        "2": 1.0145345242506547e-08,
+        "3": 9.422446964246414e-07,
+        "4": 0.9999990473647735
+      },
+      "latency_seconds": 8.185,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "4:James_Brown_0001:Mary_Blige_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 1.2501531628835298e-09,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 5.211415572564613e-10,
+        "different_person": 0.999999995861419,
+        "cannot_tell": 3.6174394049609703e-09
+      },
+      "visibility_score": 3.9999998586063468,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.0423487976403145e-10,
+        "1": 3.4373015105191107e-11,
+        "2": 2.565148913653988e-09,
+        "3": 1.35743296892217e-07,
+        "4": 0.9999998615529463
+      },
+      "latency_seconds": 8.185,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "7:Mark_Kelly_0001:Mark_Lazarus_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 7.658115601771002e-09,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 1.33077982864628e-09,
+        "different_person": 0.9999999860431328,
+        "cannot_tell": 1.262608747055037e-08
+      },
+      "visibility_score": 3.9999977135007807,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.2378162964384256e-10,
+        "1": 1.4247178240243896e-10,
+        "2": 1.2626069480367643e-08,
+        "3": 2.2603245381089577e-06,
+        "4": 0.9999977267831389
+      },
+      "latency_seconds": 8.184,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "9:Barbara_Walters_0001:Peter_Greenaway_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 4.1874885714448424e-10,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 7.052882367403514e-11,
+        "different_person": 0.9999999991471453,
+        "cannot_tell": 7.823259524604268e-10
+      },
+      "visibility_score": 3.9999996914232248,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.6144201800584398e-10,
+        "1": 9.056076452057287e-11,
+        "2": 1.0145353095803173e-08,
+        "3": 2.873686187646808e-07,
+        "4": 0.9999997022340253
+      },
+      "latency_seconds": 8.181,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "1:Rick_Reed_0001:Ruth_Bader_Ginsburg_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 1.250153013853695e-09,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 7.991961791686985e-11,
+        "different_person": 0.9999999991618242,
+        "cannot_tell": 7.58256222937967e-10
+      },
+      "visibility_score": 3.9999970688841207,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.424715548859746e-10,
+        "1": 1.6656612287164384e-10,
+        "2": 1.3867002346211759e-08,
+        "3": 2.9023122899820565e-06,
+        "4": 0.9999970835116699
+      },
+      "latency_seconds": 8.546,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "10:Amram_Mitzna_0001:Amram_Mitzna_0002",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999995104327,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.999999999530437,
+        "different_person": 4.5990559247428945e-10,
+        "cannot_tell": 9.657549920808542e-12
+      },
+      "visibility_score": 3.9999990873683404,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.9473598935582655e-10,
+        "1": 2.1387564339264724e-10,
+        "2": 1.3026874091724087e-08,
+        "3": 8.851573405737103e-07,
+        "4": 0.9999991014071737
+      },
+      "latency_seconds": 7.717,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "4:David_Kelley_0001:David_Kelley_0002",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999995679585,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999996939191,
+        "different_person": 2.9693736812551555e-10,
+        "cannot_tell": 9.143584490894796e-12
+      },
+      "visibility_score": 3.9999970758251937,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.1811308199911688e-10,
+        "1": 1.5166019933018942e-10,
+        "2": 1.046736381558515e-08,
+        "3": 2.9023126459417915e-06,
+        "4": 0.999997086950217
+      },
+      "latency_seconds": 7.716,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "8:Adam_Rich_0001:Roger_Clemens_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 0.010986942003155366,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 0.00033534964275909,
+        "different_person": 0.9996627771094757,
+        "cannot_tell": 1.8732477652236301e-06
+      },
+      "visibility_score": 3.9999957184332025,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 2.5398288022629717e-10,
+        "1": 2.7036336866089173e-10,
+        "2": 2.845322711028468e-08,
+        "3": 4.222833322100426e-06,
+        "4": 0.9999957481891046
+      },
+      "latency_seconds": 7.349,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "7:Johnny_Depp_0001:Johnny_Depp_0002",
+      "gold_same_person": true,
+      "same_person_confidence": 0.999999999746016,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999998603575,
+        "different_person": 1.2378189625947332e-10,
+        "cannot_tell": 1.586052972622002e-11
+      },
+      "visibility_score": 3.9999962071142874,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 2.3489607703315414e-10,
+        "1": 2.746213365923134e-10,
+        "2": 3.224177306570399e-08,
+        "3": 3.726638717686019e-06,
+        "4": 0.9999962406099917
+      },
+      "latency_seconds": 7.716,
+      "input_tokens": 1978
+    },
+    {
+      "pair_id": "7:Kofi_Annan_0008:Kofi_Annan_0032",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999995400941,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999999996205302,
+        "different_person": 3.6954452535222684e-10,
+        "cannot_tell": 9.925267067330317e-12
+      },
+      "visibility_score": 3.99999924373902,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 9.640137743425403e-11,
+        "1": 1.5166065471440322e-10,
+        "2": 1.0799666038266705e-08,
+        "3": 7.338210598838904e-07,
+        "4": 0.9999992551312119
+      },
+      "latency_seconds": 7.717,
+      "input_tokens": 1978
+    }
+  ]
+}
