@@ -12,6 +12,7 @@ register row. Parent epic:
 |---|---|
 | Register rows, variants and expected labels | `typevet_evals.check_match.cases` |
 | Renders and contact sheet | `typevet_evals.check_match.render` |
+| Offline contact-sheet command | `typevet_evals.cli.check_sheets` |
 | One-image request builder | `typevet_evals.check_match.request` |
 | Metric rules | `typevet_evals.check_match.metrics` |
 | Run and receipt | `typevet_evals.check_match.runner` |
@@ -39,6 +40,28 @@ Every check is not negotiable by construction:
 
 Renders use the bundled Pillow font only. The repository stores no render.
 Renders are byte-identical for one case within one Pillow build.
+
+## Contact sheets without a model call
+
+This command writes the contact sheets for one seed. It makes no model
+call. Put the output directory outside the repository or under
+`scratchpad/`, which the repository ignores.
+
+```bash
+uv run python -m typevet_evals.cli.check_sheets --seed 1 --out scratchpad/check_sheets_seed1
+```
+
+| Option | Use |
+|---|---|
+| `--seed` | Generator seed. The default is 0, the #316 slice. |
+| `--rows` | Register rows, 1 to 20. The default is 20. |
+| `--out` | Output directory. The command makes it when it is missing. |
+
+The command writes one PNG per register row, `seed<seed>_row<row>.png`, for
+example `seed1_row00.png`. Each sheet is one `write_contact_sheet` grid of
+the 7 variants of that row, with the expected labels under each render. The
+command prints one path per line. It exits 0 when it writes every sheet and
+2 on a usage error.
 
 ## Variants and expected labels
 
@@ -120,6 +143,7 @@ counterfeits.
 | Variable | Use |
 |---|---|
 | `TYPEVET_CHECK_MATCH_RECEIPT` | Receipt path. It must name a new file. The test skips when it is not set. |
+| `TYPEVET_CHECK_MATCH_SEED` | Generator seed, a non-negative integer. The default is 0, the #316 slice. The receipt records it as `generator_seed`. |
 | `TYPEVET_CHECK_MATCH_ROWS` | Register rows, 1 to 20, for a smoke run. Each row gives all 7 variants. |
 | `TYPEVET_REQUIRE_LIVE` | When true, a missing receipt path fails the test |
 | `TYPEVET_BACKEND` | `llama_cpp` (default) or `vllm` |
@@ -128,8 +152,8 @@ counterfeits.
 | `TYPEVET_VLLM_MODEL_REVISION` | Served weights revision. Required when `TYPEVET_BACKEND` is `vllm`. |
 | `TYPEVET_GIT_STATUS_PORCELAIN` | Porcelain status text for the working-tree fingerprint |
 
-The test checks the receipt path, the row count and the vLLM revision
-before any network call.
+The test checks the receipt path, the row count, the seed and the vLLM
+revision before any network call.
 
 ```bash
 TYPEVET_GIT_STATUS_PORCELAIN="$(git status --porcelain)" \

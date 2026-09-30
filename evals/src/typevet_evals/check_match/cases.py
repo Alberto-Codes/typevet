@@ -12,6 +12,7 @@ Attributes:
     PAYEES (tuple[str, ...]): Invented payee names.
     ROW_COUNT (int): Register rows in the default slice.
     DEFAULT_SEED (int): Seed of the default slice.
+    SEED_ENV (str): Environment variable that sets the live-run seed.
     BLUR_RANGE (tuple[float, float]): Low and high blur radius, in pixels.
     EXPECTED_LABELS (Mapping[CheckVariant, ExpectedLabels]): Amendment A1.
 
@@ -41,6 +42,7 @@ from typing import Final
 ACCOUNT_NUMBER: Final[str] = "000000000000"
 ROW_COUNT: Final[int] = 20
 DEFAULT_SEED: Final[int] = 0
+SEED_ENV: Final[str] = "TYPEVET_CHECK_MATCH_SEED"
 BLUR_RANGE: Final[tuple[float, float]] = (3.5, 5.0)
 PAYEES: Final[tuple[str, ...]] = (
     "Northwind Supply Co.",
@@ -449,3 +451,37 @@ def check_cases(seed: int = DEFAULT_SEED, count: int = ROW_COUNT) -> list[CheckC
         for row in register_rows(seed, count)
         for variant in CheckVariant
     ]
+
+
+def check_match_seed(environ: Mapping[str, str]) -> int:
+    """Return the generator seed that ``TYPEVET_CHECK_MATCH_SEED`` names (#344).
+
+    Args:
+        environ: Process environment, or a mapping in its place.
+
+    Returns:
+        The seed; :data:`DEFAULT_SEED` (the #316 seed) when the variable is
+        unset or blank.
+
+    Raises:
+        ValueError: When the value is not a non-negative integer.
+    """
+    raw = environ.get(SEED_ENV, "").strip()
+    if not raw:
+        return DEFAULT_SEED
+    if not (raw.isascii() and raw.isdigit()):
+        msg = f"{SEED_ENV} must be a non-negative integer: {raw!r}"
+        raise ValueError(msg)
+    return int(raw)
+
+
+def generator_pins(seed: int) -> dict[str, object]:
+    """Return the receipt pins that name the generated slice and its seed.
+
+    Args:
+        seed: Seed that made the slice.
+
+    Returns:
+        The ``dataset`` and ``generator_seed`` pins.
+    """
+    return {"dataset": "synthetic checks (#315 generator)", "generator_seed": seed}

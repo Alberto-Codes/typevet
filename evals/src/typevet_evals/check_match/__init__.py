@@ -24,6 +24,7 @@ Attributes:
     PAYEE_MATCHES (str): ``Noul`` question id for the payee.
     RECEIPT_ISSUE (int): Issue number recorded in every receipt.
     ROW_COUNT (int): Register rows in the default slice.
+    SEED_ENV (str): Environment variable that sets the live-run seed.
     SPECIMEN_MARK (str): Mark across the check face.
     VERDICT (str): ``Choice`` question id for the verdict.
     VERDICT_LABELS (tuple[str, ...]): ``Choice`` labels in prompt order.
@@ -46,11 +47,13 @@ Attributes:
     check_cases (callable): Every variant of every register row.
     check_match_metrics (callable): Every metric over the outcomes.
     check_match_questions (callable): New ``Noul``, ``Choice`` and ``Score``.
+    check_match_seed (callable): Generator seed from the environment.
     check_outcome_from_response (callable): Typed answers to one outcome.
     class_key (callable): Accuracy class name of one label set.
     counts_for_false_clear (callable): Whether a case enters false clear.
     dollars_in_words (callable): Whole dollars in lower-case words.
     false_clear_rate (callable): Share of mismatch cases called consistent.
+    generator_pins (callable): Receipt pins for the slice and its seed.
     judge_check_match (callable): Send one request to a judgment port.
     legibility_gap (callable): Clean minus low-legibility mean ``Score``.
     noul_choice_agreement (callable): Whether the ``Noul`` answers support
@@ -94,6 +97,7 @@ from typevet_evals.check_match.cases import (
     EXPECTED_LABELS,
     PAYEES,
     ROW_COUNT,
+    SEED_ENV,
     CheckCase,
     CheckFace,
     CheckVariant,
@@ -102,6 +106,8 @@ from typevet_evals.check_match.cases import (
     SeededDraws,
     aba_check_digit_ok,
     check_cases,
+    check_match_seed,
+    generator_pins,
     register_rows,
 )
 from typevet_evals.check_match.metrics import (
@@ -170,6 +176,7 @@ __all__ = [
     "PAYEE_MATCHES",
     "RECEIPT_ISSUE",
     "ROW_COUNT",
+    "SEED_ENV",
     "SPECIMEN_MARK",
     "VERDICT",
     "VERDICT_LABELS",
@@ -192,11 +199,13 @@ __all__ = [
     "check_cases",
     "check_match_metrics",
     "check_match_questions",
+    "check_match_seed",
     "check_outcome_from_response",
     "class_key",
     "counts_for_false_clear",
     "dollars_in_words",
     "false_clear_rate",
+    "generator_pins",
     "judge_check_match",
     "legibility_gap",
     "noul_choice_agreement",

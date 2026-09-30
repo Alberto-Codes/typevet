@@ -1,7 +1,7 @@
 r"""Opt-in live check-versus-register run with a key-free receipt (#316).
 
-Judges the synthetic check slice (20 register rows times 7 variants, seed 0,
-140 cases) once on one backend. Each case is one one-image judgment with the
+Judges the synthetic check slice (20 register rows times 7 variants, 140
+cases) once on one backend. Each case is one one-image judgment with the
 register row as text and four typed questions. The run stops at the first
 backend failure and records it.
 
@@ -20,6 +20,8 @@ call when it does. ``TYPEVET_BACKEND`` selects the backend, as in
   requires ``TYPEVET_VLLM_MODEL_REVISION``, the served weights revision. The
   test fails before any network call when it is missing.
 
+``TYPEVET_CHECK_MATCH_SEED`` sets the generator seed (default 0, the #316
+slice); the receipt records it as ``generator_seed`` (#344).
 ``TYPEVET_CHECK_MATCH_ROWS`` sets fewer register rows for a smoke run; each
 row still gives all 7 variants. ``TYPEVET_GIT_STATUS_PORCELAIN`` carries the
 porcelain status text for the working-tree fingerprint. The receipt holds
@@ -78,13 +80,14 @@ from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
 from typevet.adapters.outbound.vllm.judgment_factory import VllmJudgmentSession
 from typevet.domain import Choice, Noul, Score
 from typevet_evals.check_match import (
-    DEFAULT_SEED,
     ROW_COUNT,
     CheckMatchRequest,
     build_check_match_receipt,
     build_check_match_request,
     check_cases,
     check_match_questions,
+    check_match_seed,
+    generator_pins,
     render_check,
     run_check_match,
 )
@@ -145,10 +148,10 @@ def _environ() -> dict[str, str]:
     return environ
 
 
-def _requests(rows: int) -> list[CheckMatchRequest]:
+def _requests(seed: int, rows: int) -> list[CheckMatchRequest]:
     return [
         build_check_match_request(case, image=render_check(case))
-        for case in check_cases(DEFAULT_SEED, rows)
+        for case in check_cases(seed, rows)
     ]
 
 
@@ -262,7 +265,8 @@ def test_check_match_live_receipt() -> None:
     if not 1 <= rows <= ROW_COUNT:
         pytest.fail(f"{_ROWS_ENV} must be 1 to {ROW_COUNT}: {rows}")
     concurrency = image_concurrency(environ)
-    requests = _requests(rows)
+    seed = check_match_seed(environ)
+    requests = _requests(seed, rows)
     tree = _working_tree()
     evaluated = snapshot_evaluated_inputs(
         prompts=_prompt_specs(),
@@ -304,8 +308,7 @@ def test_check_match_live_receipt() -> None:
     )
     pins = {
         "finished_utc": datetime.now(UTC).isoformat(),
-        "dataset": "synthetic checks (#315 generator)",
-        "generator_seed": DEFAULT_SEED,
+        **generator_pins(seed),
         "register_rows": rows,
         "variants_per_row": len(requests) // rows,
         "concurrency": concurrency,
