@@ -113,23 +113,21 @@ nav:
       - TypeLLM, Jev and judgevet: explanation/typellm-and-judgevet.md
       - Verified evidence and inferred claims: explanation/verification.md
   - Reference:
-      - Python API: reference/api.md
-      - Supported imports: reference/supported-imports.md
-      - Releases: reference/releases.md
-      - Configuration: reference/configuration.md
-      - Errors: reference/errors.md
-      - Diagnostic events: reference/diagnostic-events.md
-      - Security: reference/security.md
-      - Glossary: reference/glossary.md
-      - Question schema map: reference/question-schema-map.md
-      - Typed-judgment release support matrix: reference/typed-judgment-release-support-matrix.md
-      - Judgment live receipts: reference/judgment-live-receipts.md
-      - Performance on one H100: reference/performance.md
-      - PSAI vision Choice probability evidence: reference/psai-vision-choice-probability-evidence.md
-      - Testing pyramid: reference/testing.md
-      - LOC gate: reference/loc-gate.md
-      - Writing system: reference/writing-system.md
-      - Commit messages: reference/commits.md
+      - Library:
+          - Python API: reference/api.md
+          - Supported imports: reference/supported-imports.md
+          - Configuration: reference/configuration.md
+          - Errors: reference/errors.md
+          - Security: reference/security.md
+          - Diagnostic events: reference/diagnostic-events.md
+          - Releases: reference/releases.md
+          - Glossary: reference/glossary.md
+          - Question schema map: reference/question-schema-map.md
+      - Evidence:
+          - Typed-judgment release support matrix: reference/typed-judgment-release-support-matrix.md
+          - Judgment live receipts: reference/judgment-live-receipts.md
+          - Performance on one H100: reference/performance.md
+          - PSAI vision Choice probability evidence: reference/psai-vision-choice-probability-evidence.md
       - Evaluation:
           - Partner data policy: reference/eval-partner-data-policy.md
           - Complementary manifest: reference/eval-complementary-manifest.md
@@ -148,6 +146,11 @@ nav:
           - Hyperpartisan loader: reference/eval-hyperpartisan-loader.md
           - PSAI metadata map: reference/eval-psai-metadata-map.md
           - PubMedQA loader: reference/eval-pubmedqa-loader.md
+  - Maintainers:
+      - Testing pyramid: reference/testing.md
+      - LOC gate: reference/loc-gate.md
+      - Writing system: reference/writing-system.md
+      - Commit messages: reference/commits.md
   - ADRs:
       - Index: adr/README.md
       - "0001: Runtime orchestration": adr/0001-runtime-orchestration.md
