@@ -124,6 +124,7 @@ nav:
       - Two-image face matching: explanation/two-image-face-matching.md
       - Two-image signature comparison: explanation/two-image-signature-comparison.md
       - Verified evidence and inferred claims: explanation/verification.md
+      - Wording evolution on DIFrauD scam messages: explanation/wording-evolution-difraud.md
   - Reference:
       - Library:
           - Python API:
