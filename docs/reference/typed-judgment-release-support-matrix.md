@@ -43,7 +43,7 @@ A row is not a minimum version and says nothing about other quantizations or har
 | Backend | Server | Model and weights | Hardware | Receipt |
 |---|---|---|---|---|
 | vLLM | Stock `vllm/vllm-openai:v0.30.0` | `google/gemma-4-31B-it` revision `842da3794eaa0b77d5f08bae87a17459d91ff475`, BF16 | One H100 80 GB | [#170 receipt](https://github.com/Alberto-Codes/typevet/issues/170#issuecomment-5884707915) |
-| llama.cpp (image input) | `llama-server` build `b11223-4da633776` | `gemma-4-31b-kv9-q4km-mm`, served template `native_gemma4_turn` | Not recorded | [#203 receipt](https://github.com/Alberto-Codes/typevet/issues/203#issuecomment-5882379255) |
+| llama.cpp (image input) | `llama-server` build `b11223-4da633776` | Alias `gemma-4-31b-kv9-q4km-mm`, served template `native_gemma4_turn`. The alias loads `gemma-4-31b-24gib-kv9-decoder.gguf`, ftype `Q2_K - Medium` (not Q4_K_M), 16.0 GB, with a `--chat-template-file` override on image `server-cuda-b11243` ([#233](https://github.com/Alberto-Codes/typevet/issues/233)) | Not recorded | [#203 receipt](https://github.com/Alberto-Codes/typevet/issues/203#issuecomment-5882379255) |
 | llama.cpp (generation) | `ghcr.io/ggml-org/llama.cpp:server-cuda-b11243` | `google/gemma-4-31B-it-qat-q4_0-gguf` revision `59dde24573e7e61570dba08b18a2e1fe246955ed`, Q4_0 | One A40 48 GB | [#129 receipt](https://github.com/Alberto-Codes/typevet/issues/129#issuecomment-5892208050) |
 
 What each receipt shows:
@@ -65,7 +65,7 @@ What each receipt shows:
   A malformed schema gave HTTP 500 on that build.
   This receipt ran at `2e23306`, before the adapters checked the schema and turned thinking off.
 
-The vLLM and llama.cpp rows use different weights (BF16 and Q4 GGUF).
+The rows use different weights: BF16 on vLLM, a Q4_0 GGUF for llama.cpp generation and a `Q2_K - Medium` GGUF for llama.cpp image input.
 Do not attribute a result difference to the backend.
 
 ### Behaviour at HEAD on both backends
@@ -94,7 +94,7 @@ No calibration receipt exists for more than 10 options ([#288](https://github.co
 | Pin | Release-primary | Secondary (documented smokes) |
 |---|---|---|
 | Backend | Stock **llama.cpp** `llama-server`, or stock **vLLM** at the tested pin | Same |
-| Model id (vision) | `gemma-4-31b-kv9-q4km-mm` on llama.cpp (example KV quant); served `gemma-4-31b-it` on vLLM | `gemma-3-4b-it-q4km-mm` in PSAI / legacy rows |
+| Model id (vision) | `gemma-4-31b-kv9-q4km-mm` on llama.cpp. The alias loads `gemma-4-31b-24gib-kv9-decoder.gguf`, ftype `Q2_K - Medium` (not Q4_K_M), 16.0 GB, image `server-cuda-b11243`, with a `--chat-template-file` override ([#233](https://github.com/Alberto-Codes/typevet/issues/233)). Served `gemma-4-31b-it` on vLLM | `gemma-3-4b-it-q4km-mm` in PSAI / legacy rows |
 | Served template family | `native_gemma4_turn` on llama.cpp; vLLM applies its served chat template | `native_gemma3_turn` where a how-to still pins Gemma 3 |
 | Env | `TYPEVET_LLAMA__MULTIMODAL_MODEL` on llama.cpp, or `TYPEVET_VLLM__MODEL` on vLLM | Same variables. On llama.cpp, the id must declare image input |
 | Media type | `ImageInput` — PNG, JPEG, WebP; non-empty bytes | [Multimodal how-to](../how-to/run-a-multimodal-live-smoke.md) |
@@ -240,6 +240,10 @@ TYPEVET_LLAMA__MULTIMODAL_MODEL=gemma-4-31b-kv9-q4km-mm \
   TYPEVET_LLAMA__TIMEOUT=900 \
   uv run pytest evals/tests/live/test_cord_expense_smoke_live.py -m live -q
 ```
+
+The alias `gemma-4-31b-kv9-q4km-mm` loads `gemma-4-31b-24gib-kv9-decoder.gguf`.
+That file is 16.0 GB with ftype `Q2_K - Medium`, not Q4_K_M.
+The router uses a `--chat-template-file` override on image `server-cuda-b11243` ([#233](https://github.com/Alberto-Codes/typevet/issues/233)).
 
 Steps and failure table: [Run the CORD expense smoke](../how-to/run-the-cord-expense-smoke.md).
 

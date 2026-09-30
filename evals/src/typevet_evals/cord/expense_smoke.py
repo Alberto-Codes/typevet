@@ -1,10 +1,13 @@
 """CORD expense live-smoke helpers: attachment floors and Gemma 4 capability ([#185][i185]).
 
 The direct three-label smoke gates on prompt token growth, not on semantic
-quality. Measured image cost differs between Gemma 3 and Gemma 4 multimodal
-ids on the same router, so the attachment floor is model-specific. A pinned
-Gemma 4 receipt records vision, the native turn family and combined outcomes
-for offline regression.
+quality. The attachment floor is model-specific. A Gemma 3 image costs a fixed
+256 prompt tokens. Gemma 4 has a variable image-token budget: the #203 receipt
+measured gaps from 228 to 1,108 tokens ([#260][i260]). The Gemma 4 floor
+therefore compares each arm against its image-omitted control and requires the
+smallest measured image gap minus the marker-only cost. A pinned Gemma 4
+receipt records vision, the native turn family and combined outcomes for
+offline regression.
 
 Examples:
     ```python
@@ -14,8 +17,8 @@ Examples:
         cord_combined_attachment_floor,
     )
 
-    floor = cord_combined_attachment_floor("gemma-4-31b-kv9-q4km-mm")
-    assert floor > 200
+    assert cord_combined_attachment_floor("gemma-3-4b-it-q4km-mm") == 225
+    assert cord_combined_attachment_floor("gemma-4-31b-kv9-q4km-mm") == 197
     ```
 
 See Also:
@@ -23,6 +26,7 @@ See Also:
     - [evals.tests.live.test_cord_expense_smoke_live][]: opt-in live smoke
 
 [i185]: https://github.com/Alberto-Codes/typevet/issues/185
+[i260]: https://github.com/Alberto-Codes/typevet/issues/260
 """
 
 from __future__ import annotations
@@ -32,10 +36,13 @@ from dataclasses import dataclass
 from typing import Any, Final
 
 # One attached receipt image on the CORD smoke router, measured on live runs.
+# Gemma 4 has no fixed cost: its image-token budget varies per image (#260).
 _GEMMA3_IMAGE_PROMPT_TOKENS: Final[int] = 256
-_GEMMA4_IMAGE_PROMPT_TOKENS: Final[int] = 245
 # A silently dropped image adds marker text only (#155 recipe).
 _MARKER_ONLY_PROMPT_TOKENS: Final[int] = 31
+# Smallest measured Gemma 4 image gap, combined minus text_only (R03, #203):
+# https://github.com/Alberto-Codes/typevet/issues/203#issuecomment-5899231642
+_GEMMA4_SMALLEST_MEASURED_IMAGE_GAP_TOKENS: Final[int] = 228
 
 GEMMA3_DIRECT_RECEIPT_MODEL: Final[str] = "gemma-3-4b-it-q4km-mm"
 GEMMA4_DIRECT_RECEIPT_MODEL: Final[str] = "gemma-4-31b-kv9-q4km-mm"
@@ -50,8 +57,9 @@ class CordExpenseAttachmentProfile:
     Attributes:
         model_id (str): Router multimodal model id.
         served_template (str): Native turn family from ``/apply-template``.
-        measured_image_prompt_tokens (int): Prompt tokens one receipt image adds
-            on the combined arm (text baseline subtracted).
+        measured_image_prompt_tokens (int | None): Prompt tokens one receipt
+            image adds on the combined arm (text baseline subtracted). ``None``
+            when the model has a variable image-token budget (Gemma 4).
         image_only_state_omission_tokens (int): Prompt tokens for the fixed
             ``image_only`` claim text with no image (same prompt, omission).
 
@@ -66,13 +74,13 @@ class CordExpenseAttachmentProfile:
             GEMMA4_DIRECT_RECEIPT_MODEL,
             "native_gemma4_turn",
         )
-        assert profile.measured_image_prompt_tokens == 245
+        assert profile.measured_image_prompt_tokens is None
         ```
     """
 
     model_id: str
     served_template: str
-    measured_image_prompt_tokens: int
+    measured_image_prompt_tokens: int | None
     image_only_state_omission_tokens: int
 
 
@@ -94,7 +102,7 @@ _VERIFIED_ATTACHMENT_PROFILES: Final[
     ): CordExpenseAttachmentProfile(
         model_id=GEMMA4_DIRECT_RECEIPT_MODEL,
         served_template=GEMMA4_NATIVE_TURN,
-        measured_image_prompt_tokens=_GEMMA4_IMAGE_PROMPT_TOKENS,
+        measured_image_prompt_tokens=None,
         image_only_state_omission_tokens=218,
     ),
 }
@@ -141,20 +149,21 @@ def resolve_cord_expense_attachment_profile(
     return profile
 
 
-def measured_image_prompt_tokens(model_id: str) -> int:
+def measured_image_prompt_tokens(model_id: str) -> int | None:
     """Return the measured single-image prompt cost for one multimodal model id.
 
     Args:
         model_id: Router model id from ``TYPEVET_LLAMA__MULTIMODAL_MODEL``.
 
     Returns:
-        Prompt tokens one CORD receipt image adds on a native-turn prefix.
+        Prompt tokens one CORD receipt image adds on a native-turn prefix, or
+        ``None`` for Gemma 4, whose image-token budget varies per image.
 
     Raises:
         ValueError: When ``model_id`` is not a supported Gemma 3 or Gemma 4 id.
     """
     if model_id.startswith("gemma-4"):
-        return _GEMMA4_IMAGE_PROMPT_TOKENS
+        return None
     if model_id.startswith("gemma-3"):
         return _GEMMA3_IMAGE_PROMPT_TOKENS
     msg = (
@@ -167,13 +176,31 @@ def measured_image_prompt_tokens(model_id: str) -> int:
 def cord_combined_attachment_floor(model_id: str) -> int:
     """Minimum ``combined`` minus ``text_only`` token gap that proves attachment.
 
+    Gemma 3 uses its fixed image cost. Gemma 4 has a variable image-token
+    budget, so its floor uses the smallest measured image gap (#203, #260).
+
     Args:
         model_id: Router model id from ``TYPEVET_LLAMA__MULTIMODAL_MODEL``.
 
     Returns:
         Token gap floor for the same claim across the two modalities.
     """
-    return measured_image_prompt_tokens(model_id) - _MARKER_ONLY_PROMPT_TOKENS
+    return _attachment_gap_floor(measured_image_prompt_tokens(model_id))
+
+
+def _attachment_gap_floor(image_prompt_tokens: int | None) -> int:
+    """Return the smallest token gap over an image-omitted control that proves attachment.
+
+    Args:
+        image_prompt_tokens: Fixed image cost, or ``None`` for a variable budget.
+
+    Returns:
+        The fixed cost minus the marker-only cost. For a variable budget, the
+        smallest measured Gemma 4 image gap minus the marker-only cost.
+    """
+    if image_prompt_tokens is None:
+        return _GEMMA4_SMALLEST_MEASURED_IMAGE_GAP_TOKENS - _MARKER_ONLY_PROMPT_TOKENS
+    return image_prompt_tokens - _MARKER_ONLY_PROMPT_TOKENS
 
 
 def cord_image_only_attachment_gap_floor(model_id: str) -> int:
@@ -264,6 +291,11 @@ def assert_cord_expense_attachment(
 ) -> None:
     """Fail loud when prompt token counts show a silently dropped receipt image.
 
+    Each arm is compared with its image-omitted control: ``combined`` with the
+    same claim's ``text_only`` row, ``image_only`` with the omission row. The
+    gap floor is the profile's fixed image cost, or the smallest measured
+    image gap for a variable budget (Gemma 4, #260), minus the marker-only cost.
+
     Args:
         profile: Verified model and served-template attachment calibration.
         text_only: ``text_only`` rows keyed by claim id.
@@ -291,7 +323,7 @@ def assert_cord_expense_attachment(
         msg = f"unsupported attachment profile model id {profile.model_id!r}"
         raise ValueError(msg)
 
-    combined_floor = profile.measured_image_prompt_tokens - _MARKER_ONLY_PROMPT_TOKENS
+    combined_floor = _attachment_gap_floor(profile.measured_image_prompt_tokens)
     image_gap_floor = combined_floor
     if not isinstance(image_only_omission_tokens, int):
         msg = "image_only omission control must report integer prompt tokens"

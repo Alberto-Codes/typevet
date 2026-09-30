@@ -4,6 +4,14 @@ A framing owns the chat-turn markers for one model family. It does not own
 the transport payload. ``ScoringJudgmentAdapter`` takes an optional framing
 and sends the composed prefix to any ``CandidateScoringPort``.
 
+A framing for a thinking model on llama.cpp must end the prefix with the
+no-thinking prefill. For Gemma 4 that prefill is ``GEMMA4_NO_THINKING_PREFILL``
+in ``typevet.adapters.outbound.gemma.served_template``. typevet does not check
+this requirement. Without the prefill, the #207 receipt put at least 0.99999 of
+the mass off the menu, and the answers changed ([#235][i235]). On vLLM the
+scoring adapter sends ``chat_template_kwargs: {"enable_thinking": False}``, so
+a vLLM framing needs no prefill text.
+
 Examples:
     ```python
     from typevet.ports.framing import ModelFramingPort
@@ -16,6 +24,8 @@ Examples:
 See Also:
     - [typevet.ports.scoring][]: Transport that receives the composed prefix
     - [typevet.domain.media][]: ``ImageInput`` and the media marker
+
+[i235]: https://github.com/Alberto-Codes/typevet/issues/235
 """
 
 from __future__ import annotations
@@ -54,6 +64,7 @@ class ModelFramingPort(Protocol):
 
         Returns:
             Scoring prefix ending at the answer boundary. The prefix must keep
-            one media marker per entry in ``media``.
+            one media marker per entry in ``media``. For a thinking model on
+            llama.cpp, the prefix must end with the no-thinking prefill.
         """
         ...

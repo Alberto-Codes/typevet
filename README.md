@@ -29,7 +29,7 @@ Read the documentation at <https://alberto-codes.github.io/typevet/>.
 | Backend | Tested pin | Receipt |
 |---|---|---|
 | vLLM | `vllm/vllm-openai:v0.30.0`, BF16 `google/gemma-4-31B-it`, one H100 80 GB | [#170](https://github.com/Alberto-Codes/typevet/issues/170#issuecomment-5884707915) |
-| llama.cpp | Build `b11223-4da633776`, local alias `gemma-4-31b-kv9-q4km-mm` | [#203](https://github.com/Alberto-Codes/typevet/issues/203#issuecomment-5882379255) |
+| llama.cpp | Build `b11223-4da633776`, local alias `gemma-4-31b-kv9-q4km-mm`: file `gemma-4-31b-24gib-kv9-decoder.gguf`, ftype `Q2_K - Medium` (not Q4_K_M), 16.0 GB, `--chat-template-file` override ([#233](https://github.com/Alberto-Codes/typevet/issues/233)) | [#203](https://github.com/Alberto-Codes/typevet/issues/203#issuecomment-5882379255) |
 | llama.cpp grammar | Build `b11243-fc07d781e`, Gemma 4 31B QAT Q4_0 GGUF | [#129](https://github.com/Alberto-Codes/typevet/issues/129#issuecomment-5892208050) |
 
 Performance: on one H100 at concurrency level 64, 480 Banking77 records took 12.1 s at 39.6 records/s.

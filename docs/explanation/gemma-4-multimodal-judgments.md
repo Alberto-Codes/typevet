@@ -54,7 +54,13 @@ The two backends take the same domain request and send it on different wires.
 | Scores | `n_probs` over the full vocabulary, 262144 entries | `logprob_token_ids`, at most 128 candidates |
 | Prompt cache | `cache_prompt` is false on every request | No typevet setting |
 | Image count limit | None in typevet | Tested server flag `--limit-mm-per-prompt {"image":2}` |
-| Model pin | `gemma-4-31b-kv9-q4km-mm`, Q4 GGUF with its projector | `google/gemma-4-31B-it`, BF16, vLLM 0.30.0 |
+| Model pin | Alias `gemma-4-31b-kv9-q4km-mm`: file `gemma-4-31b-24gib-kv9-decoder.gguf`, ftype `Q2_K - Medium` (not Q4_K_M), 16.0 GB, with its projector ([#233](https://github.com/Alberto-Codes/typevet/issues/233)) | `google/gemma-4-31B-it`, BF16, vLLM 0.30.0 |
+
+The alias name says Q4_K_M, but the file it loads is not Q4_K_M. On
+2026-09-29 the router's `/props` reported ftype `Q2_K - Medium` for the
+16.0 GB file `gemma-4-31b-24gib-kv9-decoder.gguf`. The router also applied a
+`--chat-template-file` override and ran the stock image `server-cuda-b11243`
+([#233](https://github.com/Alberto-Codes/typevet/issues/233)).
 
 On llama.cpp, the model must load with its multimodal projector (`--mmproj`).
 The router reports `modalities.vision` and a `media_marker` through
@@ -122,8 +128,11 @@ This run also predates `cache_prompt: false` and native Gemma 3 turns.
 model id, `gemma-3-4b-it-q4km-mm`.
 
 **CORD receipt images, llama.cpp, Gemma 4.** The CORD set holds six public
-receipts and 18 synthetic claims. On `gemma-4-31b-kv9-q4km-mm` with template
-`native_gemma4_turn` and build `b11223-4da633776`, the run used 43 requests. All
+receipts and 18 synthetic claims. On the alias `gemma-4-31b-kv9-q4km-mm` with
+template `native_gemma4_turn` and build `b11223-4da633776`, the run used 43
+requests. That alias loads `gemma-4-31b-24gib-kv9-decoder.gguf`, ftype
+`Q2_K - Medium`, 16.0 GB, with a `--chat-template-file` override
+([#233](https://github.com/Alberto-Codes/typevet/issues/233)). All
 five semantic checks passed, and the acceptance command exited 0
 ([#203 receipt](https://github.com/Alberto-Codes/typevet/issues/203#issuecomment-5882379255)).
 See [Run the CORD expense smoke](../how-to/run-the-cord-expense-smoke.md).
@@ -137,9 +146,13 @@ See [Run the CORD expense smoke](../how-to/run-the-cord-expense-smoke.md).
 | Largest label share | ceiling 0.8 | 0.3333 | 18 |
 
 The text-only arm of that run had accuracy 0.667 and contradicted recall 0. The
-image drove the combined result. The
-[CORD how-to](../how-to/run-the-cord-expense-smoke.md) records that one Gemma 4
-image costs 245 prompt tokens on the CORD smoke router.
+image drove the combined result. A Gemma 4 image has no fixed prompt cost.
+Gemma 4 has a variable image-token budget that depends on the image. Each
+receipt added a different number of tokens. In the #203 run, `combined` minus
+`text_only` `tokens_evaluated` ranged from 228 to 1,108 tokens per receipt
+([#203 per-claim table](https://github.com/Alberto-Codes/typevet/issues/203#issuecomment-5899231642)).
+The [CORD how-to](../how-to/run-the-cord-expense-smoke.md) describes the
+attachment check.
 
 **vLLM acceptance, Gemma 4.** One run on the vLLM pin passed every
 pre-registered gate ([#170 receipt](https://github.com/Alberto-Codes/typevet/issues/170#issuecomment-5884707915)).
@@ -156,7 +169,7 @@ pre-registered gate ([#170 receipt](https://github.com/Alberto-Codes/typevet/iss
 The swapped control is the strongest signal here. The text stays the same, and
 only the image changes.
 
-The two backends ran different weights: Q4 GGUF on llama.cpp and BF16 on vLLM.
+The two backends ran different weights: a `Q2_K - Medium` GGUF on llama.cpp and BF16 on vLLM.
 The receipts do not compare backends, and a difference is not a backend effect.
 
 ## Limits
@@ -173,8 +186,12 @@ The receipts do not compare backends, and a difference is not a backend effect.
   session after a reload. A stale marker fails tokenization with HTTP 400.
   The [native vision how-to](../how-to/connect-gemma4-native-vision-judgment.md)
   describes session ownership.
-- **One model pin per backend.** Evidence covers `gemma-4-31b-kv9-q4km-mm` on
-  llama.cpp and `google/gemma-4-31B-it` at one revision on vLLM 0.30.0. Other
+- **One model pin per backend.** Evidence covers the alias
+  `gemma-4-31b-kv9-q4km-mm` on llama.cpp and `google/gemma-4-31B-it` at one
+  revision on vLLM 0.30.0. The alias loads a `Q2_K - Medium` file, not
+  Q4_K_M: `gemma-4-31b-24gib-kv9-decoder.gguf`, 16.0 GB, with a
+  `--chat-template-file` override
+  ([#233](https://github.com/Alberto-Codes/typevet/issues/233)). Other
   models, quantizations and versions are not tested.
 - **Default model id.** `TYPEVET_LLAMA__MULTIMODAL_MODEL` defaults to the Gemma 3
   id `gemma-3-4b-it-q4km-mm`

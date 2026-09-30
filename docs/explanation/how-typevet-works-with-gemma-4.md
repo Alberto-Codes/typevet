@@ -183,7 +183,15 @@ Three ports make the backends interchangeable:
   four generation adapters implement them.
 - `ModelFramingPort` composes the prefix. The vLLM session injects
   `ChatContentFraming`, which adds no turn markers. The llama.cpp session
-  passes the served template family instead.
+  passes the served template family instead. A caller can substitute its own
+  framing through the `framing` keyword of `ScoringJudgmentAdapter`. On
+  llama.cpp, a framing for a thinking model such as Gemma 4 must end with the
+  no-thinking prefill `<|channel>thought\n<channel|>`. typevet does not check
+  this. Without the prefill, #207 measured at least 0.99999 of the mass off
+  the menu, and the answers changed
+  ([#235](https://github.com/Alberto-Codes/typevet/issues/235)). On vLLM, the
+  scoring adapter sends `enable_thinking: false`, so a vLLM framing needs no
+  prefill text.
 
 `TYPEVET_BACKEND` selects `llama_cpp` (the default) or `vllm` for the
 composition root. The caller code that calls `judge` or `generate` does not
@@ -229,7 +237,11 @@ pin and its limits.
 - **Other models.** Every receipt uses Gemma 4 31B. No other model is tested.
 - **Other quantizations.** Each receipt covers its own weights file. #129
   used a Q4_0 file. #203 ran the local alias `gemma-4-31b-kv9-q4km-mm` and did
-  not record its file type. That alias loads a Q2_K file today (#233). vLLM
+  not record its file type. Despite its name, that alias is not Q4_K_M. It
+  loads `gemma-4-31b-24gib-kv9-decoder.gguf`, 16.0 GB, with `/props` ftype
+  `Q2_K - Medium`. The router uses a `--chat-template-file` override on the
+  stock image `server-cuda-b11243`
+  ([#233](https://github.com/Alberto-Codes/typevet/issues/233)). vLLM
   used BF16. The #170
   receipt does not attribute any difference to the backend, because the
   weights differ.

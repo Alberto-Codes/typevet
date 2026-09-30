@@ -68,13 +68,15 @@ Sources: [behaviour at HEAD](../reference/typed-judgment-release-support-matrix.
 
 ## The local alias does not name its quantization
 
-Several receipts and pages name the local llama.cpp alias `gemma-4-31b-kv9-q4km-mm` and describe it as Q4.
-On the operator's router, that alias loads a file whose `/props` ftype is `Q2_K - Medium`, not Q4_K_M.
-The router also uses a chat template file override.
-The docs do not yet record the true identity next to each receipt.
-Until they do, treat the quantization of the llama.cpp image-input pin as unknown.
+Several receipts name the local llama.cpp alias `gemma-4-31b-kv9-q4km-mm`, and the name says Q4_K_M.
+On the operator's router, on 2026-09-29, that alias loaded `gemma-4-31b-24gib-kv9-decoder.gguf` (16.0 GB).
+`/props` reported ftype `Q2_K - Medium`, not Q4_K_M.
+The router also used a `--chat-template-file` override on the stock image `server-cuda-b11243`.
+The docs now record this identity next to each mention of the alias.
+The older receipts (#203 and others) did not record the file.
+The file behind each of those runs is not proven.
 
-Source: [#233](https://github.com/Alberto-Codes/typevet/issues/233) (open).
+Source: [#233](https://github.com/Alberto-Codes/typevet/issues/233).
 The pin itself is in the [tested serving pins](../reference/typed-judgment-release-support-matrix.md#tested-serving-pins).
 
 ## What live receipts prove and do not prove
@@ -141,13 +143,11 @@ Each item is an open gap at the time of writing.
 None of them has a promised fix date.
 
 - [#204](https://github.com/Alberto-Codes/typevet/issues/204): image pixel limits and long-lived service behaviour are not characterized.
-- [#235](https://github.com/Alberto-Codes/typevet/issues/235): a caller framing can omit the Gemma 4 no-thinking prefill.
-  The result is a confident, wrong answer with no error.
+- [#188](https://github.com/Alberto-Codes/typevet/issues/188) and [#193](https://github.com/Alberto-Codes/typevet/issues/193): no guard checks off-menu mass.
+  On llama.cpp, a caller framing that omits the Gemma 4 no-thinking prefill gives a confident, wrong answer with no error.
+  The `ModelFramingPort` docstring states the requirement ([#235](https://github.com/Alberto-Codes/typevet/issues/235)), and typevet does not check it.
+  On vLLM the scoring adapter sends `enable_thinking: false`, so a vLLM framing needs no prefill.
 - [#231](https://github.com/Alberto-Codes/typevet/issues/231): the vLLM KV-cache reading has offline proof only. No live run on the tested pin has recorded it.
-- [#260](https://github.com/Alberto-Codes/typevet/issues/260): the docs state a fixed cost of 245 prompt tokens per Gemma 4 image.
-  The #203 receipt shows a different cost for each image.
-- [#257](https://github.com/Alberto-Codes/typevet/issues/257): the docs site loads Mermaid from the unpkg CDN.
-  A reader who blocks unpkg sees diagram source instead of diagrams.
 
 ## Related pages
 

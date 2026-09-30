@@ -88,10 +88,10 @@ def _claim_and_receipt_ids() -> tuple[tuple[str, ...], tuple[str, ...]]:
 
 
 def test_gemma4_attachment_floors_use_measured_image_costs() -> None:
-    """Gemma 3 and Gemma 4 ids carry different measured image prompt costs."""
+    """Gemma 3 has a fixed image cost. Gemma 4 has a variable budget (#260)."""
     assert measured_image_prompt_tokens("gemma-3-4b-it-q4km-mm") == 256
-    assert measured_image_prompt_tokens(GEMMA4_DIRECT_RECEIPT_MODEL) == 245
-    assert cord_combined_attachment_floor(GEMMA4_DIRECT_RECEIPT_MODEL) == 214
+    assert measured_image_prompt_tokens(GEMMA4_DIRECT_RECEIPT_MODEL) is None
+    assert cord_combined_attachment_floor(GEMMA4_DIRECT_RECEIPT_MODEL) == 197
     assert cord_image_only_attachment_gap_floor("gemma-3-4b-it-q4km-mm") == 225
 
 

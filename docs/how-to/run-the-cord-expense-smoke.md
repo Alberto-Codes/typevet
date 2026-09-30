@@ -17,6 +17,10 @@ quality beyond these 18 claims.
   vision projector. Common ids are `gemma-3-4b-it-q4km-mm` and
   `gemma-4-31b-kv9-q4km-mm`. See
   [Run the image-conditioned live smoke](run-a-multimodal-live-smoke.md).
+- The alias `gemma-4-31b-kv9-q4km-mm` is not a Q4_K_M file. On the operator's
+  router it loads `gemma-4-31b-24gib-kv9-decoder.gguf`, 16.0 GB.
+  `/props` reports ftype `Q2_K - Medium`. The router uses a
+  `--chat-template-file` override on image `server-cuda-b11243` ([#233](https://github.com/Alberto-Codes/typevet/issues/233)).
 - `/apply-template` for that id renders the native Gemma 3 or Gemma 4 turn. The test
   fails on any other template family.
 - The fixture is `tests/fixtures/cord/expense_smoke/` (CC-BY-4.0). Each receipt
@@ -85,12 +89,24 @@ less.
 ## Check the attachment yourself
 
 Compare `tokens_evaluated` for the same claim in `text_only` and `combined`.
-One Gemma 3 image costs 256 prompt tokens on the CORD smoke router; one Gemma 4
-image costs 245. A silently dropped image grows the count by about 30 tokens,
-the marker as plain text. The live harness calls
-`assert_cord_expense_live_smoke_gate` before scoring and uses
-`typevet_evals.cord.expense_smoke` verified profiles for those measured
-costs. For `image_only`, compare each receipt row to
+One Gemma 3 image costs 256 prompt tokens on the CORD smoke router.
+A Gemma 4 image has no fixed cost.
+Gemma 4 has a variable image-token budget that depends on the image.
+In the #203 run, the gap was 228 to 1,108 tokens per receipt
+([#203 per-claim table](https://github.com/Alberto-Codes/typevet/issues/203#issuecomment-5899231642)).
+A silently dropped image grows the count by the marker text only.
+The smoke counts that marker as 31 tokens.
+The live harness calls `assert_cord_expense_live_smoke_gate` before scoring.
+`typevet_evals.cord.expense_smoke` then sets one gap floor for each model.
+
+| Model | Gap floor | Reason |
+|---|---:|---|
+| Gemma 3 | 225 tokens | Fixed 256-token image minus the 31-token marker |
+| Gemma 4 | 197 tokens | Smallest measured 228-token image gap (#203) minus the 31-token marker |
+
+Each arm is compared with its image-omitted control
+([#260](https://github.com/Alberto-Codes/typevet/issues/260)).
+For `image_only`, compare each receipt row to
 `image_only.omission_tokens_evaluated`, the same claim text with no image.
 The test passes the served family to `ScoringJudgmentAdapter` as
 `served_template`, so `text_only` and `combined` share one native turn family
@@ -121,7 +137,10 @@ receipt added 256 prompt tokens once both arms used the native Gemma 3 turn at
 ## Historical run (Gemma 4, direct arm)
 
 On 2026-09-26 against `gemma-4-31b-kv9-q4km-mm`, recorded with the smoke from
-revision `25c5195`. The vendored receipt is
+revision `25c5195`. The receipt does not record the file behind the alias.
+On 2026-09-29 the alias loaded `gemma-4-31b-24gib-kv9-decoder.gguf`, ftype
+`Q2_K - Medium` (not Q4_K_M), 16.0 GB. The router used a `--chat-template-file`
+override on image `server-cuda-b11243` ([#233](https://github.com/Alberto-Codes/typevet/issues/233)). The vendored receipt is
 `tests/fixtures/cord/expense_smoke/gemma4_kv9_direct_receipt.json`. The router
 declared vision and `/apply-template` rendered `native_gemma4_turn`.
 

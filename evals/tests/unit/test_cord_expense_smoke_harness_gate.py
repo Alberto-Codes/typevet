@@ -146,3 +146,76 @@ def test_image_only_attachment_rejects_long_text_without_media_gap() -> None:
             receipt_ids=("R01",),
             image_only_omission_tokens=omission,
         )
+
+
+def _gemma4_attachment_check(*, combined_gap: int, image_only_gap: int) -> None:
+    """Run the Gemma 4 attachment check on one claim and one receipt.
+
+    Args:
+        combined_gap: ``combined`` minus ``text_only`` prompt tokens.
+        image_only_gap: ``image_only`` minus omission prompt tokens.
+    """
+    profile = resolve_cord_expense_attachment_profile(
+        GEMMA4_DIRECT_RECEIPT_MODEL,
+        GEMMA4_NATIVE_TURN,
+    )
+    text_tokens = 300
+    omission = 218
+    assert_cord_expense_attachment(
+        profile=profile,
+        text_only={"C1": _minimal_rows(text_tokens)},
+        image_only={"R01": _minimal_rows(omission + image_only_gap)},
+        combined={"C1": _minimal_rows(text_tokens + combined_gap)},
+        claim_ids=("C1",),
+        receipt_ids=("R01",),
+        image_only_omission_tokens=omission,
+    )
+
+
+def test_gemma4_small_image_gap_passes_against_same_claim_control() -> None:
+    """A Gemma 4 image smaller than 245 tokens still proves attachment (#260).
+
+    Gemma 4 has a variable image-token budget. The #203 receipt measured gaps
+    from 228 to 1,108 tokens. A 200-token gap is below the old
+    ``245 - 31 = 214`` floor but above the ``228 - 31 = 197`` floor.
+    """
+    _gemma4_attachment_check(combined_gap=200, image_only_gap=200)
+
+
+def test_gemma4_marker_only_gap_still_fails_against_control() -> None:
+    """A dropped Gemma 4 image adds marker text only and must fail (#260)."""
+    with pytest.raises(ValueError, match=r"C1 combined .*image was not attached"):
+        _gemma4_attachment_check(combined_gap=31, image_only_gap=200)
+    with pytest.raises(ValueError, match=r"R01 image_only .*image was not attached"):
+        _gemma4_attachment_check(combined_gap=200, image_only_gap=31)
+    with pytest.raises(ValueError, match="image was not attached"):
+        _gemma4_attachment_check(combined_gap=0, image_only_gap=0)
+
+
+def test_gemma4_gap_below_smallest_measured_image_fails() -> None:
+    """A 150-token gap is below the 197-token Gemma 4 floor (#260)."""
+    with pytest.raises(ValueError, match=r"C1 combined .*gap 150"):
+        _gemma4_attachment_check(combined_gap=150, image_only_gap=200)
+    with pytest.raises(ValueError, match=r"R01 image_only .*gap 150"):
+        _gemma4_attachment_check(combined_gap=200, image_only_gap=150)
+    _gemma4_attachment_check(combined_gap=197, image_only_gap=197)
+    with pytest.raises(ValueError, match=r"gap 196"):
+        _gemma4_attachment_check(combined_gap=196, image_only_gap=200)
+
+
+def test_gemma3_fixed_image_cost_floor_is_unchanged() -> None:
+    """Gemma 3 keeps its fixed 256-token image floor of 225 tokens (#260)."""
+    profile = resolve_cord_expense_attachment_profile(
+        GEMMA3_DIRECT_RECEIPT_MODEL,
+        GEMMA3_NATIVE_TURN,
+    )
+    with pytest.raises(ValueError, match=r"C1 combined .*gap 200"):
+        assert_cord_expense_attachment(
+            profile=profile,
+            text_only={"C1": _minimal_rows(300)},
+            image_only={"R01": _minimal_rows(218 + 256)},
+            combined={"C1": _minimal_rows(500)},
+            claim_ids=("C1",),
+            receipt_ids=("R01",),
+            image_only_omission_tokens=218,
+        )

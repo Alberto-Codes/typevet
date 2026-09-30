@@ -74,6 +74,14 @@ The last row comes from `check_request_schema` in
 The llama.cpp and vLLM generation adapters, sync and async, call it before the
 request, so no request is sent. The check runs once for each distinct schema.
 
+`CandidateScoringRequest` also checks its fields in `__post_init__`
+([`candidate_scoring_request.py`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/domain/candidate_scoring_request.py)):
+
+| Condition | Type | Message |
+|---|---|---|
+| A `media` item is not an `ImageInput` | `TypeError` | `media[N] must be ImageInput, got TYPE` |
+| Blank `model`, empty `prefix`, no candidates, a duplicate label or token-id sequence, or a `MEDIA_MARKER` count that differs from `len(media)` | `ScoringValidationError` | Names the failed rule |
+
 Fix the request; do not treat these as retryable generation failures.
 
 ### Event loop misuse (not a generation error)
