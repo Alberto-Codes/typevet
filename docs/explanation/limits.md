@@ -152,6 +152,13 @@ Each item is an open gap at the time of writing.
 None of them has a promised fix date.
 
 - [#188](https://github.com/Alberto-Codes/typevet/issues/188) and [#193](https://github.com/Alberto-Codes/typevet/issues/193): no guard checks off-menu mass.
+  The scoring result reports this mass as `off_option_mass` ([#297](https://github.com/Alberto-Codes/typevet/issues/297)).
+  [#207](https://github.com/Alberto-Codes/typevet/issues/207) calls the same quantity off-menu mass.
+  On llama.cpp the value is 1 minus the sum of the raw candidate probabilities.
+  The adapter reports it only when the response holds exactly `n_vocab` entries and their total is within 0.01 of 1; otherwise the value is `None`.
+  `n_vocab` is an adapter setting, not a value read from the model, so a model with a larger vocabulary cannot be detected by the count.
+  On vLLM the value is always `None` (unavailable), because the response holds at most 128 token ids.
+  typevet reports the value and does not act on it. Judgment answers do not show it.
   On llama.cpp, a caller framing that omits the Gemma 4 no-thinking prefill gives a confident, wrong answer with no error.
   The `ModelFramingPort` docstring states the requirement ([#235](https://github.com/Alberto-Codes/typevet/issues/235)), and typevet does not check it.
   On vLLM the scoring adapter sends `enable_thinking: false`, so a vLLM framing needs no prefill.

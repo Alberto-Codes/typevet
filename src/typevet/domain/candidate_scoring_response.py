@@ -77,6 +77,11 @@ class CandidateScoringResult:
         candidates (tuple[ScoredCandidate, ...]): Scores in request order.
         usage (TokenUsage): Optional token usage metadata.
         termination (ScoringTermination | None): Optional stop metadata.
+        off_option_mass (float | None): Probability mass that the model put
+            outside the candidate tokens, in ``[0, 1]``. It is
+            ``1 - sum(exp(logprob))`` over the raw candidate logprobs. ``None``
+            means the backend did not return the full-vocabulary distribution,
+            so the value is unavailable.
 
     Examples:
         ```python
@@ -86,6 +91,7 @@ class CandidateScoringResult:
             candidates=(ScoredCandidate("a", (1,), -1.0),),
         )
         assert len(result.candidates) == 1
+        assert result.off_option_mass is None
         ```
     """
 
@@ -94,3 +100,4 @@ class CandidateScoringResult:
     candidates: tuple[ScoredCandidate, ...]
     usage: TokenUsage = field(default_factory=TokenUsage)
     termination: ScoringTermination | None = None
+    off_option_mass: float | None = None

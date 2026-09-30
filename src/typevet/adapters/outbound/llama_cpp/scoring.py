@@ -1,5 +1,8 @@
 """llama.cpp ``/completion`` adapter for pre-sampling candidate logprobs.
 
+The adapter asks for the full-vocabulary distribution and reports the
+off-option mass, the probability outside the candidate tokens, on the result.
+
 Examples:
     ```python
     from typevet.adapters.outbound.llama_cpp.scoring import (
@@ -32,7 +35,8 @@ Attributes:
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+import math
+from collections.abc import Iterable, Mapping
 from typing import Any, Self
 from urllib.parse import urljoin
 
@@ -60,6 +64,16 @@ from typevet.domain.judgment_response import TokenUsage
 from typevet.domain.scoring_stage import ScoreStage
 
 DEFAULT_N_VOCAB = 262144
+
+_FULL_DISTRIBUTION_TOLERANCE = 1e-2
+"""Largest distance of the returned total mass from 1 that still counts as the
+full distribution.
+
+The model computes its softmax in float32, so the total of all entries drifts
+from 1. One local call on the Q2_K Gemma 4 file returned 262144 entries with a
+total of 1.0005991 (review, 2026-09-30). This margin is about 16 times that
+drift. It is a sanity guard only: the entry count is the completeness check.
+"""
 
 
 class LlamaCppCandidateScoringAdapter:
@@ -139,6 +153,8 @@ class LlamaCppCandidateScoringAdapter:
 
         Returns:
             Validated ``CandidateScoringResult`` with raw logprobs per label.
+            ``off_option_mass`` is the mass outside the candidate tokens when
+            the response holds the full distribution, else ``None`` (#297).
 
         Raises:
             ScoringUnsupportedCapabilityError: Non-``PRE_SAMPLING`` stage,
@@ -192,6 +208,9 @@ class LlamaCppCandidateScoringAdapter:
             raw_logprobs=raw_by_label,
             model=request.model,
             usage=_extract_usage(payload),
+            off_option_mass=_off_option_mass(
+                token_logprobs, raw_by_label.values(), n_vocab=self._n_vocab
+            ),
         )
 
     def _prompt_field(self, request: CandidateScoringRequest) -> Any:
@@ -250,6 +269,47 @@ class LlamaCppCandidateScoringAdapter:
         if self._client is None:
             self._client = httpx.Client(timeout=self._timeout)
         return self._client
+
+
+def _off_option_mass(
+    token_logprobs: Mapping[int, float],
+    candidate_logprobs: Iterable[float],
+    *,
+    n_vocab: int,
+) -> float | None:
+    """Return the probability mass outside the candidate tokens, or ``None``.
+
+    llama.cpp sends log-softmax values over the full vocabulary, so the
+    off-option mass is ``1 - sum(exp(logprob))`` over the raw candidate
+    logprobs, clamped to ``[0, 1]``. No renormalization over the candidates
+    occurs.
+
+    The response is complete only when it holds exactly ``n_vocab`` entries.
+    ``n_vocab`` is the vocabulary size the caller gave the adapter; the
+    response does not report the model vocabulary. llama.cpp caps ``n_probs``
+    at the model vocabulary, so a smaller model gives fewer entries and the
+    value is ``None`` (unavailable), not a partial number. A model vocabulary
+    larger than ``n_vocab`` also returns ``n_vocab`` entries and cannot be
+    detected by the count. The sum guard then catches it only when the
+    missing mass is above ``_FULL_DISTRIBUTION_TOLERANCE``. A total that is
+    not within that margin of 1 also gives ``None``.
+
+    Args:
+        token_logprobs: Every ``token_id -> logprob`` entry the router returned.
+        candidate_logprobs: Raw logprobs of the requested candidate tokens.
+        n_vocab: Vocabulary size the adapter asked for as ``n_probs``.
+
+    Returns:
+        The off-option mass in ``[0, 1]``, or ``None`` when the response does
+        not hold the full distribution.
+    """
+    if len(token_logprobs) != n_vocab:
+        return None
+    returned_mass = math.fsum(math.exp(value) for value in token_logprobs.values())
+    if abs(returned_mass - 1.0) > _FULL_DISTRIBUTION_TOLERANCE:
+        return None
+    candidate_mass = math.fsum(math.exp(value) for value in candidate_logprobs)
+    return min(1.0, max(0.0, 1.0 - candidate_mass))
 
 
 def _non_negative_int(value: Any) -> int | None:

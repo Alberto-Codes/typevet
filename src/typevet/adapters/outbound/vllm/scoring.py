@@ -5,7 +5,9 @@ sent as the content of one user message. ``ChatContentFraming`` composes that
 content without turn markers. The adapter asks for the requested token ids
 through ``logprob_token_ids`` and reads their logprobs from the first
 generated position. A request with images sends the content as a list of
-``text`` and ``image_url`` blocks, one ``data:`` URI per image.
+``text`` and ``image_url`` blocks, one ``data:`` URI per image. The response
+holds at most ``MAX_LOGPROB_TOKEN_IDS`` ids, not the full distribution, so the
+result reports ``off_option_mass`` as ``None`` (unavailable).
 
 Examples:
     ```python
@@ -159,6 +161,8 @@ class VllmCandidateScoringAdapter:
 
         Returns:
             Validated ``CandidateScoringResult`` with raw logprobs per label.
+            ``off_option_mass`` is always ``None``: the response does not hold
+            the full distribution (#297).
 
         Raises:
             ScoringUnsupportedCapabilityError: Non-``PRE_SAMPLING`` stage,
@@ -184,6 +188,7 @@ class VllmCandidateScoringAdapter:
             raw_logprobs=raw_by_label,
             model=request.model,
             usage=_extract_usage(payload),
+            off_option_mass=None,
         )
 
     def _ensure_client(self) -> httpx.Client:

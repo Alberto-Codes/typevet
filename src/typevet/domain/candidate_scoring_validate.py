@@ -24,7 +24,10 @@ Examples:
 ``build_and_validate_result`` builds a result from a label mapping.
 ``validate_result_against_request`` checks a finished port result against the
 exact request before a consumer normalizes its logprobs. Both reject a
-non-finite logprob and a positive logprob above ``1e-6``.
+non-finite logprob and a positive logprob above ``1e-6``. When a result
+carries ``off_option_mass``, both also reject a value that is not finite, is
+outside ``[0, 1]``, or makes the candidate mass plus the off-option mass go
+above 1 by more than ``1e-2``.
 
 See Also:
     - [typevet.domain.errors][]: ScoringValidationError
@@ -51,6 +54,33 @@ _POSITIVE_LOGPROB_TOLERANCE = 1e-6
 Log-softmax output is at most 0. A float32 rounding error stays below
 ``1.2e-7``. A probability sent in place of a logprob is far above this value.
 """
+
+_TOTAL_MASS_TOLERANCE = 1e-2
+"""Largest amount by which candidate plus off-option mass may exceed 1.
+
+A float32 softmax makes a probability sum drift from 1. One local Gemma 4 call
+summed to 1.0006 over the full vocabulary (#297 review). The llama.cpp adapter
+accepts the same margin, so a result it builds never fails this check. A wrong
+off-option mass is far above it.
+"""
+
+
+def _check_off_option_mass(logprobs: list[float], value: float | None) -> None:
+    if value is None:
+        return
+    if not math.isfinite(value):
+        msg = f"non-finite off_option_mass: {value!r}"
+        raise ScoringValidationError(msg)
+    if not 0.0 <= value <= 1.0:
+        msg = f"off_option_mass {value!r} is outside [0, 1]"
+        raise ScoringValidationError(msg)
+    total = math.fsum(math.exp(logprob) for logprob in logprobs) + value
+    if total > 1.0 + _TOTAL_MASS_TOLERANCE:
+        msg = (
+            f"candidate mass plus off_option_mass is {total!r}, above 1 by more "
+            f"than {_TOTAL_MASS_TOLERANCE!r}"
+        )
+        raise ScoringValidationError(msg)
 
 
 def _check_logprob(label: str, value: float) -> None:
@@ -107,7 +137,9 @@ def validate_result_against_request(
     Raises:
         ScoringValidationError: On a stage, row count, duplicate label,
             unexpected label, label order, token-id, or non-finite logprob
-            mismatch, or on a positive logprob above ``1e-6``.
+            mismatch, on a positive logprob above ``1e-6``, or on an
+            off-option mass that is not finite, is outside ``[0, 1]``, or
+            makes the total mass go above 1.
 
     Examples:
         ```python
@@ -151,6 +183,9 @@ def validate_result_against_request(
             )
             raise ScoringValidationError(msg)
         _check_logprob(spec.label, row.logprob)
+    _check_off_option_mass(
+        [row.logprob for row in result.candidates], result.off_option_mass
+    )
 
 
 def build_and_validate_result(
@@ -161,6 +196,7 @@ def build_and_validate_result(
     stage: ScoreStage | None = None,
     usage: TokenUsage | None = None,
     termination: ScoringTermination | None = None,
+    off_option_mass: float | None = None,
 ) -> CandidateScoringResult:
     """Build a result with request order and fail-closed coverage checks.
 
@@ -171,15 +207,20 @@ def build_and_validate_result(
         stage: Stage recorded on the result; defaults to ``request.stage``.
         usage: Optional token usage metadata.
         termination: Optional termination metadata.
+        off_option_mass: Probability mass outside the candidate tokens, or
+            ``None`` when the backend cannot report it.
 
     Returns:
         Validated ``CandidateScoringResult``.
 
     Raises:
         ScoringValidationError: Missing, duplicate, or unexpected labels,
-            non-finite logprobs, or a positive logprob above ``1e-6``.
+            non-finite logprobs, a positive logprob above ``1e-6``, or an
+            off-option mass that is not finite, is outside ``[0, 1]``, or
+            makes the total mass go above 1.
     """
     _validate_raw_logprobs(request, raw_logprobs)
+    _check_off_option_mass(list(raw_logprobs.values()), off_option_mass)
     scored = tuple(
         ScoredCandidate(
             label=spec.label,
@@ -194,4 +235,5 @@ def build_and_validate_result(
         candidates=scored,
         usage=usage or TokenUsage(),
         termination=termination,
+        off_option_mass=off_option_mass,
     )

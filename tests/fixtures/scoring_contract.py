@@ -7,6 +7,7 @@ or failures, and expected outcomes. ``ContractScoringFake`` aliases
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from typevet.domain.candidate_scoring_request import (
@@ -210,3 +211,35 @@ def exc_type_from_name(name: str) -> type[ScoringError]:
     except KeyError as exc:
         msg = f"unknown exc_type: {name}"
         raise ValueError(msg) from exc
+
+
+OFF_OPTION_N_VOCAB = 4
+"""Vocabulary size of the synthetic full distribution below."""
+
+
+def get_off_option_fixture() -> dict[str, Any]:
+    """Return one synthetic full-vocabulary distribution and its expected scores.
+
+    The four token probabilities are 0.5, 0.2, 0.2 and 0.1. The candidates are
+    ids 101 and 202, so the off-option mass is ``1 - (0.5 + 0.2) = 0.3``.
+    ``top_logprobs`` is the llama.cpp ``/completion`` entry list for the whole
+    vocabulary. ``fake`` scripts the same scores on ``ContractScoringFake``.
+    """
+    probs = {101: 0.5, 202: 0.2, 303: 0.2, 404: 0.1}
+    logprobs = {token_id: math.log(p) for token_id, p in probs.items()}
+    return {
+        "name": "full_vocabulary_two_candidates",
+        "request": _req(),
+        "n_vocab": OFF_OPTION_N_VOCAB,
+        "top_logprobs": [
+            {"id": token_id, "logprob": value} for token_id, value in logprobs.items()
+        ],
+        "fake": {
+            "logprobs": {"billing": logprobs[101], "technical": logprobs[202]},
+            "off_option_mass": 0.3,
+        },
+        "expect": {
+            "logprobs": [logprobs[101], logprobs[202]],
+            "off_option_mass": 0.3,
+        },
+    }

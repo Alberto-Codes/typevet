@@ -103,6 +103,7 @@ class ScriptedScoringFake:
         logprobs: Mapping[str, float] | None = None,
         fail: ScoringError | None = None,
         supported_stages: frozenset[ScoreStage] | None = None,
+        off_option_mass: float | None = None,
     ) -> None:
         """Configure scripted logprobs, optional failure, and supported stages.
 
@@ -110,8 +111,11 @@ class ScriptedScoringFake:
             logprobs: Per-label logprobs returned for requested candidates.
             fail: When set, ``score_candidates`` raises instead of succeeding.
             supported_stages: Stages this fake accepts; defaults to pre-sampling.
+            off_option_mass: Mass outside the candidates put on each result;
+                ``None`` (the default) means unavailable.
         """
         self._scripted = dict(logprobs or {})
+        self._off_option_mass = off_option_mass
         self._fail = fail
         self._supported = supported_stages or frozenset({ScoreStage.PRE_SAMPLING})
         self.calls: list[CandidateScoringRequest] = []
@@ -125,7 +129,8 @@ class ScriptedScoringFake:
             request: Candidate labels and prefix the adapter bound.
 
         Returns:
-            Validated scoring result for the request.
+            Validated scoring result for the request, with the scripted
+            ``off_option_mass``.
 
         Raises:
             ScoringError: When ``fail`` was set at construction.
@@ -149,4 +154,5 @@ class ScriptedScoringFake:
             raw_logprobs=raw,
             model=request.model,
             usage=TokenUsage(),
+            off_option_mass=self._off_option_mass,
         )
