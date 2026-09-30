@@ -101,6 +101,27 @@ def test_a_gauge_of_two_engines_is_refused() -> None:
         run_server_delta(two, _AFTER)
 
 
+def test_a_gauge_mixing_labelled_and_unlabelled_samples_is_refused() -> None:
+    # A sample without an engine label counts as its own engine (#346).
+    mixed = _AFTER + 'vllm:kv_cache_usage_perc{model_name="m"} 0.3\n'
+
+    with pytest.raises(ValueError, match="engine") as caught:
+        run_server_delta(_BEFORE, mixed)
+    assert "vllm:kv_cache_usage_perc" in str(caught.value)
+    with pytest.raises(ValueError, match="engine"):
+        run_server_delta(mixed, _AFTER)
+
+
+def test_a_gauge_of_unlabelled_samples_sums_as_one_engine() -> None:
+    before = "vllm:num_requests_running 1.0\n"
+    after = 'vllm:num_requests_running{model_name="m"} 2.0\n'
+    after += 'vllm:num_requests_running{model_name="n"} 3.0\n'
+
+    delta = run_server_delta(before, after)
+
+    assert delta["gauges"]["num_requests_running"] == {"before": 1.0, "after": 5.0}
+
+
 def test_a_gauge_of_one_engine_sums_over_its_other_labels() -> None:
     one = _AFTER + 'vllm:num_requests_running{engine="0",model_name="n"} 4.0\n'
 

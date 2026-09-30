@@ -20,7 +20,8 @@ with the same name and ``le`` label are summed across the other labels
 (``model_name``, ``engine``, ``finished_reason``). A gauge summed across
 several engines is not a usage fraction, so ``run_server_delta`` refuses a
 reading in which one ``GAUGES`` series carries more than one ``engine`` label
-(#339); the pinned runs serve one engine. A series that is absent from
+(#339); a sample without that label counts as its own engine (#346). The
+pinned runs serve one engine. A series that is absent from
 either reading is recorded as ``unknown``. Server percentiles are the upper
 edge of the first bucket that holds the nearest rank, so they are bounds, not
 exact values; ``+Inf`` means the rank is above the last edge. A gauge is a
@@ -293,21 +294,23 @@ def _refuse_several_engines(text: str) -> None:
 
     Raises:
         ValueError: When a ``GAUGES`` series carries more than one distinct
-            ``engine`` label, because ``snapshot`` would sum them.
+            ``engine`` label, because ``snapshot`` would sum them. A sample
+            without an ``engine`` label counts as its own engine (#346).
     """
     names = set(GAUGES.values())
-    engines: dict[str, set[str]] = {}
+    engines: dict[str, set[str | None]] = {}
     for line in text.splitlines():
         match = _SAMPLE.match(line)
         if match is None or match.group("name") not in names:
             continue
         engine = _ENGINE.search(match.group("labels") or "")
-        if engine is not None:
-            engines.setdefault(match.group("name"), set()).add(engine.group("engine"))
+        label = None if engine is None else engine.group("engine")
+        engines.setdefault(match.group("name"), set()).add(label)
     for name, seen in sorted(engines.items()):
         if len(seen) > 1:
+            shown = sorted("(none)" if label is None else label for label in seen)
             msg = (
-                f"gauge {name} carries engine labels {sorted(seen)}; a sum "
+                f"gauge {name} carries engine labels {shown}; a sum "
                 "across engines is not one reading"
             )
             raise ValueError(msg)

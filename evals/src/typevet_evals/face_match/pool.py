@@ -215,11 +215,7 @@ def _judge_pooled[R](
         pending: dict[Future[Judged[R]], int] = {}
         next_index = 0
         while next_index < len(requests) or pending:
-            while (
-                not failures
-                and next_index < len(requests)
-                and len(pending) < concurrency
-            ):
+            while next_index < len(requests) and len(pending) < concurrency:
                 pending[pool.submit(_judge_one, next_index)] = next_index
                 next_index += 1
             finished, _ = wait(pending, return_when=FIRST_COMPLETED)
@@ -230,6 +226,7 @@ def _judge_pooled[R](
                 except GenerationError as exc:
                     failures[index] = exc
             if failures:
+                # The one stop guard: send nothing after a failure.
                 next_index = len(requests)
     first = min(failures, default=None)
     stop = len(requests) if first is None else first

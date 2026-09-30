@@ -340,18 +340,37 @@ def test_failure_stops_new_submissions_and_is_recorded(
 
 
 @pytest.mark.parametrize("family", FAMILIES, ids=_IDS)
-def test_first_failure_in_slice_order_wins(family: _Family) -> None:
-    # Index 2 waits until index 3 has failed, then fails; the record names
-    # index 2, as a one-at-a-time run would.
+def test_first_failure_in_slice_order_wins(
+    family: _Family, failure_seen: threading.Event
+) -> None:
+    # Index 2 waits until the loop has the failure of index 3 in hand, then
+    # fails; the record names index 2, as a one-at-a-time run would (#346).
     requests = family.build(4)
     port = _IndexedPort(failing=frozenset({2, 3}))
-    port.hold[2] = port.done(3)
+    port.hold[2] = failure_seen
     run = family.run(port, requests, "m", concurrency=4)
     assert port.finished.index(3) < port.finished.index(2)
     assert _ids(run.outcomes, family.id_key) == _ids(requests[:2], family.id_key)
     assert run.stopped is not None
     assert run.stopped["index"] == 2
     assert run.stopped["message"] == "refused 2"
+
+
+@pytest.mark.parametrize("family", FAMILIES, ids=_IDS)
+def test_no_request_is_sent_after_the_loop_has_a_failure(
+    family: _Family, failure_seen: threading.Event
+) -> None:
+    # Index 0 fails at once; index 1 is held until the loop has that failure
+    # in hand, so a free slot opens only after the failure. Without the stop
+    # guard the loop would send index 2 and on (#346).
+    requests = family.build(6)
+    port = _IndexedPort(hold={1: failure_seen}, failing=frozenset({0}))
+    run = family.run(port, requests, "m", concurrency=2)
+    assert sorted(port.called) == [0, 1]
+    assert list(run.outcomes) == []
+    assert run.stopped is not None
+    assert run.stopped["index"] == 0
+    assert run.stopped["discarded"] == 1
 
 
 @pytest.mark.parametrize("family", FAMILIES, ids=_IDS)
