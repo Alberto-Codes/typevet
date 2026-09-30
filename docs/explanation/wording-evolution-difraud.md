@@ -134,6 +134,16 @@ So the seed wording is still overconfident on vLLM. The llama.cpp value,
 
 ## An unexplained backend gap
 
+**Update, 2026-09-30:** the #329 runs used native Gemma 4 framing on both backends
+([#329](https://github.com/Alberto-Codes/typevet/issues/329)).
+The framing fix and its probe are on [#327](https://github.com/Alberto-Codes/typevet/issues/327).
+On the same 158 rows, the seed wording gave accuracy 0.829 and ECE 0.170 on
+llama.cpp `Q2_K`, and 0.810 and 0.185 on vLLM BF16.
+So the gap below was mostly the ChatML framing on the `gemma-4-31b-24gib-kv11-decoder` alias.
+The #329 runs used the alias `gemma-4-31b-kv9-q4km-mm`, also `Q2_K` but a different file
+([#324](https://github.com/Alberto-Codes/typevet/issues/324),
+[Gemma 4 and Jev on DIFrauD](gemma-and-jev-difraud.md)).
+
 On the same 158 rows and the same seed wording, vLLM BF16 scored much worse
 than llama.cpp `Q2_K`: accuracy 0.810 against 0.918, and Brier 0.182 against
 0.074. Under different prompt framing, the vLLM BF16 run did worse than the
@@ -227,6 +237,7 @@ It is not the cost of this run alone. The local runs had no rental cost.
 
 ## Related pages
 
+- [Gemma 4 and Jev on DIFrauD, each with its evolved wording](gemma-and-jev-difraud.md)
 - [Limits and known gaps](limits.md)
 - [Verified evidence and inferred claims](verification.md)
 - [Native typed judgments](native-typed-judgments.md)

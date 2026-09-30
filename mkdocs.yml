@@ -116,6 +116,7 @@ nav:
   - Explanation:
       - How typevet works with Gemma 4: explanation/how-typevet-works-with-gemma-4.md
       - Check images against a synthetic register: explanation/check-register-matching.md
+      - Gemma 4 and Jev on DIFrauD: explanation/gemma-and-jev-difraud.md
       - Gemma 4 multimodal judgments: explanation/gemma-4-multimodal-judgments.md
       - Library-first architecture: explanation/library-first-architecture.md
       - Limits and known gaps: explanation/limits.md
