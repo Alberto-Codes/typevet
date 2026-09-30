@@ -228,7 +228,8 @@ The test prints the receipt path and its sha256 digest.
 - Mixed scoring batches are not tested. See
   [vllm-project/vllm#51789](https://github.com/vllm-project/vllm/issues/51789).
 - One live run read the `vllm:kv_cache_usage_perc` gauge on the tested pin:
-  0.0058 during the concurrency set and 0.0 after the run
+  0.0058 during the concurrency set and 0.0 after the run. The gauge is a
+  fraction: 1 means 100 percent, so 0.0058 is 0.58 percent
   ([#231 receipt](https://github.com/Alberto-Codes/typevet/issues/231#issuecomment-5904832873)).
   Other metric names and other versions are not tested.
 - The results do not compare backends. The llama.cpp baseline used a

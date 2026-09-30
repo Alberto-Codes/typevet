@@ -12,6 +12,8 @@ match percentage.
 Attributes:
     RECEIPT_ISSUE (int): Issue number recorded in every receipt.
     CONFIDENCE_NOTE (str): Honesty note stored with the metrics.
+    VLLM_REVISION_ENV (str): Variable that names the served vLLM weights
+        revision.
 
 Examples:
     ```python
@@ -57,6 +59,7 @@ CONFIDENCE_NOTE: Final[str] = (
     "same_person_confidence is model confidence from the Noul answer. "
     "It is not a calibrated match percentage."
 )
+VLLM_REVISION_ENV: Final[str] = "TYPEVET_VLLM_MODEL_REVISION"
 _VISIBILITY_LEVELS: Final[int] = 5
 _AUTH_NEEDLES: Final[tuple[str, ...]] = ("authorization", "bearer ")
 
@@ -286,6 +289,33 @@ def build_face_match_receipt(
         "metrics": face_match_metrics(run.outcomes),
         "pairs": [o.to_receipt() for o in run.outcomes],
     }
+
+
+def served_weights_pins(backend: str, environ: Mapping[str, str]) -> dict[str, str]:
+    """Read the served weights revision pin for one backend.
+
+    A vLLM run records the weights revision from ``VLLM_REVISION_ENV``. Other
+    backends record no revision pin.
+
+    Args:
+        backend: Backend name, for example ``llama_cpp`` or ``vllm``.
+        environ: Environment variables.
+
+    Returns:
+        ``{"model_revision": <revision>}`` for ``vllm``. An empty mapping for
+        other backends.
+
+    Raises:
+        ValueError: When the backend is ``vllm`` and the variable is missing
+            or blank.
+    """
+    if backend != "vllm":
+        return {}
+    revision = environ.get(VLLM_REVISION_ENV, "").strip()
+    if not revision:
+        msg = f"{VLLM_REVISION_ENV} must name the served weights revision"
+        raise ValueError(msg)
+    return {"model_revision": revision}
 
 
 def ensure_key_free(text: str, *, secrets: Iterable[str | None]) -> None:

@@ -7,7 +7,8 @@ request leaves the host.
 
 A close before a response raises ``TransportError`` after one retry. An error
 status raises ``BackendHttpError``. A 200 body that is not JSON, or that has no
-``prompt`` string, raises ``GenerationError``.
+``prompt`` string, raises ``GenerationError``. A served Gemma 3 template raises
+``ValueError`` when the caller requires Gemma 4.
 
 Examples:
     ```bash
@@ -44,6 +45,7 @@ pytestmark = pytest.mark.unit
 _MODEL = "gemma-4-apply-template"
 _PATH = "/apply-template"
 _GEMMA4_RENDERED = "<|turn>user\nhello<turn|>\n<|turn>model\n"
+_GEMMA3_RENDERED = "<start_of_turn>user\nhello<end_of_turn>\n<start_of_turn>model\n"
 _PROPS = {"modalities": {"vision": True}, "media_marker": "<__media__>"}
 
 
@@ -116,7 +118,7 @@ def stub() -> Iterator[tuple[_StubState, str]]:
     server.server_close()
 
 
-def _open(base_url: str) -> None:
+def _open(base_url: str, *, require_gemma4: bool = True) -> None:
     settings = load_llama_settings(
         {
             "TYPEVET_LLAMA__BASE_URL": base_url,
@@ -124,7 +126,9 @@ def _open(base_url: str) -> None:
             "TYPEVET_LLAMA__MULTIMODAL_MODEL": _MODEL,
         }
     )
-    with open_gemma_native_vision_judgment(settings=settings):
+    with open_gemma_native_vision_judgment(
+        settings=settings, require_gemma4=require_gemma4
+    ):
         pass
 
 
@@ -190,3 +194,25 @@ def test_malformed_body_raises_generation_error(
     assert type(info.value) is GenerationError
     assert str(info.value).startswith(prefix)
     assert "llama.cpp" in str(info.value)
+
+
+def test_gemma3_template_raises_when_gemma4_is_required(
+    stub: tuple[_StubState, str],
+) -> None:
+    """A served Gemma 3 template fails the Gemma 4 requirement."""
+    state, base_url = stub
+    state.raw = ("application/json", json.dumps({"prompt": _GEMMA3_RENDERED}).encode())
+    with pytest.raises(ValueError, match=r"^expected NATIVE_GEMMA4_TURN, got") as info:
+        _open(base_url)
+    assert str(info.value).endswith("native_gemma3_turn")
+    assert state.requests[_PATH] == 1
+
+
+def test_gemma3_template_opens_when_gemma4_is_not_required(
+    stub: tuple[_StubState, str],
+) -> None:
+    """The same Gemma 3 template opens a session without the requirement."""
+    state, base_url = stub
+    state.raw = ("application/json", json.dumps({"prompt": _GEMMA3_RENDERED}).encode())
+    _open(base_url, require_gemma4=False)
+    assert state.requests[_PATH] == 1

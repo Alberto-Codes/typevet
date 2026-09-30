@@ -29,6 +29,7 @@ from typevet_evals.face_match import (
     FACE_VISIBILITY,
     SAME_PERSON,
     VERDICT,
+    VLLM_REVISION_ENV,
     FaceMatchOutcome,
     FaceMatchRun,
     build_face_match_receipt,
@@ -41,6 +42,7 @@ from typevet_evals.face_match import (
     roc_auc,
     run_face_match,
     score_distribution,
+    served_weights_pins,
     verdict_accuracy,
 )
 
@@ -376,3 +378,20 @@ def test_ensure_key_free_rejects_secrets_and_auth_headers(text: str) -> None:
 
 def test_ensure_key_free_ignores_empty_secret() -> None:
     ensure_key_free('{"a": 1}', secrets=("", None))
+
+
+def test_served_weights_pins_records_vllm_revision() -> None:
+    environ = {VLLM_REVISION_ENV: " 0123abcd "}
+    assert VLLM_REVISION_ENV == "TYPEVET_VLLM_MODEL_REVISION"
+    assert served_weights_pins("vllm", environ) == {"model_revision": "0123abcd"}
+
+
+@pytest.mark.parametrize("value", [None, "", "   "])
+def test_served_weights_pins_requires_vllm_revision(value: str | None) -> None:
+    environ = {} if value is None else {VLLM_REVISION_ENV: value}
+    with pytest.raises(ValueError, match=VLLM_REVISION_ENV):
+        served_weights_pins("vllm", environ)
+
+
+def test_served_weights_pins_is_empty_for_llama_cpp() -> None:
+    assert served_weights_pins("llama_cpp", {}) == {}

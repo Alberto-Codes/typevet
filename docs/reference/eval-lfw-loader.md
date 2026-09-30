@@ -100,6 +100,7 @@ percentage.
 | `TYPEVET_BACKEND` | `llama_cpp` (default) or `vllm` |
 | `TYPEVET_LLAMA__MULTIMODAL_MODEL` | llama.cpp model; the test default is `gemma-4-31b-kv9-q4km-mm` |
 | `TYPEVET_VLLM__BASE_URL`, `TYPEVET_VLLM__MODEL`, `TYPEVET_VLLM__API_KEY`, `TYPEVET_VLLM__USER_AGENT` | vLLM session |
+| `TYPEVET_VLLM_MODEL_REVISION` | Served weights revision. Required when `TYPEVET_BACKEND` is `vllm`. The test fails before any network call when it is not set. |
 | `TYPEVET_FACE_MATCH_PER_CLASS` | Smaller slice for a smoke run |
 | `TYPEVET_GIT_STATUS_PORCELAIN` | Porcelain status text for the working-tree fingerprint |
 
@@ -111,7 +112,8 @@ TYPEVET_GIT_STATUS_PORCELAIN="$(git status --porcelain)" \
 
 The receipt holds pair ids, gold labels, typed answers, latency per pair,
 the metrics and the pins. The pins are the LFW file SHA-256 values, the
-slice seed, the server build and the experiment identity. The receipt holds
+slice seed, the server build and the experiment identity. A vLLM receipt
+also pins the served weights revision as `model_revision`. The receipt holds
 no image bytes. The test refuses to write
 a receipt that holds the vLLM key or an auth header. Receipts are in
 `evals/fixtures/lfw/receipts/`.

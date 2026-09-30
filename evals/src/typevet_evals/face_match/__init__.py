@@ -14,6 +14,8 @@ Attributes:
     VERDICT_LABELS (tuple[str, ...]): ``Choice`` labels in prompt order.
     CONFIDENCE_NOTE (str): Honesty note stored with the metrics.
     RECEIPT_ISSUE (int): Issue number recorded in every receipt.
+    VLLM_REVISION_ENV (str): Variable that names the served vLLM weights
+        revision.
     FaceMatchOutcome (type): Typed answers and timing for one pair.
     FaceMatchRequest (type): One two-image request for one pair.
     FaceMatchRun (type): Outcomes of one run and its stopping failure.
@@ -31,6 +33,7 @@ Attributes:
     roc_auc (callable): Mann-Whitney ROC-AUC with average ranks.
     run_face_match (callable): Judge each pair once; stop at a failure.
     score_distribution (callable): ``Score`` level counts by gold label.
+    served_weights_pins (callable): Weights revision pin for a vLLM run.
     verdict_accuracy (callable): Share of right verdicts.
 
 Examples:
@@ -72,6 +75,7 @@ from typevet_evals.face_match.request import (
 from typevet_evals.face_match.runner import (
     CONFIDENCE_NOTE,
     RECEIPT_ISSUE,
+    VLLM_REVISION_ENV,
     FaceMatchOutcome,
     FaceMatchRun,
     build_face_match_receipt,
@@ -79,6 +83,7 @@ from typevet_evals.face_match.runner import (
     face_match_metrics,
     outcome_from_response,
     run_face_match,
+    served_weights_pins,
 )
 
 __all__ = [
@@ -89,6 +94,7 @@ __all__ = [
     "SAME_PERSON",
     "VERDICT",
     "VERDICT_LABELS",
+    "VLLM_REVISION_ENV",
     "FaceMatchOutcome",
     "FaceMatchRequest",
     "FaceMatchRun",
@@ -106,5 +112,6 @@ __all__ = [
     "roc_auc",
     "run_face_match",
     "score_distribution",
+    "served_weights_pins",
     "verdict_accuracy",
 ]

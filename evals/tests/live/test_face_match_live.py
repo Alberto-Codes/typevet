@@ -15,7 +15,10 @@ call when it does. ``TYPEVET_BACKEND`` selects the backend, as in
   defaults to ``gemma-4-31b-kv9-q4km-mm`` and the timeout to 900 seconds.
   The HTTP client keeps no idle connection between calls.
 - ``vllm`` reads ``TYPEVET_VLLM__BASE_URL``, ``TYPEVET_VLLM__MODEL``,
-  ``TYPEVET_VLLM__API_KEY`` and ``TYPEVET_VLLM__USER_AGENT``.
+  ``TYPEVET_VLLM__API_KEY`` and ``TYPEVET_VLLM__USER_AGENT``. It also
+  requires ``TYPEVET_VLLM_MODEL_REVISION``, the served weights revision. The
+  receipt pins record it. The test fails before any network call when it is
+  missing.
 
 ``TYPEVET_FACE_MATCH_PER_CLASS`` sets a smaller slice for a smoke run.
 ``TYPEVET_GIT_STATUS_PORCELAIN`` carries the porcelain status text for the
@@ -30,6 +33,7 @@ Examples:
       uv run pytest evals/tests/live/test_face_match_live.py -m live -q -s
 
     TYPEVET_BACKEND=vllm \
+      TYPEVET_VLLM_MODEL_REVISION=<hf-commit-sha> \
       TYPEVET_VLLM__BASE_URL=https://<pod>-8000.proxy.runpod.net \
       TYPEVET_VLLM__MODEL=google/gemma-4-31B-it \
       TYPEVET_FACE_MATCH_RECEIPT=evals/fixtures/lfw/receipts/face_match_vllm_receipt.json \
@@ -94,6 +98,7 @@ from typevet_evals.face_match import (
     ensure_key_free,
     face_match_questions,
     run_face_match,
+    served_weights_pins,
 )
 from typevet_evals.runner.live_gate import require_live_enabled
 
@@ -240,6 +245,7 @@ def test_face_match_live_receipt() -> None:
     environ = _environ()
     backend = load_backend(environ)
     secret = load_vllm_settings(environ).api_key if backend == "vllm" else None
+    weights = served_weights_pins(backend, environ)
     per_class = int(environ.get(_PER_CLASS_ENV, str(DEFAULT_PER_CLASS)))
     requests = _requests(per_class)
     tree = _working_tree()
@@ -279,6 +285,7 @@ def test_face_match_live_receipt() -> None:
         "slice_seed": DEFAULT_SEED,
         "slice_per_class": per_class,
         "server": facts,
+        **weights,
     }
     receipt = build_face_match_receipt(
         run,

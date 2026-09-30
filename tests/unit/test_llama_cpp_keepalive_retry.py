@@ -8,8 +8,8 @@ This is the race from [#301][i301]: ``httpx`` raises ``RemoteProtocolError``
 
 The idempotent scoring calls (``/tokenize``, ``/completion`` with
 ``n_predict: 0``, ``/props``) retry once on a fresh connection. A second
-disconnect, a malformed response, an error status and a timeout do not
-retry. No request leaves the host.
+disconnect, a malformed response, a close in the middle of the body, an
+error status and a timeout do not retry. No request leaves the host.
 
 Examples:
     ```bash
@@ -79,6 +79,8 @@ class _StubState:
             response, by path.
         drop_fresh (bool): Also close a fresh connection when ``drops`` is armed.
         garbage (Counter[str]): Requests to answer with malformed bytes, by path.
+        truncate (Counter[str]): Requests to answer with the status line, the
+            headers and half the body, then close, by path.
         status (dict[str, int]): Error status to send, by path.
         delay (dict[str, float]): Seconds to wait before a reply, by path.
     """
@@ -88,6 +90,7 @@ class _StubState:
     drops: Counter[str] = field(default_factory=Counter)
     drop_fresh: bool = False
     garbage: Counter[str] = field(default_factory=Counter)
+    truncate: Counter[str] = field(default_factory=Counter)
     status: dict[str, int] = field(default_factory=dict)
     delay: dict[str, float] = field(default_factory=dict)
 
@@ -137,6 +140,11 @@ def _handler(state: _StubState) -> type[BaseHTTPRequestHandler]:
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(payload)))
             self.end_headers()
+            if state.truncate[path] > 0:
+                state.truncate[path] -= 1
+                self.wfile.write(payload[: len(payload) // 2])
+                self.close_connection = True
+                return
             self.wfile.write(payload)
 
         def do_GET(self) -> None:
@@ -301,6 +309,21 @@ def test_malformed_response_does_not_retry(stub: _StubRouter, path: str) -> None
         stub.state.garbage[path] = 1
         with pytest.raises(TransportError):
             _judge(session)
+    assert stub.state.requests[path] - start == 1
+
+
+@pytest.mark.parametrize("path", _SCORING_PATHS)
+def test_close_mid_body_does_not_retry(stub: _StubRouter, path: str) -> None:
+    """Headers sent, then a close mid-body, raise ``TransportError`` once."""
+    with _session(stub) as session:
+        _warm(stub, session)
+        start = stub.state.requests[path]
+        stub.state.truncate[path] = 1
+        with pytest.raises(TransportError) as info:
+            _judge(session)
+    assert type(info.value) is TransportError
+    assert "Server disconnected" not in str(info.value)
+    assert stub.state.truncate[path] == 0
     assert stub.state.requests[path] - start == 1
 
 
