@@ -1,0 +1,1235 @@
+{
+  "contract": "https://github.com/Alberto-Codes/typevet/issues/343#issuecomment-5919241864",
+  "decision": {
+    "decision_series": [
+      "difraud/wording252_held_out_gemma_llama_cpp/seed",
+      "difraud/wording252_held_out_gemma_vllm/seed",
+      "difraud/wording_held_out_vllm/seed",
+      "difraud/wording_held_out_vllm/evolved",
+      "signatures/signature_match_llama_cpp",
+      "signatures/signature_match_vllm"
+    ],
+    "fixed_by_method": {
+      "isotonic": [
+        "difraud/wording252_held_out_gemma_vllm/seed",
+        "difraud/wording_held_out_vllm/seed",
+        "difraud/wording_held_out_vllm/evolved",
+        "signatures/signature_match_llama_cpp",
+        "signatures/signature_match_vllm"
+      ],
+      "platt": [
+        "difraud/wording252_held_out_gemma_vllm/seed",
+        "difraud/wording_held_out_vllm/seed",
+        "difraud/wording_held_out_vllm/evolved"
+      ],
+      "temperature": []
+    },
+    "required": 4,
+    "verdict": "sufficient"
+  },
+  "issue": 343,
+  "rule": {
+    "bootstrap": {
+      "level": 0.95,
+      "resamples": 1000,
+      "seed": 0
+    },
+    "brier_must_drop": true,
+    "ece_bins": 10,
+    "max_accuracy_drop": 0.01,
+    "max_decision_ece": 0.05,
+    "min_decision_series": 4,
+    "min_ece_drop": 0.03
+  },
+  "series": [
+    {
+      "before": {
+        "accuracy": 0.811111111111,
+        "brier": 0.17334055292,
+        "ece": 0.197664931926
+      },
+      "excluded_from_decision": false,
+      "in_decision_set": true,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.955555555556,
+            "brier": 0.047839506173,
+            "ece": 0.057407407407
+          },
+          "ece_change": -0.140257524518,
+          "ece_change_interval": {
+            "high": -0.086341906918,
+            "level": 0.95,
+            "low": -0.197044265006
+          },
+          "params": {
+            "knots": 48,
+            "steps": 4
+          },
+          "rule_met": true
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.888888888889,
+            "brier": 0.073851599211,
+            "ece": 0.071068144572
+          },
+          "ece_change": -0.126596787354,
+          "ece_change_interval": {
+            "high": -0.081026393324,
+            "level": 0.95,
+            "low": -0.166877623754
+          },
+          "params": {
+            "intercept": -3.563584075049,
+            "slope": 0.432645972333
+          },
+          "rule_met": true
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.811111111111,
+            "brier": 0.147519296581,
+            "ece": 0.199941047988
+          },
+          "ece_change": 0.002276116062,
+          "ece_change_interval": {
+            "high": 0.020771301698,
+            "level": 0.95,
+            "low": -0.015298520916
+          },
+          "params": {
+            "temperature": 4.10275979004
+          },
+          "rule_met": false
+        }
+      },
+      "n": 158,
+      "n_calibration": 68,
+      "n_evaluation": 90,
+      "name": "difraud/wording252_held_out_gemma_llama_cpp/seed",
+      "source": "difraud/receipts/wording252_held_out_gemma_llama_cpp.json"
+    },
+    {
+      "before": {
+        "accuracy": 0.966666666667,
+        "brier": 0.033107320315,
+        "ece": 0.033027082979
+      },
+      "excluded_from_decision": true,
+      "in_decision_set": false,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.933333333333,
+            "brier": 0.025,
+            "ece": 0.016666666667
+          },
+          "ece_change": -0.016360416312,
+          "ece_change_interval": {
+            "high": 0.016665211,
+            "level": 0.95,
+            "low": -0.044026004735
+          },
+          "params": {
+            "knots": 39,
+            "steps": 3
+          },
+          "rule_met": false
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.966666666667,
+            "brier": 0.027377612635,
+            "ece": 0.046028427808
+          },
+          "ece_change": 0.013001344829,
+          "ece_change_interval": {
+            "high": 0.028541929156,
+            "level": 0.95,
+            "low": 0.004891394711
+          },
+          "params": {
+            "intercept": 0.188906061399,
+            "slope": 0.28337067025
+          },
+          "rule_met": false
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.966666666667,
+            "brier": 0.025967872011,
+            "ece": 0.052188002215
+          },
+          "ece_change": 0.019160919236,
+          "ece_change_interval": {
+            "high": 0.032708928082,
+            "level": 0.95,
+            "low": 0.010146393959
+          },
+          "params": {
+            "temperature": 3.681884426508
+          },
+          "rule_met": false
+        }
+      },
+      "n": 158,
+      "n_calibration": 68,
+      "n_evaluation": 90,
+      "name": "difraud/wording252_held_out_gemma_llama_cpp/evolved",
+      "source": "difraud/receipts/wording252_held_out_gemma_llama_cpp.json"
+    },
+    {
+      "before": {
+        "accuracy": 0.777777777778,
+        "brier": 0.20866923138,
+        "ece": 0.214472529096
+      },
+      "excluded_from_decision": false,
+      "in_decision_set": true,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.888888888889,
+            "brier": 0.082030178326,
+            "ece": 0.01975308642
+          },
+          "ece_change": -0.194719442676,
+          "ece_change_interval": {
+            "high": -0.114101767236,
+            "level": 0.95,
+            "low": -0.251125879257
+          },
+          "params": {
+            "knots": 16,
+            "steps": 3
+          },
+          "rule_met": true
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.888888888889,
+            "brier": 0.08278426073,
+            "ece": 0.020429376396
+          },
+          "ece_change": -0.194043152699,
+          "ece_change_interval": {
+            "high": -0.073945954642,
+            "level": 0.95,
+            "low": -0.264507588592
+          },
+          "params": {
+            "intercept": -7.254111726091,
+            "slope": 0.585211012371
+          },
+          "rule_met": true
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.777777777778,
+            "brier": 0.152926498374,
+            "ece": 0.202159166691
+          },
+          "ece_change": -0.012313362404,
+          "ece_change_interval": {
+            "high": 0.01548529335,
+            "level": 0.95,
+            "low": -0.041682742036
+          },
+          "params": {
+            "temperature": 6.373213341702
+          },
+          "rule_met": false
+        }
+      },
+      "n": 158,
+      "n_calibration": 68,
+      "n_evaluation": 90,
+      "name": "difraud/wording252_held_out_gemma_vllm/seed",
+      "source": "difraud/receipts/wording252_held_out_gemma_vllm.json"
+    },
+    {
+      "before": {
+        "accuracy": 0.966666666667,
+        "brier": 0.03326997139,
+        "ece": 0.03441814803
+      },
+      "excluded_from_decision": true,
+      "in_decision_set": false,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.955555555556,
+            "brier": 0.043035026427,
+            "ece": 0.020765027322
+          },
+          "ece_change": -0.013653120708,
+          "ece_change_interval": {
+            "high": 0.032234950885,
+            "level": 0.95,
+            "low": -0.045170187672
+          },
+          "params": {
+            "knots": 3,
+            "steps": 2
+          },
+          "rule_met": false
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.966666666667,
+            "brier": 0.029922752161,
+            "ece": 0.046585395963
+          },
+          "ece_change": 0.012167247933,
+          "ece_change_interval": {
+            "high": 0.033329840064,
+            "level": 0.95,
+            "low": 0.003359119435
+          },
+          "params": {
+            "intercept": 0.000668087367,
+            "slope": 0.253143665479
+          },
+          "rule_met": false
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.966666666667,
+            "brier": 0.029918190954,
+            "ece": 0.046570020047
+          },
+          "ece_change": 0.012151872016,
+          "ece_change_interval": {
+            "high": 0.033337959038,
+            "level": 0.95,
+            "low": 0.003340909435
+          },
+          "params": {
+            "temperature": 3.950929243327
+          },
+          "rule_met": false
+        }
+      },
+      "n": 158,
+      "n_calibration": 68,
+      "n_evaluation": 90,
+      "name": "difraud/wording252_held_out_gemma_vllm/evolved",
+      "source": "difraud/receipts/wording252_held_out_gemma_vllm.json"
+    },
+    {
+      "before": {
+        "accuracy": 0.944444444444,
+        "brier": 0.046643333333,
+        "ece": 0.103
+      },
+      "excluded_from_decision": false,
+      "in_decision_set": false,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.911111111111,
+            "brier": 0.088888888889,
+            "ece": 0.088888888889
+          },
+          "ece_change": -0.014111111111,
+          "ece_change_interval": {
+            "high": 0.025333333333,
+            "level": 0.95,
+            "low": -0.078666666667
+          },
+          "params": {
+            "knots": 26,
+            "steps": 2
+          },
+          "rule_met": false
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.911111111111,
+            "brier": 0.088888888838,
+            "ece": 0.088888888864
+          },
+          "ece_change": -0.014111111136,
+          "ece_change_interval": {
+            "high": 0.025333333308,
+            "level": 0.95,
+            "low": -0.078666666742
+          },
+          "params": {
+            "intercept": 667.074571075103,
+            "slope": 858.578996791666
+          },
+          "rule_met": false
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.944444444444,
+            "brier": 0.035875632855,
+            "ece": 0.051855842013
+          },
+          "ece_change": -0.051144157987,
+          "ece_change_interval": {
+            "high": -0.03066434888,
+            "level": 0.95,
+            "low": -0.087685716754
+          },
+          "params": {
+            "temperature": 0.381455442532
+          },
+          "rule_met": true
+        }
+      },
+      "n": 158,
+      "n_calibration": 68,
+      "n_evaluation": 90,
+      "name": "difraud/wording252_held_out_jev/seed",
+      "source": "difraud/receipts/wording252_held_out_jev.json"
+    },
+    {
+      "before": {
+        "accuracy": 0.966666666667,
+        "brier": 0.027767777778,
+        "ece": 0.076111111111
+      },
+      "excluded_from_decision": false,
+      "in_decision_set": false,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.966666666667,
+            "brier": 0.033333333333,
+            "ece": 0.033333333333
+          },
+          "ece_change": -0.042777777778,
+          "ece_change_interval": {
+            "high": -0.016555555556,
+            "level": 0.95,
+            "low": -0.085555555556
+          },
+          "params": {
+            "knots": 25,
+            "steps": 2
+          },
+          "rule_met": false
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.977777777778,
+            "brier": 0.022222186829,
+            "ece": 0.022221156664
+          },
+          "ece_change": -0.053889954447,
+          "ece_change_interval": {
+            "high": -0.033223287718,
+            "level": 0.95,
+            "low": -0.092329142325
+          },
+          "params": {
+            "intercept": -10.287728000744,
+            "slope": 25.465762900106
+          },
+          "rule_met": true
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.966666666667,
+            "brier": 0.025772333552,
+            "ece": 0.028982526379
+          },
+          "ece_change": -0.047128584732,
+          "ece_change_interval": {
+            "high": -0.028597189583,
+            "level": 0.95,
+            "low": -0.082554144834
+          },
+          "params": {
+            "temperature": 0.049787068368
+          },
+          "rule_met": true
+        }
+      },
+      "n": 158,
+      "n_calibration": 68,
+      "n_evaluation": 90,
+      "name": "difraud/wording252_held_out_jev/evolved",
+      "source": "difraud/receipts/wording252_held_out_jev.json"
+    },
+    {
+      "before": {
+        "accuracy": 0.888888888889,
+        "brier": 0.095555046712,
+        "ece": 0.14078858307
+      },
+      "excluded_from_decision": false,
+      "in_decision_set": false,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.922222222222,
+            "brier": 0.060185185185,
+            "ece": 0.061111111111
+          },
+          "ece_change": -0.079677471959,
+          "ece_change_interval": {
+            "high": -0.020682828344,
+            "level": 0.95,
+            "low": -0.133008038144
+          },
+          "params": {
+            "knots": 68,
+            "steps": 4
+          },
+          "rule_met": true
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.933333333333,
+            "brier": 0.054331475774,
+            "ece": 0.056609259895
+          },
+          "ece_change": -0.084179323175,
+          "ece_change_interval": {
+            "high": -0.042588538561,
+            "level": 0.95,
+            "low": -0.107020940765
+          },
+          "params": {
+            "intercept": -1.936882881309,
+            "slope": 0.942221369054
+          },
+          "rule_met": true
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.888888888889,
+            "brier": 0.096761298981,
+            "ece": 0.134351011932
+          },
+          "ece_change": -0.006437571138,
+          "ece_change_interval": {
+            "high": -0.003344342372,
+            "level": 0.95,
+            "low": -0.009220606437
+          },
+          "params": {
+            "temperature": 0.864442937628
+          },
+          "rule_met": false
+        }
+      },
+      "n": 158,
+      "n_calibration": 68,
+      "n_evaluation": 90,
+      "name": "difraud/wording_held_out_llama_cpp/seed",
+      "source": "difraud/receipts/wording_held_out_llama_cpp.json"
+    },
+    {
+      "before": {
+        "accuracy": 0.911111111111,
+        "brier": 0.085212050191,
+        "ece": 0.106907006839
+      },
+      "excluded_from_decision": false,
+      "in_decision_set": false,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.9,
+            "brier": 0.069234567901,
+            "ece": 0.076296296296
+          },
+          "ece_change": -0.030610710542,
+          "ece_change_interval": {
+            "high": 0.028495621168,
+            "level": 0.95,
+            "low": -0.101887440159
+          },
+          "params": {
+            "knots": 68,
+            "steps": 4
+          },
+          "rule_met": false
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.922222222222,
+            "brier": 0.067439826632,
+            "ece": 0.067493071481
+          },
+          "ece_change": -0.039413935358,
+          "ece_change_interval": {
+            "high": -0.009613883332,
+            "level": 0.95,
+            "low": -0.053960935557
+          },
+          "params": {
+            "intercept": -1.491415937718,
+            "slope": 0.815844472897
+          },
+          "rule_met": true
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.911111111111,
+            "brier": 0.085015678323,
+            "ece": 0.109906109949
+          },
+          "ece_change": 0.002999103111,
+          "ece_change_interval": {
+            "high": 0.004531285441,
+            "level": 0.95,
+            "low": 0.001405249777
+          },
+          "params": {
+            "temperature": 1.093447388722
+          },
+          "rule_met": false
+        }
+      },
+      "n": 158,
+      "n_calibration": 68,
+      "n_evaluation": 90,
+      "name": "difraud/wording_held_out_llama_cpp/evolved",
+      "source": "difraud/receipts/wording_held_out_llama_cpp.json"
+    },
+    {
+      "before": {
+        "accuracy": 0.777777777778,
+        "brier": 0.209537210388,
+        "ece": 0.214538469037
+      },
+      "excluded_from_decision": false,
+      "in_decision_set": true,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.888888888889,
+            "brier": 0.081444444444,
+            "ece": 0.012222222222
+          },
+          "ece_change": -0.202316246815,
+          "ece_change_interval": {
+            "high": -0.081621056105,
+            "level": 0.95,
+            "low": -0.274445568931
+          },
+          "params": {
+            "knots": 15,
+            "steps": 3
+          },
+          "rule_met": true
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.888888888889,
+            "brier": 0.083171998143,
+            "ece": 0.023797858774
+          },
+          "ece_change": -0.190740610263,
+          "ece_change_interval": {
+            "high": -0.070799476668,
+            "level": 0.95,
+            "low": -0.264868920141
+          },
+          "params": {
+            "intercept": -6.784193085318,
+            "slope": 0.549063939625
+          },
+          "rule_met": true
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.777777777778,
+            "brier": 0.153781355935,
+            "ece": 0.202438094477
+          },
+          "ece_change": -0.01210037456,
+          "ece_change_interval": {
+            "high": 0.015466158872,
+            "level": 0.95,
+            "low": -0.041286955701
+          },
+          "params": {
+            "temperature": 6.353681887132
+          },
+          "rule_met": false
+        }
+      },
+      "n": 158,
+      "n_calibration": 68,
+      "n_evaluation": 90,
+      "name": "difraud/wording_held_out_vllm/seed",
+      "source": "difraud/receipts/wording_held_out_vllm.json"
+    },
+    {
+      "before": {
+        "accuracy": 0.811111111111,
+        "brier": 0.183614917355,
+        "ece": 0.186580737624
+      },
+      "excluded_from_decision": false,
+      "in_decision_set": true,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.877777777778,
+            "brier": 0.086982248521,
+            "ece": 0.007692307692
+          },
+          "ece_change": -0.178888429932,
+          "ece_change_interval": {
+            "high": -0.056018302986,
+            "level": 0.95,
+            "low": -0.242084528044
+          },
+          "params": {
+            "knots": 14,
+            "steps": 2
+          },
+          "rule_met": true
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.888888888889,
+            "brier": 0.08250811349,
+            "ece": 0.020248715341
+          },
+          "ece_change": -0.166332022283,
+          "ece_change_interval": {
+            "high": -0.051100153235,
+            "level": 0.95,
+            "low": -0.242605486836
+          },
+          "params": {
+            "intercept": -5.385736377701,
+            "slope": 0.448226803125
+          },
+          "rule_met": true
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.811111111111,
+            "brier": 0.138816469049,
+            "ece": 0.187709833921
+          },
+          "ece_change": 0.001129096297,
+          "ece_change_interval": {
+            "high": 0.0295288221,
+            "level": 0.95,
+            "low": -0.029971207416
+          },
+          "params": {
+            "temperature": 6.114408870172
+          },
+          "rule_met": false
+        }
+      },
+      "n": 158,
+      "n_calibration": 68,
+      "n_evaluation": 90,
+      "name": "difraud/wording_held_out_vllm/evolved",
+      "source": "difraud/receipts/wording_held_out_vllm.json"
+    },
+    {
+      "before": {
+        "accuracy": 0.814285714286,
+        "brier": 0.18372360814,
+        "ece": 0.189397808928
+      },
+      "excluded_from_decision": false,
+      "in_decision_set": false,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.842857142857,
+            "brier": 0.101457725948,
+            "ece": 0.059183673469
+          },
+          "ece_change": -0.130214135458,
+          "ece_change_interval": {
+            "high": -0.016894978037,
+            "level": 0.95,
+            "low": -0.18637585435
+          },
+          "params": {
+            "knots": 59,
+            "steps": 6
+          },
+          "rule_met": true
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.842857142857,
+            "brier": 0.117860242059,
+            "ece": 0.109811834787
+          },
+          "ece_change": -0.07958597414,
+          "ece_change_interval": {
+            "high": 0.019189074184,
+            "level": 0.95,
+            "low": -0.134940601927
+          },
+          "params": {
+            "intercept": -2.001612670664,
+            "slope": 0.361835896247
+          },
+          "rule_met": true
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.814285714286,
+            "brier": 0.131358392402,
+            "ece": 0.128803284058
+          },
+          "ece_change": -0.06059452487,
+          "ece_change_interval": {
+            "high": 0.014209154848,
+            "level": 0.95,
+            "low": -0.117230658496
+          },
+          "params": {
+            "temperature": 5.333889170744
+          },
+          "rule_met": true
+        }
+      },
+      "n": 140,
+      "n_calibration": 70,
+      "n_evaluation": 70,
+      "name": "checks/check_match_llama_cpp",
+      "source": "checks/receipts/check_match_llama_cpp_receipt.json"
+    },
+    {
+      "before": {
+        "accuracy": 0.914285714286,
+        "brier": 0.087808422641,
+        "ece": 0.093307010695
+      },
+      "excluded_from_decision": false,
+      "in_decision_set": false,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.871428571429,
+            "brier": 0.120320083956,
+            "ece": 0.08658008658
+          },
+          "ece_change": -0.006726924115,
+          "ece_change_interval": {
+            "high": 0.056771781609,
+            "level": 0.95,
+            "low": -0.038089507554
+          },
+          "params": {
+            "knots": 7,
+            "steps": 3
+          },
+          "rule_met": false
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.885714285714,
+            "brier": 0.103324661181,
+            "ece": 0.084962046433
+          },
+          "ece_change": -0.008344964262,
+          "ece_change_interval": {
+            "high": 0.035007241297,
+            "level": 0.95,
+            "low": -0.032119261168
+          },
+          "params": {
+            "intercept": -1.866431744148,
+            "slope": 0.375352680421
+          },
+          "rule_met": false
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.914285714286,
+            "brier": 0.08624494943,
+            "ece": 0.069494760533
+          },
+          "ece_change": -0.023812250162,
+          "ece_change_interval": {
+            "high": -0.004366581612,
+            "level": 0.95,
+            "low": -0.035056846964
+          },
+          "params": {
+            "temperature": 4.289264274992
+          },
+          "rule_met": false
+        }
+      },
+      "n": 140,
+      "n_calibration": 70,
+      "n_evaluation": 70,
+      "name": "checks/check_match_vllm",
+      "source": "checks/receipts/check_match_vllm_receipt.json"
+    },
+    {
+      "before": {
+        "accuracy": 0.674157303371,
+        "brier": 0.301670285952,
+        "ece": 0.306366796411
+      },
+      "excluded_from_decision": false,
+      "in_decision_set": true,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.876404494382,
+            "brier": 0.095889665008,
+            "ece": 0.034786062876
+          },
+          "ece_change": -0.271580733535,
+          "ece_change_interval": {
+            "high": -0.14634618066,
+            "level": 0.95,
+            "low": -0.34532003383
+          },
+          "params": {
+            "knots": 65,
+            "steps": 6
+          },
+          "rule_met": true
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.842696629213,
+            "brier": 0.115182320466,
+            "ece": 0.126080271789
+          },
+          "ece_change": -0.180286524622,
+          "ece_change_interval": {
+            "high": -0.072310013448,
+            "level": 0.95,
+            "low": -0.279939637665
+          },
+          "params": {
+            "intercept": -3.598466893399,
+            "slope": 0.316895499239
+          },
+          "rule_met": true
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.674157303371,
+            "brier": 0.201668511295,
+            "ece": 0.236032407366
+          },
+          "ece_change": -0.070334389045,
+          "ece_change_interval": {
+            "high": 0.033466661174,
+            "level": 0.95,
+            "low": -0.128206931155
+          },
+          "params": {
+            "temperature": 13.33264783712
+          },
+          "rule_met": true
+        }
+      },
+      "n": 180,
+      "n_calibration": 91,
+      "n_evaluation": 89,
+      "name": "signatures/signature_match_llama_cpp",
+      "source": "cedar/receipts/signature_match_llama_cpp.json"
+    },
+    {
+      "before": {
+        "accuracy": 0.719101123596,
+        "brier": 0.280153517713,
+        "ece": 0.282230398889
+      },
+      "excluded_from_decision": false,
+      "in_decision_set": true,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.831460674157,
+            "brier": 0.11670454543,
+            "ece": 0.036453493284
+          },
+          "ece_change": -0.245776905606,
+          "ece_change_interval": {
+            "high": -0.107571340331,
+            "level": 0.95,
+            "low": -0.326758891742
+          },
+          "params": {
+            "knots": 28,
+            "steps": 4
+          },
+          "rule_met": true
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.831460674157,
+            "brier": 0.128019397303,
+            "ece": 0.098789229867
+          },
+          "ece_change": -0.183441169022,
+          "ece_change_interval": {
+            "high": -0.056317623651,
+            "level": 0.95,
+            "low": -0.282151410829
+          },
+          "params": {
+            "intercept": -2.448803228258,
+            "slope": 0.210118771923
+          },
+          "rule_met": true
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.719101123596,
+            "brier": 0.192005573111,
+            "ece": 0.219145081438
+          },
+          "ece_change": -0.063085317452,
+          "ece_change_interval": {
+            "high": 0.042838482986,
+            "level": 0.95,
+            "low": -0.115981214838
+          },
+          "params": {
+            "temperature": 14.239347841298
+          },
+          "rule_met": true
+        }
+      },
+      "n": 180,
+      "n_calibration": 91,
+      "n_evaluation": 89,
+      "name": "signatures/signature_match_vllm",
+      "source": "cedar/receipts/signature_match_vllm.json"
+    },
+    {
+      "before": {
+        "accuracy": 0.918367346939,
+        "brier": 0.06965838289,
+        "ece": 0.080312504596
+      },
+      "excluded_from_decision": false,
+      "in_decision_set": false,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.948979591837,
+            "brier": 0.052154195011,
+            "ece": 0.054421768707
+          },
+          "ece_change": -0.025890735888,
+          "ece_change_interval": {
+            "high": -0.005068605586,
+            "level": 0.95,
+            "low": -0.048003461103
+          },
+          "params": {
+            "knots": 48,
+            "steps": 4
+          },
+          "rule_met": false
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.948979591837,
+            "brier": 0.048907184504,
+            "ece": 0.05079254884
+          },
+          "ece_change": -0.029519955755,
+          "ece_change_interval": {
+            "high": -0.009446395389,
+            "level": 0.95,
+            "low": -0.051993129993
+          },
+          "params": {
+            "intercept": -4.408007916754,
+            "slope": 1.667146114114
+          },
+          "rule_met": false
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.918367346939,
+            "brier": 0.059049545116,
+            "ece": 0.073827904121
+          },
+          "ece_change": -0.006484600475,
+          "ece_change_interval": {
+            "high": 0.005524559694,
+            "level": 0.95,
+            "low": -0.014728952474
+          },
+          "params": {
+            "temperature": 2.2584457476
+          },
+          "rule_met": false
+        }
+      },
+      "n": 200,
+      "n_calibration": 102,
+      "n_evaluation": 98,
+      "name": "faces/face_match_llama_cpp",
+      "source": "lfw/receipts/face_match_llama_cpp_receipt.json"
+    },
+    {
+      "before": {
+        "accuracy": 0.969387755102,
+        "brier": 0.022279833677,
+        "ece": 0.027504896772
+      },
+      "excluded_from_decision": true,
+      "in_decision_set": false,
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.989795918367,
+            "brier": 0.011337868481,
+            "ece": 0.013605442177
+          },
+          "ece_change": -0.013899454596,
+          "ece_change_interval": {
+            "high": 0.007479414035,
+            "level": 0.95,
+            "low": -0.041767738178
+          },
+          "params": {
+            "knots": 12,
+            "steps": 3
+          },
+          "rule_met": false
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.989795918367,
+            "brier": 0.012448042734,
+            "ece": 0.016575799137
+          },
+          "ece_change": -0.010929097636,
+          "ece_change_interval": {
+            "high": 0.012904495332,
+            "level": 0.95,
+            "low": -0.03987509572
+          },
+          "params": {
+            "intercept": -6.02368095512,
+            "slope": 0.955437200569
+          },
+          "rule_met": false
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.969387755102,
+            "brier": 0.0154996082,
+            "ece": 0.030284426995
+          },
+          "ece_change": 0.002779530223,
+          "ece_change_interval": {
+            "high": 0.01731519971,
+            "level": 0.95,
+            "low": -0.008465290525
+          },
+          "params": {
+            "temperature": 2.762790510675
+          },
+          "rule_met": false
+        }
+      },
+      "n": 200,
+      "n_calibration": 102,
+      "n_evaluation": 98,
+      "name": "faces/face_match_vllm",
+      "source": "lfw/receipts/face_match_vllm_receipt.json"
+    }
+  ],
+  "sources": {
+    "cedar/receipts/signature_match_llama_cpp.json": "f6bafc59573e6c64613732a0d6dafb1a341260bffed680a515ae56e550099415",
+    "cedar/receipts/signature_match_vllm.json": "4e949f87ff3c322261d8306d343cb9bf4ff249fb56f6c9e9a2cfacf0d75cf16f",
+    "checks/receipts/check_match_llama_cpp_receipt.json": "31207f9096decf47a8b7b338418a0662ada0b265055a016384c7656502e82dd9",
+    "checks/receipts/check_match_vllm_receipt.json": "415c042a917dc869258034a3601411b868f08531a5da209f18bb747087155a72",
+    "difraud/receipts/wording252_held_out_gemma_llama_cpp.json": "47d2035b6d217172642928c76df0eaba9962a61ff3eab0040c9d22b8f8e4b2fb",
+    "difraud/receipts/wording252_held_out_gemma_vllm.json": "e04790825200799fad8e3333d00f80a4c808adda1586aee7bb4e8ee120c0e44d",
+    "difraud/receipts/wording252_held_out_jev.json": "6d8aa1dbcaa8394c76907783540cfbb35197c49a3557724e6e12ab77b4e99385",
+    "difraud/receipts/wording_held_out_llama_cpp.json": "5c3b53a6e91994b5c685e2b5b32d0cef139025ae6fee557bac5c4c0d572c7b18",
+    "difraud/receipts/wording_held_out_vllm.json": "e044813a84cf20440a5aea04eae1663737e2c33d8485484f9068bc7c529c8fb2",
+    "lfw/receipts/face_match_llama_cpp_receipt.json": "dcf6ec3713b7a15414a8505a7c691fb575208e6ccf777725d0b3e5f80a3d0c77",
+    "lfw/receipts/face_match_vllm_receipt.json": "def58953a5b473376ed9b4f83e5c0e66c0841db76404889de3b2e1c8500e1b96"
+  },
+  "transfer": [
+    {
+      "applied_to": "signatures/signature_match_llama_cpp",
+      "before": {
+        "accuracy": 0.674157303371,
+        "brier": 0.301670285952,
+        "ece": 0.306366796411
+      },
+      "fit_on": "difraud/wording_held_out_llama_cpp/seed",
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.707865168539,
+            "brier": 0.289950062422,
+            "ece": 0.282771535581
+          },
+          "rule_met": false
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.707865168539,
+            "brier": 0.285951005438,
+            "ece": 0.289976837438
+          },
+          "rule_met": false
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.674157303371,
+            "brier": 0.303150023983,
+            "ece": 0.307631940072
+          },
+          "rule_met": false
+        }
+      }
+    },
+    {
+      "applied_to": "difraud/wording_held_out_llama_cpp/seed",
+      "before": {
+        "accuracy": 0.888888888889,
+        "brier": 0.095555046712,
+        "ece": 0.14078858307
+      },
+      "fit_on": "signatures/signature_match_llama_cpp",
+      "methods": {
+        "isotonic": {
+          "after": {
+            "accuracy": 0.7,
+            "brier": 0.21049382716,
+            "ece": 0.237037037037
+          },
+          "rule_met": false
+        },
+        "platt": {
+          "after": {
+            "accuracy": 0.7,
+            "brier": 0.240913620132,
+            "ece": 0.253510443347
+          },
+          "rule_met": false
+        },
+        "temperature": {
+          "after": {
+            "accuracy": 0.888888888889,
+            "brier": 0.202873772218,
+            "ece": 0.325310072218
+          },
+          "rule_met": false
+        }
+      }
+    }
+  ]
+}

@@ -35,6 +35,7 @@ See Also:
     - [typevet_evals.runner][]: Loader eval runner, live gate and reports
     - [typevet_evals.tpjep][]: TPJEP fixture, records and runner
     - [typevet_evals.experiment_identity][]: Receipt identity and snapshots
+    - [typevet_evals.calibration][]: Post-hoc calibration of receipt probabilities
 """
 
 __all__: list[str] = []

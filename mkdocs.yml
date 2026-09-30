@@ -122,6 +122,7 @@ nav:
       - Library-first architecture: explanation/library-first-architecture.md
       - Limits and known gaps: explanation/limits.md
       - Native typed judgments: explanation/native-typed-judgments.md
+      - Post-hoc calibration of Noul probabilities: explanation/post-hoc-calibration.md
       - TypeLLM, Jev and judgevet: explanation/typellm-and-judgevet.md
       - Two-image face matching: explanation/two-image-face-matching.md
       - Two-image signature comparison: explanation/two-image-signature-comparison.md

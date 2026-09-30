@@ -39,6 +39,7 @@ answers a question, and a reference gives facts.
 - [Image judgment throughput on one H100](explanation/image-throughput-h100.md): image judgments per second at 1 to 32 in flight. It also covers answers under load and cost.
 - [Wording evolution on DIFrauD scam messages](explanation/wording-evolution-difraud.md): what one gepa-adk run changed in the `is_scam` wording. The held-out check failed on vLLM and passed narrowly on llama.cpp.
 - [Gemma 4 and Jev on DIFrauD, each with its evolved wording](explanation/gemma-and-jev-difraud.md): Jev and Gemma 4 on the same held-out rows, each with its own gepa-adk wording. Numbers per judge. It also corrects the #309 backend-gap reading.
+- [Post-hoc calibration of Noul probabilities](explanation/post-hoc-calibration.md): whether a map fitted after the model answers fixes the calibration gaps in the committed receipts. Isotonic regression met the pre-registered rule with ECE below 0.05 on 5 of 6 decision series.
 
 ## Tutorials
 
