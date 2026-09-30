@@ -156,7 +156,9 @@ None of them has a promised fix date.
   [#207](https://github.com/Alberto-Codes/typevet/issues/207) calls the same quantity off-menu mass.
   On llama.cpp the value is 1 minus the sum of the raw candidate probabilities.
   The adapter reports it only when the response holds exactly `n_vocab` entries and their total is within 0.01 of 1; otherwise the value is `None`.
-  `n_vocab` is an adapter setting, not a value read from the model, so a model with a larger vocabulary cannot be detected by the count.
+  `n_vocab` is the model vocabulary size that the adapter reads from `meta.n_vocab` in `/v1/models` and keeps once known, with at most 3 reads per model ([#321](https://github.com/Alberto-Codes/typevet/issues/321)), unless the caller sets it.
+  When the server does not report the size, the value is `None`.
+  A caller-set `n_vocab` that is smaller than the model vocabulary still passes the count; the Gemma native vision factory sets 262144 by default.
   On vLLM the value is always `None` (unavailable), because the response holds at most 128 token ids.
   typevet reports the value and does not act on it. Judgment answers do not show it.
   On llama.cpp, a caller framing that omits the Gemma 4 no-thinking prefill gives a confident, wrong answer with no error.

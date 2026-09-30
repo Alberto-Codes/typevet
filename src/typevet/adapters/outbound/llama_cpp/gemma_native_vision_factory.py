@@ -241,7 +241,7 @@ def open_gemma_native_vision_judgment(
     settings: GemmaVisionSettings,
     model: str | None = None,
     require_gemma4: bool = True,
-    n_vocab: int = DEFAULT_N_VOCAB,
+    n_vocab: int | None = DEFAULT_N_VOCAB,
     http_client: httpx.Client | None = None,
     tokenize_content: Callable[[str], Sequence[int]] | None = None,
     scoring_port_wrapper: Callable[[CandidateScoringPort], CandidateScoringPort]
@@ -257,7 +257,9 @@ def open_gemma_native_vision_judgment(
         settings: Router connection options from the composition root.
         model: Model id; defaults to ``settings.multimodal_model``.
         require_gemma4: When true, require ``NATIVE_GEMMA4_TURN``.
-        n_vocab: ``n_probs`` budget for Gemma 4 class vocab scoring.
+        n_vocab: Model vocabulary size. The default is the Gemma 4 class
+            size, so the session sends no ``/v1/models`` request. ``None``
+            lets the scoring adapter read it from ``/v1/models`` (#321).
         http_client: Optional pre-built client (for tests); not closed on exit.
         tokenize_content: Optional tokenizer hook; defaults to router ``/tokenize``.
         scoring_port_wrapper: Optional wrapper applied before ``JudgmentPort`` wiring.

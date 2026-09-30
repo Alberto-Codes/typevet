@@ -2,6 +2,9 @@
 
 The adapter asks for the full-vocabulary distribution and reports the
 off-option mass, the probability outside the candidate tokens, on the result.
+It reads the model vocabulary size from ``/v1/models`` (#321) unless the
+caller gives ``n_vocab``. It keeps a known size and makes at most 3 reads per
+model.
 
 Examples:
     ```python
@@ -26,16 +29,19 @@ See Also:
     - [typevet.adapters.outbound.llama_cpp.http_mapping][]: Shared HTTP error
       mapping and the one-retry send for idempotent requests
     - [typevet.adapters.outbound.llama_cpp.multimodal][]: Media probe and shaping
+    - [typevet.adapters.outbound.llama_cpp.vocabulary][]: Model vocabulary read
     - [typevet.domain.candidate_scoring_validate][]: Fail-closed result assembly
     - [typevet.ports.scoring][]: CandidateScoringPort protocol
 
 Attributes:
-    DEFAULT_N_VOCAB (int): Default ``n_probs`` for Gemma 4 class vocab (262144).
+    DEFAULT_N_VOCAB (int): ``n_probs`` sent while the model vocabulary is not
+        yet known (262144, Gemma 4 class).
 """
 
 from __future__ import annotations
 
 import math
+import threading
 from collections.abc import Iterable, Mapping
 from typing import Any, Self
 from urllib.parse import urljoin
@@ -52,6 +58,7 @@ from typevet.adapters.outbound.llama_cpp.multimodal import (
     fetch_media_capability,
     media_prompt_field,
 )
+from typevet.adapters.outbound.llama_cpp.vocabulary import fetch_model_n_vocab
 from typevet.domain.candidate_scoring_request import CandidateScoringRequest
 from typevet.domain.candidate_scoring_response import CandidateScoringResult
 from typevet.domain.candidate_scoring_validate import build_and_validate_result
@@ -64,6 +71,13 @@ from typevet.domain.judgment_response import TokenUsage
 from typevet.domain.scoring_stage import ScoreStage
 
 DEFAULT_N_VOCAB = 262144
+
+_MAX_VOCAB_READS = 3
+"""Most ``/v1/models`` reads per model and adapter that return no size.
+
+A read that fails, or that finds no size, runs again on a later call up to
+this limit. After it, the adapter stops reading and the size stays unknown.
+"""
 
 _FULL_DISTRIBUTION_TOLERANCE = 1e-2
 """Largest distance of the returned total mass from 1 that still counts as the
@@ -84,7 +98,11 @@ class LlamaCppCandidateScoringAdapter:
         _timeout (float): HTTP timeout in seconds.
         _client (httpx.Client | None): Shared or owned HTTP client.
         _owns_client (bool): Whether ``close`` should close the client.
-        _n_vocab (int): ``n_probs`` sent on each completion request.
+        _n_vocab (int | None): Caller vocabulary size override, or ``None``
+            to read it from the server.
+        _vocab_sizes (dict[str, int]): Per-model cache of known vocabulary sizes.
+        _vocab_reads (dict[str, int]): Per-model count of ``/v1/models`` reads.
+        _vocab_lock (threading.Lock): Guards the read count and size cache.
         _media_capabilities (dict[str, MediaCapability]): Per-model props cache.
 
     Examples:
@@ -99,7 +117,7 @@ class LlamaCppCandidateScoringAdapter:
         *,
         timeout: float = 300.0,
         client: httpx.Client | None = None,
-        n_vocab: int = DEFAULT_N_VOCAB,
+        n_vocab: int | None = None,
         media_capabilities: Mapping[str, MediaCapability] | None = None,
     ) -> None:
         """Create the scoring adapter with an empty media capability cache.
@@ -109,13 +127,20 @@ class LlamaCppCandidateScoringAdapter:
             timeout: Request timeout in seconds.
             client: Optional shared httpx client (tests inject a fake).
             media_capabilities: Optional initial capability cache, copied on construction.
-            n_vocab: Vocabulary size for full ``n_probs`` pre-sampling receipt.
+            n_vocab: Model vocabulary size, when the caller knows it. The
+                adapter then sends it as ``n_probs``, uses it for the
+                completeness count and does not read ``/v1/models``. ``None``
+                reads ``meta.n_vocab`` from ``/v1/models``. The adapter keeps
+                a known size and makes at most 3 reads per model.
         """
         self._base_url = base_url.rstrip("/") + "/"
         self._timeout = timeout
         self._client = client
         self._owns_client = client is None
         self._n_vocab = n_vocab
+        self._vocab_sizes: dict[str, int] = {}
+        self._vocab_reads: dict[str, int] = {}
+        self._vocab_lock = threading.Lock()
         self._media_capabilities: dict[str, MediaCapability] = dict(
             media_capabilities or {}
         )
@@ -155,6 +180,8 @@ class LlamaCppCandidateScoringAdapter:
             Validated ``CandidateScoringResult`` with raw logprobs per label.
             ``off_option_mass`` is the mass outside the candidate tokens when
             the response holds the full distribution, else ``None`` (#297).
+            It is also ``None`` when the model vocabulary size is unknown
+            (#321).
 
         Raises:
             ScoringUnsupportedCapabilityError: Non-``PRE_SAMPLING`` stage,
@@ -183,7 +210,7 @@ class LlamaCppCandidateScoringAdapter:
             "prompt": self._prompt_field(request),
             "model": request.model,
             "n_predict": 0,
-            "n_probs": self._n_vocab,
+            "n_probs": self._n_probs(request.model),
             "temperature": 0,
             "top_k": 0,
             "top_p": 1,
@@ -209,9 +236,65 @@ class LlamaCppCandidateScoringAdapter:
             model=request.model,
             usage=_extract_usage(payload),
             off_option_mass=_off_option_mass(
-                token_logprobs, raw_by_label.values(), n_vocab=self._n_vocab
+                token_logprobs,
+                raw_by_label.values(),
+                n_vocab=self._model_n_vocab(request.model),
             ),
         )
+
+    def _n_probs(self, model: str) -> int:
+        """Return the ``n_probs`` budget for one completion request.
+
+        Args:
+            model: Router model id.
+
+        Returns:
+            The caller override, else the cached vocabulary size of ``model``,
+            else ``DEFAULT_N_VOCAB``. llama.cpp caps ``n_probs`` at the model
+            vocabulary.
+        """
+        if self._n_vocab is not None:
+            return self._n_vocab
+        return self._vocab_sizes.get(model, DEFAULT_N_VOCAB)
+
+    def _model_n_vocab(self, model: str) -> int | None:
+        """Return the vocabulary size of ``model``, read from ``/v1/models``.
+
+        The read runs after the ``/completion`` call because a router lists
+        ``meta`` only for a loaded model, and that call loads it. A known size
+        is cached for the life of the adapter. A read that fails, or that finds
+        no size (another client can unload the model between the two
+        requests), runs again on a later call, up to ``_MAX_VOCAB_READS``
+        reads per model. A failed read never fails the scoring call: the size
+        is then unknown. A lock guards the read count and the cache, so
+        concurrent calls cannot pass the limit. The HTTP read runs outside
+        the lock: concurrent first calls can each reserve a read, up to the
+        limit, and the equal results make the duplicate reads safe.
+
+        Args:
+            model: Router model id.
+
+        Returns:
+            The caller override, the reported size, or ``None`` when the size
+            is unknown.
+        """
+        if self._n_vocab is not None:
+            return self._n_vocab
+        with self._vocab_lock:
+            if model in self._vocab_sizes:
+                return self._vocab_sizes[model]
+            reads = self._vocab_reads.get(model, 0)
+            if reads >= _MAX_VOCAB_READS:
+                return None
+            self._vocab_reads[model] = reads + 1
+        try:
+            size = fetch_model_n_vocab(self._ensure_client(), self._base_url, model)
+        except GenerationError:
+            return None
+        if size is not None:
+            with self._vocab_lock:
+                self._vocab_sizes[model] = size
+        return size
 
     def _prompt_field(self, request: CandidateScoringRequest) -> Any:
         """Return the ``prompt`` body value for a text or media request.
@@ -275,7 +358,7 @@ def _off_option_mass(
     token_logprobs: Mapping[int, float],
     candidate_logprobs: Iterable[float],
     *,
-    n_vocab: int,
+    n_vocab: int | None,
 ) -> float | None:
     """Return the probability mass outside the candidate tokens, or ``None``.
 
@@ -285,25 +368,23 @@ def _off_option_mass(
     occurs.
 
     The response is complete only when it holds exactly ``n_vocab`` entries.
-    ``n_vocab`` is the vocabulary size the caller gave the adapter; the
-    response does not report the model vocabulary. llama.cpp caps ``n_probs``
-    at the model vocabulary, so a smaller model gives fewer entries and the
-    value is ``None`` (unavailable), not a partial number. A model vocabulary
-    larger than ``n_vocab`` also returns ``n_vocab`` entries and cannot be
-    detected by the count. The sum guard then catches it only when the
-    missing mass is above ``_FULL_DISTRIBUTION_TOLERANCE``. A total that is
-    not within that margin of 1 also gives ``None``.
+    ``n_vocab`` is the model vocabulary size that ``/v1/models`` reports, or
+    the caller override (#321). A response cut short by an ``n_probs`` budget
+    below the model vocabulary has fewer entries, and the value is ``None``
+    (unavailable), not a partial number. An unknown ``n_vocab`` also gives
+    ``None``. A total that is not within ``_FULL_DISTRIBUTION_TOLERANCE`` of
+    1 also gives ``None``.
 
     Args:
         token_logprobs: Every ``token_id -> logprob`` entry the router returned.
         candidate_logprobs: Raw logprobs of the requested candidate tokens.
-        n_vocab: Vocabulary size the adapter asked for as ``n_probs``.
+        n_vocab: Model vocabulary size, or ``None`` when it is unknown.
 
     Returns:
         The off-option mass in ``[0, 1]``, or ``None`` when the response does
         not hold the full distribution.
     """
-    if len(token_logprobs) != n_vocab:
+    if n_vocab is None or len(token_logprobs) != n_vocab:
         return None
     returned_mass = math.fsum(math.exp(value) for value in token_logprobs.values())
     if abs(returned_mass - 1.0) > _FULL_DISTRIBUTION_TOLERANCE:
