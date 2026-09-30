@@ -6,7 +6,8 @@ It reads the model vocabulary size from ``/v1/models`` (#321) unless the
 caller gives ``n_vocab``. It keeps a known size and makes at most 3 reads per
 model.
 A media request that fails to tokenize after a router model reload reads the
-new media marker once and sends the request once more (#322).
+new media marker once and sends the request once more (#322). A refresh that
+finds no image support is not cached (#323).
 
 Examples:
     ```python
@@ -52,6 +53,7 @@ import httpx
 
 from typevet.adapters.outbound.llama_cpp.http_mapping import (
     ensure_success_status,
+    map_http_status,
     parse_json_response,
     send_idempotent,
 )
@@ -110,7 +112,9 @@ class LlamaCppCandidateScoringAdapter:
         _vocab_sizes (dict[str, int]): Per-model cache of known vocabulary sizes.
         _vocab_reads (dict[str, int]): Per-model count of ``/v1/models`` reads.
         _vocab_lock (threading.Lock): Guards the read count and size cache.
-        _media_capabilities (dict[str, MediaCapability]): Per-model props cache.
+        _media_capabilities (dict[str, MediaCapability]): Per-model props
+            cache. A ``/props`` probe caches only a capability with image
+            support (#323).
         _media_lock (threading.Lock): Guards ``_media_capabilities`` for
             callers on worker threads.
 
@@ -186,6 +190,8 @@ class LlamaCppCandidateScoringAdapter:
         request gets HTTP 400 "Failed to tokenize prompt", the adapter reads
         ``/props`` once more, rebuilds the prompt with the new marker and
         sends it once more (#322). A successful request sends no extra call.
+        When that ``/props`` read fails, the adapter raises the original
+        tokenize 400 with the probe error as ``__cause__`` (#323).
 
         Args:
             request: Model id, prefix, ordered single-token candidates, stage,
@@ -205,7 +211,8 @@ class LlamaCppCandidateScoringAdapter:
                 logprob values (via ``build_and_validate_result``).
             TransportError: When the HTTP client fails before a response.
             BackendHttpError: When llama.cpp returns HTTP status 400 or above,
-                including a second tokenize failure after the marker refresh.
+                including a second tokenize failure after the marker refresh
+                and the tokenize failure whose marker refresh failed.
             GenerationError: When the JSON body shape is not usable.
         """
         if request.stage is not ScoreStage.PRE_SAMPLING:
@@ -224,8 +231,8 @@ class LlamaCppCandidateScoringAdapter:
 
         response = self._post_completion(request)
         if request.media and _is_tokenize_failure(response):
-            self._refresh_media_capability(request.model)
-            response = self._post_completion(request)
+            capability = self._refresh_after_tokenize_failure(request.model, response)
+            response = self._post_completion(request, capability)
         ensure_success_status(response)
         payload = parse_json_response(response)
         # Validates the root is an object, which _extract_usage then assumes.
@@ -301,17 +308,22 @@ class LlamaCppCandidateScoringAdapter:
                 self._vocab_sizes[model] = size
         return size
 
-    def _post_completion(self, request: CandidateScoringRequest) -> httpx.Response:
+    def _post_completion(
+        self,
+        request: CandidateScoringRequest,
+        capability: MediaCapability | None = None,
+    ) -> httpx.Response:
         """Build the ``/completion`` body and send it with the early-close retry.
 
         Args:
             request: The scoring ask, with or without images.
+            capability: Media capability to use, or ``None`` to use the cache.
 
         Returns:
             The router response, with any status.
         """
         body: dict[str, Any] = {
-            "prompt": self._prompt_field(request),
+            "prompt": self._prompt_field(request, capability),
             "model": request.model,
             "n_predict": 0,
             "n_probs": self._n_probs(request.model),
@@ -326,11 +338,16 @@ class LlamaCppCandidateScoringAdapter:
         client = self._ensure_client()
         return send_idempotent(lambda: client.post(url, json=body))
 
-    def _prompt_field(self, request: CandidateScoringRequest) -> Any:
+    def _prompt_field(
+        self,
+        request: CandidateScoringRequest,
+        capability: MediaCapability | None = None,
+    ) -> Any:
         """Return the ``prompt`` body value for a text or media request.
 
         Args:
             request: The scoring ask, with or without images.
+            capability: Media capability to use, or ``None`` to use the cache.
 
         Returns:
             The prefix string for a text ask, or the nested object prompt that
@@ -342,7 +359,8 @@ class LlamaCppCandidateScoringAdapter:
         """
         if not request.media:
             return request.prefix
-        capability = self._media_capability(request.model)
+        if capability is None:
+            capability = self._media_capability(request.model)
         if not capability.vision:
             msg = (
                 f"llama.cpp model {request.model!r} does not declare image input "
@@ -372,8 +390,33 @@ class LlamaCppCandidateScoringAdapter:
             return cached
         return self._refresh_media_capability(model)
 
+    def _refresh_after_tokenize_failure(
+        self, model: str, failed: httpx.Response
+    ) -> MediaCapability:
+        """Probe ``/props`` again after a tokenize failure on a media prompt.
+
+        Args:
+            model: Router model id.
+            failed: The HTTP 400 tokenize failure response.
+
+        Returns:
+            The capability the router declares now.
+
+        Raises:
+            BackendHttpError: The original tokenize 400, with the probe error
+                as ``__cause__``, when the ``/props`` read fails (#323).
+        """
+        try:
+            return self._refresh_media_capability(model)
+        except GenerationError as exc:
+            raise map_http_status(failed) from exc
+
     def _refresh_media_capability(self, model: str) -> MediaCapability:
         """Probe ``/props`` for ``model`` and replace the cached capability.
+
+        A capability without image support is not cached, and the old entry
+        is removed: the router can load a vision model again, so the next
+        image request probes again (#323).
 
         Args:
             model: Router model id.
@@ -385,7 +428,10 @@ class LlamaCppCandidateScoringAdapter:
             self._ensure_client(), self._base_url, model
         )
         with self._media_lock:
-            self._media_capabilities[model] = capability
+            if capability.vision:
+                self._media_capabilities[model] = capability
+            else:
+                self._media_capabilities.pop(model, None)
         return capability
 
     def _ensure_client(self) -> httpx.Client:
