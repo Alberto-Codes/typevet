@@ -56,7 +56,8 @@ The multimodal evidence covers one model pin per backend.
   The #286 check covered the local GGUF tokenizer and the cached Hugging Face tokenizer.
   25 to 36 options raise `DecisionExecutionError` before that question's scoring call.
   More than 36 options raise `JudgmentValidationError` before that question's scoring call.
-  No calibration receipt exists for more than 10 options (#288).
+  No calibration receipt exists for more than 10 options.
+  One live 24-option run on the local Q2_K Gemma 4 pin gave a valid distribution (#288). One run is not calibration.
 - `TYPEVET_LLAMA__MULTIMODAL_MODEL` defaults to a Gemma 3 id.
   If the router serves the Gemma 3 id, the native vision factory raises `ValueError`.
   Set the variable, or pass `model=`, to the Gemma 4 id.

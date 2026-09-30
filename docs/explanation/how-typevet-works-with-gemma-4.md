@@ -151,7 +151,8 @@ a string of digits, for example `"10"`, always keeps the word `Control` on
 each line (#237). Letter controls are in use only for 11 or more options.
 Then a letter label that equals a control keeps the word, with case ignored,
 for example `"A"` or `"a"` (#287). No calibration receipt exists for
-more than 10 options yet (#288).
+more than 10 options. One live 24-option run on the local Q2_K pin gave a
+valid distribution (#288). One run is not calibration.
 
 **Image input.** A judgment can take images. Both backends support
 image-conditioned scoring. On vLLM, generation can also take images. llama.cpp
