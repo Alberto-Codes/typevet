@@ -15,11 +15,14 @@ The configured key never reaches the caller in clear text. ``VllmSettings``
 leaves it out of ``repr``. The adapters that ``generation_adapter`` and
 ``async_vllm_generation_adapter`` return catch each ``GenerationError`` from
 ``generate``, and the port that ``open_judgment`` yields catches each one from
-``judge``. When the error text, an attribute such as a parsed payload, or the
-cause chain holds the raw or JSON-escaped key, the error is raised again as
-the same type with the key replaced by ``***`` and with no cause or context.
-A server that echoes the ``Authorization`` header therefore cannot put the key
-into a ``BackendHttpError``. Successful results are not changed.
+``judge``. When a key is configured, each such error is raised again as a
+copy of the same type with no cause or context. In the copy, the raw or
+JSON-escaped key in the text or an attribute, such as a parsed payload, is
+replaced by ``***``. The copy is made even when the key text is absent,
+because an httpx error in the cause chain holds the request headers. A server
+that echoes the ``Authorization`` header therefore cannot put the key into a
+``BackendHttpError``. Without a key, errors pass through unchanged.
+Successful results are not changed.
 The HTTP clients are built the same way with or without a key, so environment
 proxy settings apply in both cases. Error messages name variables, never
 values, and a parse failure raises with no cause or context.
@@ -146,38 +149,6 @@ def _masked(value: Any, needles: tuple[str, ...]) -> Any:
     return value
 
 
-def _texts(value: Any) -> Iterator[str]:
-    """Yield every string inside ``value``, including dict keys.
-
-    Args:
-        value: String, container or other attribute value.
-
-    Yields:
-        Each string that ``_masked`` would mask.
-    """
-    if isinstance(value, str):
-        yield value
-    elif isinstance(value, dict):
-        for key, item in value.items():
-            yield from _texts(key)
-            yield from _texts(item)
-    elif isinstance(value, list | tuple):
-        for item in value:
-            yield from _texts(item)
-
-
-def _chain_text(exc: BaseException) -> str:
-    parts: list[str] = []
-    seen: set[int] = set()
-    current: BaseException | None = exc
-    while current is not None and id(current) not in seen:
-        seen.add(id(current))
-        parts += [str(current), repr(current)]
-        parts += [text for v in vars(current).values() for text in _texts(v)]
-        current = current.__cause__ or current.__context__
-    return "\n".join(parts)
-
-
 def _masked_error(exc: GenerationError, needles: tuple[str, ...]) -> GenerationError:
     """Rebuild ``exc`` as the same type with the key masked and no chain.
 
@@ -208,17 +179,20 @@ def _key_needles(key: str | None) -> tuple[str, ...]:
 def _masked_if_keyed(
     exc: GenerationError, needles: tuple[str, ...]
 ) -> GenerationError | None:
-    """Return a masked copy of ``exc`` when its chain holds a key form.
+    """Return a masked copy of ``exc`` when a key is configured.
+
+    The copy is made whether or not the key text appears in ``exc``. The
+    cause chain can hold the key where no text check sees it, for example in
+    the headers of an httpx request, so the copy drops the chain in all cases.
 
     Args:
         exc: Error raised by a vLLM adapter.
-        needles: Key forms from ``_key_needles``.
+        needles: Key forms from ``_key_needles``, or empty without a key.
 
     Returns:
-        The masked copy, or ``None`` when no key form is present.
+        The masked copy, or ``None`` when no key is configured.
     """
-    chain = _chain_text(exc)
-    if not any(needle in chain for needle in needles):
+    if not needles:
         return None
     return _masked_error(exc, needles)
 
@@ -260,7 +234,7 @@ class _KeyMaskingJudgmentPort:
             The response from the wrapped port, unchanged.
 
         Raises:
-            GenerationError: The port error, masked when it holds the key.
+            GenerationError: The port error, as a masked copy when a key is set.
         """
         try:
             return self._port.judge(state, questions, model, media=media)
@@ -293,10 +267,11 @@ class _ClientOwningVllmAdapter(VllmGenerationAdapter):
     def generate(self, request: GenerationRequest) -> GenerationResult:
         """Generate, and mask the configured key in any raised error.
 
-        A successful result is returned unchanged. ``_masked_if_keyed``
-        checks each error: one whose text or cause chain holds the key is
-        raised again as the same type with the key replaced by ``MASK`` and
-        with no cause or context.
+        A successful result is returned unchanged. When a key is configured,
+        ``_masked_if_keyed`` copies each error as the same type with the key
+        replaced by ``MASK`` and with no cause or context. The copy is raised
+        outside the ``except`` block, so the original error is not reachable
+        from it.
 
         Args:
             request: Prompt, schema and served model name.
@@ -305,7 +280,7 @@ class _ClientOwningVllmAdapter(VllmGenerationAdapter):
             The result from ``VllmGenerationAdapter.generate``.
 
         Raises:
-            GenerationError: The adapter error, masked when it holds the key.
+            GenerationError: The adapter error, as a masked copy when a key is set.
         """
         try:
             return super().generate(request)
@@ -350,10 +325,10 @@ class _ClientOwningAsyncVllmAdapter(AsyncVllmGenerationAdapter):
     async def generate(self, request: GenerationRequest) -> GenerationResult:
         """Generate, and mask the configured key in any raised error.
 
-        Masking follows ``_ClientOwningVllmAdapter.generate``: an error whose
-        text, attributes or cause chain holds the key is raised again as the
-        same type with the key replaced by ``MASK`` and with no cause or
-        context. A successful result is returned unchanged.
+        Masking follows ``_ClientOwningVllmAdapter.generate``: when a key is
+        configured, each error is raised again as a copy of the same type
+        with the key replaced by ``MASK`` and with no cause or context. A
+        successful result is returned unchanged.
 
         Args:
             request: Prompt, schema and served model name.
@@ -362,7 +337,7 @@ class _ClientOwningAsyncVllmAdapter(AsyncVllmGenerationAdapter):
             The result from ``AsyncVllmGenerationAdapter.generate``.
 
         Raises:
-            GenerationError: The adapter error, masked when it holds the key.
+            GenerationError: The adapter error, as a masked copy when a key is set.
             RuntimeError: When the call runs on a different event loop from
                 the first call. It is not masked, because it holds no key.
         """

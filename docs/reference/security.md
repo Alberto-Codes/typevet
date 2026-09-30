@@ -91,11 +91,15 @@ Only the vLLM path takes an API key. The settings are in
 | Setting | `TYPEVET_VLLM__API_KEY`. The value must be ASCII. An empty value sends no key. |
 | `repr` | `repr(VllmSettings)` does not show the key. |
 | Settings errors | An error names the variable, never its value. |
-| Adapter errors | The adapters from `generation_adapter` and `async_vllm_generation_adapter` mask the key in a `GenerationError`. The port from `open_judgment` also masks it. Masking checks text only; see the known gaps below. |
+| Adapter errors | The adapters from `generation_adapter` and `async_vllm_generation_adapter` mask the key in a `GenerationError`. The port from `open_judgment` also masks it. When a key is set, each such error is a masked copy with no cause or context. |
 | Receipts | The vLLM live acceptance run in `evals/` masks the key before it writes the receipt. |
 
-A masked error shows `***` in place of the raw or JSON-escaped key. The
-masked error has the same type, and it has no cause or context. Masking
+When a key is set, each `GenerationError` from these wrappers is a masked
+copy. The copy shows `***` in place of the raw or JSON-escaped key. The copy
+has the same type, and it has no cause or context. The copy is made even when
+the key text is absent. The httpx error in the cause chain holds the request,
+and its headers hold `Authorization: Bearer <key>`. Thus the copy drops that
+chain. Without a key, the wrappers raise the original error. Masking
 applies to strings inside a dict, list or tuple, for example a parsed payload.
 Masking applies only to a `GenerationError`. Other exceptions, such as a
 `RuntimeError` from the httpx client, pass through without masking.
@@ -109,18 +113,15 @@ Known gaps:
   client that you build yourself does not mask the key. This includes the
   sync and async generation adapters, the scoring adapter and the judgment
   factory.
-- Masking checks only the text of the error chain. When the key text is
-  absent, the wrapper raises the original error with its cause chain. The
-  httpx error in `__cause__` holds the request, and its headers hold
-  `Authorization: Bearer <key>`. A printed traceback does not show headers,
-  but code that reads the cause can.
-  [#276](https://github.com/Alberto-Codes/typevet/issues/276) tracks this gap.
 - Masking does not look inside a set or a bytes value.
   [#227](https://github.com/Alberto-Codes/typevet/issues/227) tracks this gap.
-- A pytest failure can show a key from a test environment.
-  [#251](https://github.com/Alberto-Codes/typevet/issues/251) tracks this gap.
+- The default pytest options omit `--showlocals`
+  ([#251](https://github.com/Alberto-Codes/typevet/issues/251)). A run with
+  `--showlocals` or `-l` can still print a key from a test environment.
 - Masking does not protect tracebacks from other code, debuggers or memory
   dumps. The client holds the key as a plain string.
+  The traceback of a masked error still reaches that client through the
+  wrapper frame. A tool that captures frame objects can read the key.
 
 ## Redaction in diagnostic events
 

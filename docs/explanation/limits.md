@@ -137,7 +137,6 @@ Each item is an open gap at the time of writing.
 None of them has a promised fix date.
 
 - [#204](https://github.com/Alberto-Codes/typevet/issues/204): image pixel limits and long-lived service behaviour are not characterized.
-- [#251](https://github.com/Alberto-Codes/typevet/issues/251): a failing live test can print an API key in pytest output, because the default options include `--showlocals`.
 - [#227](https://github.com/Alberto-Codes/typevet/issues/227): `TYPEVET_VLLM__TIMEOUT` accepts `nan` and `inf`.
   Key masking does not walk `set`, `frozenset` or `bytes` values.
 - [#235](https://github.com/Alberto-Codes/typevet/issues/235): a caller framing can omit the Gemma 4 no-thinking prefill.

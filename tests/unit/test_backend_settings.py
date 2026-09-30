@@ -299,14 +299,29 @@ def test_transport_error_carrying_the_key_is_masked() -> None:
 
 
 @pytest.mark.unit
-def test_error_without_the_key_is_raised_unchanged() -> None:
+def test_keyed_error_without_the_key_text_is_copied_without_chain() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(500, text="boom")
 
     err = _raised(_keyed_adapter(SENTINEL, handler), _SCHEMA)
-    assert isinstance(err, BackendHttpError)
+    assert type(err) is BackendHttpError
+    assert err.status_code == 500
     assert err.body_snippet == "boom"
+    assert err.__cause__ is None
+    assert err.__context__ is None
     assert err.__traceback__ is not None
+
+
+@pytest.mark.unit
+def test_error_without_a_configured_key_keeps_its_cause() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("refused", request=request)
+
+    adapter = generation_adapter(_vllm_env(), transport=httpx.MockTransport(handler))
+    assert isinstance(adapter, VllmGenerationAdapter)
+    err = _raised(adapter, _SCHEMA)
+    assert type(err) is TransportError
+    assert isinstance(err.__cause__, httpx.ConnectError)
 
 
 @pytest.mark.unit
@@ -484,7 +499,7 @@ def test_async_401_echoing_the_key_is_masked_without_chain() -> None:
 
 
 @pytest.mark.unit
-def test_async_error_without_the_key_is_raised_unchanged() -> None:
+def test_async_keyed_error_without_the_key_text_is_copied_without_chain() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(500, text="boom")
 
@@ -495,6 +510,8 @@ def test_async_error_without_the_key_is_raised_unchanged() -> None:
     with pytest.raises(BackendHttpError) as info:
         asyncio.run(_gathered(adapter, 1))
     assert info.value.body_snippet == "boom"
+    assert info.value.__cause__ is None
+    assert info.value.__context__ is None
 
 
 @pytest.mark.unit
