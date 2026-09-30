@@ -120,6 +120,7 @@ nav:
       - Limits and known gaps: explanation/limits.md
       - Native typed judgments: explanation/native-typed-judgments.md
       - TypeLLM, Jev and judgevet: explanation/typellm-and-judgevet.md
+      - Two-image face matching: explanation/two-image-face-matching.md
       - Verified evidence and inferred claims: explanation/verification.md
   - Reference:
       - Library:

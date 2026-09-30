@@ -129,3 +129,5 @@ from the archive, and do not write them into receipts.
 
 - [Eval partner data policy](eval-partner-data-policy.md): public and
   partner data.
+- [Two-image face matching](../explanation/two-image-face-matching.md): what
+  the face-match runs measured and their limits.
