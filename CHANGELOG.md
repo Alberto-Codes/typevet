@@ -1,5 +1,43 @@
 # Changelog
 
+## [0.2.0](https://github.com/Alberto-Codes/typevet/compare/v0.1.0...v0.2.0) (2026-09-30)
+
+
+### Features
+
+* **domain:** native Choice up to 24 options with digit-then-letter controls ([34f23ad](https://github.com/Alberto-Codes/typevet/commit/34f23ad8cb5684f01cccc65e9a2059ea38057684)), closes [#286](https://github.com/Alberto-Codes/typevet/issues/286) [#287](https://github.com/Alberto-Codes/typevet/issues/287) [#237](https://github.com/Alberto-Codes/typevet/issues/237)
+* **integrations:** a judgevet provider bridge over JudgmentPort ([2b04383](https://github.com/Alberto-Codes/typevet/commit/2b04383d94c49f8723a09762991d2e6deaaaab37)), closes [#284](https://github.com/Alberto-Codes/typevet/issues/284)
+* **integrations:** judgevet 0.15 conformance kit and per-question images ([67728f5](https://github.com/Alberto-Codes/typevet/commit/67728f586e6d3f930f5598d390585b4979f38e64)), closes [#290](https://github.com/Alberto-Codes/typevet/issues/290)
+
+
+### Fixes
+
+* **adapters:** drop the cause chain from masked vLLM errors when a key is set ([71ee1fb](https://github.com/Alberto-Codes/typevet/commit/71ee1fbd8e458ed61cda24f52f6655e9028b41f9)), closes [#276](https://github.com/Alberto-Codes/typevet/issues/276)
+* **adapters:** reject non-finite vLLM timeouts and mask keys in set and bytes values ([e8ecc20](https://github.com/Alberto-Codes/typevet/commit/e8ecc2093775975a91ede996e5793c43812ad407)), closes [#227](https://github.com/Alberto-Codes/typevet/issues/227)
+* **domain:** validate CandidateScoringRequest.media items ([ce3c9e6](https://github.com/Alberto-Codes/typevet/commit/ce3c9e6d4c56a072da2244e4d27497bf4396c58a)), closes [#222](https://github.com/Alberto-Codes/typevet/issues/222)
+* **evals:** harden the PSAI leak check, KV-cache reading and runner failure counting ([dec6dc7](https://github.com/Alberto-Codes/typevet/commit/dec6dc76f729775449948693482c4fcd1e1ede87)), closes [#223](https://github.com/Alberto-Codes/typevet/issues/223) [#225](https://github.com/Alberto-Codes/typevet/issues/225) [#238](https://github.com/Alberto-Codes/typevet/issues/238) [#261](https://github.com/Alberto-Codes/typevet/issues/261)
+* **site:** focus ring, Noul search rank, 2x header reflow and Home card headings ([5bbfecb](https://github.com/Alberto-Codes/typevet/commit/5bbfecb25d78340ba5f56bd8470f3bd0b1af864d)), closes [#282](https://github.com/Alberto-Codes/typevet/issues/282) [#267](https://github.com/Alberto-Codes/typevet/issues/267)
+* **site:** keep the closed search panel out of the Tab order ([3a7a67c](https://github.com/Alberto-Codes/typevet/commit/3a7a67cdceefa048f4a3f03384279b0ae4e8d90f)), closes [#285](https://github.com/Alberto-Codes/typevet/issues/285) [#267](https://github.com/Alberto-Codes/typevet/issues/267) [#242](https://github.com/Alberto-Codes/typevet/issues/242)
+* **site:** keyboard access to the mobile navigation drawer ([918d8d9](https://github.com/Alberto-Codes/typevet/commit/918d8d9e8d4277eaaaca5de75967aadcf205ac8f)), closes [#283](https://github.com/Alberto-Codes/typevet/issues/283) [#267](https://github.com/Alberto-Codes/typevet/issues/267)
+* **tests:** keep API keys out of pytest failure output ([599de01](https://github.com/Alberto-Codes/typevet/commit/599de0134c0d9e700604c35ba2e564b73158efd8)), closes [#251](https://github.com/Alberto-Codes/typevet/issues/251)
+
+
+### Documentation
+
+* correct the local alias identity, framing prefill and Gemma 4 image cost ([867a61a](https://github.com/Alberto-Codes/typevet/commit/867a61a61eb59e824173c074be6f5fc394252ed3)), closes [#233](https://github.com/Alberto-Codes/typevet/issues/233) [#235](https://github.com/Alberto-Codes/typevet/issues/235) [#260](https://github.com/Alberto-Codes/typevet/issues/260)
+* **explanation:** correct the stale [#129](https://github.com/Alberto-Codes/typevet/issues/129) template claim in native typed judgments ([698d53d](https://github.com/Alberto-Codes/typevet/commit/698d53d1c71475295658363965d4f99ef60e1b96)), closes [#278](https://github.com/Alberto-Codes/typevet/issues/278)
+* **explanation:** gather limits and known gaps on one page with page status ([cb51e80](https://github.com/Alberto-Codes/typevet/commit/cb51e80714e829483f47213fbdbfa57fd8cb35e5)), closes [#247](https://github.com/Alberto-Codes/typevet/issues/247)
+* **index:** list every page in docs/README.md and drop the stale PyPI claim ([638a2e1](https://github.com/Alberto-Codes/typevet/commit/638a2e1d9906603c5a9038707840965cfdb85698)), closes [#275](https://github.com/Alberto-Codes/typevet/issues/275)
+* **reference:** map vLLM adapter failures to typevet errors ([367051e](https://github.com/Alberto-Codes/typevet/commit/367051ea76f13ce62f17abf201c962013ba3dbb0)), closes [#273](https://github.com/Alberto-Codes/typevet/issues/273)
+* **reference:** one page for data handling, key masking and security ([fa07066](https://github.com/Alberto-Codes/typevet/commit/fa070662fd8c5d589f899ecd89565cc99b05f6fa)), closes [#246](https://github.com/Alberto-Codes/typevet/issues/246)
+* **reference:** one page for releases, changelog and versioning ([40f7286](https://github.com/Alberto-Codes/typevet/commit/40f7286899046f6c4fdb56d2989706c7ee545183)), closes [#274](https://github.com/Alberto-Codes/typevet/issues/274)
+* **reference:** split the Python API reference into one page per package ([f7af6d4](https://github.com/Alberto-Codes/typevet/commit/f7af6d491d88809e0d8170481887c7a2a07dc5c6)), closes [#266](https://github.com/Alberto-Codes/typevet/issues/266)
+* **site:** define accessible light and dark visual tokens ([c7dceae](https://github.com/Alberto-Codes/typevet/commit/c7dceae9db93008b420bc031363d9858233b84b1)), closes [#263](https://github.com/Alberto-Codes/typevet/issues/263) [#262](https://github.com/Alberto-Codes/typevet/issues/262)
+* **site:** give the Home routes a primary start action and task cards ([acc7e25](https://github.com/Alberto-Codes/typevet/commit/acc7e25eb2e68502e8255acccf364fd9a5d620f0)), closes [#264](https://github.com/Alberto-Codes/typevet/issues/264)
+* **site:** group reference navigation around reader tasks ([219bf76](https://github.com/Alberto-Codes/typevet/commit/219bf76516e19b9a159db11bc864834f12e2bdd6)), closes [#265](https://github.com/Alberto-Codes/typevet/issues/265)
+* **tutorial:** first typed judgment on a local llama.cpp server ([0c1b529](https://github.com/Alberto-Codes/typevet/commit/0c1b5297ce4952ff5c3502091045070c17958915)), closes [#281](https://github.com/Alberto-Codes/typevet/issues/281)
+* **tutorial:** make the offline tutorial a full first run for a new reader ([0ac1f92](https://github.com/Alberto-Codes/typevet/commit/0ac1f9234a0ad4ba68da7b06dfd5eb83405329d5)), closes [#280](https://github.com/Alberto-Codes/typevet/issues/280)
+
 ## [0.1.0](https://github.com/Alberto-Codes/typevet/releases/tag/v0.1.0) (2026-09-29)
 
 
