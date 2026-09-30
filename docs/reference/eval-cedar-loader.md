@@ -171,3 +171,5 @@ commit images from the archive, and do not write them into receipts.
   partner data.
 - [LFW loader](eval-lfw-loader.md): the face-match loader that this loader
   follows.
+- [Two-image signature comparison](../explanation/two-image-signature-comparison.md):
+  what the signature-match runs measured and their limits.

@@ -121,6 +121,7 @@ nav:
       - Native typed judgments: explanation/native-typed-judgments.md
       - TypeLLM, Jev and judgevet: explanation/typellm-and-judgevet.md
       - Two-image face matching: explanation/two-image-face-matching.md
+      - Two-image signature comparison: explanation/two-image-signature-comparison.md
       - Verified evidence and inferred claims: explanation/verification.md
   - Reference:
       - Library:
