@@ -37,6 +37,7 @@ answers a question, and a reference gives facts.
 ## Tutorials
 
 - [First typed judgment offline](tutorials/first-typed-judgment-offline.md): Fake outbound adapter through JudgmentPort; no network.
+- [First typed judgment on llama.cpp](tutorials/first-typed-judgment-on-llama-cpp.md): the same three questions against a local Gemma 4 llama.cpp server.
 
 ## How-to
 

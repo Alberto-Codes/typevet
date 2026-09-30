@@ -100,6 +100,7 @@ nav:
   - Home: index.md
   - Tutorials:
       - First typed judgment offline: tutorials/first-typed-judgment-offline.md
+      - First typed judgment on llama.cpp: tutorials/first-typed-judgment-on-llama-cpp.md
   - How-to:
       - Install typevet: how-to/install.md
       - Call typevet from Python: how-to/call-typevet-from-python.md

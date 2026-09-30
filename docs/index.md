@@ -71,6 +71,7 @@ The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.
     Run a stock `llama-server` with nested `json_schema` and opt-in live tests.
 
     - [Run Gemma 4 on llama.cpp](how-to/run-gemma4-llamacpp.md)
+    - [First typed judgment on llama.cpp](tutorials/first-typed-judgment-on-llama-cpp.md)
 
 -   ### :material-image-outline:{ .lg .middle } Send images with a question
 

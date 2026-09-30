@@ -201,7 +201,9 @@ own project. Then pick one backend:
   section. There, `open_judgment()` builds the port for you. You pass
   `session.model` to `judge`. The session pins that id from `TYPEVET_VLLM__MODEL`.
 - **llama.cpp.** [Run Gemma 4 on local llama.cpp](../how-to/run-gemma4-llamacpp.md)
-  on your machine. Then
+  on your machine. Then follow
+  [First typed judgment on llama.cpp](first-typed-judgment-on-llama-cpp.md).
+  It asks these three questions against that server. To check more examples,
   [run a small live judgment eval](../how-to/run-a-small-live-judgment-eval.md)
   against that router. That eval runs judgments through pytest. It reads
   `TYPEVET_LLAMA__BASE_URL` and a pinned llama.cpp model id.
