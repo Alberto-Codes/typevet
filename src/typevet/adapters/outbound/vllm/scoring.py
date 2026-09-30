@@ -146,10 +146,18 @@ class VllmCandidateScoringAdapter:
         self._client_lock = threading.Lock()
 
     def close(self) -> None:
-        """Close the owned HTTP client when the adapter created it."""
-        if self._owns_client and self._client is not None:
-            self._client.close()
-            self._client = None
+        """Close the owned HTTP client when the adapter created it.
+
+        The client is detached and closed under ``_client_lock``, so a racing
+        ``_ensure_client`` never gets the closing client and builds at most
+        one new client. An injected client stays open (#345).
+        """
+        if not self._owns_client:
+            return
+        with self._client_lock:
+            client, self._client = self._client, None
+            if client is not None:
+                client.close()
 
     def __enter__(self) -> Self:
         """Enter a context that closes the owned client on exit."""
