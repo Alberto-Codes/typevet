@@ -36,6 +36,7 @@ answers a question, and a reference gives facts.
 - [Two-image face matching](explanation/two-image-face-matching.md): what the LFW face-match runs measured and what the probability means. The results are not an identity check.
 - [Two-image signature comparison](explanation/two-image-signature-comparison.md): what the CEDAR signature-match runs measured and what the probability means. The results are not a fraud control.
 - [Check images against a synthetic register](explanation/check-register-matching.md): what the generated check-match runs measured, the false-clear rate and a legibility gate hypothesis. The results are not a fraud control.
+- [Image judgment throughput on one H100](explanation/image-throughput-h100.md): image judgments per second at 1 to 32 in flight. It also covers answers under load and cost.
 - [Wording evolution on DIFrauD scam messages](explanation/wording-evolution-difraud.md): what one gepa-adk run changed in the `is_scam` wording. The held-out check failed on vLLM and passed narrowly on llama.cpp.
 - [Gemma 4 and Jev on DIFrauD, each with its evolved wording](explanation/gemma-and-jev-difraud.md): Jev and Gemma 4 on the same held-out rows, each with its own gepa-adk wording. Numbers per judge. It also corrects the #309 backend-gap reading.
 

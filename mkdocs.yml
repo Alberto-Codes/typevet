@@ -118,6 +118,7 @@ nav:
       - Check images against a synthetic register: explanation/check-register-matching.md
       - Gemma 4 and Jev on DIFrauD: explanation/gemma-and-jev-difraud.md
       - Gemma 4 multimodal judgments: explanation/gemma-4-multimodal-judgments.md
+      - Image judgment throughput on one H100: explanation/image-throughput-h100.md
       - Library-first architecture: explanation/library-first-architecture.md
       - Limits and known gaps: explanation/limits.md
       - Native typed judgments: explanation/native-typed-judgments.md
