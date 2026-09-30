@@ -120,6 +120,13 @@ The default cap is typevet's native limit, `MAX_ENUM_CHOICES` (24 options).
 Issue [#287](https://github.com/Alberto-Codes/typevet/issues/287) raised the native limit to 24.
 Pass `max_choice_options` to declare a lower cap.
 
+Text instructions are enough for question-wording evolution with gepa-adk.
+gepa-adk evolves a wording value in a caller-owned mapping, and its `MappingComponentHandler` accepts only `str` values.
+The evolution loop therefore sends text instructions to the provider.
+Questions built outside the evolution loop can carry object or array instructions. The bridge refuses them.
+Render such instructions to text before you call the bridge.
+Issue [#291](https://github.com/Alberto-Codes/typevet/issues/291) records this decision.
+
 To judge images, use `TypevetMediaSystemOnePort` with a vision backend.
 Declare the image types in a `MediaCapabilities` value:
 
