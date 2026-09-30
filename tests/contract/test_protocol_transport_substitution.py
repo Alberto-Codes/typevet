@@ -210,7 +210,21 @@ def _strings(value: object) -> list[str]:
         return [s for k, v in value.items() for s in (*_strings(k), *_strings(v))]
     if isinstance(value, (list, tuple, set, frozenset)):
         return [s for item in value for s in _strings(item)]
-    return []
+    if value is None or type(value) in (bool, int, float):
+        return []
+    msg = f"leak check cannot inspect value of type {type(value).__name__}"
+    raise TypeError(msg)
+
+
+_PREFIX_WINDOW = 20
+
+
+def _prefix_windows(prefixes: list[str]) -> set[str]:
+    return {
+        prefix[i : i + _PREFIX_WINDOW]
+        for prefix in prefixes
+        for i in range(len(prefix) - _PREFIX_WINDOW + 1)
+    }
 
 
 _PAIR_IDS = [f"{f.__name__}-{t.__name__}" for f, t in _PAIRS]
@@ -231,6 +245,9 @@ def test_pair_returns_equal_answers_without_leaks(
     sentinels = {t.sentinel for t in _TRANSPORTS}
     leaked = [s for s in serialized for w in sentinels if w in s]
     assert leaked == []
+    windows = _prefix_windows(transport.prefixes)
+    assert windows
+    assert [s for s in serialized for w in windows if w in s] == []
 
     assert response == reference
     assert response.nouls["noul"].noul == pytest.approx(0.7)

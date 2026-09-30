@@ -2,9 +2,10 @@
 
 Each fixture is a **synthetic** labeled case: the author defines the request,
 the mocked HTTP stimulus (when used), and the fake configuration. A green
-contract test shows the offline fake and ``LlamaCppGenerationAdapter`` (or
-``VllmGenerationAdapter`` and its async counterpart) driven through
-``httpx.MockTransport`` agree on value or error type for that case.
+contract test shows the offline fake and ``VllmGenerationAdapter`` (or its
+async counterpart) driven through ``httpx.MockTransport`` agree on value or
+error type for that case. The llama.cpp adapter suites build their own mock
+transports.
 """
 
 from __future__ import annotations
@@ -15,12 +16,7 @@ from typing import Any, Literal
 
 import httpx
 
-from typevet.adapters.outbound import (
-    AsyncFakeGenerationAdapter,
-    AsyncLlamaCppGenerationAdapter,
-    FakeGenerationAdapter,
-    LlamaCppGenerationAdapter,
-)
+from typevet.adapters.outbound import AsyncFakeGenerationAdapter, FakeGenerationAdapter
 from typevet.adapters.outbound.vllm.generation import VllmGenerationAdapter
 from typevet.adapters.outbound.vllm.generation_async import AsyncVllmGenerationAdapter
 from typevet.domain.errors import (
@@ -193,20 +189,6 @@ def _replay(fixture: dict[str, Any]) -> httpx.Response:
     return httpx.Response(http["status"], text=http.get("text", ""))
 
 
-def mock_transport_for(fixture: dict[str, Any]) -> httpx.MockTransport:
-    """Build ``httpx.MockTransport`` that replays the fixture HTTP stimulus."""
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        assert request.url.path.endswith("/v1/chat/completions")
-        body = json.loads(request.content.decode())
-        assert body["response_format"]["type"] == "json_schema"
-        assert body["chat_template_kwargs"] == {"enable_thinking": False}
-        assert body["chat_template_kwargs"]["enable_thinking"] is False
-        return _replay(fixture)
-
-    return httpx.MockTransport(handler)
-
-
 def vllm_mock_transport_for(fixture: dict[str, Any]) -> httpx.MockTransport:
     """Build a vLLM ``httpx.MockTransport`` that replays the fixture stimulus.
 
@@ -226,15 +208,6 @@ def vllm_mock_transport_for(fixture: dict[str, Any]) -> httpx.MockTransport:
     return httpx.MockTransport(handler)
 
 
-def sync_llama_adapter(fixture: dict[str, Any]) -> LlamaCppGenerationAdapter:
-    """Build ``LlamaCppGenerationAdapter`` with injected mock transport."""
-    client = httpx.Client(
-        transport=mock_transport_for(fixture),
-        base_url="http://test",
-    )
-    return LlamaCppGenerationAdapter(base_url="http://test", client=client)
-
-
 def sync_vllm_adapter(fixture: dict[str, Any]) -> VllmGenerationAdapter:
     """Build ``VllmGenerationAdapter`` with injected mock transport.
 
@@ -246,15 +219,6 @@ def sync_vllm_adapter(fixture: dict[str, Any]) -> VllmGenerationAdapter:
         base_url="http://test",
     )
     return VllmGenerationAdapter(base_url="http://test", client=client)
-
-
-def async_llama_adapter(fixture: dict[str, Any]) -> AsyncLlamaCppGenerationAdapter:
-    """Build ``AsyncLlamaCppGenerationAdapter`` with injected mock transport."""
-    client = httpx.AsyncClient(
-        transport=mock_transport_for(fixture),
-        base_url="http://test",
-    )
-    return AsyncLlamaCppGenerationAdapter(base_url="http://test", client=client)
 
 
 def async_vllm_adapter(fixture: dict[str, Any]) -> AsyncVllmGenerationAdapter:
