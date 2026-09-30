@@ -25,6 +25,8 @@ The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.
   measured live predictions, latencies and known limitations.
 - [Performance on one H100](reference/performance.md):
   vLLM throughput per concurrency level, calibration per set, cost and limits.
+- [Security](reference/security.md):
+  what typevet sends where, how it handles API keys and how to report a vulnerability.
 - [Eval partner data policy](reference/eval-partner-data-policy.md):
   which datasets typevet may ship in public artifacts.
 

@@ -116,6 +116,7 @@ nav:
       - Configuration: reference/configuration.md
       - Errors: reference/errors.md
       - Diagnostic events: reference/diagnostic-events.md
+      - Security: reference/security.md
       - Glossary: reference/glossary.md
       - Question schema map: reference/question-schema-map.md
       - Typed-judgment release support matrix: reference/typed-judgment-release-support-matrix.md

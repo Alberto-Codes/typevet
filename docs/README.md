@@ -81,6 +81,7 @@ answers a question, and a reference gives facts.
  (reference): domain vs adapter generation errors and llama.cpp mapping.
 - [Configuration](reference/configuration.md) (reference): `TYPEVET_LLAMA__*`
   composition-root settings and future CLI hookup; links to log settings.
+- [Security](reference/security.md) (reference): what typevet sends where, API key masking, redaction and vulnerability reports.
 - [Diagnostic events](reference/diagnostic-events.md) (reference): stderr
   structlog closed-set events for generation and HTTP (`http.request`,
   `generation.call`).
