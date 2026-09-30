@@ -42,7 +42,7 @@ A row is not a minimum version and says nothing about other quantizations or har
 
 | Backend | Server | Model and weights | Hardware | Receipt |
 |---|---|---|---|---|
-| vLLM | Stock `vllm/vllm-openai:v0.30.0` | `google/gemma-4-31B-it` revision `842da3794eaa0b77d5f08bae87a17459d91ff475`, BF16 | One H100 80 GB | [#170 receipt](https://github.com/Alberto-Codes/typevet/issues/170#issuecomment-5884707915) |
+| vLLM | Stock `vllm/vllm-openai:v0.30.0` | `google/gemma-4-31B-it` revision `842da3794eaa0b77d5f08bae87a17459d91ff475`, BF16 | One H100 80 GB | [#170 receipt](https://github.com/Alberto-Codes/typevet/issues/170#issuecomment-5884707915); KV-cache gauge: [#231 receipt](https://github.com/Alberto-Codes/typevet/issues/231#issuecomment-5904832873) |
 | llama.cpp (image input) | `llama-server` build `b11223-4da633776` | Alias `gemma-4-31b-kv9-q4km-mm`, served template `native_gemma4_turn`. The alias loads `gemma-4-31b-24gib-kv9-decoder.gguf`, ftype `Q2_K - Medium` (not Q4_K_M), 16.0 GB, with a `--chat-template-file` override on image `server-cuda-b11243` ([#233](https://github.com/Alberto-Codes/typevet/issues/233)) | Not recorded | [#203 receipt](https://github.com/Alberto-Codes/typevet/issues/203#issuecomment-5882379255) |
 | llama.cpp (generation) | `ghcr.io/ggml-org/llama.cpp:server-cuda-b11243` | `google/gemma-4-31B-it-qat-q4_0-gguf` revision `59dde24573e7e61570dba08b18a2e1fe246955ed`, Q4_0 | One A40 48 GB | [#129 receipt](https://github.com/Alberto-Codes/typevet/issues/129#issuecomment-5892208050) |
 

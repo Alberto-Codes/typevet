@@ -38,7 +38,8 @@ It says nothing about other versions, quantizations or hardware.
   The image-input row does not record its hardware.
 - **No backend comparison.** The vLLM and llama.cpp rows use different weights.
   Do not attribute a result difference to the backend.
-- **Untested on vLLM.** Quantized weights, mixed scoring batches and the `/metrics` KV-cache metric names are not tested.
+- **Untested on vLLM.** Quantized weights and mixed scoring batches are not tested.
+  One live run on the tested pin read the `vllm:kv_cache_usage_perc` gauge ([#231](https://github.com/Alberto-Codes/typevet/issues/231)).
 
 Sources: [tested serving pins](../reference/typed-judgment-release-support-matrix.md#tested-serving-pins),
 [Serve typevet on vLLM, limits](../how-to/serve-typevet-on-vllm.md#limits).
@@ -150,7 +151,6 @@ None of them has a promised fix date.
   On llama.cpp, a caller framing that omits the Gemma 4 no-thinking prefill gives a confident, wrong answer with no error.
   The `ModelFramingPort` docstring states the requirement ([#235](https://github.com/Alberto-Codes/typevet/issues/235)), and typevet does not check it.
   On vLLM the scoring adapter sends `enable_thinking: false`, so a vLLM framing needs no prefill.
-- [#231](https://github.com/Alberto-Codes/typevet/issues/231): the vLLM KV-cache reading has offline proof only. No live run on the tested pin has recorded it.
 
 ## Related pages
 
