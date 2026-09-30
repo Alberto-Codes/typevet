@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.5.0](https://github.com/Alberto-Codes/typevet/compare/v0.4.0...v0.5.0) (2026-09-30)
+
+
+### Features
+
+* **evals:** concurrency option for the face, check and signature runners ([b287486](https://github.com/Alberto-Codes/typevet/commit/b28748683bc99ba36029f8f2458a9700e7882f77)), closes [#334](https://github.com/Alberto-Codes/typevet/issues/334)
+* **evals:** Jev judge option for the wording evolution live test ([d86e70c](https://github.com/Alberto-Codes/typevet/commit/d86e70c052670e43b78d481de82374d58f07af54)), closes [#328](https://github.com/Alberto-Codes/typevet/issues/328)
+* **evals:** Jev vs Gemma held-out comparison harness with Cohen's kappa ([d86aa9f](https://github.com/Alberto-Codes/typevet/commit/d86aa9f367a1ec456cad52c2aaf51650877c28cd)), closes [#329](https://github.com/Alberto-Codes/typevet/issues/329)
+* **evals:** served-template probe and native Gemma framing for text wording runs ([0628eb0](https://github.com/Alberto-Codes/typevet/commit/0628eb07161cb2a301e63d4819384ccc00b134b3)), closes [#327](https://github.com/Alberto-Codes/typevet/issues/327)
+* **evals:** throughput fields in the image receipts ([93a13fb](https://github.com/Alberto-Codes/typevet/commit/93a13fbbf63f043165266ce0eb2752bcfb774c5e)), closes [#335](https://github.com/Alberto-Codes/typevet/issues/335)
+
+
+### Documentation
+
+* **explanation:** Gemma 4 and Jev on DIFrauD, each with its evolved wording ([44ffb4d](https://github.com/Alberto-Codes/typevet/commit/44ffb4dfaa4e7f1706d2e440e6cb24194f074202)), closes [#330](https://github.com/Alberto-Codes/typevet/issues/330) [#252](https://github.com/Alberto-Codes/typevet/issues/252) [#324](https://github.com/Alberto-Codes/typevet/issues/324)
+* **explanation:** image judgment throughput on one H100 ([50834b9](https://github.com/Alberto-Codes/typevet/commit/50834b9e523a17ae44cd40eee692d8d95238fc7f)), closes [#337](https://github.com/Alberto-Codes/typevet/issues/337) [#332](https://github.com/Alberto-Codes/typevet/issues/332)
+* **explanation:** latency and cost of the 0.4.0 experiments ([4f66fa0](https://github.com/Alberto-Codes/typevet/commit/4f66fa0e9f693da30961d6672f919fabb3f7e534)), closes [#326](https://github.com/Alberto-Codes/typevet/issues/326)
+
 ## [0.4.0](https://github.com/Alberto-Codes/typevet/compare/v0.3.0...v0.4.0) (2026-09-30)
 
 
