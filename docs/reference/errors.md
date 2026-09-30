@@ -17,11 +17,14 @@ Parent: [#29](https://github.com/Alberto-Codes/typevet/issues/29).
 input, unsupported schema shapes and invalid model output.
 
 **Adapter errors** are domain exception types raised from outbound adapters
-(`FakeGenerationAdapter`, `LlamaCppGenerationAdapter`). Adapters translate
-httpx transport failures into `TransportError`, llama.cpp HTTP error statuses
-into `BackendHttpError`, other parse or shape failures into `GenerationError`,
-and run `jsonschema` validation into `SchemaValidationError`. They do not
-define a parallel adapter-specific hierarchy.
+(`FakeGenerationAdapter`, the llama.cpp adapters and the vLLM adapters).
+Adapters translate httpx transport failures into `TransportError`, llama.cpp
+and vLLM HTTP error statuses into `BackendHttpError`, other parse or shape
+failures into `GenerationError`, and run `jsonschema` validation into
+`SchemaValidationError`. The candidate scoring adapters raise
+`ScoringValidationError` and `ScoringUnsupportedCapabilityError`, which
+subclass `GenerationError` through `ScoringError`. They do not define a
+parallel adapter-specific hierarchy.
 
 **Schema compilation** uses `SchemaError` (`ValueError` subclass) from
 `typevet.domain` when a JSON Schema mapping cannot be compiled. That happens
@@ -41,9 +44,12 @@ The package root `typevet` exports only the first four types.
 |---|---|---|
 | `GenerationError` | `Exception` | A generation call failed before a valid `GenerationResult` existed (parse, shape, or empty fake). |
 | `TransportError` | `GenerationError` | The HTTP client failed before a usable response (`status_code` and `body_snippet` are `None`). |
-| `BackendHttpError` | `GenerationError` | llama.cpp returned HTTP status 400 or above; carries `status_code` and truncated `body_snippet` (500 chars max). |
+| `BackendHttpError` | `GenerationError` | llama.cpp or vLLM returned HTTP status 400 or above; carries `status_code` and truncated `body_snippet` (500 chars max). |
 | `SchemaValidationError` | `GenerationError` | Parsed output failed JSON Schema validation. Optional `payload` holds the rejected value. |
 | `GenerationUnsupportedCapabilityError` | `GenerationError` | The adapter cannot send a part of the request, such as images. Raised before any HTTP call. Import from `typevet.domain` or `typevet.domain.errors`. |
+| `ScoringError` | `GenerationError` | A candidate scoring call failed before a valid result existed. |
+| `ScoringValidationError` | `ScoringError` | Scores failed the coverage or finiteness rules. |
+| `ScoringUnsupportedCapabilityError` | `ScoringError` | The backend cannot honor the requested score stage or capability. |
 
 `SchemaValidationError` stores the message in standard exception `args`. When
 set, `payload` is the parsed object or mapping that failed validation (see
@@ -119,11 +125,60 @@ POSTs to `v1/chat/completions` with `response_format` `json_schema`. HTTP status
 | Missing or empty `choices[0].message.content` | `GenerationError` | `llama.cpp response missing…` or `empty message content` |
 | Message content is not valid JSON | `GenerationError` | `model content was not valid JSON` |
 | Parsed JSON root is not an object | `SchemaValidationError` | `model JSON root must be an object` (`payload` set) |
+| Parsed object holds a non-finite number (`NaN`, `Infinity`) | `SchemaValidationError` | `structured output contains a non-finite number` (`payload` set) |
 | `jsonschema.validate` fails on parsed object | `SchemaValidationError` | `output failed schema:` (`payload` set) |
 
 This table describes local mapping only. It does not assert which HTTP statuses
 a given llama.cpp build returns for every failure mode. See
 [Run Gemma 4 on llama.cpp](../how-to/run-gemma4-llamacpp.md) for the live path.
+
+## vLLM adapter mapping
+
+[`VllmGenerationAdapter`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/vllm/generation.py)
+and `AsyncVllmGenerationAdapter` POST to `v1/chat/completions` with
+`structured_outputs` `json`. Each call makes one POST and no retry.
+[`vllm/http_mapping.py`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/vllm/http_mapping.py)
+maps the HTTP outcome. HTTP status **400 and above** is an adapter failure
+(`HTTP_ERROR_STATUS` in `adapters/outbound/http_errors.py`).
+
+| Condition | Raised type | Typical message prefix |
+|---|---|---|
+| Request `schema` is not a valid JSON Schema | `ValueError` | `schema is not a valid JSON Schema:` (no HTTP call) |
+| `httpx.HTTPError` on POST, including an httpx timeout | `TransportError` | `vLLM request failed:` |
+| HTTP status ≥ 400 | `BackendHttpError` | `vLLM HTTP {status}:` (`body_snippet` truncated to 500 chars) |
+| Response body is not JSON | `GenerationError` | `vLLM returned non-JSON HTTP body` |
+| Missing or empty `choices[0].message.content` | `GenerationError` | `vLLM response missing…` or `vLLM returned empty message content` |
+| Message content is not valid JSON | `GenerationError` | `model content was not valid JSON` |
+| Parsed JSON root is not an object | `SchemaValidationError` | `model JSON root must be an object` (`payload` set) |
+| Parsed object holds a non-finite number (`NaN`, `Infinity`) | `SchemaValidationError` | `structured output contains a non-finite number` (`payload` set) |
+| `jsonschema.validate` fails on parsed object | `SchemaValidationError` | `output failed schema:` (`payload` set) |
+| Async adapter with an owned client runs on a second event loop | `RuntimeError` | `build one adapter per event loop` (no HTTP call) |
+
+A generation request with images is not refused. The adapter sends each image
+as an `image_url` block.
+
+[`VllmCandidateScoringAdapter`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/vllm/scoring.py)
+uses the same HTTP mapping for transport errors, status 400 and above, and a
+body that is not JSON. It then reads the logprobs:
+
+| Condition | Raised type | Typical message prefix |
+|---|---|---|
+| More than 128 candidates, a stage other than `PRE_SAMPLING`, or a candidate with more than one token id | `ScoringUnsupportedCapabilityError` | `vLLM accepts at most…` or `VllmCandidateScoringAdapter supports…` (no HTTP call) |
+| Response root is not an object | `GenerationError` | `vLLM chat completions response root must be an object` |
+| Missing `choices[0].logprobs.content[0].top_logprobs` | `GenerationError` | `vLLM response missing choices[0].logprobs.content[0].top_logprobs` |
+| `top_logprobs` is not a list | `GenerationError` | `vLLM top_logprobs must be a list` |
+| An entry has no `token` or `logprob`, or its `logprob` is not a real number | `GenerationError` | `vLLM top_logprobs entry must be…` or `vLLM top_logprobs logprob … is not a real number` |
+| An entry token is not in `token_id:N` form | `GenerationError` | `vLLM top_logprobs token … is not in token_id:N form` |
+| Two entries have the same token id | `ScoringValidationError` | `vLLM top_logprobs holds a duplicate entry` |
+| `top_logprobs` has no score for a requested candidate | `ScoringValidationError` | `missing scores for requested candidates:` |
+| A candidate logprob is not finite, or is positive above `1e-6` | `ScoringValidationError` | `non-finite logprob for candidate…` or `positive logprob for candidate…` |
+
+The `/tokenize` call of the vLLM judgment factory uses the same HTTP mapping.
+A reply without a list of integer `tokens` raises `GenerationError`
+(`vLLM /tokenize response must hold a list of integer tokens`).
+
+This table describes local mapping only. It does not assert which HTTP statuses
+a given vLLM build returns for every failure mode.
 
 ## Fake adapter mapping
 
@@ -141,7 +196,7 @@ a fixed or callable mapping with the same `jsonschema` path as llama.cpp:
 
 typevet **does not** expose a `retryable` flag or a built-in retry loop on
 generation adapters. Each `generate` call performs at most one HTTP round trip
-(llama.cpp) or one validation pass (fake).
+(llama.cpp or vLLM) or one validation pass (fake).
 
 Use these boundaries when a caller adds retries:
 
@@ -160,8 +215,12 @@ Use these boundaries when a caller adds retries:
 `GenerationError`. Use `except SchemaValidationError` when validation failures
 need distinct handling (for example logging `payload`).
 
-Shared mapping lives in
-[`llama_cpp/http_mapping.py`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/llama_cpp/http_mapping.py).
+Each backend has its own mapping module:
+[`llama_cpp/http_mapping.py`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/llama_cpp/http_mapping.py)
+and
+[`vllm/http_mapping.py`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/vllm/http_mapping.py).
+Both use the status and snippet limits in
+[`http_errors.py`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/http_errors.py).
 Adapters map `httpx.HTTPError` to `TransportError` and HTTP status ≥ 400 to
 `BackendHttpError`. Other library or application errors propagate unless the
 caller handles them.
@@ -201,7 +260,9 @@ assert not issubclass(SchemaError, GenerationError)
 | `GenerationError`, `TransportError`, `BackendHttpError`, `SchemaValidationError` | `typevet` or `typevet.domain.errors` |
 | `SchemaError`, `compile_json_schema`, `Decision` | `typevet.domain` |
 | `GenerationPort` | `typevet.ports.generation` |
+| `ScoringError`, `ScoringValidationError`, `ScoringUnsupportedCapabilityError` | `typevet.domain` or `typevet.domain.errors` |
 | `LlamaCppGenerationAdapter`, `FakeGenerationAdapter` | `typevet.adapters.outbound` |
+| `VllmGenerationAdapter`, `AsyncVllmGenerationAdapter`, `VllmCandidateScoringAdapter` | `typevet.adapters.outbound` |
 
 Do not document exception types that are not raised by the current tree. When
 [#43](https://github.com/Alberto-Codes/typevet/issues/43) lands, revise this
