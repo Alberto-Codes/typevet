@@ -146,8 +146,9 @@ def test_public_throughput_run() -> None:
                 receipt[name] = out
                 done.append(out)
     path = Path(os.environ["TYPEVET_VLLM_RECEIPT"])
-    api_key = load_vllm_settings(os.environ).api_key
-    digest = write_receipt(path, receipt, api_key=api_key)
+    digest = write_receipt(
+        path, receipt, api_key=load_vllm_settings(os.environ).api_key
+    )
     print(f"receipt {path} sha256 {digest} best level {best}")
     assert "difraud_sms" in receipt, f"no usable level: {sweep['stopped']}"
     assert receipt["difraud_sms"]["stopped"] is None, receipt["difraud_sms"]["stopped"]

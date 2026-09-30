@@ -19,6 +19,8 @@ Default pytest excludes `live` (`-m "not live"` in `pyproject.toml`). The
 default suite must keep **≥ 90** coverage (`tool.coverage.report.fail_under`).
 A live pass does not replace unit or contract proof.
 
+Default `addopts` omit `--showlocals`, so a failing test does not print an API key held in a local. Pass `--showlocals` by hand only on a run without secrets.
+
 `testpaths` holds `tests` and `evals/tests`, so one `uv run pytest` runs both.
 The `evals/tests/` layers test the `typevet-evals` workspace member.
 
@@ -46,8 +48,8 @@ slice with attempted / schema-valid / gold-match counters over
 ``GenerationPort``. That is task accuracy on gold for a tiny limit, not ECE.
 
 Valid JSON shape for a run is not the same as correct judgment. Do not infer
-calibration or task accuracy from pyramid passes alone unless the run used the
-loader eval runner and you report its gold-match counter explicitly.
+calibration or task accuracy from pyramid passes alone. The exception is a run
+that used the loader eval runner, with its gold-match counter reported explicitly.
 
 ## Shared GenerationPort fixtures (judgevet shape)
 

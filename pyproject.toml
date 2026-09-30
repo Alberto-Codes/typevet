@@ -152,7 +152,6 @@ addopts = [
     "-ra",
     "--strict-markers",
     "--strict-config",
-    "--showlocals",
     "-m",
     "not live",
 ]
