@@ -42,7 +42,7 @@ answer.
 ```mermaid
 flowchart TD
     J["Caller calls judge(state, questions, model)"] --> D["Question becomes a Decision with ordered labels"]
-    D --> C["Each label gets a digit control: 0, 1, 2, ..."]
+    D --> C["Each label gets a control: 0-9, then A-Z"]
     C --> F["Field block lists each control with its label"]
     F --> P["State and field block become one prefix; framing or served template sets turn markers"]
     P --> R["One PRE_SAMPLING scoring request per question"]
@@ -135,14 +135,23 @@ different way:
   `chat_template_kwargs: {"enable_thinking": false}`.
 - llama.cpp generation sends the same `enable_thinking: false` value.
 
-**Digit controls and the one-token limit.** The model answers with a digit,
+**Controls and the one-token limit.** The model answers with a control,
 not with the label text. One next-token read then covers the whole answer.
-On the Gemma 4 tokenizer, `"0"` to `"9"` are
-single tokens and `"10"` is two. A native question with more than 10 options
-therefore fails before any scoring call, with the message
-`native Choice supports N options on this tokenizer; got M` (#234). The
-rendered digits and the scored token ids come from one function,
-`control_binding_pairs`, so they cannot drift apart.
+The first ten controls are `"0"` to `"9"`. Controls 11 to 36 are `"A"` to
+`"Z"`. On the Gemma 4 tokenizers that #286 checked, each of these is a single
+token, but `"10"` is two. Execute accepts 24 options at most
+(`MAX_ENUM_CHOICES`), so 24 is the usable limit. A question with 25 to 36
+options fails before that question's scoring call with `DecisionExecutionError`. More than
+36 options fail with `JudgmentValidationError`. A tokenizer that splits a
+control fails with the message
+`native Choice supports N options on this tokenizer; got M` (#234).
+The rendered controls and the scored token ids come from one function,
+`control_binding_pairs`, so they cannot drift apart. A `Choice` label that is
+a string of digits, for example `"10"`, always keeps the word `Control` on
+each line (#237). Letter controls are in use only for 11 or more options.
+Then a letter label that equals a control keeps the word, with case ignored,
+for example `"A"` or `"a"` (#287). No calibration receipt exists for
+more than 10 options yet (#288).
 
 **Image input.** A judgment can take images. Both backends support
 image-conditioned scoring. On vLLM, generation can also take images. llama.cpp

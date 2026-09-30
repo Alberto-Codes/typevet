@@ -107,6 +107,19 @@ def test_control_binding_pairs_ordinal_controls() -> None:
 
 
 @pytest.mark.unit
+def test_control_binding_pairs_digits_then_letters() -> None:
+    labels = tuple(f"l{i}" for i in range(36))
+    controls = [control for control, _ in control_binding_pairs(labels)]
+    assert controls == [str(i) for i in range(10)] + [chr(65 + i) for i in range(26)]
+
+
+@pytest.mark.unit
+def test_control_binding_pairs_ten_labels_stay_digits() -> None:
+    labels = tuple(f"l{i}" for i in range(10))
+    assert control_binding_pairs(labels) == tuple((str(i), f"l{i}") for i in range(10))
+
+
+@pytest.mark.unit
 def test_bind_control_rejects_duplicate_labels() -> None:
     with pytest.raises(JudgmentValidationError, match="duplicate"):
         bind_control_candidates(("a", "a"), _single_char_tokenize)

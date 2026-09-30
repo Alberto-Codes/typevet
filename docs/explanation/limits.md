@@ -50,9 +50,13 @@ Some older smoke rows use a Gemma 3 model, but they are not release pins.
 Other models are not tested.
 The multimodal evidence covers one model pin per backend.
 
-- Native `Choice` supports 10 options on the checked Gemma 4 GGUF tokenizer.
-  More options raise `JudgmentValidationError` before any scoring call.
-  The vLLM tokenizer was not checked.
+- Native `Choice` and `Score` support 24 options, the execute limit `MAX_ENUM_CHOICES`.
+  The controls are `"0"` to `"9"`, then `"A"` to `"Z"`, so control binding can label 36 options.
+  The binding limit depends on the tokenizer.
+  The #286 check covered the local GGUF tokenizer and the cached Hugging Face tokenizer.
+  25 to 36 options raise `DecisionExecutionError` before that question's scoring call.
+  More than 36 options raise `JudgmentValidationError` before that question's scoring call.
+  No calibration receipt exists for more than 10 options (#288).
 - `TYPEVET_LLAMA__MULTIMODAL_MODEL` defaults to a Gemma 3 id.
   If the router serves the Gemma 3 id, the native vision factory raises `ValueError`.
   Set the variable, or pass `model=`, to the Gemma 4 id.

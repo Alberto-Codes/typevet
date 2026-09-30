@@ -1,5 +1,8 @@
 """Normalize native judgment questions to ``Decision`` and control-token specs.
 
+Ordinal controls are ``"0"`` to ``"9"``, then ``"A"`` to ``"Z"``, so at most 36
+labels bind (#287). Ten or fewer labels use digit controls only.
+
 Examples:
     ```python
     from typevet.domain.judgment_normalize import (
@@ -23,6 +26,7 @@ See Also:
 
 from __future__ import annotations
 
+import string
 from collections.abc import Callable, Sequence
 from typing import Any
 
@@ -33,6 +37,8 @@ from typevet.domain.judgment_questions import Choice, Noul, Question, Score
 
 _NOUL_LABELS = ("false", "true")
 _MIN_SCORE_LEVELS = 2
+# Ordinal control strings: "0".."9" first, then "A".."Z" (#286, #287).
+_CONTROL_ALPHABET: tuple[str, ...] = tuple(string.digits + string.ascii_uppercase)
 
 
 def _question_text(instructions: object | None) -> str:
@@ -181,6 +187,9 @@ def control_binding_pairs(
 ) -> tuple[tuple[str, str], ...]:
     """Return ordinal ``(control_string, original_label)`` pairs in label order.
 
+    Controls come from the control alphabet: ``"0"`` to ``"9"`` for the first
+    ten labels, then ``"A"`` to ``"Z"``. Ten or fewer labels use digits only.
+
     Args:
         original_labels: Public answer keys before execute alignment.
 
@@ -188,14 +197,21 @@ def control_binding_pairs(
         Pairs such as ``("0", "billing")`` for each scored candidate.
 
     Raises:
-        JudgmentValidationError: Empty, blank, or duplicate original labels.
+        JudgmentValidationError: Empty, blank, or duplicate original labels, or
+            more labels than the control alphabet has controls.
     """
     labels = tuple(str(label) for label in original_labels)
     if not labels or any(not label.strip() for label in labels):
         msg = "original labels must be non-empty"
         raise JudgmentValidationError(msg)
     _reject_duplicate_labels(labels)
-    return tuple((str(index), labels[index]) for index in range(len(labels)))
+    if len(labels) > len(_CONTROL_ALPHABET):
+        msg = (
+            f"native Choice supports at most {len(_CONTROL_ALPHABET)} options; "
+            f"got {len(labels)}"
+        )
+        raise JudgmentValidationError(msg)
+    return tuple(zip(_CONTROL_ALPHABET, labels, strict=False))
 
 
 def bind_control_candidates(
@@ -209,14 +225,15 @@ def bind_control_candidates(
 
     Args:
         original_labels: Labels preserved on each ``CandidateTokenSpec``.
-        tokenize_content: Tokenizer hook; each control ``"0"``, ``"1"``, … must
-            encode to exactly one token id.
+        tokenize_content: Tokenizer hook; each control ``"0"`` … ``"9"``,
+            ``"A"`` … must encode to exactly one token id.
 
     Returns:
         Single-token candidate specs in original-label order.
 
     Raises:
-        JudgmentValidationError: Duplicate or empty labels, or multi-token controls.
+        JudgmentValidationError: Duplicate or empty labels, more than 36
+            labels, or multi-token controls.
             When leading controls are single tokens and a later one is not, the
             message states the tokenizer capacity: ``native Choice supports N
             options on this tokenizer; got M``. The capacity message applies

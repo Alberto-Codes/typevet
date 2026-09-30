@@ -95,6 +95,63 @@ def test_render_field_instructions_six_option_choice_omits_control_word() -> Non
         assert f"{index} → {label}: About {label}" in block
 
 
+_TEN_OPTION_SNAPSHOT = (
+    "kind: Pick the kind.\n\nOptions:\n0 → opt0\n1 → opt1\n2 → opt2\n"
+    "3 → opt3: Third\n4 → opt4\n5 → opt5\n6 → opt6\n7 → opt7\n8 → opt8\n"
+    "9 → opt9\n\nAnswer with exactly one control string (the digit shown), "
+    "not the original label text."
+)
+
+
+@pytest.mark.unit
+def test_render_field_instructions_ten_option_choice_snapshot_unchanged() -> None:
+    labels = tuple(f"opt{i}" for i in range(10))
+    decision = Decision("kind", "Pick the kind.", labels, syntax="Choice")
+    block = render_field_instructions(
+        decision,
+        choice_criteria={"opt3": "Third"},
+        original_labels=labels,
+    )
+    assert block == _TEN_OPTION_SNAPSHOT
+
+
+@pytest.mark.unit
+def test_render_field_instructions_digit_labels_keep_control_word() -> None:
+    decision = Decision("n", "Pick.", ("10", "20"), syntax="Choice")
+    block = render_field_instructions(decision, original_labels=("10", "20"))
+    assert "\nControl 0 → 10" in block
+    assert "\nControl 1 → 20" in block
+
+
+@pytest.mark.unit
+def test_render_field_instructions_letter_labels_under_ten_omit_control() -> None:
+    decision = Decision("n", "Pick.", ("a", "b"), syntax="Choice")
+    block = render_field_instructions(decision, original_labels=("a", "b"))
+    assert "\n0 → a" in block
+    assert "Control" not in block
+
+
+@pytest.mark.unit
+def test_render_field_instructions_letter_label_collides_with_letter_controls() -> None:
+    labels = ("A", *(f"opt{i}" for i in range(1, 11)))
+    decision = Decision("kind", "Pick the kind.", labels, syntax="Choice")
+    block = render_field_instructions(decision, original_labels=labels)
+    assert "\nControl 0 → A" in block
+    assert "\nControl A → opt10" in block
+    assert "\nA → " not in block
+    assert "(the digit or letter shown)" in block
+
+
+@pytest.mark.unit
+def test_render_field_instructions_eleven_options_without_collision() -> None:
+    labels = tuple(f"opt{i}" for i in range(11))
+    decision = Decision("kind", "Pick the kind.", labels, syntax="Choice")
+    block = render_field_instructions(decision, original_labels=labels)
+    assert "Control" not in block
+    assert "\nA → opt10" in block
+    assert "(the digit or letter shown)" in block
+
+
 @pytest.mark.unit
 def test_render_field_instructions_noul_control_zero_is_false() -> None:
     decision = Decision("flag", "Is it urgent?", (False, True), syntax="Bool")
@@ -141,3 +198,11 @@ def test_compose_scoring_prefix_ends_with_chatml_assistant_header() -> None:
     assert "User task text." in prefix
     assert field_block in prefix
     assert prefix.endswith(CHATML_ASSISTANT_HEADER)
+
+
+@pytest.mark.unit
+def test_render_field_instructions_lowercase_label_collides_with_letters() -> None:
+    labels = (*(f"opt{i}" for i in range(11)), "b")
+    decision = Decision("kind", "Pick the kind.", labels, syntax="Choice")
+    block = render_field_instructions(decision, original_labels=labels)
+    assert "\nControl B → b" in block

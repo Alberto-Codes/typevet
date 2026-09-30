@@ -148,7 +148,7 @@ It excludes cold start, idle time and the proxy.
   This is a harness limit, not a limit of typevet or vLLM.
   No throughput, latency or ECE exists for this set.
 - **The finvet collections workload.** One question has 13 options.
-  Native Choice supports 10 options on the Gemma 4 tokenizer.
+  At the time of this run, native Choice supported 10 options.
   This run did not measure that workload.
 - **GPU memory.** The vLLM `/metrics` endpoint does not show it.
 

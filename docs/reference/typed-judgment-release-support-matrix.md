@@ -76,13 +76,17 @@ Do not attribute a result difference to the backend.
 | Thinking off in generation | llama.cpp and vLLM generation send `"chat_template_kwargs": {"enable_thinking": false}` | `llama_cpp/generation.py`, `llama_cpp/generation_async.py`, `vllm/generation.py`, `vllm/generation_async.py` (through `generation_body`) |
 | Value check after generation | The returned JSON is validated against the request schema. A failure raises `SchemaValidationError`. | `chat_completion.validated_value` |
 | Images in generation | vLLM generation sends images as `image_url` blocks. llama.cpp generation refuses a request with images before any HTTP call. | `vllm/content.py`, `LlamaCppGenerationAdapter._reject_media` |
-| Native `Choice` capacity | The tokenizer sets the limit. Controls `"0"`, `"1"`, … must each be one token. | `bind_control_candidates` in `domain/judgment_normalize.py` ([#234](https://github.com/Alberto-Codes/typevet/issues/234)) |
+| Native `Choice` capacity | Execute accepts 24 options at most (`MAX_ENUM_CHOICES`). Controls are `"0"` to `"9"`, then `"A"` to `"Z"`, so binding can label 36. The tokenizer can set a lower limit: each control must be one token. | `bind_control_candidates` in `domain/judgment_normalize.py` ([#234](https://github.com/Alberto-Codes/typevet/issues/234)) |
 | Async vLLM generation | One factory-built adapter per event loop. A call on a second loop raises `RuntimeError` before any request. | `async_vllm_generation_adapter`, `AsyncVllmGenerationAdapter` ([#224](https://github.com/Alberto-Codes/typevet/issues/224)) |
 
 When a later control is not one token, the error states the capacity.
 The message is `native Choice supports N options on this tokenizer; got M`.
-On the Gemma 4 GGUF tokenizer that the #234 probe checked (llama.cpp), `"0"` to `"9"` are single tokens and `"10"` is two tokens.
-Thus native `Choice` supports 10 options there. The vLLM tokenizer was not checked ([#234 probe](https://github.com/Alberto-Codes/typevet/issues/234#issuecomment-5897063711)).
+25 to 36 options raise `DecisionExecutionError`: `choice count must be between 2 and 24, got M`.
+More than 36 options raise `native Choice supports at most 36 options; got M`.
+The #286 check tokenized `"0"` to `"9"` and `"A"` to `"Z"` on the local Gemma 4 GGUF tokenizer (llama.cpp) and on the cached Hugging Face tokenizer for vLLM. Each is a single token, with the same ids on both ([#286](https://github.com/Alberto-Codes/typevet/issues/286)).
+Thus control binding can label 36 options there, and the usable limit is the execute limit of 24. Other tokenizers can support fewer.
+The Hugging Face check used the QAT checkpoint tokenizer, not the exact BF16 serving pin.
+No calibration receipt exists for more than 10 options ([#288](https://github.com/Alberto-Codes/typevet/issues/288)).
 `MAX_ENUM_CHOICES` stays at 24 for compiled schemas.
 
 ### Multimodal (primary: Gemma 4 native vision)
@@ -113,7 +117,7 @@ Task-specific smokes (not a single “release pass”):
 | Media marker | Cached per model id on `LlamaCppCandidateScoringAdapter` (llama.cpp only) | **Rebuild the adapter** after a router model reload. A reused adapter keeps the old marker; a new adapter reads the new marker. Stale markers fail tokenization — see multimodal how-to ([`test_reused_adapter_keeps_cached_marker_after_router_change`](https://github.com/Alberto-Codes/typevet/blob/main/tests/unit/test_runtime_limits.py)). The vLLM factory calls no template probe |
 | Image bytes / pixels | `ImageInput` validates mime and non-empty data only | **No** byte or pixel cap in domain types. An 8 MiB payload is accepted ([`test_image_input_accepts_eight_mib_payload`](https://github.com/Alberto-Codes/typevet/blob/main/tests/unit/test_runtime_limits.py)). Pixel limits are not characterized ([#204](https://github.com/Alberto-Codes/typevet/issues/204)) |
 | Images per request | `CandidateScoringRequest` requires one marker per image | **No** count cap in typevet. The scoring adapter sends every image of one request, for example 16 ([`test_scoring_sends_every_image_without_count_cap`](https://github.com/Alberto-Codes/typevet/blob/main/tests/unit/test_runtime_limits.py)). The tested vLLM pin allowed 2 images per prompt |
-| Native `Choice` options | Tokenizer, through `bind_control_candidates` | 10 options on the checked Gemma 4 GGUF tokenizer (vLLM not checked). More options raise `JudgmentValidationError` before any scoring call |
+| Native `Choice` options | Tokenizer, through `bind_control_candidates` | 24 options, the execute limit `MAX_ENUM_CHOICES`. Control binding can label 36 options on the checked Gemma 4 tokenizers (local GGUF and cached Hugging Face, [#286](https://github.com/Alberto-Codes/typevet/issues/286)). The binding limit depends on the tokenizer. 25 to 36 options raise `DecisionExecutionError`, and more than 36 raise `JudgmentValidationError`, before that question's scoring call. No calibration receipt for more than 10 options ([#288](https://github.com/Alberto-Codes/typevet/issues/288)) |
 | Client closure | Factory ownership rules | The factory closes a client it owns and keeps a caller client open on every exit path ([`test_factory_http_client_ownership`](https://github.com/Alberto-Codes/typevet/blob/main/tests/contract/test_runtime_gemma_vision_factory.py), commit `71275a4`) |
 | Concurrency / cancellation | `TYPEVET_VLLM__MAX_CONCURRENCY` (default 1) for the async vLLM adapter | Sets the POST limit for one adapter. Build one factory-built adapter per event loop. No async judgment surface ships (below) |
 | Long-lived service | Not characterized beyond adapter lifetime rules | Do not infer production SLOs from smoke receipts ([#204](https://github.com/Alberto-Codes/typevet/issues/204)) |
@@ -127,7 +131,8 @@ Task-specific smokes (not a single “release pass”):
 | Router / catalog | Skip or fail: unreachable, empty/invalid catalog, model not listed | [Live gate](https://github.com/Alberto-Codes/typevet/blob/main/evals/src/typevet_evals/runner/live_gate.py) |
 | Backend settings | `ValueError` for a bad `TYPEVET_BACKEND` or `TYPEVET_VLLM__*` value | Raised when the composition root reads the environment |
 | Request / schema ask | `ValueError` (including `schema is not a valid JSON Schema:`), `TypeError`, `SchemaError` | Before any port call or request — [Errors](errors.md) |
-| Native `Choice` capacity | `JudgmentValidationError`: `native Choice supports N options on this tokenizer; got M` | Before any scoring call ([#234](https://github.com/Alberto-Codes/typevet/issues/234)) |
+| Native `Choice` capacity | `JudgmentValidationError`: `native Choice supports N options on this tokenizer; got M`, or `native Choice supports at most 36 options; got M` for more than 36 options | Before any scoring call ([#234](https://github.com/Alberto-Codes/typevet/issues/234)) |
+| Native `Choice` execute limit | `DecisionExecutionError`: `choice count must be between 2 and 24, got M` for 25 to 36 options | Before any scoring call ([#287](https://github.com/Alberto-Codes/typevet/issues/287)) |
 | Event loop | `RuntimeError` on a second event loop for a factory-built async vLLM adapter | Before any request ([#224](https://github.com/Alberto-Codes/typevet/issues/224)) |
 | Transport / backend | `TransportError`, `BackendHttpError`, `GenerationError` | Generation path |
 | Scoring / attachment | `ScoringValidationError`, `ScoringUnsupportedCapabilityError`, attachment assert messages | [#185](https://github.com/Alberto-Codes/typevet/issues/185) floors |
