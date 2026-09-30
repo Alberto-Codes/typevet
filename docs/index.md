@@ -11,63 +11,78 @@ The receipts cover Gemma 4 31B on llama.cpp for local work and on vLLM for hosti
 typevet is pre-1.0. Install it from PyPI with `pip install typevet`.
 The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.md) lists every page and its kind.
 
-## Evaluate typevet
+[Start with the offline tutorial](tutorials/first-typed-judgment-offline.md){ .md-button .md-button--primary }
 
-- [How typevet works with Gemma 4](explanation/how-typevet-works-with-gemma-4.md):
-  the scoring path, the two backends and what each receipt proves.
-- [Verified evidence and inferred claims](explanation/verification.md):
-  what unit, contract and live tests each prove.
-- [Limits and known gaps](explanation/limits.md):
-  the known limits and open gaps, each linked to its source.
-- [Typed-judgment release support matrix](reference/typed-judgment-release-support-matrix.md):
-  supported APIs, tested pins, evidence commands and exclusions.
-- [Judgment live receipts](reference/judgment-live-receipts.md):
-  measured live predictions, latencies and known limitations.
-- [Performance on one H100](reference/performance.md):
-  vLLM throughput per concurrency level, calibration per set, cost and limits.
-- [Security](reference/security.md):
-  what typevet sends where, how it handles API keys and how to report a vulnerability.
-- [Eval partner data policy](reference/eval-partner-data-policy.md):
-  which datasets typevet may ship in public artifacts.
+## Choose a path
 
-## Run offline, with no model
+<div class="grid cards" markdown>
 
-- [Install typevet](how-to/install.md): build a wheel and install it outside a checkout.
-- [First typed judgment offline](tutorials/first-typed-judgment-offline.md):
-  get one `Noul` answer from a scripted fake.
-- [Call typevet from Python](how-to/call-typevet-from-python.md#runnable-example-offline-fake):
-  generate a schema-bound object with the fake adapter.
+-   :material-power-plug-off-outline:{ .lg .middle } **Run offline, with no model**
 
-## Host typevet on vLLM
+    ---
 
-- [Serve typevet on vLLM](how-to/serve-typevet-on-vllm.md):
-  the tested vLLM 0.30.0 pin, the server flags and the settings.
-- [Serve Gemma 4 31B on a rented H100](how-to/serve-gemma-4-31b-on-a-rented-h100.md):
-  rent one RunPod H100, serve the model and run one judgment.
+    Install typevet and get typed answers from a scripted fake.
 
-## Run typevet on llama.cpp locally
+    - [Install typevet](how-to/install.md)
+    - [First typed judgment offline](tutorials/first-typed-judgment-offline.md)
+    - [Generate a schema-bound object offline](how-to/call-typevet-from-python.md#runnable-example-offline-fake)
 
-- [Run Gemma 4 on llama.cpp](how-to/run-gemma4-llamacpp.md):
-  a stock `llama-server`, nested `json_schema` and opt-in live tests.
+-   :material-clipboard-check-outline:{ .lg .middle } **Evaluate typevet**
 
-## Send images with a question
+    ---
 
-- [Gemma 4 multimodal judgments](explanation/gemma-4-multimodal-judgments.md):
-  how images reach each backend, the receipts and the limits.
-- [Connect Gemma 4 native vision judgment](how-to/connect-gemma4-native-vision-judgment.md):
-  open a vision session on llama.cpp.
-- [Run the image-conditioned live smoke](how-to/run-a-multimodal-live-smoke.md):
-  check that an image changes the answer.
+    Read what typevet does, what each receipt proves and where the limits are.
 
-## Integrate typevet from Python
+    - [How typevet works with Gemma 4](explanation/how-typevet-works-with-gemma-4.md)
+    - [Verified evidence and inferred claims](explanation/verification.md)
+    - [Limits and known gaps](explanation/limits.md)
+    - [Typed-judgment release support matrix](reference/typed-judgment-release-support-matrix.md)
+    - [Judgment live receipts](reference/judgment-live-receipts.md)
+    - [Performance on one H100](reference/performance.md)
+    - [Security](reference/security.md)
+    - [Eval partner data policy](reference/eval-partner-data-policy.md)
 
-- [Call typevet from Python](how-to/call-typevet-from-python.md):
-  the public surface, the adapters and the async ports.
-- [Python API reference](reference/api.md): the public package docstrings.
-- [Supported imports](reference/supported-imports.md): the import paths to use.
-- [Configuration](reference/configuration.md): the `TYPEVET_*` settings.
-- [Errors](reference/errors.md): the error classes and their causes.
-- [Glossary](reference/glossary.md): the one meaning of each term.
+-   :material-language-python:{ .lg .middle } **Integrate typevet from Python**
+
+    ---
+
+    Find the public surface, the settings and the errors.
+
+    - [Call typevet from Python](how-to/call-typevet-from-python.md)
+    - [Python API reference](reference/api.md)
+    - [Supported imports](reference/supported-imports.md)
+    - [Configuration](reference/configuration.md)
+    - [Errors](reference/errors.md)
+    - [Glossary](reference/glossary.md)
+
+-   :material-server-outline:{ .lg .middle } **Host typevet on vLLM**
+
+    ---
+
+    Serve the tested vLLM pin on one H100, your own or rented.
+
+    - [Serve typevet on vLLM](how-to/serve-typevet-on-vllm.md)
+    - [Serve Gemma 4 31B on a rented H100](how-to/serve-gemma-4-31b-on-a-rented-h100.md)
+
+-   :material-laptop:{ .lg .middle } **Run typevet on llama.cpp locally**
+
+    ---
+
+    Run a stock `llama-server` with nested `json_schema` and opt-in live tests.
+
+    - [Run Gemma 4 on llama.cpp](how-to/run-gemma4-llamacpp.md)
+
+-   :material-image-outline:{ .lg .middle } **Send images with a question**
+
+    ---
+
+    Send an image to each backend and check on llama.cpp that it changes the answer.
+
+    - [Gemma 4 multimodal judgments](explanation/gemma-4-multimodal-judgments.md)
+    - [Connect Gemma 4 native vision judgment](how-to/connect-gemma4-native-vision-judgment.md)
+    - [Run the image-conditioned live smoke](how-to/run-a-multimodal-live-smoke.md)
+
+</div>
 
 ## Contribute
 
