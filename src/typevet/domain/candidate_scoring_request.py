@@ -102,11 +102,14 @@ class CandidateScoringRequest:
     media: tuple[ImageInput, ...] = ()
 
     def __post_init__(self) -> None:
-        """Reject empty model, prefix, candidates, duplicate ids, or bad markers.
+        """Reject empty fields, duplicate ids, bad markers or non-image media.
+
+        Stores ``media`` as a tuple, so a list input becomes immutable.
 
         Raises:
             ScoringValidationError: When the ask violates coverage rules or the
                 media marker count does not match ``len(media)``.
+            TypeError: When a media item is not an ``ImageInput``.
         """
         if not self.model.strip():
             msg = "model must be non-empty"
@@ -125,6 +128,11 @@ class CandidateScoringRequest:
         if len(set(sequences)) != len(sequences):
             msg = "duplicate candidate token-id sequences are not allowed"
             raise ScoringValidationError(msg)
+        object.__setattr__(self, "media", tuple(self.media))
+        for index, item in enumerate(self.media):
+            if not isinstance(item, ImageInput):
+                msg = f"media[{index}] must be ImageInput, got {type(item).__name__}"
+                raise TypeError(msg)
         markers = count_media_markers(self.prefix)
         if markers != len(self.media):
             msg = (
