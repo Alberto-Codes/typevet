@@ -1,8 +1,10 @@
-"""LFW face-match evaluation family (#300).
+"""LFW face-match evaluation family (#300, #301).
 
 One LFW View 2 pair becomes one typevet judgment with two images and three
-typed questions. The package re-exports the names that callers outside the
-package use.
+typed questions. A run judges a slice of pairs, computes the metrics and
+builds a key-free receipt. The package re-exports the names that callers
+outside the package use. The ``same_person`` probability is model
+confidence, not a match percentage.
 
 Attributes:
     FACE_MATCH_STATE (str): Fixed state text for every pair.
@@ -10,10 +12,26 @@ Attributes:
     SAME_PERSON (str): ``Noul`` question id for the same person.
     VERDICT (str): ``Choice`` question id for the verdict.
     VERDICT_LABELS (tuple[str, ...]): ``Choice`` labels in prompt order.
+    CONFIDENCE_NOTE (str): Honesty note stored with the metrics.
+    RECEIPT_ISSUE (int): Issue number recorded in every receipt.
+    FaceMatchOutcome (type): Typed answers and timing for one pair.
     FaceMatchRequest (type): One two-image request for one pair.
+    FaceMatchRun (type): Outcomes of one run and its stopping failure.
+    ReliabilityBin (type): One bin of the reliability table.
     build_face_match_request (callable): Pair and image bytes to a request.
     face_match_questions (callable): New ``Noul``, ``Choice`` and ``Score``.
     judge_face_match (callable): Send one request to a judgment port.
+    build_face_match_receipt (callable): Run to a key-free receipt body.
+    cannot_tell_rate (callable): Share of ``cannot_tell`` verdicts.
+    ensure_key_free (callable): Refuse receipt text with a key or auth header.
+    expected_calibration_error (callable): ECE over equal-width bins.
+    face_match_metrics (callable): Every metric over the outcomes.
+    outcome_from_response (callable): Typed answers to one outcome.
+    reliability_table (callable): Equal-width reliability bins.
+    roc_auc (callable): Mann-Whitney ROC-AUC with average ranks.
+    run_face_match (callable): Judge each pair once; stop at a failure.
+    score_distribution (callable): ``Score`` level counts by gold label.
+    verdict_accuracy (callable): Share of right verdicts.
 
 Examples:
     ```python
@@ -24,11 +42,22 @@ Examples:
 
 See Also:
     - [typevet_evals.face_match.request][]: request builder
+    - [typevet_evals.face_match.metrics][]: metric functions
+    - [typevet_evals.face_match.runner][]: run and receipt
     - [typevet_evals.datasets.lfw][]: LFW View 2 loader
 """
 
 from __future__ import annotations
 
+from typevet_evals.face_match.metrics import (
+    ReliabilityBin,
+    cannot_tell_rate,
+    expected_calibration_error,
+    reliability_table,
+    roc_auc,
+    score_distribution,
+    verdict_accuracy,
+)
 from typevet_evals.face_match.request import (
     FACE_MATCH_STATE,
     FACE_VISIBILITY,
@@ -40,15 +69,42 @@ from typevet_evals.face_match.request import (
     face_match_questions,
     judge_face_match,
 )
+from typevet_evals.face_match.runner import (
+    CONFIDENCE_NOTE,
+    RECEIPT_ISSUE,
+    FaceMatchOutcome,
+    FaceMatchRun,
+    build_face_match_receipt,
+    ensure_key_free,
+    face_match_metrics,
+    outcome_from_response,
+    run_face_match,
+)
 
 __all__ = [
+    "CONFIDENCE_NOTE",
     "FACE_MATCH_STATE",
     "FACE_VISIBILITY",
+    "RECEIPT_ISSUE",
     "SAME_PERSON",
     "VERDICT",
     "VERDICT_LABELS",
+    "FaceMatchOutcome",
     "FaceMatchRequest",
+    "FaceMatchRun",
+    "ReliabilityBin",
+    "build_face_match_receipt",
     "build_face_match_request",
+    "cannot_tell_rate",
+    "ensure_key_free",
+    "expected_calibration_error",
+    "face_match_metrics",
     "face_match_questions",
     "judge_face_match",
+    "outcome_from_response",
+    "reliability_table",
+    "roc_auc",
+    "run_face_match",
+    "score_distribution",
+    "verdict_accuracy",
 ]

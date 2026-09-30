@@ -14,6 +14,9 @@ two-image face-match judgment. Parent epic:
 | Pairs fixture (synthetic names and numbers only) | `evals/fixtures/lfw/pairs_excerpt.txt` |
 | Unit tests | `evals/tests/unit/test_lfw_pairs.py` |
 | Contract test | `evals/tests/contract/test_face_match_contract.py` |
+| Metrics, run and receipt | `typevet_evals.face_match` (`metrics`, `runner`) |
+| Metric and runner unit tests | `evals/tests/unit/test_face_match_metrics.py` |
+| Live run | `evals/tests/live/test_face_match_live.py` |
 
 ## Source files
 
@@ -71,6 +74,47 @@ not name the people in the pair.
 `judge_face_match` sends the request to a `JudgmentPort` with both images in
 order. The contract test proves the wiring with a fake scorer. It says
 nothing about model quality.
+
+## Live run and receipt
+
+Issue [#301](https://github.com/Alberto-Codes/typevet/issues/301) runs the
+default slice once per backend. `run_face_match` sends one judgment per
+pair and stops at the first backend failure. The receipt records that
+failure.
+
+| Metric | Definition |
+|---|---|
+| `accuracy` | Share of right `verdict` answers. `cannot_tell` is always wrong. |
+| `roc_auc` | ROC-AUC of `same_person`, Mann-Whitney with average ranks for ties |
+| `ece` | Expected calibration error over ten equal-width bins |
+| `reliability` | The ten bins: count, mean confidence, share of same-person pairs |
+| `cannot_tell_rate` | Share of `cannot_tell` verdicts |
+| `score_distribution` | Count of each `face_visibility` level, by gold label |
+
+The `same_person` value is model confidence. It is not a calibrated match
+percentage.
+
+| Variable | Use |
+|---|---|
+| `TYPEVET_FACE_MATCH_RECEIPT` | Receipt path. It must name a new file. The test skips when it is not set. |
+| `TYPEVET_BACKEND` | `llama_cpp` (default) or `vllm` |
+| `TYPEVET_LLAMA__MULTIMODAL_MODEL` | llama.cpp model; the test default is `gemma-4-31b-kv9-q4km-mm` |
+| `TYPEVET_VLLM__BASE_URL`, `TYPEVET_VLLM__MODEL`, `TYPEVET_VLLM__API_KEY`, `TYPEVET_VLLM__USER_AGENT` | vLLM session |
+| `TYPEVET_FACE_MATCH_PER_CLASS` | Smaller slice for a smoke run |
+| `TYPEVET_GIT_STATUS_PORCELAIN` | Porcelain status text for the working-tree fingerprint |
+
+```bash
+TYPEVET_GIT_STATUS_PORCELAIN="$(git status --porcelain)" \
+  TYPEVET_FACE_MATCH_RECEIPT=evals/fixtures/lfw/receipts/face_match_llama_cpp_receipt.json \
+  uv run pytest evals/tests/live/test_face_match_live.py -m live -q -s
+```
+
+The receipt holds pair ids, gold labels, typed answers, latency per pair,
+the metrics and the pins. The pins are the LFW file SHA-256 values, the
+slice seed, the server build and the experiment identity. The receipt holds
+no image bytes. The test refuses to write
+a receipt that holds the vLLM key or an auth header. Receipts are in
+`evals/fixtures/lfw/receipts/`.
 
 ## Licence and policy
 

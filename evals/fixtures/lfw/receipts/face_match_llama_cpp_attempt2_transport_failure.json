@@ -1,0 +1,322 @@
+{
+  "issue": 301,
+  "backend": "llama_cpp",
+  "model": "gemma-4-31b-kv9-q4km-mm",
+  "pins": {
+    "dataset": "LFW View 2",
+    "pairs_sha256": "ea42330c62c92989f9d7c03237ed5d591365e89b3e649747777b70e692dc1592",
+    "archive_sha256": "b47c8422c8cded889dc5a13418c4bc2abbda121092b3533a83306f90d900100a",
+    "slice_seed": 0,
+    "slice_per_class": 100,
+    "server": {
+      "served": [
+        {
+          "id": "gemma-4-31b-kv9-q4km-mm"
+        }
+      ],
+      "build_info": "b11243-fc07d781e",
+      "model_alias": "gemma-4-31b-kv9-q4km-mm",
+      "n_ctx": 4096
+    }
+  },
+  "identity": {
+    "run_id": "83116a2a064d41bf9b7eb9de1ada73df",
+    "baseline_commit": "dc3d7caec6ceeb83a5462e56119994d101537906",
+    "working_tree": {
+      "dirty": true,
+      "dirty_paths": [
+        "evals/fixtures/lfw/receipts/",
+        "evals/src/typevet_evals/face_match/__init__.py",
+        "evals/src/typevet_evals/face_match/metrics.py",
+        "evals/src/typevet_evals/face_match/runner.py",
+        "evals/tests/live/test_face_match_live.py",
+        "evals/tests/unit/test_face_match_metrics.py"
+      ],
+      "dirty_digest": "8c4806c02613c59452763cbae1f42768d534106a3c75fba7b88f1090209de279"
+    },
+    "prompt_digests": {
+      "same_person": "4edee00f1cf4117a308d72f797022fc8d1b74c1479ebce00b5855c2e09346f1e",
+      "verdict": "e4158f400e8741b0dd998c02075ed69536c1705214e8b3f511d6d0deb9b9c6ec",
+      "face_visibility": "2c83791bb3a294e83116afee17125a25b50b732ce298b914efe47d6f6638a971"
+    },
+    "code_path_digests": {
+      "metrics": "f53e62cf78bd8a146526769fac7b6cc0cc40fc4a70fe56255ff3e8dd831f465f",
+      "request": "ca9e0ae076a12369b627d85db967f3a244191b3a661afc1aea593ce544c839a2",
+      "runner": "26b0b947bdcba9bc4f69c279ddc6c44de023b16ac68decb9363371657fcf7bb1"
+    },
+    "fixture_digests": {},
+    "runtime": {
+      "model": "gemma-4-31b-kv9-q4km-mm",
+      "served_template": "native_gemma4_turn",
+      "server_build": "b11243-fc07d781e",
+      "template_identity": "unknown",
+      "projector_identity": "unknown",
+      "config_identity": "unknown"
+    },
+    "arm_call_counts": {
+      "judgments": 7
+    },
+    "identity_digest": "75c3bd36a7851c3bbb0e3118dacbd17e9ad5ff5406402b598292ed042666dd06"
+  },
+  "stopped": {
+    "index": 7,
+    "pair_id": "6:Raoul_Ruiz_0003:Tirunesh_Dibaba_0001",
+    "error_class": "TransportError",
+    "message": "llama.cpp request failed: Server disconnected without sending a response."
+  },
+  "wall_seconds": 34.487,
+  "metrics": {
+    "pairs": 7,
+    "same_person_pairs": 6,
+    "accuracy": 1.0,
+    "roc_auc": 1.0,
+    "ece": 0.0025398816445974678,
+    "reliability": [
+      {
+        "lower": 0.0,
+        "upper": 0.1,
+        "count": 1,
+        "mean_confidence": 1.9797621222902834e-06,
+        "fraction_same_person": 0.0
+      },
+      {
+        "lower": 0.1,
+        "upper": 0.2,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_person": null
+      },
+      {
+        "lower": 0.2,
+        "upper": 0.3,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_person": null
+      },
+      {
+        "lower": 0.3,
+        "upper": 0.4,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_person": null
+      },
+      {
+        "lower": 0.4,
+        "upper": 0.5,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_person": null
+      },
+      {
+        "lower": 0.5,
+        "upper": 0.6,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_person": null
+      },
+      {
+        "lower": 0.6,
+        "upper": 0.7,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_person": null
+      },
+      {
+        "lower": 0.7,
+        "upper": 0.8,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_person": null
+      },
+      {
+        "lower": 0.8,
+        "upper": 0.9,
+        "count": 0,
+        "mean_confidence": null,
+        "fraction_same_person": null
+      },
+      {
+        "lower": 0.9,
+        "upper": 1.0,
+        "count": 6,
+        "mean_confidence": 0.9970371347083233,
+        "fraction_same_person": 1.0
+      }
+    ],
+    "cannot_tell_rate": 0.0,
+    "score_distribution": {
+      "same_person": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 6
+      },
+      "different_person": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 1
+      }
+    },
+    "mean_latency_seconds": 4.896369927862127,
+    "confidence_note": "same_person_confidence is model confidence from the Noul answer. It is not a calibrated match percentage."
+  },
+  "pairs": [
+    {
+      "pair_id": "5:Miguel_Estrada_0001:Miguel_Estrada_0002",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999961298877251,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9982230652841405,
+        "different_person": 0.001776147983385128,
+        "cannot_tell": 7.86732474267675e-07
+      },
+      "visibility_score": 3.9963352448578324,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 9.547360203923323e-07,
+        "1": 4.715507764215748e-07,
+        "2": 2.7432986157742663e-05,
+        "3": 0.0036046555734413313,
+        "4": 0.9963664851536042
+      },
+      "latency_seconds": 4.361,
+      "input_tokens": 964
+    },
+    {
+      "pair_id": "3:Wen_Jiabao_0007:Wen_Jiabao_0012",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999986343716867,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9998885100021061,
+        "different_person": 0.00011127768674319134,
+        "cannot_tell": 2.1231115075418592e-07
+      },
+      "visibility_score": 3.958317033426616,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 2.367791763475704e-06,
+        "1": 1.1268294348493098e-06,
+        "2": 6.567769468922296e-05,
+        "3": 0.04153875952864755,
+        "4": 0.958392068155465
+      },
+      "latency_seconds": 4.483,
+      "input_tokens": 964
+    },
+    {
+      "pair_id": "1:Emmanuelle_Beart_0001:Emmanuelle_Beart_0003",
+      "gold_same_person": true,
+      "same_person_confidence": 0.999999932685166,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999974249888919,
+        "different_person": 2.5492339389444546e-06,
+        "cannot_tell": 2.577716922601105e-08
+      },
+      "visibility_score": 3.986799559828157,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.4633128096235488e-06,
+        "1": 4.888361752894127e-07,
+        "2": 3.50558297623487e-05,
+        "3": 0.013123008752553952,
+        "4": 0.9868399832686988
+      },
+      "latency_seconds": 4.234,
+      "input_tokens": 964
+    },
+    {
+      "pair_id": "4:James_Gandolfini_0001:James_Gandolfini_0003",
+      "gold_same_person": true,
+      "same_person_confidence": 0.982228371079287,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.6255001078888415,
+        "different_person": 0.37447259360540897,
+        "cannot_tell": 2.729850574951729e-05
+      },
+      "visibility_score": 3.9931988986227234,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.2027823902407719e-06,
+        "1": 4.911153378679735e-07,
+        "2": 1.885756108396929e-05,
+        "3": 0.0067571017795344255,
+        "4": 0.9932223467616536
+      },
+      "latency_seconds": 4.371,
+      "input_tokens": 964
+    },
+    {
+      "pair_id": "2:Tony_Blair_0091:Tony_Blair_0134",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999997876306177,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999851459858708,
+        "different_person": 1.4779348606643662e-05,
+        "cannot_tell": 7.466552247126708e-08
+      },
+      "visibility_score": 3.9974032264658974,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 7.762827650540307e-07,
+        "1": 2.2499265226846634e-07,
+        "2": 1.5944467024982325e-05,
+        "3": 0.0025611044910351308,
+        "4": 0.9974219497665224
+      },
+      "latency_seconds": 4.263,
+      "input_tokens": 964
+    },
+    {
+      "pair_id": "1:Alan_Dershowitz_0001:Bertrand_Bonello_0001",
+      "gold_same_person": false,
+      "same_person_confidence": 1.9797621222902834e-06,
+      "verdict": "different_person",
+      "verdict_probabilities": {
+        "same_person": 1.1854010797744885e-06,
+        "different_person": 0.9999916514181142,
+        "cannot_tell": 7.163180805902653e-06
+      },
+      "visibility_score": 3.9618906801826936,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 1.8001455645736876e-06,
+        "1": 7.039796987972301e-07,
+        "2": 6.71446901849776e-05,
+        "3": 0.03796571791558184,
+        "4": 0.9619646332689699
+      },
+      "latency_seconds": 4.305,
+      "input_tokens": 964
+    },
+    {
+      "pair_id": "7:Tom_Reilly_0002:Tom_Reilly_0003",
+      "gold_same_person": true,
+      "same_person_confidence": 0.9999999525954573,
+      "verdict": "same_person",
+      "verdict_probabilities": {
+        "same_person": 0.9999925751532752,
+        "different_person": 7.380487909015231e-06,
+        "cannot_tell": 4.435881576142627e-08
+      },
+      "visibility_score": 3.995764006162181,
+      "visibility_level": 4,
+      "visibility_probabilities": {
+        "0": 8.454710906167306e-07,
+        "1": 3.3686497543729633e-07,
+        "2": 2.5343750796384073e-05,
+        "3": 0.00418091385693774,
+        "4": 0.9957925600561999
+      },
+      "latency_seconds": 8.257,
+      "input_tokens": 964
+    }
+  ]
+}
