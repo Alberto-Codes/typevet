@@ -308,21 +308,86 @@ def test_media_port_sends_every_image_to_every_question() -> None:
     assert port.bridge_capabilities.media == MediaCapabilities({"image/png"})
 
 
-@pytest.mark.parametrize(
-    "bindings",
-    [{"q": ["a"], "r": ["b"]}, {"q": ["b", "a"], "r": ["a", "b"]}],
-    ids=["split", "reordered"],
-)
-def test_media_port_refuses_per_question_bindings(
-    bindings: Mapping[str, list[str]],
-) -> None:
-    stub = StubJudgment(response=_noul_response())
-    port = TypevetMediaSystemOnePort(stub, media=MediaCapabilities({"image/png"}))
-    with pytest.raises(ProviderCapabilityError, match="same images"):
-        port.system_one_media(
-            "s", {"q": Noul(), "r": Noul()}, "m", evidence=_evidence(bindings)
+class PerCallJudgment:
+    """Answer each requested Noul question; script the model and usage per call."""
+
+    def __init__(self, models: list[str], usages: list[TokenUsage]) -> None:
+        """Store one model id and one usage per expected call."""
+        self.models = models
+        self.usages = usages
+        self.calls: list[tuple[tuple[str, ...], tuple[ImageInput, ...] | None]] = []
+
+    def judge(
+        self,
+        state: str | dict[str, Any] | list[Any],
+        questions: Mapping[str, Any],
+        model: str,
+        *,
+        media: tuple[ImageInput, ...] | None = None,
+    ) -> JudgmentResponse:
+        index = len(self.calls)
+        self.calls.append((tuple(questions), media))
+        answers: dict[str, Any] = {name: NoulAnswer(noul=0.5) for name in questions}
+        return JudgmentResponse(
+            model=self.models[index], usage=self.usages[index], answers=answers
         )
-    assert stub.calls == []
+
+
+A = ImageInput(data=PNG, mime_type="image/png")
+B = ImageInput(data=PNG + b"2", mime_type="image/png")
+MIXED = {"q": Noul(), "r": Noul(), "s": Noul(), "t": Noul()}
+
+
+def test_media_port_judges_each_bound_image_set_once() -> None:
+    usages = [TokenUsage(3, 1), TokenUsage(5, 2), TokenUsage(7, None)]
+    stub = PerCallJudgment(["g", "g", "g"], usages)
+    port = TypevetMediaSystemOnePort(stub, media=MediaCapabilities({"image/png"}))
+    bindings = {"q": ["a"], "s": ["b"], "t": ["b"]}
+    response = port.system_one_media("x", MIXED, "m", evidence=_evidence(bindings))
+    assert stub.calls == [(("q",), (A,)), (("r",), None), (("s", "t"), (B,))]
+    assert list(response.answers) == ["q", "r", "s", "t"]
+    assert response.model == "g"
+    assert response.usage == Usage(input_tokens=15, output_tokens=None)
+
+
+def test_media_port_keeps_image_order_per_group() -> None:
+    stub = PerCallJudgment(["g", "g"], [TokenUsage(1, 1), TokenUsage(2, 2)])
+    port = TypevetMediaSystemOnePort(stub, media=MediaCapabilities({"image/png"}))
+    bindings = {"q": ["b", "a"], "r": ["a", "b"]}
+    response = port.system_one_media(
+        "x", {"q": Noul(), "r": Noul()}, "m", evidence=_evidence(bindings)
+    )
+    assert stub.calls == [(("q",), (B, A)), (("r",), (A, B))]
+    assert response.usage == Usage(input_tokens=3, output_tokens=3)
+
+
+def test_media_port_refuses_groups_that_disagree_on_the_model() -> None:
+    stub = PerCallJudgment(["g", "h"], [TokenUsage(), TokenUsage()])
+    port = TypevetMediaSystemOnePort(stub, media=MediaCapabilities({"image/png"}))
+    with pytest.raises(ProviderResponseError, match="model"):
+        port.system_one_media(
+            "x",
+            {"q": Noul(), "r": Noul()},
+            "m",
+            evidence=_evidence({"q": ["a"], "r": ["b"]}),
+        )
+
+
+def test_media_port_runs_mixed_bindings_on_the_real_typevet_path() -> None:
+    scorer = ScriptedScoringFake(logprobs=LOGPROBS)
+    judgment = judgment_port(media=True, scorer=scorer)
+    port = TypevetMediaSystemOnePort(judgment, media=MediaCapabilities({"image/png"}))
+    questions = {**QUESTIONS, "second_noul": Noul(instructions="Is it urgent?")}
+    bindings = {
+        "conformance_noul": ["a"],
+        "conformance_score": ["b"],
+        "second_noul": ["b"],
+    }
+    response = judge_with_images(
+        port, STATE, questions, FAKE_MODEL, evidence=_evidence(bindings)
+    )
+    assert set(response.answers) == set(questions)
+    assert {call.media for call in scorer.calls} == {(A,), (), (B,)}
 
 
 def test_media_port_rejects_undeclarable_image_types() -> None:

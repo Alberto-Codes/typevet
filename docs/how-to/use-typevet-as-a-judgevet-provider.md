@@ -17,7 +17,7 @@ Measure each judge model on your own task before you trust its numbers.
   See [Run Gemma 4 on llama.cpp](run-gemma4-llamacpp.md) or [Serve typevet on vLLM](serve-typevet-on-vllm.md).
 - The `TYPEVET_BACKEND` and backend settings in the environment.
   See [configuration](../reference/configuration.md).
-- judgevet 0.14. The `judgevet` extra pins `judgevet>=0.14,<0.15`.
+- judgevet 0.14 or 0.15. The `judgevet` extra pins `judgevet>=0.14,<0.16`.
 
 ## Install the extra
 
@@ -129,9 +129,13 @@ from judgevet.media import MediaCapabilities
 factory = provider_factory(open_judgment, media=MediaCapabilities({"image/png"}))
 ```
 
-typevet conditions every question on the same images.
-Bind every question to all images, in the same order.
-Other bindings raise `ProviderCapabilityError`.
+Each question can have its own images.
+The media port groups the questions by their bound images and keeps the image order of each binding.
+It sends one typevet judgment for each group. The backend still gets one scoring call per question.
+Questions with no images go as one text judgment.
+The port merges the answers into one response and adds up the token counts.
+If the groups report different model ids, the port raises `ProviderResponseError`.
+An image type outside the declared `MediaCapabilities` raises `ProviderCapabilityError` before any backend call.
 
 ## Handle errors
 
@@ -153,7 +157,8 @@ Other exceptions keep their type.
 ## Evidence limits
 
 Offline tests prove the bridge on typevet fakes.
-They run judgevet's command line and MCP server on the bridge.
+The text, media and async ports pass the judgevet provider conformance kit, `judgevet.testing.conformance` from judgevet 0.15.0.
+The tests also run judgevet's command line and MCP server on the bridge.
 They prove no live model behaviour.
 One live run per backend (llama.cpp and vLLM) asked one Noul, one Choice and one Score through the bridge and returned typed answers; see [#289](https://github.com/Alberto-Codes/typevet/issues/289). This is not a quality claim.
 
@@ -161,3 +166,4 @@ One live run per backend (llama.cpp and vLLM) asked one Noul, one Choice and one
 
 - Read why the bridge exists in [TypeLLM, Jev and judgevet](../explanation/typellm-and-judgevet.md).
 - See the bridge import path in [supported imports](../reference/supported-imports.md#judgevet-bridge).
+- See the judgevet side, with typevet as the example, in judgevet's [use a self-hosted provider](https://alberto-codes.github.io/judgevet/how-to/use-a-self-hosted-provider/).

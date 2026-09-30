@@ -770,7 +770,7 @@ wheels = [
 
 [[package]]
 name = "judgevet"
-version = "0.14.0"
+version = "0.15.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -778,12 +778,15 @@ dependencies = [
     { name = "structlog" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d4/1f/0da1f049626544c09c5e47968e31112d3d6f5510e94ab638ec7f83c03b98/judgevet-0.14.0.tar.gz", hash = "sha256:54daf8785978f01195bd42181b1c0e81fc822036ced4e3cb51452da6c35f5d49", size = 106842, upload-time = "2026-09-29T14:21:46.468Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/26/2a/53c81e3fc8764978958157439e43d67f19486f99470063068efd4b6cc8f8/judgevet-0.15.0.tar.gz", hash = "sha256:df5368a9e52b4658127c021f1635392c99697390ebd510cdeea4d97372b46c3d", size = 117945, upload-time = "2026-09-30T03:42:51.221Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/80/2c/5371a842eeaa3149315cf6f85d1b6a190b8511bf68b402a1e7404172c261/judgevet-0.14.0-py3-none-any.whl", hash = "sha256:f7d1b08135e77928302a93602b4e083070d06c8fe8e4c2b7efa0ecb8fc7d394a", size = 141507, upload-time = "2026-09-29T14:21:45.252Z" },
+    { url = "https://files.pythonhosted.org/packages/99/fc/b6ef4c027c9fd5457a3c9104c84498bdebbc8622b3148315e55242cd658a/judgevet-0.15.0-py3-none-any.whl", hash = "sha256:10f961c31b2de61fad882f8a45115da8f025991553212efdcba9aae189477984", size = 156276, upload-time = "2026-09-30T03:42:50.153Z" },
 ]
 
 [package.optional-dependencies]
+conformance = [
+    { name = "pytest" },
+]
 mcp = [
     { name = "mcp" },
 ]
@@ -1714,7 +1717,7 @@ judgevet = [
 dev = [
     { name = "docvet", extra = ["griffe"] },
     { name = "import-linter" },
-    { name = "judgevet", extra = ["mcp"] },
+    { name = "judgevet", extra = ["conformance", "mcp"] },
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -1733,7 +1736,7 @@ docs = [
 requires-dist = [
     { name = "httpx", specifier = ">=0.28" },
     { name = "jsonschema", specifier = ">=4.26.0" },
-    { name = "judgevet", marker = "extra == 'judgevet'", specifier = ">=0.14,<0.15" },
+    { name = "judgevet", marker = "extra == 'judgevet'", specifier = ">=0.14,<0.16" },
     { name = "structlog", specifier = ">=24.1" },
     { name = "typer", marker = "extra == 'cli'", specifier = ">=0.12" },
 ]
@@ -1743,7 +1746,7 @@ provides-extras = ["cli", "judgevet"]
 dev = [
     { name = "docvet", extras = ["griffe"], specifier = ">=1.16.0" },
     { name = "import-linter", specifier = ">=2.15" },
-    { name = "judgevet", extras = ["mcp"], specifier = ">=0.14,<0.15" },
+    { name = "judgevet", extras = ["mcp", "conformance"], specifier = ">=0.15,<0.16" },
     { name = "pre-commit", specifier = ">=4.6.2" },
     { name = "pytest", specifier = ">=9.1.1" },
     { name = "pytest-cov", specifier = ">=7.1.0" },

@@ -2,8 +2,8 @@
 
 Every port here runs ``ScoringJudgmentAdapter`` over ``ScriptedScoringFake``,
 so the bridge tests exercise the real typevet judgment path with no network.
-The questions match the judgevet provider conformance kit on judgevet main
-(``judgevet.testing._conformance_cases``), which 0.14.0 does not publish.
+The questions match the questions of the judgevet provider conformance kit
+(``judgevet.testing.conformance``, judgevet 0.15.0).
 """
 
 from __future__ import annotations
@@ -107,16 +107,19 @@ class FakeSession:
 @contextmanager
 def open_fake_session(
     sessions: list[FakeSession] | None = None,
+    *,
+    media: bool = False,
 ) -> Iterator[FakeSession]:
     """Open one offline session, recording it for lifetime checks.
 
     Args:
         sessions: A list that receives each opened session, or None.
+        media: Serve the native Gemma 4 template, which accepts images.
 
     Yields:
         A new session over a fresh offline judgment port.
     """
-    session = FakeSession(judgment_port())
+    session = FakeSession(judgment_port(media=media))
     if sessions is not None:
         sessions.append(session)
     try:

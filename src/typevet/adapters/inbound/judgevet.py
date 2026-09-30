@@ -23,8 +23,11 @@ Declared capabilities (``BridgeCapabilities``):
 - Media: ``TypevetSystemOnePort`` has no media methods, so
   ``judgevet.media.judge_with_images`` refuses it.
   ``TypevetMediaSystemOnePort`` implements ``MediaSystemOnePort`` for the
-  declared ``MediaCapabilities``. typevet conditions every question on the
-  same images, so it refuses per-question image bindings.
+  declared ``MediaCapabilities``. It groups the questions by their bound
+  images, in binding order, and sends one typevet judgment per group. The
+  backend still gets one scoring call per question. Questions with no
+  images go as one text judgment. The answers merge into one response;
+  the groups must report the same model id, and token counts add up.
 
 Error mapping (typevet error to judgevet error):
 
@@ -435,33 +438,74 @@ class TypevetSystemOnePort:
         return _to_response(response, questions)
 
 
-def _shared_images(
+def _image_groups(
     questions: Questions, evidence: ImageEvidence
-) -> tuple[ImageInput, ...]:
-    """Convert evidence that binds every question to all images, in order.
+) -> list[tuple[Questions, tuple[ImageInput, ...] | None]]:
+    """Group the questions by their bound images, in first-appearance order.
 
     Args:
         questions: The judgevet questions keyed by name.
         evidence: The validated judgevet image evidence.
 
     Returns:
-        The typevet images, in evidence order.
+        One ``(questions, images)`` pair per image set, with ``None`` images
+        for the questions that have no binding.
 
     Raises:
-        ProviderCapabilityError: A question has its own image binding, or an
-            image type is outside typevet's supported set.
+        ProviderCapabilityError: An image type is outside typevet's supported
+            set.
     """
-    order = tuple(image.id for image in evidence.images)
-    if any(tuple(evidence.by_question.get(name, ())) != order for name in questions):
-        msg = "typevet conditions every question on the same images, in order"
-        raise ProviderCapabilityError(msg)
     if any(
         image.media_type not in SUPPORTED_IMAGE_MIME_TYPES for image in evidence.images
     ):
         raise ProviderCapabilityError(
             "an image type is outside typevet's supported set"
         )
-    return tuple(ImageInput(image.data, image.media_type) for image in evidence.images)
+    images = {
+        image.id: ImageInput(image.data, image.media_type) for image in evidence.images
+    }
+    groups: dict[tuple[str, ...], dict[str, Any]] = {}
+    for name, question in questions.items():
+        key = tuple(evidence.by_question.get(name, ()))
+        groups.setdefault(key, {})[name] = question
+    return [
+        (group, tuple(images[i] for i in key) or None) for key, group in groups.items()
+    ]
+
+
+def _add_counts(counts: Sequence[int | None]) -> int | None:
+    """Add token counts, keeping the total unknown when any count is unknown.
+
+    Args:
+        counts: One count per image group.
+
+    Returns:
+        The sum, or ``None`` when any count is ``None``.
+    """
+    return None if None in counts else sum(c or 0 for c in counts)
+
+
+def _merge(responses: Sequence[SystemOneResponse]) -> SystemOneResponse:
+    """Merge the group responses into one, adding up the token counts.
+
+    Args:
+        responses: One response per image group, in group order.
+
+    Returns:
+        One response with every answer; a token count is ``None`` when any
+        group left it unknown.
+
+    Raises:
+        ProviderResponseError: The groups report different model ids.
+    """
+    if len({response.model for response in responses}) > 1:
+        raise ProviderResponseError("typevet image groups reported different models")
+    usage = Usage(
+        _add_counts([r.usage.input_tokens for r in responses]),
+        _add_counts([r.usage.output_tokens for r in responses]),
+    )
+    answers = {k: v for r in responses for k, v in r.answers.items()}
+    return SystemOneResponse(model=responses[0].model, usage=usage, answers=answers)
 
 
 class TypevetMediaSystemOnePort(TypevetSystemOnePort):
@@ -537,18 +581,21 @@ class TypevetMediaSystemOnePort(TypevetSystemOnePort):
             state: The content to judge.
             questions: judgevet questions or raw wire mappings, keyed by name.
             model: The model id typevet sends to its backend.
-            evidence: Images that every question is bound to, in order.
+            evidence: The images and the images each question is bound to.
 
         Returns:
-            Typed answers, the model id the backend reports and token usage.
+            Typed answers, the model id the backend reports and summed usage.
 
         Raises:
-            ProviderCapabilityError: The evidence binds questions to different
-                images, or the request needs a capability typevet lacks.
+            ProviderCapabilityError: An image type is outside typevet's
+                supported set, or the request needs a capability typevet lacks.
+            ProviderResponseError: The image groups report different models.
             ProviderError: A mapped typevet failure or a refused request.
         """
-        images = _shared_images(questions, evidence)
-        return self._judge(state, questions, model, images)
+        groups = _image_groups(questions, evidence)
+        return _merge(
+            [self._judge(state, group, model, media) for group, media in groups]
+        )
 
 
 class AsyncTypevetSystemOnePort:

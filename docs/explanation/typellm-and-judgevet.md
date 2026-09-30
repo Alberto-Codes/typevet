@@ -72,8 +72,9 @@ model. Calibration does not transfer between judge models
 (source: [arXiv 2605.06939](https://arxiv.org/abs/2605.06939)). A threshold
 tuned on Jev needs a new measurement on Gemma. The bridge declares what it
 cannot do instead of approximating it. Logprobs are required. Choice and Score
-take at most 24 options. Instructions must be text. Images reach every
-question or none. See
+take at most 24 options. Instructions must be text. Each question can have
+its own images. The bridge sends one typevet judgment per image set. The
+backend still gets one scoring call per question. See
 [use typevet as a judgevet provider](../how-to/use-typevet-as-a-judgevet-provider.md).
 
 Why a bridge module and not a typevet server? judgevet owns the provider
@@ -107,7 +108,8 @@ How typevet’s native questions map to decisions today:
   (judgevet-aligned vocabulary; the core library has no judgevet dependency).
 - The optional judgevet bridge, `typevet.adapters.inbound.judgevet`, which
   makes typevet a judgevet provider. Offline tests prove it on typevet fakes
-  through judgevet's command line and MCP server. One live run per backend
+  through judgevet's command line and MCP server. Its text, media and async
+  ports pass the judgevet provider conformance kit (judgevet 0.15.0). One live run per backend
   (llama.cpp and vLLM) returned typed answers through the bridge (#289); it
   is not a quality claim.
 - Evaluation harnesses: loader eval runner and TPJEP eight-task runner.
@@ -149,5 +151,7 @@ decision runtime plus the consumer-facing `JudgmentPort`.
 - Upstream: [TypeLLM/TypeLLM](https://github.com/TypeLLM/TypeLLM),
   [typellm.ai](https://typellm.ai/)
 - Sister: [judgevet docs](https://github.com/Alberto-Codes/judgevet/tree/main/docs)
+- judgevet how-to with typevet as the example:
+  [use a self-hosted provider](https://alberto-codes.github.io/judgevet/how-to/use-a-self-hosted-provider/)
 - typevet research: issues #2, #4, #11, #12; MVP epic #21
 - Live judgment evidence: [judgment live receipts](../reference/judgment-live-receipts.md)
