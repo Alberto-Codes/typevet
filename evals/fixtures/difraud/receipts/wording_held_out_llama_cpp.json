@@ -1,0 +1,1064 @@
+{
+  "issue": 309,
+  "backend": "llama_cpp",
+  "model": "gemma-4-31b-24gib-kv11-decoder",
+  "seed_text": "Is this message a scam, phishing or social-engineering attempt?",
+  "evolved_text": "Estimate probability (0-1) this message is a scam, phishing, or social-engineering attempt.",
+  "rows": 158,
+  "calls": {
+    "seed": 158,
+    "evolved": 158,
+    "total": 316
+  },
+  "stopped": null,
+  "metrics": {
+    "seed": {
+      "rows": 158,
+      "positives": 36,
+      "accuracy": 0.9177215189873418,
+      "brier": 0.07420771511022987,
+      "ece": 0.11266374296198167
+    },
+    "evolved": {
+      "rows": 158,
+      "positives": 36,
+      "accuracy": 0.9240506329113924,
+      "brier": 0.0699404742853484,
+      "ece": 0.08242837611675363
+    }
+  },
+  "bootstrap": {
+    "resamples": 2000,
+    "seed": 0,
+    "level": 0.95,
+    "ece_difference": {
+      "low": -0.05232673617720505,
+      "high": -0.008214416767210728
+    },
+    "brier_difference": {
+      "low": -0.02449555600087972,
+      "high": 0.01874237082987122
+    }
+  },
+  "verdict": {
+    "ece_drop": 0.03023536684522804,
+    "ece_drop_ok": true,
+    "evolved_ece_ok": true,
+    "brier_drops": true,
+    "accuracy_drop": -0.006329113924050667,
+    "accuracy_ok": true,
+    "passed": true,
+    "rule": {
+      "min_ece_drop": 0.03,
+      "max_evolved_ece": 0.1,
+      "max_accuracy_drop": 0.01,
+      "ece_bins": 10
+    }
+  },
+  "reference_133": {
+    "prior_ece": 0.158,
+    "seed_ece": 0.11266374296198167,
+    "difference": -0.04533625703801833
+  },
+  "pairs": [
+    {
+      "record_id": "sha256:1b977908aa36f4b0",
+      "label": 0,
+      "seed": 0.015658819168822384,
+      "evolved": 0.0026311245895612348
+    },
+    {
+      "record_id": "sha256:835f9b83b88a42ca",
+      "label": 0,
+      "seed": 0.2790166402679644,
+      "evolved": 0.032014371016627935
+    },
+    {
+      "record_id": "sha256:26226b68a9098d44",
+      "label": 0,
+      "seed": 0.1370136072357755,
+      "evolved": 0.03380191570543019
+    },
+    {
+      "record_id": "sha256:60b0203f958b23df",
+      "label": 0,
+      "seed": 0.10999808010547345,
+      "evolved": 0.029197127096248048
+    },
+    {
+      "record_id": "sha256:f0f439d932f0158c",
+      "label": 0,
+      "seed": 0.03217302549545767,
+      "evolved": 0.044207170702219106
+    },
+    {
+      "record_id": "sha256:b6bed3955d993f20",
+      "label": 0,
+      "seed": 0.03637531159676241,
+      "evolved": 0.02146868282891021
+    },
+    {
+      "record_id": "sha256:fceb9482f71d1b6f",
+      "label": 1,
+      "seed": 0.8066129282792105,
+      "evolved": 0.7210692991560683
+    },
+    {
+      "record_id": "sha256:0916d2192fd3bac1",
+      "label": 0,
+      "seed": 0.5745686838727924,
+      "evolved": 0.9824738320111198
+    },
+    {
+      "record_id": "sha256:41b1fb98928993c6",
+      "label": 0,
+      "seed": 0.06745627238046994,
+      "evolved": 0.024272754397942492
+    },
+    {
+      "record_id": "sha256:bf7d02fce9c43c50",
+      "label": 0,
+      "seed": 0.016125660396765922,
+      "evolved": 0.0066364177631429416
+    },
+    {
+      "record_id": "sha256:8c1a535fe28d5ed5",
+      "label": 0,
+      "seed": 0.01865408911059829,
+      "evolved": 0.0025222374630285795
+    },
+    {
+      "record_id": "sha256:c0178a437493b7eb",
+      "label": 0,
+      "seed": 0.9219562545555771,
+      "evolved": 0.1914563771102332
+    },
+    {
+      "record_id": "sha256:65c300da1da6c76e",
+      "label": 1,
+      "seed": 0.9904301615348149,
+      "evolved": 0.9942730262237439
+    },
+    {
+      "record_id": "sha256:0406268ffa5d3986",
+      "label": 0,
+      "seed": 0.012324004579246029,
+      "evolved": 0.00321374126428871
+    },
+    {
+      "record_id": "sha256:057c8ac488fd1ce7",
+      "label": 0,
+      "seed": 0.039446007248542136,
+      "evolved": 0.3104228064426519
+    },
+    {
+      "record_id": "sha256:f6ac1fffe6303ea4",
+      "label": 1,
+      "seed": 0.9909283676493754,
+      "evolved": 0.9962138914186375
+    },
+    {
+      "record_id": "sha256:bd4f65219c28babb",
+      "label": 0,
+      "seed": 0.020911339221373774,
+      "evolved": 0.0035539913646004135
+    },
+    {
+      "record_id": "sha256:fb78bf3201acabf1",
+      "label": 1,
+      "seed": 0.9844931350192919,
+      "evolved": 0.9923319268231264
+    },
+    {
+      "record_id": "sha256:928b85e7d18320d9",
+      "label": 1,
+      "seed": 0.9749112963736593,
+      "evolved": 0.9809727717255479
+    },
+    {
+      "record_id": "sha256:18c28d5672158410",
+      "label": 0,
+      "seed": 0.15929300080262704,
+      "evolved": 0.06318390695984355
+    },
+    {
+      "record_id": "sha256:3fe04604fefa00cf",
+      "label": 1,
+      "seed": 0.9956342241410582,
+      "evolved": 0.9974190847889337
+    },
+    {
+      "record_id": "sha256:1cf80e28001ff11b",
+      "label": 0,
+      "seed": 0.05251232630188373,
+      "evolved": 0.03289212390030332
+    },
+    {
+      "record_id": "sha256:11118ed524ae2763",
+      "label": 1,
+      "seed": 0.9881449581114321,
+      "evolved": 0.9974011381656284
+    },
+    {
+      "record_id": "sha256:32b5c8c45d8d1e67",
+      "label": 0,
+      "seed": 0.18650549701795213,
+      "evolved": 0.056158752469736055
+    },
+    {
+      "record_id": "sha256:18c27570dc80ff5e",
+      "label": 0,
+      "seed": 0.9469931003626169,
+      "evolved": 0.7138759505580549
+    },
+    {
+      "record_id": "sha256:2d51e4ba5da41b25",
+      "label": 0,
+      "seed": 0.10418101357869844,
+      "evolved": 0.010996112348206336
+    },
+    {
+      "record_id": "sha256:5eefb3b4a6e303c4",
+      "label": 0,
+      "seed": 0.2737103963317132,
+      "evolved": 0.9795007342630162
+    },
+    {
+      "record_id": "sha256:c0fdb8bf4a7ac17e",
+      "label": 0,
+      "seed": 0.9788997604010232,
+      "evolved": 0.9814115183513835
+    },
+    {
+      "record_id": "sha256:d2eaf339d387a761",
+      "label": 0,
+      "seed": 0.046755956327319735,
+      "evolved": 0.008164264519275629
+    },
+    {
+      "record_id": "sha256:ec263425b0f4b391",
+      "label": 0,
+      "seed": 0.025397972864402527,
+      "evolved": 0.0037368152262274995
+    },
+    {
+      "record_id": "sha256:9c93337c3ceda972",
+      "label": 0,
+      "seed": 0.08833509159915943,
+      "evolved": 0.032450865891112096
+    },
+    {
+      "record_id": "sha256:9520df86b2a38ed0",
+      "label": 0,
+      "seed": 0.04473636652463179,
+      "evolved": 0.013613015445584447
+    },
+    {
+      "record_id": "sha256:f4d82938de2178ad",
+      "label": 0,
+      "seed": 0.07422468591030883,
+      "evolved": 0.004224909998471357
+    },
+    {
+      "record_id": "sha256:517a281b81b02578",
+      "label": 0,
+      "seed": 0.036849177709694377,
+      "evolved": 0.01167940099495835
+    },
+    {
+      "record_id": "sha256:e31eb6b3579d6dfc",
+      "label": 0,
+      "seed": 0.12524305041514894,
+      "evolved": 0.02904592860780933
+    },
+    {
+      "record_id": "sha256:ee29bb920325a4b6",
+      "label": 1,
+      "seed": 0.994678418715047,
+      "evolved": 0.9949644383483189
+    },
+    {
+      "record_id": "sha256:bca32fc0867f162f",
+      "label": 1,
+      "seed": 0.9911325095993033,
+      "evolved": 0.9925594913643653
+    },
+    {
+      "record_id": "sha256:31cdb5f8875e2c3b",
+      "label": 0,
+      "seed": 0.0782924763056805,
+      "evolved": 0.04935242129808311
+    },
+    {
+      "record_id": "sha256:5552cec9fd6de50b",
+      "label": 0,
+      "seed": 0.00977574874119084,
+      "evolved": 0.0021154985446842833
+    },
+    {
+      "record_id": "sha256:69c44610d5a7c25d",
+      "label": 0,
+      "seed": 0.6392805137474644,
+      "evolved": 0.25666565382342127
+    },
+    {
+      "record_id": "sha256:cb86f694ad28d443",
+      "label": 1,
+      "seed": 0.9911993001479809,
+      "evolved": 0.9920768509795537
+    },
+    {
+      "record_id": "sha256:799d8b00a4bece73",
+      "label": 1,
+      "seed": 0.9901537797123693,
+      "evolved": 0.9959447281261518
+    },
+    {
+      "record_id": "sha256:a1107d403f3a0518",
+      "label": 0,
+      "seed": 0.022668771737100978,
+      "evolved": 0.007074009831399683
+    },
+    {
+      "record_id": "sha256:0e3366b4e948cae3",
+      "label": 0,
+      "seed": 0.8646317987104397,
+      "evolved": 0.4197673385940748
+    },
+    {
+      "record_id": "sha256:02612e96433e766a",
+      "label": 0,
+      "seed": 0.03144612387619842,
+      "evolved": 0.006805418504681386
+    },
+    {
+      "record_id": "sha256:d728c7e91d6119f4",
+      "label": 0,
+      "seed": 0.993496010676188,
+      "evolved": 0.9952208669980609
+    },
+    {
+      "record_id": "sha256:ff5bfa1f988dd188",
+      "label": 1,
+      "seed": 0.9946127247049215,
+      "evolved": 0.9964438617124575
+    },
+    {
+      "record_id": "sha256:01a2bc378f1db625",
+      "label": 0,
+      "seed": 0.04646863591313139,
+      "evolved": 0.018114943337986883
+    },
+    {
+      "record_id": "sha256:d4e7a51868fd600b",
+      "label": 0,
+      "seed": 0.020741568769623672,
+      "evolved": 0.011488264079467592
+    },
+    {
+      "record_id": "sha256:46ea1be9afaf10b5",
+      "label": 0,
+      "seed": 0.40654303324947516,
+      "evolved": 0.1614702895202619
+    },
+    {
+      "record_id": "sha256:c1158daec8bcc3ee",
+      "label": 1,
+      "seed": 0.9894197920476483,
+      "evolved": 0.9923009474299054
+    },
+    {
+      "record_id": "sha256:b823749a7d35776c",
+      "label": 0,
+      "seed": 0.026620301215396748,
+      "evolved": 0.007426091357680682
+    },
+    {
+      "record_id": "sha256:fc526e4bfbb288ae",
+      "label": 0,
+      "seed": 0.9942047475904567,
+      "evolved": 0.9932898851479018
+    },
+    {
+      "record_id": "sha256:e2d962af4e983f12",
+      "label": 0,
+      "seed": 0.024044689043685574,
+      "evolved": 0.011045183667416228
+    },
+    {
+      "record_id": "sha256:df811707b1669625",
+      "label": 0,
+      "seed": 0.038357785921826114,
+      "evolved": 0.007450440592558616
+    },
+    {
+      "record_id": "sha256:b2c2f87287a9b4d6",
+      "label": 0,
+      "seed": 0.06523086321991521,
+      "evolved": 0.024145164303739464
+    },
+    {
+      "record_id": "sha256:86da1dd303e7596f",
+      "label": 0,
+      "seed": 0.06428671533533652,
+      "evolved": 0.01995342337513082
+    },
+    {
+      "record_id": "sha256:f0c0aacbccce5924",
+      "label": 0,
+      "seed": 0.2062595091654724,
+      "evolved": 0.13072868194347032
+    },
+    {
+      "record_id": "sha256:dfbbc0aa9ec9904e",
+      "label": 0,
+      "seed": 0.023066720074330884,
+      "evolved": 0.015018634202764813
+    },
+    {
+      "record_id": "sha256:9d121a3ff2c7cd8f",
+      "label": 0,
+      "seed": 0.12718586883361224,
+      "evolved": 0.47857928929024696
+    },
+    {
+      "record_id": "sha256:fae2ba55e074e33f",
+      "label": 0,
+      "seed": 0.03219118920979426,
+      "evolved": 0.006228932693855442
+    },
+    {
+      "record_id": "sha256:dbd6aede59d79fe8",
+      "label": 0,
+      "seed": 0.04220497919363622,
+      "evolved": 0.006792472708481151
+    },
+    {
+      "record_id": "sha256:47a99659676937d1",
+      "label": 0,
+      "seed": 0.04233085401347023,
+      "evolved": 0.42190719734968424
+    },
+    {
+      "record_id": "sha256:f482a3d230036af6",
+      "label": 0,
+      "seed": 0.09287561944104472,
+      "evolved": 0.007977627329698185
+    },
+    {
+      "record_id": "sha256:0770b1a84ec0b928",
+      "label": 1,
+      "seed": 0.9913080050797471,
+      "evolved": 0.9894633402205987
+    },
+    {
+      "record_id": "sha256:b1a74ad496bcee86",
+      "label": 0,
+      "seed": 0.027025094917113728,
+      "evolved": 0.015893446661850715
+    },
+    {
+      "record_id": "sha256:9aa29454294ab9fe",
+      "label": 0,
+      "seed": 0.03792465207259945,
+      "evolved": 0.03292447807856386
+    },
+    {
+      "record_id": "sha256:ad794d21aa86d897",
+      "label": 0,
+      "seed": 0.03402380144008917,
+      "evolved": 0.004409314684146026
+    },
+    {
+      "record_id": "sha256:0f21cdda496aac7f",
+      "label": 1,
+      "seed": 0.9916212068246588,
+      "evolved": 0.9971980859622066
+    },
+    {
+      "record_id": "sha256:dd3697c0c79db526",
+      "label": 1,
+      "seed": 0.971429365141435,
+      "evolved": 0.9810970910316102
+    },
+    {
+      "record_id": "sha256:0bc388cfec027821",
+      "label": 0,
+      "seed": 0.09563892577679835,
+      "evolved": 0.02577680353954126
+    },
+    {
+      "record_id": "sha256:468b472080e73298",
+      "label": 1,
+      "seed": 0.9953116379883374,
+      "evolved": 0.9962521143367921
+    },
+    {
+      "record_id": "sha256:d2ac56def8caf4a2",
+      "label": 1,
+      "seed": 0.9935020839299975,
+      "evolved": 0.9941431330128234
+    },
+    {
+      "record_id": "sha256:92036d518333d644",
+      "label": 0,
+      "seed": 0.051777345097202436,
+      "evolved": 0.018580097748602243
+    },
+    {
+      "record_id": "sha256:6daa74be8d5437af",
+      "label": 0,
+      "seed": 0.06681104744862551,
+      "evolved": 0.018588064105228494
+    },
+    {
+      "record_id": "sha256:edb035d9027dd3a2",
+      "label": 0,
+      "seed": 0.10913776076328383,
+      "evolved": 0.010628591397762385
+    },
+    {
+      "record_id": "sha256:cafa11d825b32aa3",
+      "label": 1,
+      "seed": 0.9895058495261453,
+      "evolved": 0.9936572717272026
+    },
+    {
+      "record_id": "sha256:2a5981f89b648063",
+      "label": 1,
+      "seed": 0.9920739981525382,
+      "evolved": 0.9951587180774223
+    },
+    {
+      "record_id": "sha256:4322ee57fc274f73",
+      "label": 0,
+      "seed": 0.11952104997222049,
+      "evolved": 0.023685358045907934
+    },
+    {
+      "record_id": "sha256:59d7e3adee2cc472",
+      "label": 0,
+      "seed": 0.07512148823113533,
+      "evolved": 0.03963985562809451
+    },
+    {
+      "record_id": "sha256:15626d15a7ab3ff6",
+      "label": 1,
+      "seed": 0.988231094956411,
+      "evolved": 0.9909782626388919
+    },
+    {
+      "record_id": "sha256:db4522c1c5a524fc",
+      "label": 0,
+      "seed": 0.033960356379017016,
+      "evolved": 0.004447611072186541
+    },
+    {
+      "record_id": "sha256:16656d7deafc53ac",
+      "label": 0,
+      "seed": 0.02910740813604207,
+      "evolved": 0.008499452595995058
+    },
+    {
+      "record_id": "sha256:3b1e27d61e1567c0",
+      "label": 0,
+      "seed": 0.036292516850411356,
+      "evolved": 0.026226789392249795
+    },
+    {
+      "record_id": "sha256:e1f8d0f247ea5b5e",
+      "label": 0,
+      "seed": 0.9404585337309826,
+      "evolved": 0.9860987584589076
+    },
+    {
+      "record_id": "sha256:8b704a4b7e013791",
+      "label": 0,
+      "seed": 0.01628582374114154,
+      "evolved": 0.015451796732373223
+    },
+    {
+      "record_id": "sha256:f9cf9b75a7700b9b",
+      "label": 1,
+      "seed": 0.9844852201199111,
+      "evolved": 0.9423926144166983
+    },
+    {
+      "record_id": "sha256:6cf27480e4774445",
+      "label": 1,
+      "seed": 0.9764422793724454,
+      "evolved": 0.9706674655134967
+    },
+    {
+      "record_id": "sha256:bd20299a030cb71f",
+      "label": 1,
+      "seed": 0.9927360910249934,
+      "evolved": 0.9956363543340324
+    },
+    {
+      "record_id": "sha256:788570289d0ee97b",
+      "label": 0,
+      "seed": 0.09548660150678764,
+      "evolved": 0.10091322811368324
+    },
+    {
+      "record_id": "sha256:7c6e24a07c764e9a",
+      "label": 0,
+      "seed": 0.2265370661874551,
+      "evolved": 0.06855015771094032
+    },
+    {
+      "record_id": "sha256:0ac215201f4d15e0",
+      "label": 1,
+      "seed": 0.9784956366706378,
+      "evolved": 0.9761012054459934
+    },
+    {
+      "record_id": "sha256:c2b12f8d95a05682",
+      "label": 0,
+      "seed": 0.013843349438589786,
+      "evolved": 0.0034480432905393474
+    },
+    {
+      "record_id": "sha256:2facf52133f48a9f",
+      "label": 0,
+      "seed": 0.17192080088230385,
+      "evolved": 0.05201310827432276
+    },
+    {
+      "record_id": "sha256:688b971cf395da31",
+      "label": 0,
+      "seed": 0.003456168236627177,
+      "evolved": 0.0012307058045805748
+    },
+    {
+      "record_id": "sha256:67019e39347bd96b",
+      "label": 0,
+      "seed": 0.046549582116497894,
+      "evolved": 0.032683986247989794
+    },
+    {
+      "record_id": "sha256:4e073e80c7007bf8",
+      "label": 0,
+      "seed": 0.056501115728273994,
+      "evolved": 0.017666255109780267
+    },
+    {
+      "record_id": "sha256:1bdf7a937e935d71",
+      "label": 0,
+      "seed": 0.018874631409256222,
+      "evolved": 0.007053337923260293
+    },
+    {
+      "record_id": "sha256:1a8dd9f24d8385ad",
+      "label": 0,
+      "seed": 0.007842776733542953,
+      "evolved": 0.0018993330001974861
+    },
+    {
+      "record_id": "sha256:20bbcdb5ed17e4a6",
+      "label": 0,
+      "seed": 0.02463183457568055,
+      "evolved": 0.00995689690675012
+    },
+    {
+      "record_id": "sha256:0b161f8ef2aae7af",
+      "label": 0,
+      "seed": 0.018878623096867927,
+      "evolved": 0.002331377538844844
+    },
+    {
+      "record_id": "sha256:d14cb1bfe6a6f5a7",
+      "label": 0,
+      "seed": 0.026565805382287516,
+      "evolved": 0.003934198070289862
+    },
+    {
+      "record_id": "sha256:13eaeec5fb7872f8",
+      "label": 0,
+      "seed": 0.4810228950685079,
+      "evolved": 0.28825789363823723
+    },
+    {
+      "record_id": "sha256:0c50f96dfc7fd41e",
+      "label": 0,
+      "seed": 0.02614449514124235,
+      "evolved": 0.0063899949086033215
+    },
+    {
+      "record_id": "sha256:b46a1135f17855ff",
+      "label": 0,
+      "seed": 0.9221199951415208,
+      "evolved": 0.8747711061987794
+    },
+    {
+      "record_id": "sha256:06be94e34256786d",
+      "label": 0,
+      "seed": 0.0168818088964052,
+      "evolved": 0.0039029181086499445
+    },
+    {
+      "record_id": "sha256:d8e899581ce284c0",
+      "label": 1,
+      "seed": 0.9935551469725068,
+      "evolved": 0.9933946022556047
+    },
+    {
+      "record_id": "sha256:c188f80ae5f9099f",
+      "label": 0,
+      "seed": 0.07414857353605336,
+      "evolved": 0.09219779521590424
+    },
+    {
+      "record_id": "sha256:a42530d3b4183203",
+      "label": 0,
+      "seed": 0.2588313426618623,
+      "evolved": 0.08892701581762584
+    },
+    {
+      "record_id": "sha256:7126a8689afc002a",
+      "label": 0,
+      "seed": 0.022475735214098406,
+      "evolved": 0.0047850731030007745
+    },
+    {
+      "record_id": "sha256:81d7a971b2804885",
+      "label": 1,
+      "seed": 0.9910338449559551,
+      "evolved": 0.9901278287682352
+    },
+    {
+      "record_id": "sha256:b27ec26c31b231e4",
+      "label": 0,
+      "seed": 0.021574791149186225,
+      "evolved": 0.0058141767739997045
+    },
+    {
+      "record_id": "sha256:af2ca314a25cc144",
+      "label": 0,
+      "seed": 0.050304087009368864,
+      "evolved": 0.014620478083133952
+    },
+    {
+      "record_id": "sha256:55f441fe2095ffdf",
+      "label": 0,
+      "seed": 0.031170761808127702,
+      "evolved": 0.00984690368695444
+    },
+    {
+      "record_id": "sha256:1964e5a15073d08e",
+      "label": 1,
+      "seed": 0.9911828921473766,
+      "evolved": 0.9948431687901658
+    },
+    {
+      "record_id": "sha256:b0c7096ab544d1d1",
+      "label": 0,
+      "seed": 0.023917478008606666,
+      "evolved": 0.012515067022406375
+    },
+    {
+      "record_id": "sha256:a83fec342812aeaa",
+      "label": 0,
+      "seed": 0.04748223707274416,
+      "evolved": 0.008017703349450112
+    },
+    {
+      "record_id": "sha256:67aa05516b6769b9",
+      "label": 1,
+      "seed": 0.9955758749056693,
+      "evolved": 0.9960130310683358
+    },
+    {
+      "record_id": "sha256:caa2c01469c08ea4",
+      "label": 0,
+      "seed": 0.018277732396285926,
+      "evolved": 0.006531029923034422
+    },
+    {
+      "record_id": "sha256:112a54cd0f8c4113",
+      "label": 0,
+      "seed": 0.055523415367252575,
+      "evolved": 0.0074239687557152234
+    },
+    {
+      "record_id": "sha256:dbe4f1e97187307d",
+      "label": 0,
+      "seed": 0.13466719180316397,
+      "evolved": 0.014758731035233112
+    },
+    {
+      "record_id": "sha256:8470a911737229d1",
+      "label": 0,
+      "seed": 0.1366275131920613,
+      "evolved": 0.7349046933762348
+    },
+    {
+      "record_id": "sha256:82a542e92687cbd5",
+      "label": 0,
+      "seed": 0.04817996213550223,
+      "evolved": 0.020376052506514152
+    },
+    {
+      "record_id": "sha256:8c32dbd454db5ee1",
+      "label": 0,
+      "seed": 0.021942000366565018,
+      "evolved": 0.012685364120371799
+    },
+    {
+      "record_id": "sha256:0b7ff1c824e00d19",
+      "label": 0,
+      "seed": 0.02305680956201562,
+      "evolved": 0.00428293694658267
+    },
+    {
+      "record_id": "sha256:2cf023e7d616aa2b",
+      "label": 0,
+      "seed": 0.008397362902654259,
+      "evolved": 0.003107604768782872
+    },
+    {
+      "record_id": "sha256:6578c1e5810b6c77",
+      "label": 0,
+      "seed": 0.032066826265237776,
+      "evolved": 0.015197589004617281
+    },
+    {
+      "record_id": "sha256:86dcec6c8d465b04",
+      "label": 1,
+      "seed": 0.993148261114372,
+      "evolved": 0.9963376749490827
+    },
+    {
+      "record_id": "sha256:5b94e425c2a83ea3",
+      "label": 0,
+      "seed": 0.007543109891735639,
+      "evolved": 0.0011295357346041263
+    },
+    {
+      "record_id": "sha256:b4bd635b391ce0ec",
+      "label": 0,
+      "seed": 0.03151614270453959,
+      "evolved": 0.023327411628499033
+    },
+    {
+      "record_id": "sha256:df4c1f05fae1c3db",
+      "label": 1,
+      "seed": 0.9807797954994877,
+      "evolved": 0.9863300166262943
+    },
+    {
+      "record_id": "sha256:b5805755e0d1fb9f",
+      "label": 0,
+      "seed": 0.1247900414122977,
+      "evolved": 0.039414726464671326
+    },
+    {
+      "record_id": "sha256:a5ddd576cd2df182",
+      "label": 0,
+      "seed": 0.08746300965687903,
+      "evolved": 0.01836124793178263
+    },
+    {
+      "record_id": "sha256:5b7882ce72191eb9",
+      "label": 0,
+      "seed": 0.9965683811103824,
+      "evolved": 0.9971512244088432
+    },
+    {
+      "record_id": "sha256:951f31617ed7e361",
+      "label": 0,
+      "seed": 0.49740650595609415,
+      "evolved": 0.08111437918118404
+    },
+    {
+      "record_id": "sha256:a4feae7a54ec4ae2",
+      "label": 0,
+      "seed": 0.028602493829186768,
+      "evolved": 0.0027095541094971825
+    },
+    {
+      "record_id": "sha256:fb4d9929bfaa16cb",
+      "label": 0,
+      "seed": 0.022456644685754576,
+      "evolved": 0.013658203566107294
+    },
+    {
+      "record_id": "sha256:e288c92386623dc0",
+      "label": 0,
+      "seed": 0.005452317315568419,
+      "evolved": 0.0017215379864292098
+    },
+    {
+      "record_id": "sha256:95731de91bf950ff",
+      "label": 0,
+      "seed": 0.15316556626547623,
+      "evolved": 0.03285567882412754
+    },
+    {
+      "record_id": "sha256:084e34c0102c08d1",
+      "label": 0,
+      "seed": 0.29530572432127755,
+      "evolved": 0.028817644736394997
+    },
+    {
+      "record_id": "sha256:5f7803a269a03402",
+      "label": 1,
+      "seed": 0.9830229842506273,
+      "evolved": 0.9847985353124925
+    },
+    {
+      "record_id": "sha256:4ded357d736bfffc",
+      "label": 0,
+      "seed": 0.7176770685031744,
+      "evolved": 0.6449635673752778
+    },
+    {
+      "record_id": "sha256:c6d15b625a760e46",
+      "label": 1,
+      "seed": 0.9874452407841673,
+      "evolved": 0.9921962342799054
+    },
+    {
+      "record_id": "sha256:d0d8282c501e354d",
+      "label": 1,
+      "seed": 0.9973179469871427,
+      "evolved": 0.9963914129202607
+    },
+    {
+      "record_id": "sha256:15d20489bb46553d",
+      "label": 0,
+      "seed": 0.07036271539943752,
+      "evolved": 0.01593752460452153
+    },
+    {
+      "record_id": "sha256:18215a6d26eb8898",
+      "label": 0,
+      "seed": 0.04438165541729966,
+      "evolved": 0.026481664945742146
+    },
+    {
+      "record_id": "sha256:a672411e7428be0f",
+      "label": 1,
+      "seed": 0.9945123157716437,
+      "evolved": 0.9964653669681532
+    },
+    {
+      "record_id": "sha256:eeeb1fccc6b77619",
+      "label": 0,
+      "seed": 0.01169073942921584,
+      "evolved": 0.0031325523227786066
+    },
+    {
+      "record_id": "sha256:366a7c495046803d",
+      "label": 0,
+      "seed": 0.13316622733408925,
+      "evolved": 0.02246849193285288
+    },
+    {
+      "record_id": "sha256:3c5fe153d6ff6ed9",
+      "label": 1,
+      "seed": 0.20845692401114946,
+      "evolved": 0.04495661377616908
+    },
+    {
+      "record_id": "sha256:efcc7dbdff030d11",
+      "label": 0,
+      "seed": 0.06116906956525477,
+      "evolved": 0.022391930475152415
+    },
+    {
+      "record_id": "sha256:1678966213f55e34",
+      "label": 0,
+      "seed": 0.11099234537113796,
+      "evolved": 0.024208308543034986
+    },
+    {
+      "record_id": "sha256:5644f06304345547",
+      "label": 0,
+      "seed": 0.009045017961731587,
+      "evolved": 0.005694032559991317
+    },
+    {
+      "record_id": "sha256:51f4836be2f96f23",
+      "label": 0,
+      "seed": 0.11370586486633136,
+      "evolved": 0.026358730192161364
+    },
+    {
+      "record_id": "sha256:31d64172621c8d36",
+      "label": 0,
+      "seed": 0.36377577834610614,
+      "evolved": 0.049984693108910176
+    },
+    {
+      "record_id": "sha256:304c7307a378472a",
+      "label": 0,
+      "seed": 0.03697064418472708,
+      "evolved": 0.008361137859320572
+    },
+    {
+      "record_id": "sha256:e60e9d8dc6bf43bd",
+      "label": 0,
+      "seed": 0.04599164260836925,
+      "evolved": 0.032463714016719665
+    },
+    {
+      "record_id": "sha256:c6d556034c7a0c70",
+      "label": 0,
+      "seed": 0.031640499717000774,
+      "evolved": 0.01313461498239929
+    }
+  ],
+  "pins": {
+    "finished_utc": "2026-09-30T15:22:47.180414+00:00",
+    "wall_seconds": 370.7,
+    "dataset": "difraud/difraud sms",
+    "dataset_revision": "aaaf94b336c563a14806bb4f3f58727bed9ed8d4",
+    "split_seed": 0,
+    "evolution_artifact_sha256": "8aac2775fe8d34fbd8f6b37e2f6512038352486fe9e0c1895786ce786ff05343",
+    "server": {
+      "served": [
+        {
+          "id": "gemma-4-31b-24gib-kv11-decoder"
+        }
+      ],
+      "build_info": "b11277-eae11d221",
+      "model_alias": "gemma-4-31b-24gib-kv11-decoder"
+    }
+  },
+  "identity": {
+    "run_id": "08e333192a64434993b23f84d6fb57ef",
+    "baseline_commit": "ce63dddd013445066c0768e5e2049de1e6e50f9a",
+    "working_tree": {
+      "dirty": true,
+      "dirty_paths": [
+        "evals/fixtures/checks/receipts/check_match_vllm_receipt.json"
+      ],
+      "dirty_digest": "38c3932db9b7abfd5279b4e02bf539d28b048d1df6bcfe11a5c1664d287252da"
+    },
+    "prompt_digests": {
+      "seed": "497f2a424c5784409757fe492f548ff4230144fc766a271d14f3db855372b01b",
+      "evolved": "a1bc1dd42e582442090cc1530d6952ba10b70f5086c17e3965973f34df9a61e0"
+    },
+    "code_path_digests": {
+      "held_out": "339ebdddd1589162b6b1c03d1ca350ddd19d51f0d4267dbc5ee1b61624d31b51",
+      "metrics": "6b5264628744a4e9fb9cd534439e1520a18a8c72556f29942132a6c5d31bc70d"
+    },
+    "fixture_digests": {
+      "evolution_artifact": "8aac2775fe8d34fbd8f6b37e2f6512038352486fe9e0c1895786ce786ff05343"
+    },
+    "runtime": {
+      "model": "gemma-4-31b-24gib-kv11-decoder",
+      "served_template": "degraded_chatml",
+      "server_build": "b11277-eae11d221",
+      "template_identity": "unknown",
+      "projector_identity": "unknown",
+      "config_identity": "unknown"
+    },
+    "arm_call_counts": {
+      "judgments": 316
+    },
+    "identity_digest": "0b4fddbad14dfa50844bfb80fd15f038e508d535bb311d5e38ff7bf110bb1ba9"
+  }
+}
