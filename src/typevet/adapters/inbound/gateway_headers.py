@@ -2,8 +2,10 @@
 
 ``VllmSettings`` calls these checks when it is built. A header name must be
 an HTTP token of at most ``MAX_NAME_BYTES`` bytes and must not be protected.
-The protected names are the hop-by-hop headers, ``Host``, ``Content-Length``
-and the configured auth header, compared without case. A value holds only
+The protected names are the hop-by-hop headers, ``Host``, ``Content-Length``,
+the headers that the clients set (``Content-Type``, ``Accept``,
+``Accept-Encoding`` and ``User-Agent``, which only ``user_agent`` sets) and
+the configured auth header, compared without case (#348). A value holds only
 the ASCII characters 0x20 to 0x7E and at most ``MAX_VALUE_BYTES`` bytes. At
 most ``MAX_HEADER_FIELDS`` headers are allowed, and their names and values
 together hold at most ``MAX_TOTAL_BYTES`` bytes. Values are literal: typevet
@@ -79,6 +81,10 @@ PROTECTED_HEADER_NAMES: Final[frozenset[str]] = frozenset(
         "upgrade",
         "host",
         "content-length",
+        "content-type",
+        "accept",
+        "accept-encoding",
+        "user-agent",
     }
 )
 _TOKEN: Final = re.compile(r"[!#$%&'*+\-.^_`|~0-9A-Za-z]+")

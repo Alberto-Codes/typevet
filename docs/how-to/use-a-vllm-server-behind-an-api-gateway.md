@@ -109,6 +109,8 @@ typevet refuses these names in `TYPEVET_VLLM__HEADERS`, in any letter case:
 - The hop-by-hop headers: `Connection`, `Keep-Alive`, `Proxy-Authenticate`,
   `Proxy-Authorization`, `TE`, `Trailer`, `Transfer-Encoding` and `Upgrade`.
 - `Host` and `Content-Length`.
+- `Content-Type`, `Accept`, `Accept-Encoding` and `User-Agent`. typevet sets
+  them. Only `TYPEVET_VLLM__USER_AGENT` changes the agent string.
 - The header in `TYPEVET_VLLM__AUTH_HEADER`. Set the key in
   `TYPEVET_VLLM__API_KEY` instead.
 

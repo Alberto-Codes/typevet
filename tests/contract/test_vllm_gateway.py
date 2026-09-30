@@ -344,3 +344,24 @@ def test_header_values_masked_without_a_key(
     assert type(err) is BackendHttpError
     assert _TENANT not in _exposed(err)
     assert err.__cause__ is None
+
+
+@_ENTRY_POINTS
+def test_short_header_value_masks_whole_tokens_only(
+    raised: Callable[[dict[str, str], Handler], GenerationError],
+) -> None:
+    """A header value ``1`` masks the token ``1``, not the ``1`` in ``401`` (#348)."""
+    headers = json.dumps({"X-Tenant": "1", "X-Route": _ROUTE})
+
+    def deny(request: httpx.Request) -> httpx.Response:
+        detail = f"tenant 1 denied; key x{_KEY}y; route {_ROUTE}"
+        return httpx.Response(401, json={"detail": detail}, request=request)
+
+    err = raised(_gateway_env(TYPEVET_VLLM__HEADERS=headers), deny)
+    assert type(err) is BackendHttpError
+    assert err.status_code == 401
+    assert "HTTP 401" in str(err)
+    assert "tenant *** denied" in str(err)
+    exposed = _exposed(err)
+    assert "tenant 1 denied" not in exposed
+    assert not [secret for secret in _SECRETS if secret in exposed]

@@ -11,7 +11,9 @@ receipt keeps the CORD ``cases`` and ``combined`` rows at the top level, so
 ``typevet_evals.cli.cord_semantic_acceptance`` reads the receipt file
 directly. The call caps, ``CountingTransport``, ``CallCapReached`` and
 ``kv_cache_usage`` live in ``typevet_evals.vllm_acceptance.transport``; this
-module re-exports all of them except ``CallCapReached`` (#229).
+module re-exports all of them except ``CallCapReached`` (#229). The
+receipt and its error message never hold the key or an extra header value
+(#348).
 
 Examples:
     ```python
@@ -48,6 +50,7 @@ import hashlib
 import json
 import math
 import os
+import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -80,6 +83,8 @@ SWAP_PASS_FLOOR: Final[int] = 3
 _DENIED: Final[frozenset[int | None]] = frozenset({401, 403})
 _NOT_VLLM: Final = "TYPEVET_BACKEND must be vllm for the vLLM acceptance run"
 _GATED: Final[tuple[str, ...]] = ("generation", "psai", "cord")
+_BOUND: Final = "(?<![A-Za-z0-9]){}(?![A-Za-z0-9])"
+_ECHOES: Final = (("pins", "version"), ("pins", "served_models"), ("error", "message"))
 OMITTED_RULE: Final[str] = (
     "An omitted row counts in omitted_credited when its answer equals the "
     "gold key; no omitted row is added to the present, swapped or text counts."
@@ -371,7 +376,8 @@ def run_acceptance(
         Receipt with ``pins``, ``sets``, ``calls``, ``coverage``, ``stopped``,
         ``passed`` and the CORD ``cases`` and ``combined`` rows. A stop rule
         leaves ``stopped`` set and ``passed`` false. Any other error is
-        recorded as ``error`` (type and key-masked message), the receipt is
+        recorded as ``error`` (type, and message with the key and header
+        values masked), the receipt is
         written, and the error is raised again.
 
     Raises:
@@ -399,7 +405,7 @@ def run_acceptance(
     except AcceptanceStoppedError as exc:
         receipt["stopped"] = str(exc)
     except Exception as exc:
-        message = _masked(str(exc), settings)
+        message = _masked(_masked_headers(str(exc), settings), settings)
         receipt["stopped"] = f"error: {type(exc).__name__}"
         receipt["error"] = {"type": type(exc).__name__, "message": message}
         raise
@@ -436,6 +442,67 @@ def _key_needle(settings: VllmSettings, *, escaped: bool) -> str:
     return json.dumps(settings.api_key)[1:-1] if escaped else str(settings.api_key)
 
 
+def _masked_headers(value: Any, settings: VllmSettings | None) -> Any:
+    """Mask each extra header value as a whole token in the strings of ``value``.
+
+    A gateway can echo a request header into a body or an error that the
+    receipt records (#348). A value matches only between characters that are
+    not ASCII letters or digits, as in the adapter errors, so a value such as
+    ``1`` leaves ``HTTP 401`` readable. Only string values are masked: dict
+    keys and numbers keep their JSON form.
+
+    Args:
+        value: String, or a dict or list of JSON values.
+        settings: vLLM settings with the extra headers, or ``None``.
+
+    Returns:
+        ``value`` with each header value replaced by ``REDACTED``.
+    """
+    headers = {} if settings is None else settings.headers
+    values = sorted(filter(None, headers.values()), key=len, reverse=True)
+    patterns = [re.compile(_BOUND.format(re.escape(v))) for v in values]
+    return _masked_tokens(value, patterns) if patterns else value
+
+
+def _masked_tokens(value: Any, patterns: list[re.Pattern[str]]) -> Any:
+    if isinstance(value, str):
+        for pattern in patterns:
+            value = pattern.sub(REDACTED, value)
+        return value
+    if isinstance(value, Mapping):
+        return {k: _masked_tokens(v, patterns) for k, v in value.items()}
+    if isinstance(value, list | tuple):
+        return [_masked_tokens(item, patterns) for item in value]
+    return value
+
+
+def _masked_echoes(
+    receipt: Mapping[str, Any], settings: VllmSettings | None
+) -> dict[str, Any]:
+    """Mask header values only in the receipt parts that a gateway can echo.
+
+    Those parts are ``pins.version`` and ``pins.served_models``, read from the
+    server, and ``error.message``. The keys and the values that typevet sets,
+    such as ``stopped``, ``passed`` and ``pins.configured_model``, stay as
+    they are, so a header value equal to one of them cannot change the
+    receipt schema (#348).
+
+    Args:
+        receipt: Mapping from ``run_acceptance``.
+        settings: vLLM settings with the extra headers, or ``None``.
+
+    Returns:
+        A copy of ``receipt`` with those parts masked.
+    """
+    masked = dict(receipt)
+    for parent, child in _ECHOES:
+        section = masked.get(parent)
+        if isinstance(section, Mapping) and child in section:
+            echo = _masked_headers(section[child], settings)
+            masked[parent] = {**section, child: echo}
+    return masked
+
+
 def _masked(text: str, settings: VllmSettings | None) -> str:
     if settings is None or not settings.api_key:
         return text
@@ -447,17 +514,22 @@ def _masked(text: str, settings: VllmSettings | None) -> str:
 def write_receipt(
     path: Path, receipt: Mapping[str, Any], *, settings: VllmSettings | None
 ) -> str:
-    """Write the receipt JSON once, with the key masked, and return its sha256.
+    """Write the receipt JSON once, with secrets masked, and return its sha256.
 
-    The key is read from ``settings`` only inside the masking step, so no
-    frame of this function binds the raw key to a local. ``VllmSettings``
-    leaves the key out of its ``repr``.
+    Each extra header value is masked as a whole token only in the parts that
+    ``_masked_echoes`` names, before the dump, so keys, numbers and the
+    values that typevet sets keep their form (#348). The key is then masked
+    anywhere in the JSON text. The key is read from ``settings`` only inside
+    the masking step, so no frame of this function binds the raw key to a
+    local. ``VllmSettings`` leaves the key out of its
+    ``repr``.
 
     Args:
         path: New file path; parent directories are created.
         receipt: Mapping from ``run_acceptance``.
         settings: vLLM settings whose ``api_key`` is masked, raw and
-            JSON-escaped, or ``None`` for no masking.
+            JSON-escaped, and whose ``headers`` values are masked, or
+            ``None`` for no masking.
 
     Returns:
         Hex sha256 of the written bytes.
@@ -465,7 +537,8 @@ def write_receipt(
     Raises:
         FileExistsError: When ``path`` already exists.
     """
-    text = _masked(json.dumps(receipt, indent=2) + "\n", settings)
+    masked = _masked_echoes(receipt, settings)
+    text = _masked(json.dumps(masked, indent=2) + "\n", settings)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("x", encoding="utf-8") as handle:
         handle.write(text)

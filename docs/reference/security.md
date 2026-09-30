@@ -103,15 +103,17 @@ Only the vLLM path takes an API key. The settings are in
 | Settings errors | An error names the variable, never its value. |
 | Adapter errors | The adapters from `generation_adapter` and `async_vllm_generation_adapter` mask the key and each `TYPEVET_VLLM__HEADERS` value in a `GenerationError`. The port from `open_judgment` also masks them. Set a key or an extra header, and each such error becomes a masked copy. The copy has no cause or context. |
 | Gateway error pages | An HTML error body is not in the `BackendHttpError`. Its `body_snippet` is empty. |
-| Receipts | The vLLM live acceptance run in `evals/` masks the key before it writes the receipt. |
+| Receipts | The vLLM live acceptance run in `evals/` masks the key and each `TYPEVET_VLLM__HEADERS` value before it writes the receipt. A header value is masked only in `pins.version`, `pins.served_models` and `error.message`. Keys and values that typevet sets stay as written. |
 
 When a key is set, each `GenerationError` from these wrappers is a masked
 copy. The copy shows `***` in place of the raw or JSON-escaped key. The copy
 has the same type, and it has no cause or context. The copy is made even when
 the key text is absent. The httpx error in the cause chain holds the request,
 and its headers hold `Authorization: Bearer <key>`. Thus the copy drops that
-chain. Each value in `TYPEVET_VLLM__HEADERS` is masked the same way, with or
-without a key. Without a key or an extra header, the wrappers raise the
+chain. Each value in `TYPEVET_VLLM__HEADERS` is masked too, with or without a
+key, but only as a whole token. A match must not have an ASCII letter or digit
+on either side. Thus a header value `1` masks `tenant 1` but leaves `HTTP 401`
+readable. The key is masked at each match. Without a key or an extra header, the wrappers raise the
 original error. Masking
 applies to strings and bytes inside a dict, list, tuple, set or frozenset, for
 example a parsed payload. A masked bytes value stays bytes, with `***` in place
@@ -124,8 +126,8 @@ gives the steps and the limits.
 Known gaps:
 
 - Masking does not walk `bytearray` or `memoryview` values.
-- Masking replaces each match of a header value. A short value, such as `1`,
-  also masks the same text in other parts of the message.
+- Masking does not replace a header value inside a longer word or number.
+  For example, the value `acme` is not masked in `acmecorp`.
 - A `BackendHttpError` keeps a JSON or plain-text error body up to 500
   characters. Only an HTML body is withheld.
 - Masking exists only in the wrappers from `generation_adapter`,

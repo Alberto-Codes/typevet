@@ -6,8 +6,10 @@ Each rule is checked when ``VllmSettings`` is built, directly or from
 
 from __future__ import annotations
 
+import dataclasses
 import json
-from typing import Any
+from types import MappingProxyType
+from typing import Any, cast
 
 import pytest
 
@@ -44,6 +46,10 @@ _INVALID_HEADERS: dict[str, dict[str, str]] = {
     "proxy_authorization": {"Proxy-Authorization": _V},
     "host": {"HOST": _V},
     "content_length": {"Content-Length": _V},
+    "content_type": {"Content-Type": _V},
+    "accept": {"accept": _V},
+    "accept_encoding": {"Accept-Encoding": _V},
+    "user_agent": {"User-Agent": _V},
     "default_auth_header": {"authorization": _V},
     "non_token_name": {"Bad Name": _V},
     "non_ascii_value": {"X-Tenant": f"café-{_V}"},
@@ -169,3 +175,30 @@ def test_headers_are_copied_at_construction() -> None:
     settings = _settings(headers=source)
     source["X-Tenant"] = "changed"
     assert settings.headers == {"X-Tenant": "acme"}
+
+
+def test_headers_are_read_only_after_validation() -> None:
+    """No change after construction can skip the header rules (#348)."""
+    settings = _settings(headers={"X-Tenant": "acme"})
+    assert isinstance(settings.headers, MappingProxyType)
+    with pytest.raises(TypeError):
+        cast("Any", settings.headers)["Connection"] = "close"
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        cast("Any", settings).headers = {"Connection": "close"}
+    assert dict(settings.headers) == {"X-Tenant": "acme"}
+
+
+@pytest.mark.parametrize(
+    "name", ["Content-Type", "Accept", "Accept-Encoding", "User-Agent"]
+)
+def test_typevet_owned_headers_are_protected_for_every_field(name: str) -> None:
+    """The clients set these headers; only ``user_agent`` sets the agent (#348)."""
+    for fields in (
+        {"auth_header": name},
+        {"request_id_header": name},
+        {"headers": {name.lower(): _V}},
+    ):
+        with pytest.raises(ValueError, match="protected header") as info:
+            _settings(**fields)
+        assert _V not in str(info.value)
+    assert _settings(user_agent="typevet-test").user_agent == "typevet-test"

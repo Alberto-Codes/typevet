@@ -108,17 +108,18 @@ gives the steps. `VllmSettings` checks these rules when it is built:
 | Number of extra headers | At most 32 |
 | Extra names and values together | At most 8,192 bytes |
 
-`headers` must not name a hop-by-hop header, `Host`, `Content-Length` or
-the auth header. The match ignores letter case. `auth_header` and
-`request_id_header` must not name a hop-by-hop header, `Host` or
-`Content-Length` either. `request_id_header` must not name the auth header or
+`headers` must not name a hop-by-hop header, `Host`, `Content-Length`,
+`Content-Type`, `Accept`, `Accept-Encoding`, `User-Agent` or the auth header.
+The match ignores letter case. Set the `User-Agent` header with
+`TYPEVET_VLLM__USER_AGENT` only. `auth_header` and `request_id_header` must
+not name one of these protected headers either. `request_id_header` must not name the auth header or
 an extra header. A failed rule raises `ValueError`. The message names the
 field and never shows a value. A `TYPEVET_VLLM__HEADERS` value that is not a
 JSON object of strings raises `ValueError` with no cause or context.
 
 typevet sends each header value as written. It does not expand `$NAME` or run
-`!command`. The adapters mask each extra header value in errors, the same way
-as the key. The clients follow no redirect. A 3xx status raises
+`!command`. The adapters mask each extra header value in errors as a whole
+token, not inside a longer word or number. The clients follow no redirect. A 3xx status raises
 `BackendHttpError` without the `Location` header. An HTML error body is not
 in the `BackendHttpError`, and its `body_snippet` is empty.
 

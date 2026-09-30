@@ -32,7 +32,10 @@ masked too, and masked bytes stay bytes. The copy is made even when the key
 text is absent, because an httpx error in the cause chain holds the request
 headers. A server that echoes the ``Authorization`` header therefore cannot put
 the key into a ``BackendHttpError``. Each value in ``TYPEVET_VLLM__HEADERS`` is
-masked in the same way, with or without a key. Without a key or extra headers,
+masked too, with or without a key, but only as a whole token between
+characters that are not ASCII letters or digits, so a short value such as
+``1`` leaves ``HTTP 401`` readable (#348). ``VllmSettings.headers`` is a
+read-only copy. Without a key or extra headers,
 errors pass through unchanged. Successful results are not changed. The HTTP
 clients are built the same way with or without a key, so environment proxy
 settings apply in both cases. ``TYPEVET_VLLM__TIMEOUT`` must be finite and positive, so ``nan`` and
@@ -70,9 +73,11 @@ from __future__ import annotations
 import json
 import math
 import os
+import re
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass, field, replace
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Literal
 
 import httpx
@@ -131,7 +136,8 @@ class VllmSettings:
         auth_header (str): Header that carries the key.
         auth_scheme (str): Scheme before the key; empty sends the key bare.
         headers (Mapping[str, str]): Extra headers with literal values, sent
-            on every request. Excluded from ``repr``.
+            on every request. A read-only copy after the checks. Excluded
+            from ``repr``.
         request_id_header (str | None): Header that gets a fresh UUID4 hex
             value on each request, or ``None``.
 
@@ -155,7 +161,7 @@ class VllmSettings:
     request_id_header: str | None = None
 
     def __post_init__(self) -> None:
-        """Copy ``headers`` and check the gateway header rules.
+        """Copy ``headers`` read-only and check the gateway header rules.
 
         Raises:
             TypeError: When ``headers`` is not a mapping.
@@ -166,7 +172,7 @@ class VllmSettings:
         if not isinstance(self.headers, Mapping):
             msg = f"headers ({_ENV}HEADERS) must be a mapping of header values"
             raise TypeError(msg)
-        object.__setattr__(self, "headers", dict(self.headers))
+        object.__setattr__(self, "headers", MappingProxyType(dict(self.headers)))
         check_header_name(self.auth_header, f"auth_header ({_ENV}AUTH_HEADER)")
         check_auth_scheme(self.auth_scheme, f"auth_scheme ({_ENV}AUTH_SCHEME)")
         check_gateway_headers(
@@ -182,31 +188,31 @@ class VllmSettings:
 
 
 _PLAIN_CONTAINERS: tuple[type, ...] = (list, tuple, set, frozenset)
+_Needles = tuple[re.Pattern[str], ...]
+_BOUND = "(?<![A-Za-z0-9]){}(?![A-Za-z0-9])"
 
 
-def _masked_text(value: str | bytes, needles: tuple[str, ...]) -> str | bytes:
-    """Replace each needle in ``value`` with ``MASK``, keeping its type.
+def _masked_text(value: str | bytes, needles: _Needles) -> str | bytes:
+    """Replace each needle match in ``value`` with ``MASK``, keeping its type.
 
-    Bytes stay bytes: each needle and ``MASK`` are ASCII-encoded first, which
-    is safe because the key must be ASCII.
+    Bytes stay bytes: they are decoded and encoded again as Latin-1, which
+    keeps every byte. The key and header values are ASCII, so each needle
+    matches the same bytes.
 
     Args:
         value: String or bytes to mask.
-        needles: Key forms to replace.
+        needles: Patterns from ``_key_needles``.
 
     Returns:
         The masked string or bytes.
     """
-    if isinstance(value, str):
-        for needle in needles:
-            value = value.replace(needle, MASK)
-        return value
+    text = value.decode("latin-1") if isinstance(value, bytes) else value
     for needle in needles:
-        value = value.replace(needle.encode("ascii"), MASK.encode("ascii"))
-    return value
+        text = needle.sub(MASK, text)
+    return text.encode("latin-1") if isinstance(value, bytes) else text
 
 
-def _masked(value: Any, needles: tuple[str, ...]) -> Any:
+def _masked(value: Any, needles: _Needles) -> Any:
     """Replace each key form in ``value`` with ``MASK``.
 
     Strings and bytes are masked by ``_masked_text`` and keep their type.
@@ -216,7 +222,7 @@ def _masked(value: Any, needles: tuple[str, ...]) -> Any:
 
     Args:
         value: String, bytes, container or other attribute value.
-        needles: Key forms to replace.
+        needles: Patterns from ``_key_needles``.
 
     Returns:
         The masked value.
@@ -231,7 +237,7 @@ def _masked(value: Any, needles: tuple[str, ...]) -> Any:
     return value
 
 
-def _masked_error(exc: GenerationError, needles: tuple[str, ...]) -> GenerationError:
+def _masked_error(exc: GenerationError, needles: _Needles) -> GenerationError:
     """Rebuild ``exc`` as the same type with the key masked and no chain.
 
     ``BaseException.__new__`` makes the copy without calling ``__init__``, so
@@ -239,7 +245,7 @@ def _masked_error(exc: GenerationError, needles: tuple[str, ...]) -> GenerationE
 
     Args:
         exc: Error raised by the vLLM adapter.
-        needles: Key forms to replace with ``MASK``.
+        needles: Patterns from ``_key_needles``; each match becomes ``MASK``.
 
     Returns:
         A new error whose arguments and attributes are masked, including
@@ -253,15 +259,32 @@ def _masked_error(exc: GenerationError, needles: tuple[str, ...]) -> GenerationE
     return masked
 
 
-def _key_needles(settings: VllmSettings) -> tuple[str, ...]:
-    secrets = [settings.api_key, *settings.headers.values()]
-    forms = {form for s in secrets if s for form in (s, json.dumps(s)[1:-1])}
-    return tuple(sorted(forms, key=len, reverse=True))
+def _key_needles(settings: VllmSettings) -> _Needles:
+    """Return the masking patterns for the key and each extra header value.
+
+    The raw and JSON-escaped key match anywhere. A raw or JSON-escaped header
+    value matches only as a whole token, between characters that are not
+    ASCII letters or digits, so a value such as ``1`` leaves ``HTTP 401``
+    readable (#348). Longer forms come first.
+
+    Args:
+        settings: vLLM settings that hold the key and the extra headers.
+
+    Returns:
+        Compiled patterns, or an empty tuple without a key or header value.
+    """
+    key = settings.api_key
+    forms = {(k, False) for k in (key, json.dumps(key)[1:-1])} if key else set()
+    for value in filter(None, settings.headers.values()):
+        forms |= {(value, True), (json.dumps(value)[1:-1], True)}
+    ordered = sorted(forms, key=lambda form: len(form[0]), reverse=True)
+    return tuple(
+        re.compile(_BOUND.format(re.escape(text)) if whole else re.escape(text))
+        for text, whole in ordered
+    )
 
 
-def _masked_if_keyed(
-    exc: GenerationError, needles: tuple[str, ...]
-) -> GenerationError | None:
+def _masked_if_keyed(exc: GenerationError, needles: _Needles) -> GenerationError | None:
     """Return a masked copy of ``exc`` when a key is configured.
 
     The copy is made whether or not the key text appears in ``exc``. The
@@ -270,7 +293,7 @@ def _masked_if_keyed(
 
     Args:
         exc: Error raised by a vLLM adapter.
-        needles: Key forms from ``_key_needles``, or empty without a key.
+        needles: Patterns from ``_key_needles``, or empty without a key.
 
     Returns:
         The masked copy, or ``None`` when no key is configured.
@@ -285,7 +308,7 @@ class _KeyMaskingJudgmentPort:
 
     Attributes:
         _port (JudgmentPort): Wrapped vLLM judgment port.
-        _needles (tuple[str, ...]): Raw and JSON-escaped key, or empty.
+        _needles (_Needles): Patterns for the key and header values, or empty.
 
     Examples:
         ```python
@@ -293,7 +316,7 @@ class _KeyMaskingJudgmentPort:
         ```
     """
 
-    def __init__(self, port: JudgmentPort, needles: tuple[str, ...]) -> None:
+    def __init__(self, port: JudgmentPort, needles: _Needles) -> None:
         self._port = port
         self._needles = needles
 
@@ -333,7 +356,7 @@ class _ClientOwningVllmAdapter(VllmGenerationAdapter):
 
     Attributes:
         _settings_client (httpx.Client): Client from ``vllm_http_client``.
-        _needles (tuple[str, ...]): Raw and JSON-escaped key, or empty.
+        _needles (_Needles): Patterns for the key and header values, or empty.
 
     Examples:
         ```python
@@ -385,7 +408,7 @@ class _ClientOwningAsyncVllmAdapter(AsyncVllmGenerationAdapter):
     Attributes:
         _settings_client (httpx.AsyncClient): Client with the same base URL,
             timeout and headers as ``vllm_http_client``.
-        _needles (tuple[str, ...]): Raw and JSON-escaped key, or empty.
+        _needles (_Needles): Patterns for the key and header values, or empty.
 
     Examples:
         ```python
