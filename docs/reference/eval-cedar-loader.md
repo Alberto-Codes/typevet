@@ -15,6 +15,9 @@ signature-match judgment. Parent epic:
 | Default slice pair ids | `evals/fixtures/cedar/default_slice_ids.txt` |
 | Unit tests | `evals/tests/unit/test_cedar_pairs.py` |
 | Contract test | `evals/tests/contract/test_signature_match_contract.py` |
+| Metrics, run and receipt | `typevet_evals.signature_match` (`metrics`, `runner`) |
+| Metric and runner unit tests | `evals/tests/unit/test_signature_match_metrics.py` |
+| Live run | `evals/tests/live/test_signature_match_live.py` |
 
 ## Source file
 
@@ -98,6 +101,60 @@ state and the questions do not name the writer, the file or the pair kind.
 images in order. The contract test proves the wiring with a fake scorer. It
 says nothing about model quality. The `same_writer` value is model
 confidence. It is not a match percentage or a forensic score.
+
+## Live run and receipt
+
+Issue [#319](https://github.com/Alberto-Codes/typevet/issues/319) runs the
+default slice once per backend. `run_signature_match` sends one judgment
+per pair and stops at the first backend failure. The receipt records that
+failure.
+
+A verdict of `different_writer` or `skilled_forgery_suspected` says
+"different writer". `cannot_tell` says neither side.
+
+| Metric | Definition |
+|---|---|
+| `accuracy` | Share of verdicts on the right same-writer side. `cannot_tell` is always wrong. |
+| `kind_accuracy` | Share of verdicts that name the pair kind: `same_writer`, `skilled_forgery_suspected` or `different_writer` |
+| `roc_auc` | ROC-AUC of `same_writer`, Mann-Whitney with average ranks for ties |
+| `roc_auc_by_negative_kind` | ROC-AUC of genuine pairs against skilled pairs, and against random pairs |
+| `ece` | Expected calibration error over ten equal-width bins |
+| `reliability` | The ten bins: count, mean confidence, share of same-writer pairs |
+| `cannot_tell_rate` | Share of `cannot_tell` verdicts |
+| `skilled_false_accept` | On skilled pairs only: share with `same_writer` at or above 0.5 (`noul_rate`), and share with the `same_writer` verdict (`verdict_rate`) |
+| `noul_choice_agreement` | Share of pairs where the `same_writer` side (at or above 0.5) and the verdict side agree. `cannot_tell` pairs are counted apart and are not in the rate. |
+| `by_kind` | For each pair kind: pair count, accuracy, accept rates, verdict counts and `image_quality` level counts |
+
+The `same_writer` value is model confidence. It is not a match percentage
+or a forensic score.
+
+| Variable | Use |
+|---|---|
+| `TYPEVET_SIGNATURE_MATCH_RECEIPT` | Receipt path. It must name a new file. The test skips when it is not set. |
+| `TYPEVET_CEDAR_CACHE` | Cache directory for the archive |
+| `TYPEVET_BACKEND` | `llama_cpp` (default) or `vllm` |
+| `TYPEVET_LLAMA__MULTIMODAL_MODEL` | llama.cpp model; the test default is `gemma-4-31b-kv9-q4km-mm` |
+| `TYPEVET_VLLM__BASE_URL`, `TYPEVET_VLLM__MODEL`, `TYPEVET_VLLM__API_KEY`, `TYPEVET_VLLM__USER_AGENT` | vLLM session |
+| `TYPEVET_VLLM_MODEL_REVISION` | Served weights revision. Required when `TYPEVET_BACKEND` is `vllm`. The test fails before any network call when it is not set. |
+| `TYPEVET_SIGNATURE_MATCH_PER_KIND` | Smaller slice for a smoke run |
+| `TYPEVET_GIT_STATUS_PORCELAIN` | Porcelain status text for the working-tree fingerprint |
+
+```bash
+TYPEVET_GIT_STATUS_PORCELAIN="$(git status --porcelain)" \
+  TYPEVET_SIGNATURE_MATCH_RECEIPT=evals/fixtures/cedar/receipts/signature_match_llama_cpp.json \
+  uv run pytest evals/tests/live/test_signature_match_live.py -m live -q -s
+```
+
+A full run first checks the slice pair ids against `default_slice_ids.txt`.
+The receipt holds pair ids, pair kinds, typed answers, latency per pair, the
+metrics and the pins. The pins are the archive SHA-256, the slice seed and
+the pairs per kind. They also include the SHA-256 of the slice pair ids and
+the server facts. The experiment identity is a separate `identity` key.
+A llama.cpp receipt pins the server build, the model alias and `n_ctx`, but no GGUF hash, as the face-match receipt does. A vLLM
+receipt also pins the served weights revision as `model_revision`. The
+receipt holds no image bytes. The test refuses to write a receipt that holds
+the vLLM key or an auth header. Receipts are in
+`evals/fixtures/cedar/receipts/`.
 
 ## Licence and policy
 
