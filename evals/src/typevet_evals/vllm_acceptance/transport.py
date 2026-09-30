@@ -4,7 +4,8 @@
 ``CallCapReached`` before a request that would pass a cap. Identical
 ``/tokenize`` bodies are answered from a per-run memo, because the tokenizer
 is fixed for one served model. ``kv_cache_usage`` parses the whole
-``/metrics`` text for the ``vllm:kv_cache_usage_perc`` gauge;
+``/metrics`` text for the ``vllm:kv_cache_usage_perc`` gauge and reports a
+non-finite value as ``unknown`` (#225);
 ``CountingTransport.wait_for`` lets a runner read it while requests are in
 flight (#216). ``typevet_evals.vllm_acceptance.core`` re-exports these names
 (#229).
@@ -27,6 +28,7 @@ See Also:
 
 from __future__ import annotations
 
+import math
 import re
 import threading
 from dataclasses import dataclass
@@ -177,11 +179,12 @@ def kv_cache_usage(client: httpx.Client) -> float | str:
         client: Session client.
 
     Returns:
-        The first gauge value, or ``unknown`` when it is absent, unreadable
-        or the request fails.
+        The first gauge value, or ``unknown`` when it is absent, unreadable,
+        not finite (``NaN`` or infinite) or the request fails.
     """
     try:
         match = _KV_GAUGE.search(client.get("/metrics").text)
-        return float(match.group(1)) if match else "unknown"
+        value = float(match.group(1)) if match else math.nan
+        return value if math.isfinite(value) else "unknown"
     except (httpx.HTTPError, ValueError):
         return "unknown"

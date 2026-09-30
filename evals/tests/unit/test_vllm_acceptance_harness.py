@@ -18,9 +18,9 @@ import copy
 import hashlib
 import json
 import threading
-import time
 import zlib
 from pathlib import Path
+from time import perf_counter
 from typing import Any
 
 import httpx
@@ -40,6 +40,7 @@ from typevet_evals.vllm_acceptance.core import (
     OMITTED_RULE,
     AcceptanceInputs,
     CallCaps,
+    CountingTransport,
     cord_passed,
     latency_summary,
     live_gate_reason,
@@ -553,6 +554,52 @@ def test_kv_cache_usage_reads_the_gauge_after_a_long_preamble() -> None:
         assert vllm_acceptance.kv_cache_usage(client) == 0.25
 
 
+def _gauge(body: str) -> float | str:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, text=body)
+
+    transport = httpx.MockTransport(handler)
+    with httpx.Client(transport=transport, base_url="http://vllm.test") as client:
+        return vllm_acceptance.kv_cache_usage(client)
+
+
+def test_kv_cache_usage_matches_only_the_v0_30_gauge_name() -> None:
+    """Alias and look-alike gauges before the real one are skipped (#225)."""
+    body = (
+        "# HELP vllm:kv_cache_usage_perc KV-cache usage. 1 means 100 percent.\n"
+        "# TYPE vllm:kv_cache_usage_perc gauge\n"
+        "gpu_cache_usage_perc 0.9\n"
+        'vllm:gpu_cache_usage_perc{engine="0"} 0.8\n'
+        "vllm:kv_cache_usage_perc_total 0.7\n" + _KV_LINE
+    )
+    assert _gauge(body) == 0.25
+
+
+@pytest.mark.parametrize("value", ["NaN", "+Inf", "-Inf"])
+def test_kv_cache_usage_is_unknown_for_a_non_finite_value(value: str) -> None:
+    """A non-finite gauge is ``unknown``, so the receipt stays standard JSON."""
+    assert _gauge(f'vllm:kv_cache_usage_perc{{engine="0"}} {value}\n') == "unknown"
+
+
+def test_wait_for_wakes_when_another_thread_sends_a_request() -> None:
+    """``wait_for`` wakes on the request, not at its timeout (#225)."""
+    counter = CountingTransport(
+        httpx.MockTransport(lambda request: httpx.Response(200)), CallCaps()
+    )
+    client = httpx.Client(transport=counter, base_url="http://vllm.test")
+    sender = threading.Timer(0.05, client.post, args=("/v1/chat/completions",))
+    started = perf_counter()
+    sender.start()
+    try:
+        reached = counter.wait_for("model", 1, timeout=5.0)
+        elapsed = perf_counter() - started
+    finally:
+        sender.join()
+        client.close()
+    assert reached is True
+    assert elapsed < 1.0
+
+
 class _HeldChat(_Vllm):
     """Stub that holds chat replies until ``/metrics`` arrives (5 s timeout)."""
 
@@ -583,16 +630,9 @@ class _HeldChat(_Vllm):
                 self.in_flight -= 1
 
 
-def test_concurrency_reads_kv_cache_while_requests_are_in_flight(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    original = vllm_acceptance_sets._generate
-
-    def delayed(*args: Any) -> dict[str, Any]:
-        time.sleep(0.2)
-        return original(*args)
-
-    monkeypatch.setattr(vllm_acceptance_sets, "_generate", delayed)
+def test_concurrency_reads_kv_cache_while_requests_are_in_flight() -> None:
+    # ``_HeldChat`` alone proves the in-flight read: chat replies wait for
+    # ``/metrics``, so a read after the calls finish sees 0 in flight (#261).
     server = _HeldChat()
     runners = [("concurrency", vllm_acceptance_sets._concurrency_set)]
     receipt = run_acceptance(

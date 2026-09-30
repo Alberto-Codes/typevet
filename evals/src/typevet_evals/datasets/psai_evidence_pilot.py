@@ -19,7 +19,7 @@ the JSON schema first, then the cross-row rules below, and raises one
 | ``human_decision`` | Final, swap and crop rows carry a human decision. |
 | ``verified_agreement`` | A non-human label has Gemma, construction and Qwen agreement. |
 | ``input_leak`` | No host, ``task_name`` or 4-word ``task_name`` run is in a model-input field. |
-| ``gold_label_leak`` | No model-input field holds the gold label, joined by space, _ or -. |
+| ``gold_label_leak`` | No model-input field holds the gold label, joined by space, _ or a dash. |
 
 Rejected items sit in their own list with reason codes. They are not rows and
 no count rule counts them. A task is one ``unique_data_id`` in one split.
@@ -59,6 +59,7 @@ from __future__ import annotations
 
 import json
 import re
+import unicodedata
 from collections import Counter, defaultdict
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
@@ -537,9 +538,9 @@ def _check_input_leak(rows: list[Row]) -> None:
 def _gold_pattern(label: str) -> re.Pattern[str]:
     """Match ``label`` with no letter or digit on either side.
 
-    The words of the label may be joined by any run of spaces, ``_`` or
-    ``-``. A ``_`` next to the label does not hide it, so ``supported_by``
-    matches and ``unsupported`` does not.
+    The words of the label may be joined by any run of spaces, ``_``, ``-``
+    or the Unicode dashes U+2010 to U+2015. A ``_`` next to the label does
+    not hide it, so ``supported_by`` matches and ``unsupported`` does not.
 
     Args:
         label: One of ``LABELS``.
@@ -547,12 +548,15 @@ def _gold_pattern(label: str) -> re.Pattern[str]:
     Returns:
         A pattern for the label, to search in case-folded text.
     """
-    body = r"[\s_-]+".join(re.escape(part) for part in label.split("_"))
+    body = r"[\s_\u2010-\u2015-]+".join(re.escape(part) for part in label.split("_"))
     return re.compile(rf"(?<![^\W_]){body}(?![^\W_])")
 
 
 def _check_gold_label_leak(rows: list[Row]) -> None:
     """Keep each row's gold label out of its model-input fields.
+
+    Field text is NFKC-normalized and soft hyphens (U+00AD) are removed
+    before the match, so fullwidth or rich-text forms do not hide the label.
 
     Args:
         rows: Manifest rows that passed the schema.
@@ -564,7 +568,8 @@ def _check_gold_label_leak(rows: list[Row]) -> None:
     for row in rows:
         pattern = _gold_pattern(row["gold_label"])
         for field, value in row["model_input"].items():
-            if pattern.search(str(value).casefold()):
+            text = unicodedata.normalize("NFKC", str(value)).replace("\u00ad", "")
+            if pattern.search(text.casefold()):
                 raise ManifestError(
                     "gold_label_leak", f"{row['case_id']} {field} holds its gold label"
                 )

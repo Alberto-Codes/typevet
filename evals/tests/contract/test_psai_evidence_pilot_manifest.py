@@ -188,6 +188,32 @@ def _gold_label_joined_to_snake_word(m: Manifest) -> None:
     row["model_input"]["claim"] = "The claim is supported_by the page."
 
 
+def _gold_label_non_breaking_hyphen(m: Manifest) -> None:
+    row = m["rows"][DEV + 20]
+    assert row["gold_label"] == "insufficient_evidence"
+    row["model_input"]["claim"] = "The page gives insufficient\u2011evidence here."
+
+
+def _gold_label_unicode_hyphen(m: Manifest) -> None:
+    row = m["rows"][DEV + 20]
+    assert row["gold_label"] == "insufficient_evidence"
+    row["model_input"]["claim"] = "The page gives insufficient\u2010evidence here."
+
+
+def _gold_label_soft_hyphen_inside(m: Manifest) -> None:
+    row = m["rows"][DEV]
+    assert row["gold_label"] == "supported"
+    row["model_input"]["claim"] = "The claim is sup\u00adported by the page."
+
+
+def _gold_label_fullwidth(m: Manifest) -> None:
+    row = m["rows"][DEV]
+    assert row["gold_label"] == "supported"
+    row["model_input"]["claim"] = (
+        "The claim is \uff53\uff55\uff50\uff50\uff4f\uff52\uff54\uff45\uff44."
+    )
+
+
 def _rejected_is_row_id(m: Manifest) -> None:
     m["rejected"][0]["unique_data_id"] = m["rows"][PROMPT + 2]["unique_data_id"]
 
@@ -224,6 +250,10 @@ MUTATIONS: list[tuple[str, FunctionType]] = [
     ("gold_label_leak", _gold_label_hyphenated_in_claim),
     ("gold_label_leak", _gold_label_double_spaced_in_claim),
     ("gold_label_leak", _gold_label_joined_to_snake_word),
+    ("gold_label_leak", _gold_label_non_breaking_hyphen),
+    ("gold_label_leak", _gold_label_unicode_hyphen),
+    ("gold_label_leak", _gold_label_soft_hyphen_inside),
+    ("gold_label_leak", _gold_label_fullwidth),
     ("rejected_items", _rejected_is_row_id),
     ("rejected_items", _rejected_twice),
     ("rejected_items", _rejected_in_fixtures),

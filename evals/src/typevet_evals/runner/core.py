@@ -2,6 +2,8 @@
 
 Reports attempted, schema-valid, and gold-match counts. Does not compute
 calibration or ECE ([#50](https://github.com/Alberto-Codes/typevet/issues/50)).
+A task whose schema fails the request schema check counts as a failed task;
+the run continues (#238).
 
 Examples:
     Offline wiring with a fake port:
@@ -40,6 +42,9 @@ from typevet_evals.runner.report import (
     EvalRunReport,
 )
 
+# Message prefix of the schema check in ``check_request_schema`` (#238).
+_SCHEMA_CHECK_PREFIX = "schema is not a valid JSON Schema:"
+
 
 def _metric_for_dataset(dataset: str) -> str:
     if dataset == "banking77":
@@ -55,6 +60,10 @@ def run_eval_tasks(
 ) -> EvalRunReport:
     """Drive ``tasks`` through ``port.generate`` and aggregate counts.
 
+    A ``GenerationError`` or a schema-check ``ValueError`` (message starts
+    with ``schema is not a valid JSON Schema:``) counts as a failed task,
+    and the run continues.
+
     Args:
         port: ``GenerationPort`` implementation (fake or llama.cpp).
         tasks: Slice from :func:`typevet_evals.runner.datasets.load_eval_tasks`.
@@ -64,7 +73,8 @@ def run_eval_tasks(
         Summary with attempted, schema-valid, and gold-match totals.
 
     Raises:
-        ValueError: When ``tasks`` is empty or mixes datasets.
+        ValueError: When ``tasks`` is empty or mixes datasets, or when the
+            port raises a ``ValueError`` that is not the schema check.
     """
     if not tasks:
         msg = "tasks must be non-empty"
@@ -88,6 +98,10 @@ def run_eval_tasks(
         try:
             result = port.generate(request)
         except GenerationError:
+            continue
+        except ValueError as exc:
+            if not str(exc).startswith(_SCHEMA_CHECK_PREFIX):
+                raise
             continue
         schema_valid += 1
         predicted = result.value.get(task.noul_field)

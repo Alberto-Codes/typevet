@@ -15,6 +15,9 @@ This runner drives a **tiny balanced slice** of landed loaders through
 | ``schema_valid`` | Calls that returned a value validating against the task schema |
 | ``gold_match`` | Schema-valid outputs equal to loader gold |
 
+A task whose schema is not a valid JSON Schema counts as attempted and not
+schema-valid. Any other ``ValueError`` stops the run.
+
 Banking77 uses ``reports_unauthorized`` Noul agreement vs the six-intent proxy
 (``fraud`` → ``true``). BoolQ uses **exact match** on the ``answer`` Noul
 (``no`` / ``yes``).
@@ -48,9 +51,9 @@ TYPEVET_LLAMA__TIMEOUT=600 \
   uv run python -m typevet_evals.cli.eval_runner --dataset boolq --limit 2
 ```
 
-Proof runs that must not silently skip (nonzero on missing config, model,
-workload, or incomplete schema-valid completion; wrong gold labels stay in
-metrics only):
+Proof runs must not silently skip. They exit nonzero on missing config,
+model, workload, or incomplete schema-valid completion. Wrong gold labels
+stay in metrics only:
 
 ```bash
 uv run python -m typevet_evals.cli.eval_runner --require-live --dataset boolq --limit 2

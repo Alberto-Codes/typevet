@@ -9,6 +9,7 @@ import httpx
 import pytest
 
 from typevet.adapters.inbound.settings import LlamaSettings, load_llama_settings
+from typevet.adapters.outbound.chat_completion import check_request_schema
 from typevet.adapters.outbound.fake import FakeGenerationAdapter
 from typevet.domain.errors import SchemaValidationError
 from typevet.domain.models import GenerationRequest
@@ -258,3 +259,74 @@ def test_merge_reports_rejects_mismatched_keys() -> None:
     )
     with pytest.raises(ValueError, match="same dataset"):
         merge_reports([first, second])
+
+
+def _three_boolq_tasks() -> list[EvalTaskSpec]:
+    return [
+        EvalTaskSpec(
+            task_id=f"boolq:{index}",
+            dataset="boolq",
+            prompt=f"p{index}",
+            schema={"type": "object", "properties": {}},
+            noul_field="answer",
+            gold="yes",
+        )
+        for index in range(3)
+    ]
+
+
+def _raise_on_second_prompt(error: ValueError):
+    def responder(request: GenerationRequest):
+        if request.prompt == "p1":
+            raise error
+        return {"answer": "yes"}
+
+    return responder
+
+
+@pytest.mark.unit
+def test_run_eval_tasks_counts_schema_check_error_as_failed_task() -> None:
+    """A schema-check ``ValueError`` fails one task; the run continues (#238)."""
+    error = ValueError("schema is not a valid JSON Schema: x")
+    port = FakeGenerationAdapter(responder=_raise_on_second_prompt(error))
+
+    report = run_eval_tasks(port, _three_boolq_tasks(), model="fake")
+
+    assert report.attempted == 3
+    assert report.schema_valid == 2
+    assert report.gold_match == 2
+
+
+@pytest.mark.unit
+def test_run_eval_tasks_propagates_other_value_error() -> None:
+    """A ``ValueError`` that is not the schema check still stops the run."""
+    port = FakeGenerationAdapter(
+        responder=_raise_on_second_prompt(ValueError("something else broke"))
+    )
+
+    with pytest.raises(ValueError, match="something else broke"):
+        run_eval_tasks(port, _three_boolq_tasks(), model="fake")
+
+
+@pytest.mark.unit
+def test_run_eval_tasks_counts_real_schema_check_error_as_failed_task() -> None:
+    """The adapter's own schema-check message is the one the runner absorbs."""
+    tasks = _three_boolq_tasks()
+    tasks[1] = EvalTaskSpec(
+        task_id="boolq:1",
+        dataset="boolq",
+        prompt="p1",
+        schema={"type": "object", "properties": {"answer": {"type": "nope"}}},
+        noul_field="answer",
+        gold="yes",
+    )
+
+    def responder(request: GenerationRequest):
+        check_request_schema(request.schema)
+        return {"answer": "yes"}
+
+    report = run_eval_tasks(
+        FakeGenerationAdapter(responder=responder), tasks, model="fake"
+    )
+
+    assert (report.attempted, report.schema_valid) == (3, 2)
