@@ -17,6 +17,7 @@ Examples:
 See Also:
     - [typevet_evals.datasets.banking77][]: Banking77 fraud-intent proxy
     - [typevet_evals.datasets.boolq][]: BoolQ tiers and task export
+    - [typevet_evals.datasets.cedar][]: CEDAR signature pairs
     - [typevet_evals.datasets.civil_comments][]: Civil Comments toxicity proxy
     - [typevet_evals.datasets.clinc][]: CLINC150 ``plus`` shards
     - [typevet_evals.datasets.cord_expense][]: CORD expense claim cases
@@ -35,6 +36,7 @@ Attributes:
     banking77 (module): Banking77 loader.
     boolq (module): BoolQ loader and task export.
     boolq_download (module): BoolQ validation JSONL download.
+    cedar (module): CEDAR signature pairs, slice and archive reader.
     civil_comments (module): Civil Comments loader.
     clinc (module): CLINC150 ``plus`` loader.
     clinc_download (module): CLINC150 JSONL download.
@@ -61,6 +63,7 @@ from typevet_evals.datasets import (
     banking77,
     boolq,
     boolq_download,
+    cedar,
     civil_comments,
     clinc,
     clinc_download,
@@ -87,6 +90,7 @@ __all__ = [
     "banking77",
     "boolq",
     "boolq_download",
+    "cedar",
     "civil_comments",
     "clinc",
     "clinc_download",

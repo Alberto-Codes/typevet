@@ -25,6 +25,7 @@ _DATASET_MODULES = (
     "banking77",
     "boolq",
     "boolq_download",
+    "cedar",
     "civil_comments",
     "clinc",
     "clinc_download",

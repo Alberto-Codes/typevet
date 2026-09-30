@@ -25,10 +25,13 @@ UCI SMS stay parked until a later scan adopts them.
 
 These datasets do not come from finvet. Issue
 [#292](https://github.com/Alberto-Codes/typevet/issues/292) adopts LFW.
+Issue [#304](https://github.com/Alberto-Codes/typevet/issues/304) adopts
+CEDAR.
 
 | Dataset | License | typevet role |
 |---|---|---|
 | LFW View 2 | No formal licence; photographers keep image copyright; research use only | Two-image face match; no face bytes stored in the repository; see [LFW loader](eval-lfw-loader.md) |
+| CEDAR signatures | No licence stated on the [source page](https://cedar.buffalo.edu/NIJ/publications.html); research use only | Two-image signature match. Run-time fetch with a pinned SHA-256 into a cache outside the repository. Fixtures hold ids only. No signature bytes stored in the repository; see [CEDAR loader](eval-cedar-loader.md) |
 
 ## Collections NBA — never in public typevet
 

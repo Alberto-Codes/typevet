@@ -1,0 +1,12 @@
+signatures
+signatures/full_forg
+signatures/full_forg/forgeries_10_1.png
+signatures/full_forg/forgeries_10_10.png
+signatures/full_forg/forgeries_55_24.png
+signatures/full_forg/Thumbs.db
+signatures/full_org
+signatures/full_org/original_1_1.png
+signatures/full_org/original_10_1.png
+signatures/full_org/original_55_24.png
+signatures/full_org/Thumbs.db
+signatures/Readme.txt
