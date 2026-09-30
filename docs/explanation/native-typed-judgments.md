@@ -48,8 +48,21 @@ outputs do not prove task accuracy, ECE, or production readiness. Say which
 eval counted gold only when the run used a loader with explicit gold-match or
 broad-agreement rules.
 
-**Template honesty.** Gemma 4 on stock llama.cpp may use a **degraded ChatML**
-template until native template work lands ([#129](https://github.com/Alberto-Codes/typevet/issues/129)).
+**Template honesty.** On llama.cpp, the judgment session classifies the
+served template through `/apply-template`. By default it accepts only native
+Gemma 4 turns and fails before scoring on any other family
+([Gemma 4 page](how-typevet-works-with-gemma-4.md#what-is-specific-to-gemma-4)).
+The classifier reads the markers in the rendered output, not the template
+source. The recorded llama.cpp [receipt](https://github.com/Alberto-Codes/typevet/issues/203#issuecomment-5882379255) used a `--chat-template-file` override
+([#233](https://github.com/Alberto-Codes/typevet/issues/233)). Thus
+`native_gemma4_turn` does not prove that the GGUF's own template ran. A
+`ScoringJudgmentAdapter` built with neither a served family nor a framing
+uses a **degraded ChatML** prefix for text only. With image input, it fails
+instead
+([`judgment_scoring.py`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/adapters/outbound/judgment_scoring.py)).
+On vLLM, the server applies
+its own chat template, and typevet does not classify it
+([support matrix](../reference/typed-judgment-release-support-matrix.md#multimodal-primary-gemma-4-native-vision)).
 Receipts must name the template class. Do not treat a degraded template as
 silent equivalence to hosted Jev.
 
