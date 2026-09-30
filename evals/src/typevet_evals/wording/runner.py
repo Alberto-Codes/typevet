@@ -6,8 +6,8 @@ tool-less agent whose model is the #306 ``WordingTransport``. The reward is
 ``BrierScorer``: one minus the squared error between the transport's
 ``{"probability": p}`` and the DIFrauD label (``scam`` is 1). gepa-adk
 reflects on the train rows and scores and accepts candidates on the
-validation rows. A proposal longer than 1.5 times the seed is rejected
-before any evaluation.
+validation rows. The reflection prompt states the length limit, and a
+proposal longer than 1.5 times the seed is rejected before any evaluation.
 
 The runner takes train and validation records only. It never imports a split
 loader, and it refuses a record whose ``split`` is not the one it expects, so
@@ -58,6 +58,7 @@ from typing import Any
 from gepa_adk import EvolutionConfig, EvolutionResult, ProposalValidator, evolve
 from gepa_adk.adapters.components.component_handlers import ComponentHandlerRegistry
 from gepa_adk.adapters.components.mapping_handler import register_mapping_components
+from gepa_adk.domain.types import REFLECTION_INSTRUCTION
 from google.adk.agents import LlmAgent
 from google.adk.models import BaseLlm
 
@@ -164,6 +165,27 @@ class BrierScorer:
         return self.score(input_text, output, expected)
 
 
+def reflection_prompt(seed_text: str, ratio: float = LENGTH_RATIO) -> str:
+    """Return gepa-adk's default reflection prompt with the length limit added.
+
+    Without the limit the reflector proposes texts many times the seed's
+    length, and the length cap rejects each one (#309 smoke).
+
+    Args:
+        seed_text: The seed wording.
+        ratio: The largest allowed proposal length, as a multiple of the seed.
+
+    Returns:
+        The default prompt, with its ``{component_text}`` and ``{trials}``
+        placeholders, and one line that gives the character limit.
+    """
+    cap = math.floor(ratio * len(seed_text))
+    return (
+        f"{REFLECTION_INSTRUCTION}\n"
+        f"The improved text must be at most {cap} characters long."
+    )
+
+
 def length_cap(seed_text: str, ratio: float = LENGTH_RATIO) -> ProposalValidator:
     """Return a gepa-adk proposal validator that caps the proposal length.
 
@@ -252,6 +274,8 @@ class WordingRunConfig:
         max_iterations (int): gepa-adk iterations after the baseline.
         patience (int): Iterations without improvement before an early stop.
         reflection_max_trials (int | None): The trials each reflection call sees.
+        reflection_minibatch_size (int | None): Train rows each proposal is
+            first scored on; None scores the full train split each iteration.
         max_concurrent_evals (int): Evaluations gepa-adk runs at the same time.
         checkpoint_path (Path | None): The JSON file gepa-adk checkpoints to.
         resume (bool): Continue from ``checkpoint_path``.
@@ -269,6 +293,7 @@ class WordingRunConfig:
     max_iterations: int = 10
     patience: int = 5
     reflection_max_trials: int | None = 8
+    reflection_minibatch_size: int | None = None
     max_concurrent_evals: int = 5
     checkpoint_path: Path | None = None
     resume: bool = False
@@ -316,8 +341,9 @@ def evolution_config(config: WordingRunConfig, seed_text: str) -> EvolutionConfi
         seed_text: The seed wording, which sets the length cap.
 
     Returns:
-        An ``EvolutionConfig`` with the reflector, the length cap and the
-        checkpoint settings.
+        An ``EvolutionConfig`` with the reflector, the reflection minibatch
+        size, the length limit in the reflection prompt, the length cap and
+        the checkpoint settings.
     """
     return EvolutionConfig(
         max_iterations=config.max_iterations,
@@ -325,6 +351,8 @@ def evolution_config(config: WordingRunConfig, seed_text: str) -> EvolutionConfi
         max_concurrent_evals=config.max_concurrent_evals,
         reflection_model=config.reflector,
         reflection_max_trials=config.reflection_max_trials,
+        reflection_minibatch_size=config.reflection_minibatch_size,
+        reflection_prompt=reflection_prompt(seed_text, config.length_ratio),
         proposal_validator=length_cap(seed_text, config.length_ratio),
         checkpoint_path=config.checkpoint_path,
         resume=config.resume,

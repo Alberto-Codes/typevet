@@ -290,6 +290,51 @@ def test_configuration_reaches_gepa_adk(tmp_path: Path) -> None:
     assert json.loads((tmp_path / "checkpoint.json").read_text())
 
 
+def test_the_reflection_minibatch_size_reaches_gepa_adk(tmp_path: Path) -> None:
+    default = runner.evolution_config(_config(tmp_path, BETTER), SEED_TEXT)
+    config = _config(tmp_path, BETTER, reflection_minibatch_size=1, max_iterations=1)
+
+    engine = runner.evolution_config(config, SEED_TEXT)
+    run = _run(WordingPort(), config)
+
+    assert default.reflection_minibatch_size is None
+    assert engine.reflection_minibatch_size == 1
+    assert run.result.total_iterations == 1
+
+
+def test_the_reflection_prompt_states_the_length_cap(tmp_path: Path) -> None:
+    cap = int(1.5 * len(SEED_TEXT))
+
+    engine = runner.evolution_config(_config(tmp_path, BETTER), SEED_TEXT)
+
+    assert engine.reflection_prompt is not None
+    assert f"at most {cap} characters" in engine.reflection_prompt
+    assert "{component_text}" in engine.reflection_prompt
+    assert "{trials}" in engine.reflection_prompt
+
+
+def test_the_reflector_receives_the_length_cap(tmp_path: Path) -> None:
+    seen: list[str] = []
+
+    class RecordingReflector(ScriptedReflector):
+        async def generate_content_async(
+            self, llm_request: LlmRequest, stream: bool = False
+        ) -> AsyncGenerator[LlmResponse, None]:
+            seen.append(str(llm_request.config.system_instruction))
+            async for response in super().generate_content_async(llm_request):
+                yield response
+
+    config = replace(
+        _config(tmp_path, BETTER, max_iterations=1),
+        reflector=RecordingReflector(proposals=[BETTER]),
+    )
+
+    _run(WordingPort(), config)
+
+    assert seen
+    assert f"at most {int(1.5 * len(SEED_TEXT))} characters" in seen[0]
+
+
 def test_an_empty_split_or_seed_is_refused(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="validation is empty"):
         _run(WordingPort(), _config(tmp_path, BETTER), validation=())
