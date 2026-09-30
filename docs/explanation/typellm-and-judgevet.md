@@ -107,7 +107,9 @@ How typevet’s native questions map to decisions today:
   (judgevet-aligned vocabulary; the core library has no judgevet dependency).
 - The optional judgevet bridge, `typevet.adapters.inbound.judgevet`, which
   makes typevet a judgevet provider. Offline tests prove it on typevet fakes
-  through judgevet's command line and MCP server. No live receipt exists yet.
+  through judgevet's command line and MCP server. One live run per backend
+  (llama.cpp and vLLM) returned typed answers through the bridge (#289); it
+  is not a quality claim.
 - Evaluation harnesses: loader eval runner and TPJEP eight-task runner.
 
 See [supported imports](../reference/supported-imports.md) for paths and

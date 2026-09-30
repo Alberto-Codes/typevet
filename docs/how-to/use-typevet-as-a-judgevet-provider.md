@@ -155,7 +155,7 @@ Other exceptions keep their type.
 Offline tests prove the bridge on typevet fakes.
 They run judgevet's command line and MCP server on the bridge.
 They prove no live model behaviour.
-A live receipt for each backend is still open on [#284](https://github.com/Alberto-Codes/typevet/issues/284).
+One live run per backend (llama.cpp and vLLM) asked one Noul, one Choice and one Score through the bridge and returned typed answers; see [#289](https://github.com/Alberto-Codes/typevet/issues/289). This is not a quality claim.
 
 ## Next steps
 
