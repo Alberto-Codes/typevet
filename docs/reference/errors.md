@@ -146,8 +146,18 @@ integers raises `GenerationError` with the prefix
 `llama.cpp /tokenize response missing a tokens list`
 ([#310](https://github.com/Alberto-Codes/typevet/issues/310)).
 
+The `/apply-template` probe of the same factory runs when a session opens and
+uses the same HTTP mapping. A failure before a response raises
+`TransportError`. A status of 400 or above raises `BackendHttpError`. A 200 body
+that is not JSON raises `GenerationError` with the prefix
+`llama.cpp returned non-JSON HTTP body`. A JSON body without a `prompt` string
+raises `GenerationError` with the prefix
+`llama.cpp /apply-template response missing a prompt string`
+([#311](https://github.com/Alberto-Codes/typevet/issues/311)).
+
 The llama.cpp scoring calls `/tokenize`, `/props` and `/completion` with
-`n_predict: 0` change no server state. The router can read a request on a
+`n_predict: 0` change no server state. The `/apply-template` probe also
+changes no server state and uses the same retry. The router can read a request on a
 connection (new or reused) and then close it with no response head. httpx then raises
 `RemoteProtocolError` ("Server disconnected without sending a response").
 These calls then send the request one more time on a new connection. A second close, a timeout, a malformed response and an error

@@ -20,6 +20,9 @@ a status of 400 or above to ``BackendHttpError`` ([#298][i298]). A 200 body
 that is not JSON, or that has no ``tokens`` list of integers, raises
 ``GenerationError`` ([#310][i310]). When the router closes the connection
 (new or reused) before a response head, the hook sends the request once more ([#305][i305]).
+The ``/apply-template`` probe uses the same mapping and retry. A 200 body that
+is not JSON, or that has no ``prompt`` string, raises ``GenerationError``
+([#311][i311]).
 
 See Also:
     - [typevet.adapters.outbound.judgment_scoring][]: ``ScoringJudgmentAdapter``
@@ -31,6 +34,7 @@ See Also:
 [i298]: https://github.com/Alberto-Codes/typevet/issues/298
 [i305]: https://github.com/Alberto-Codes/typevet/issues/305
 [i310]: https://github.com/Alberto-Codes/typevet/issues/310
+[i311]: https://github.com/Alberto-Codes/typevet/issues/311
 """
 
 from __future__ import annotations
@@ -135,19 +139,28 @@ def _classify_native_template(
     *,
     require_gemma4: bool,
 ) -> ServedTemplateClass:
-    rendered = (
-        client.post(
-            "/apply-template",
-            json={
-                "model": model,
-                "messages": [{"role": "user", "content": "hello"}],
-                "add_generation_prompt": True,
-            },
-        )
-        .raise_for_status()
-        .json()["prompt"]
-    )
-    family = classify_served_template(rendered)
+    """Render one probe turn through ``/apply-template`` and classify it.
+
+    The probe changes no server state, so an early close gets one retry.
+
+    Returns:
+        The served template family.
+
+    Raises:
+        ValueError: When the family is unsupported or not the one required.
+        TransportError: When the probe fails before a response.
+        BackendHttpError: When the probe returns status 400 or higher.
+        GenerationError: When the ``/apply-template`` body has no ``prompt``
+            string.
+    """
+    body = {
+        "model": model,
+        "messages": [{"role": "user", "content": "hello"}],
+        "add_generation_prompt": True,
+    }
+    response = send_idempotent(lambda: client.post("/apply-template", json=body))
+    ensure_success_status(response)
+    family = classify_served_template(_rendered_prompt(parse_json_response(response)))
     if require_gemma4 and family is not ServedTemplateClass.NATIVE_GEMMA4_TURN:
         msg = f"expected NATIVE_GEMMA4_TURN, got {family.value}"
         raise ValueError(msg)
@@ -155,6 +168,25 @@ def _classify_native_template(
         msg = f"unsupported served template for native vision: {family.value}"
         raise ValueError(msg)
     return family
+
+
+def _rendered_prompt(payload: Any) -> str:
+    """Read the ``prompt`` string from a parsed ``/apply-template`` body.
+
+    Args:
+        payload: Parsed JSON body from the router.
+
+    Returns:
+        The rendered prompt text.
+
+    Raises:
+        GenerationError: When the body has no ``prompt`` string.
+    """
+    prompt = payload.get("prompt") if isinstance(payload, dict) else None
+    if not isinstance(prompt, str):
+        msg = "llama.cpp /apply-template response missing a prompt string"
+        raise GenerationError(msg)
+    return prompt
 
 
 def _tokenize_factory(
@@ -235,6 +267,10 @@ def open_gemma_native_vision_judgment(
 
     Raises:
         ValueError: When vision is unavailable or the template is unsupported.
+        TransportError: When a probe fails before a response.
+        BackendHttpError: When a probe returns status 400 or higher.
+        GenerationError: When the ``/apply-template`` body has no ``prompt``
+            string.
     """
     model_id = model or settings.multimodal_model
     base = settings.base_url.rstrip("/")
@@ -302,6 +338,10 @@ def probe_gemma_native_vision_support(
 
     Raises:
         ValueError: When the router rejects the probe (same rules as open).
+        TransportError: When the probe fails before a response.
+        BackendHttpError: When the probe returns status 400 or higher.
+        GenerationError: When the ``/apply-template`` body has no ``prompt``
+            string.
     """
     model_id = model or settings.multimodal_model
     base = settings.base_url.rstrip("/")
