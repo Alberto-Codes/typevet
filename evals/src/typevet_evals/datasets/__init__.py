@@ -23,6 +23,7 @@ See Also:
     - [typevet_evals.datasets.difraud][]: DIFrauD scam domains
     - [typevet_evals.datasets.go_emotions][]: GoEmotions single-label subset
     - [typevet_evals.datasets.hyperpartisan][]: Hyperpartisan holdout split
+    - [typevet_evals.datasets.lfw][]: LFW View 2 face pairs
     - [typevet_evals.datasets.psai][]: PSAI metadata decisions
     - [typevet_evals.datasets.psai_evidence_pilot][]: evidence pilot manifest
     - [typevet_evals.datasets.psai_vision][]: PSAI screenshot fixtures
@@ -44,6 +45,7 @@ Attributes:
     go_emotions (module): GoEmotions loader.
     go_emotions_download (module): GoEmotions download.
     hyperpartisan (module): Hyperpartisan loader.
+    lfw (module): LFW View 2 pairs, slice and archive reader.
     partner_guard (module): Partner data path guard.
     psai (module): PSAI metadata loader.
     psai_download (module): PSAI parquet download.
@@ -69,6 +71,7 @@ from typevet_evals.datasets import (
     go_emotions,
     go_emotions_download,
     hyperpartisan,
+    lfw,
     partner_guard,
     psai,
     psai_download,
@@ -94,6 +97,7 @@ __all__ = [
     "go_emotions",
     "go_emotions_download",
     "hyperpartisan",
+    "lfw",
     "partner_guard",
     "psai",
     "psai_download",

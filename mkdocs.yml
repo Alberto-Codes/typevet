@@ -159,6 +159,7 @@ nav:
           - go_emotions loader: reference/eval-go-emotions-loader.md
           - go_emotions conversion and prune: reference/go-emotions-conversion-and-prune.md
           - Hyperpartisan loader: reference/eval-hyperpartisan-loader.md
+          - LFW loader: reference/eval-lfw-loader.md
           - PSAI metadata map: reference/eval-psai-metadata-map.md
           - PubMedQA loader: reference/eval-pubmedqa-loader.md
   - Maintainers:

@@ -105,6 +105,7 @@ answers a question, and a reference gives facts.
 - [Performance on one H100](reference/performance.md) (reference): vLLM
   throughput per concurrency level, calibration per set, cold start, cost and limits (#236).
 - [Hyperpartisan loader and hyperpartisan Noul fixture](reference/eval-hyperpartisan-loader.md) (reference): byarticle train only, HTML cleanup, stratified holdout, excludes bypublisher.
+- [LFW View 2 loader and face-match request](reference/eval-lfw-loader.md) (reference): pinned figshare files, balanced 100 + 100 slice, two-image judgment, no face bytes stored.
 - [Complementary eval manifest](reference/eval-complementary-manifest.md) (reference): JevBench-primary ranked open sets; see also `evals/`.
 - [TPJEP eight-task runner](reference/eval-tpjep-runner.md) (reference):
   eight vendored JevBench rows as native `Noul` / `Choice` / `Score` questions

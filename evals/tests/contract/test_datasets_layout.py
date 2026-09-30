@@ -35,6 +35,7 @@ _DATASET_MODULES = (
     "go_emotions",
     "go_emotions_download",
     "hyperpartisan",
+    "lfw",
     "partner_guard",
     "psai",
     "psai_download",

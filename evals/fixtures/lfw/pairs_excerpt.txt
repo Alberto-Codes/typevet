@@ -1,0 +1,13 @@
+2	3
+Alpha_Example	1	2
+Bravo_Example	1	3
+Charlie_Example	2	4
+Alpha_Example	1	Delta_Example	1
+Bravo_Example	2	Echo_Example	1
+Charlie_Example	1	Foxtrot_Example	2
+Delta_Example	1	2
+Echo_Example	1	3
+Foxtrot_Example	1	2
+Delta_Example	2	Alpha_Example	3
+Echo_Example	2	Bravo_Example	1
+Foxtrot_Example	1	Charlie_Example	3

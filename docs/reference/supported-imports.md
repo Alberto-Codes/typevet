@@ -286,7 +286,7 @@ classifier is `Private :: Do Not Upload`. The library wheel holds only
 | `typevet_evals.cli` | Module entries `eval_runner` and `cord_semantic_acceptance` |
 | `typevet_evals.datasets` | Dataset loaders, download helpers and the partner guard |
 | `typevet_evals.runner`, `typevet_evals.tpjep` | Eval runner and TPJEP records, loader and runner |
-| `typevet_evals.cord`, `typevet_evals.psai_vision_consumer`, `typevet_evals.instruction_variant` | Evaluation harness families |
+| `typevet_evals.cord`, `typevet_evals.psai_vision_consumer`, `typevet_evals.instruction_variant`, `typevet_evals.face_match` | Evaluation harness families |
 | `typevet_evals.throughput`, `typevet_evals.vllm_acceptance` | Throughput and vLLM acceptance harnesses |
 | `typevet_evals.experiment_identity`, `typevet_evals.outcome_replay_metrics`, `typevet_evals.psai_vision_probability_evidence` | Shared evaluation modules |
 | `typevet_evals.wheel_isolated`, `typevet_evals.gemma_native_vision_wheel_smoke` | Wheel proof tooling |
