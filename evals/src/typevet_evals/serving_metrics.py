@@ -18,12 +18,13 @@ The series names come from vLLM ``v0.30.0`` ``vllm/v1/metrics/loggers.py``:
 exposition adds ``_total``; the parser also accepts the bare name. Samples
 with the same name and ``le`` label are summed across the other labels
 (``model_name``, ``engine``, ``finished_reason``). A gauge summed across
-several engines is not a usage fraction; the pinned runs serve one engine. A
-series that is absent from either reading is recorded as ``unknown``. Server
-percentiles are the upper edge of the first bucket that holds the nearest
-rank, so they are bounds, not exact values; ``+Inf`` means the rank is above
-the last edge. A gauge is a point reading before and after the run, not a
-peak.
+several engines is not a usage fraction, so ``run_server_delta`` refuses a
+reading in which one ``GAUGES`` series carries more than one ``engine`` label
+(#339); the pinned runs serve one engine. A series that is absent from
+either reading is recorded as ``unknown``. Server percentiles are the upper
+edge of the first bucket that holds the nearest rank, so they are bounds, not
+exact values; ``+Inf`` means the rank is above the last edge. A gauge is a
+point reading before and after the run, not a peak.
 
 Attributes:
     UNKNOWN (str): Value recorded for an absent series.
@@ -94,6 +95,7 @@ _SAMPLE: Final = re.compile(
     r"^(?P<name>[A-Za-z_:][A-Za-z0-9_:]*)(?:\{(?P<labels>[^}]*)\})?\s+(?P<value>\S+)"
 )
 _LE: Final = re.compile(r'(?:^|,)\s*le="(?P<le>[^"]*)"')
+_ENGINE: Final = re.compile(r'(?:^|,)\s*engine="(?P<engine>[^"]*)"')
 
 Snapshot = dict[tuple[str, str | None], float]
 
@@ -283,6 +285,34 @@ def _gauge(snap: Snapshot, name: str) -> float | str:
     return snap.get((name, None), UNKNOWN)
 
 
+def _refuse_several_engines(text: str) -> None:
+    """Refuse a reading in which one ``GAUGES`` series has several engines.
+
+    Args:
+        text: ``/metrics`` exposition text.
+
+    Raises:
+        ValueError: When a ``GAUGES`` series carries more than one distinct
+            ``engine`` label, because ``snapshot`` would sum them.
+    """
+    names = set(GAUGES.values())
+    engines: dict[str, set[str]] = {}
+    for line in text.splitlines():
+        match = _SAMPLE.match(line)
+        if match is None or match.group("name") not in names:
+            continue
+        engine = _ENGINE.search(match.group("labels") or "")
+        if engine is not None:
+            engines.setdefault(match.group("name"), set()).add(engine.group("engine"))
+    for name, seen in sorted(engines.items()):
+        if len(seen) > 1:
+            msg = (
+                f"gauge {name} carries engine labels {sorted(seen)}; a sum "
+                "across engines is not one reading"
+            )
+            raise ValueError(msg)
+
+
 def run_server_delta(before: str | None, after: str | None) -> dict[str, Any]:
     """Return the ``server_delta`` fields plus counter and gauge readings.
 
@@ -294,8 +324,16 @@ def run_server_delta(before: str | None, after: str | None) -> dict[str, Any]:
         The ``server_delta`` keys, ``counters`` (``COUNTERS`` key to change)
         and ``gauges`` (``GAUGES`` key to ``before`` and ``after`` values).
         A value is ``unknown`` when a reading or its series is absent; a
-        missing reading makes each gauge ``unknown``.
+        missing reading makes each gauge ``unknown``. A gauge of one engine
+        is the sum over its other labels.
+
+    Raises:
+        ValueError: When a ``GAUGES`` series in either reading carries more
+            than one distinct ``engine`` label (#339).
     """
+    for text in (before, after):
+        if text is not None:
+            _refuse_several_engines(text)
     out = server_delta(before, after)
     if before is None or after is None:
         out["counters"] = dict.fromkeys(COUNTERS, UNKNOWN)

@@ -3,15 +3,17 @@
 Each test runs the face, check and signature runners through one fake
 judgment port. The port finds the request index from the image bytes, so it
 can hold calls at a barrier, finish them in reverse order or fail one index.
-No test reads the network or a real image. The ``throughput`` receipt tests
+Order and stop tests wait on ``threading`` events, not on timed pauses, so a
+slow runner cannot change their result (#339). No test reads the network or a
+real image. The ``throughput`` receipt tests
 (#335) use a scripted clock and fixed ``/metrics`` text.
 """
 
 from __future__ import annotations
 
 import threading
-import time
 from collections.abc import Callable, Mapping, Sequence
+from concurrent.futures import ALL_COMPLETED
 from dataclasses import dataclass
 from typing import Any
 
@@ -43,6 +45,7 @@ from typevet_evals.face_match import (
     build_face_match_receipt,
     build_face_match_request,
     image_concurrency,
+    pool,
     run_face_match,
 )
 from typevet_evals.signature_match import (
@@ -92,21 +95,75 @@ def _answers(questions: Mapping[str, Question | Mapping[str, Any]]) -> dict:
     return answers
 
 
+class _CallClock:
+    """Clock that reads 0 except right after a call the port has timed.
+
+    ``judge_in_order`` reads the clock on the worker thread before and after
+    each call. The port sets the seconds of its call on that thread, so the
+    reading after the call gives that latency exactly, whatever the thread
+    schedule.
+    """
+
+    def __init__(self) -> None:
+        self._local = threading.local()
+
+    def set(self, seconds: float) -> None:
+        """Make the next reading on this thread return ``seconds``.
+
+        Args:
+            seconds: The latency of the current call.
+        """
+        self._local.pending = seconds
+
+    def __call__(self) -> float:
+        """Return and clear this thread's pending reading, or 0.
+
+        Returns:
+            The seconds the port set on this thread, else 0.
+        """
+        pending = getattr(self._local, "pending", None)
+        self._local.pending = None
+        return 0.0 if pending is None else pending
+
+
 class _IndexedPort:
-    """Judgment port that acts on the request index found in the image."""
+    """Judgment port that acts on the request index found in the image.
+
+    A call whose index is in ``hold`` waits for that event first. Each call
+    then records its index in ``finished`` and sets its ``done`` event, before
+    it returns or raises.
+    """
 
     def __init__(
         self,
         *,
         barrier: threading.Barrier | None = None,
-        delay: Callable[[int], float] = lambda _: 0.0,
+        hold: Mapping[int, threading.Event] | None = None,
         failing: frozenset[int] = frozenset(),
+        clock: _CallClock | None = None,
+        latency: Callable[[int], float] = lambda _: 0.0,
     ) -> None:
         self._barrier = barrier
-        self._delay = delay
+        self.hold: dict[int, threading.Event] = dict(hold or {})
         self._failing = failing
+        self._clock = clock
+        self._latency = latency
         self._lock = threading.Lock()
+        self._done: dict[int, threading.Event] = {}
         self.called: list[int] = []
+        self.finished: list[int] = []
+
+    def done(self, index: int) -> threading.Event:
+        """Return the event that the call of ``index`` sets as it ends.
+
+        Args:
+            index: A request index.
+
+        Returns:
+            The event of that index.
+        """
+        with self._lock:
+            return self._done.setdefault(index, threading.Event())
 
     def judge(
         self,
@@ -122,13 +179,49 @@ class _IndexedPort:
             self.called.append(index)
         if self._barrier is not None:
             self._barrier.wait()
-        time.sleep(self._delay(index))
+        gate = self.hold.get(index)
+        if gate is not None and not gate.wait(_BARRIER_TIMEOUT):
+            msg = f"call {index} was never released"
+            raise AssertionError(msg)
+        if self._clock is not None:
+            self._clock.set(self._latency(index))
+        with self._lock:
+            self.finished.append(index)
+        self.done(index).set()
         if index in self._failing:
             msg = f"refused {index}"
             raise TransportError(msg)
         return JudgmentResponse(
             model=model, usage=TokenUsage(input_tokens=10), answers=_answers(questions)
         )
+
+
+@pytest.fixture
+def failure_seen(monkeypatch: pytest.MonkeyPatch) -> threading.Event:
+    """Return an event the pooled loop sets once it has a failed call in hand.
+
+    The fixture wraps the ``wait`` of ``judge_in_order``. The event is set
+    after ``wait`` gives the loop a failed future and before the loop reads
+    it, so a call held on this event can only finish after the loop has
+    stopped new submissions.
+
+    Args:
+        monkeypatch: The pytest monkeypatch fixture.
+
+    Returns:
+        The event.
+    """
+    seen = threading.Event()
+    real_wait = pool.wait
+
+    def spy(fs: Any, timeout: float | None = None, return_when: str = ALL_COMPLETED):
+        result = real_wait(fs, timeout=timeout, return_when=return_when)
+        if any(f.exception() is not None for f in result.done):
+            seen.set()
+        return result
+
+    monkeypatch.setattr(pool, "wait", spy)
+    return seen
 
 
 @dataclass(frozen=True)
@@ -208,21 +301,29 @@ def test_concurrency_runs_that_many_judgments_at_once(family: _Family) -> None:
 def test_outcomes_keep_slice_order_when_calls_finish_in_reverse(
     family: _Family,
 ) -> None:
+    # Call i waits until call i + 1 has ended, so the calls end 5, 4, ..., 0.
+    # Call i takes 6 - i seconds on the call clock.
     requests = family.build(6)
-    port = _IndexedPort(delay=lambda i: 0.02 * (6 - i))
-    run = family.run(port, requests, "m", concurrency=6)
+    clock = _CallClock()
+    port = _IndexedPort(clock=clock, latency=lambda i: 6.0 - i)
+    port.hold.update({i: port.done(i + 1) for i in range(5)})
+    run = family.run(port, requests, "m", concurrency=6, clock=clock)
     assert run.stopped is None
+    assert port.finished == [5, 4, 3, 2, 1, 0]
     assert _ids(run.outcomes, family.id_key) == _ids(requests, family.id_key)
-    latencies = [o.latency_seconds for o in run.outcomes]
-    assert latencies == sorted(latencies, reverse=True)
+    assert [o.latency_seconds for o in run.outcomes] == [6.0, 5.0, 4.0, 3.0, 2.0, 1.0]
 
 
 @pytest.mark.parametrize("family", FAMILIES, ids=_IDS)
-def test_failure_stops_new_submissions_and_is_recorded(family: _Family) -> None:
-    # Index 3 fails at once while the others take 50 ms. With two in flight,
-    # no index after 4 is ever sent.
+def test_failure_stops_new_submissions_and_is_recorded(
+    family: _Family, failure_seen: threading.Event
+) -> None:
+    # Index 3 fails at once. Index 2 and each index after 3 are held until
+    # the loop has the failure in hand, so index 2 is in flight when 3
+    # fails. With two in flight, no index after 4 is ever sent.
     requests = family.build(10)
-    port = _IndexedPort(delay=lambda i: 0.0 if i == 3 else 0.05, failing=frozenset({3}))
+    held = (2, *range(4, 10))
+    port = _IndexedPort(hold=dict.fromkeys(held, failure_seen), failing=frozenset({3}))
     run = family.run(port, requests, "m", concurrency=2)
     assert _ids(run.outcomes, family.id_key) == _ids(requests[:3], family.id_key)
     assert run.stopped == {
@@ -237,13 +338,13 @@ def test_failure_stops_new_submissions_and_is_recorded(family: _Family) -> None:
 
 @pytest.mark.parametrize("family", FAMILIES, ids=_IDS)
 def test_first_failure_in_slice_order_wins(family: _Family) -> None:
-    # Index 3 fails after index 2 fails; the record names index 2, as a
-    # one-at-a-time run would.
+    # Index 2 waits until index 3 has failed, then fails; the record names
+    # index 2, as a one-at-a-time run would.
     requests = family.build(4)
-    port = _IndexedPort(
-        delay=lambda i: 0.05 if i == 2 else 0.0, failing=frozenset({2, 3})
-    )
+    port = _IndexedPort(failing=frozenset({2, 3}))
+    port.hold[2] = port.done(3)
     run = family.run(port, requests, "m", concurrency=4)
+    assert port.finished.index(3) < port.finished.index(2)
     assert _ids(run.outcomes, family.id_key) == _ids(requests[:2], family.id_key)
     assert run.stopped is not None
     assert run.stopped["index"] == 2
@@ -372,14 +473,15 @@ def test_zero_wall_time_and_empty_run_have_no_rates(family: _Family) -> None:
 
 @pytest.mark.parametrize("family", FAMILIES, ids=_IDS)
 def test_discarded_counts_completions_and_failures_after_the_first_failure(
-    family: _Family,
+    family: _Family, failure_seen: threading.Event
 ) -> None:
-    # Four in flight at once: index 1 fails at once, index 3 fails later and
-    # indices 0 and 2 finish later. Index 2 and index 3 reached the server
-    # but are dropped by design, so two are discarded.
+    # Four in flight at once: index 1 fails at once. Indices 0, 2 and 3 are
+    # held until the loop has that failure in hand; then 3 fails and 0 and 2
+    # finish. Index 2 and index 3 reached the server but are dropped by
+    # design, so two are discarded.
     requests = family.build(8)
     port = _IndexedPort(
-        delay=lambda i: 0.0 if i == 1 else 0.1, failing=frozenset({1, 3})
+        hold=dict.fromkeys((0, 2, 3), failure_seen), failing=frozenset({1, 3})
     )
     run = family.run(port, requests, "m", concurrency=4)
     receipt = _receipt(family, run)

@@ -29,7 +29,12 @@ from typevet_evals.wording.comparison import (
     comparison_receipt,
     evolved_text_for,
 )
-from typevet_evals.wording.held_out import HeldOutRun, ScoredPair, score_held_out
+from typevet_evals.wording.held_out import (
+    HeldOutRows,
+    HeldOutRun,
+    ScoredPair,
+    score_held_out,
+)
 from typevet_evals.wording.metrics import cohen_kappa
 
 pytestmark = pytest.mark.unit
@@ -112,18 +117,24 @@ def test_validation_rows_refuse_a_held_out_row() -> None:
         ValidationRows(rows)
 
 
-def test_validation_rows_score_through_the_held_out_loop() -> None:
-    class Port:
-        def system_one(self, state: str, questions: Any, model: str) -> Any:
-            return SystemOneResponse(
-                model=model,
-                usage=Usage(),
-                answers={"is_scam": NoulAnswer(noul=0.7)},
-            )
+class _Port:
+    """Answer 0.7 to every question."""
 
-    rows = ValidationRows((_record("Win", True, "validation"),))
-    run = score_held_out(
-        Port(),
+    def system_one(self, state: str, questions: Any, model: str) -> Any:
+        """Return one Noul answer.
+
+        Returns:
+            A response with ``is_scam`` at 0.7.
+        """
+        del state, questions
+        return SystemOneResponse(
+            model=model, usage=Usage(), answers={"is_scam": NoulAnswer(noul=0.7)}
+        )
+
+
+def _scored(rows: HeldOutRows | ValidationRows) -> HeldOutRun:
+    return score_held_out(
+        _Port(),
         Noul(instructions=SEED_TEXT),
         "is_scam",
         evolved_text="other",
@@ -131,6 +142,14 @@ def test_validation_rows_score_through_the_held_out_loop() -> None:
         judge_model="m",
         failures=(RuntimeError,),
     )
+
+
+_VALIDATION = ValidationRows((_record("Win", True, "validation"),))
+_HELD_OUT = HeldOutRows((_record("Win", True, "test"),), frozenset())
+
+
+def test_validation_rows_score_through_the_held_out_loop() -> None:
+    run = _scored(_VALIDATION)
 
     assert run.calls == 2
     assert run.pairs[0].label == 1
@@ -159,7 +178,7 @@ def _receipt(run: HeldOutRun, split: str = "test") -> dict[str, Any]:
 
 def test_receipt_holds_kappa_per_arm_and_no_pass_verdict() -> None:
     records = (CallRecord(0, "a", ("is_scam",), 0.5, 11, None, "gemma"),)
-    run = HeldOutRun(_PAIRS, 4, 4, None, records)
+    run = HeldOutRun(_PAIRS, 4, 4, None, records, split="test")
 
     receipt = _receipt(run)
 
@@ -186,7 +205,7 @@ def test_receipt_holds_kappa_per_arm_and_no_pass_verdict() -> None:
 
 
 def test_receipt_kappa_equals_the_metric_function() -> None:
-    receipt = _receipt(HeldOutRun(_PAIRS, 4, 4, None))
+    receipt = _receipt(HeldOutRun(_PAIRS, 4, 4, None, split="test"))
     labels = [p.label for p in _PAIRS]
 
     assert receipt["metrics"]["seed"]["kappa"] == cohen_kappa(
@@ -195,7 +214,7 @@ def test_receipt_kappa_equals_the_metric_function() -> None:
 
 
 def test_receipt_of_a_stopped_run_has_no_metrics() -> None:
-    receipt = _receipt(HeldOutRun(_PAIRS[:1], 2, 1, "RuntimeError: down"))
+    receipt = _receipt(HeldOutRun(_PAIRS[:1], 2, 1, "RuntimeError: down", split="test"))
 
     assert receipt["metrics"] is None
     assert receipt["bootstrap"] is None
@@ -209,7 +228,36 @@ def test_subject_refuses_an_unknown_split_or_backend() -> None:
         ComparisonSubject("gemma", "ollama", "gemma", "test")
 
 
+@pytest.mark.parametrize(
+    ("rows", "split"), [(_HELD_OUT, "test"), (_VALIDATION, "validation")]
+)
+def test_receipt_split_comes_from_the_row_type(
+    rows: HeldOutRows | ValidationRows, split: str
+) -> None:
+    assert _receipt(_scored(rows), split)["split"] == split
+
+
+@pytest.mark.parametrize(
+    ("rows", "claimed", "actual"),
+    [(_VALIDATION, "test", "validation"), (_HELD_OUT, "validation", "test")],
+)
+def test_receipt_refuses_a_subject_split_that_disagrees_with_the_rows(
+    rows: HeldOutRows | ValidationRows, claimed: str, actual: str
+) -> None:
+    run = _scored(rows)
+
+    with pytest.raises(ValueError, match="split") as caught:
+        _receipt(run, claimed)
+    assert repr(claimed) in str(caught.value)
+    assert repr(actual) in str(caught.value)
+
+
 def test_a_validation_smoke_receipt_names_its_split() -> None:
-    assert _receipt(HeldOutRun(_PAIRS, 4, 4, None), "validation")["split"] == (
-        "validation"
-    )
+    run = HeldOutRun(_PAIRS, 4, 4, None, split="validation")
+
+    assert _receipt(run, "validation")["split"] == "validation"
+
+
+def test_a_run_refuses_an_unknown_split() -> None:
+    with pytest.raises(ValueError, match="'train'"):
+        HeldOutRun(_PAIRS, 4, 4, None, split="train")

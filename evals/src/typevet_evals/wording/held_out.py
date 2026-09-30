@@ -3,8 +3,9 @@
 ``score_held_out`` asks one judgevet ``SystemOnePort`` the seed wording and
 then the evolved wording about each held-out row, once each. It refuses a
 record whose ``split`` is not ``test`` before any call, and it stops at the
-first failure and records it. ``held_out_receipt`` turns the scored pairs
-into the metrics of both wordings, the paired bootstrap intervals (context
+first failure and records it. The run names the ``split`` of its row type.
+``held_out_receipt`` refuses a run that is not ``test`` (#339) and turns the
+scored pairs into the metrics of both wordings, the paired bootstrap intervals (context
 only), the pre-registered verdict, the #133 re-measurement and each call's
 latency and input tokens with their totals (#327).
 
@@ -54,8 +55,8 @@ from __future__ import annotations
 import hashlib
 import math
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass
-from typing import Any, Final
+from dataclasses import dataclass, field
+from typing import Any, ClassVar, Final
 
 from typevet_evals.datasets.difraud import DIFrauDRecord
 from typevet_evals.wording.calls import CallRecord, call_summary
@@ -185,6 +186,9 @@ class HeldOutRun:
         call_records (tuple[CallRecord, ...]): Per-call latency and input
             tokens, for example ``TimedJudgePort.records`` (#327); empty by
             default.
+        split (str): The ``split`` of the scored rows, keyword only:
+            ``test`` for ``HeldOutRows``, ``validation`` for
+            ``ValidationRows`` (#339).
 
     Examples:
         ```python
@@ -199,6 +203,17 @@ class HeldOutRun:
     evolved_calls: int
     stopped: str | None
     call_records: tuple[CallRecord, ...] = ()
+    split: str = field(kw_only=True)
+
+    def __post_init__(self) -> None:
+        """Refuse an unknown split.
+
+        Raises:
+            ValueError: If ``split`` is not ``test`` or ``validation``.
+        """
+        if self.split not in (HELD_OUT_SPLIT, VALIDATION_SPLIT):
+            msg = f"split {self.split!r} is not {HELD_OUT_SPLIT!r} or {VALIDATION_SPLIT!r}"
+            raise ValueError(msg)
 
     @property
     def calls(self) -> int:
@@ -222,6 +237,7 @@ class HeldOutRows:
         excluded_ids (frozenset[str]): Ids that must never be scored, such as
             ``DIFrauDSplits.prior_measured_ids`` (the #236 rows, which also
             carry split ``test``).
+        split (ClassVar[str]): ``test``, the split a run of these rows names.
 
     Examples:
         ```python
@@ -229,6 +245,7 @@ class HeldOutRows:
         ```
     """
 
+    split: ClassVar[str] = HELD_OUT_SPLIT
     records: tuple[DIFrauDRecord, ...]
     excluded_ids: frozenset[str]
 
@@ -257,6 +274,8 @@ class ValidationRows:
 
     Attributes:
         records (tuple[DIFrauDRecord, ...]): The validation records, in order.
+        split (ClassVar[str]): ``validation``, the split a run of these rows
+            names.
 
     Examples:
         ```python
@@ -264,6 +283,7 @@ class ValidationRows:
         ```
     """
 
+    split: ClassVar[str] = VALIDATION_SPLIT
     records: tuple[DIFrauDRecord, ...]
 
     def __post_init__(self) -> None:
@@ -303,7 +323,8 @@ def score_held_out(
 
     Returns:
         The pairs both wordings answered before any failure, the call counts
-        of each wording, counted as each call starts, and the first failure.
+        of each wording, counted as each call starts, the first failure and
+        the ``split`` of the row type.
     """
     arms = (("seed", str(seed.instructions)), ("evolved", evolved_text))
     pairs: list[ScoredPair] = []
@@ -320,12 +341,18 @@ def score_held_out(
             except failures as exc:
                 stopped = f"{type(exc).__name__}: {exc}"
                 return HeldOutRun(
-                    tuple(pairs), calls["seed"], calls["evolved"], stopped
+                    tuple(pairs),
+                    calls["seed"],
+                    calls["evolved"],
+                    stopped,
+                    split=rows.split,
                 )
             answers.append(float(response.nouls[key].noul))
         label = int(record.example.label == POSITIVE_LABEL)
         pairs.append(ScoredPair(record.record_id, label, answers[0], answers[1]))
-    return HeldOutRun(tuple(pairs), calls["seed"], calls["evolved"], None)
+    return HeldOutRun(
+        tuple(pairs), calls["seed"], calls["evolved"], None, split=rows.split
+    )
 
 
 def held_out_receipt(
@@ -355,7 +382,14 @@ def held_out_receipt(
 
     Returns:
         A JSON-serializable receipt.
+
+    Raises:
+        ValueError: When ``run.split`` is not ``test``, for example a run of
+            ``ValidationRows`` (#339).
     """
+    if run.split != HELD_OUT_SPLIT:
+        msg = f"the #309 receipt needs a {HELD_OUT_SPLIT!r} run, not {run.split!r}"
+        raise ValueError(msg)
     labels = [p.label for p in run.pairs]
     seed_p = [p.seed_probability for p in run.pairs]
     evolved_p = [p.evolved_probability for p in run.pairs]

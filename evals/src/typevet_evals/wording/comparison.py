@@ -174,6 +174,8 @@ def comparison_receipt(
     """Build the key-free comparison receipt of one judge.
 
     Metrics and bootstrap are None when the run stopped or scored no row.
+    The receipt's ``split`` is ``run.split``, which ``score_held_out`` takes
+    from the row type (#339).
 
     Args:
         run: The scored run.
@@ -185,7 +187,16 @@ def comparison_receipt(
 
     Returns:
         A JSON-serializable receipt.
+
+    Raises:
+        ValueError: When ``subject.split`` is not ``run.split``.
     """
+    if subject.split != run.split:
+        msg = (
+            f"subject split {subject.split!r} disagrees with the split "
+            f"{run.split!r} of the scored rows"
+        )
+        raise ValueError(msg)
     labels = [p.label for p in run.pairs]
     seed_p = [p.seed_probability for p in run.pairs]
     evolved_p = [p.evolved_probability for p in run.pairs]
@@ -201,7 +212,7 @@ def comparison_receipt(
         "judge": subject.judge,
         "backend": subject.backend,
         "model": subject.model,
-        "split": subject.split,
+        "split": run.split,
         "positive_threshold": POSITIVE_THRESHOLD,
         "ece_bins": ECE_BINS,
         "seed_text": seed_text,

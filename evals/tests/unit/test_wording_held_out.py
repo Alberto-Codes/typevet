@@ -32,6 +32,7 @@ from typevet_evals.wording.held_out import (
     DEFAULT_TRAIN_ROWS,
     REFERENCE_ECE,
     HeldOutRows,
+    ValidationRows,
     evolution_artifact,
     held_out_receipt,
     score_held_out,
@@ -446,3 +447,26 @@ def test_score_held_out_refuses_a_prior_measured_row_before_any_call() -> None:
             failures=(RuntimeError,),
         )
     assert port.calls == []
+
+
+def test_the_309_receipt_refuses_a_validation_run() -> None:
+    run = score_held_out(
+        AnsweringPort(),
+        SEED,
+        KEY,
+        evolved_text=EVOLVED_TEXT,
+        rows=ValidationRows((_record("Win cash now", True, "validation"),)),
+        judge_model="judge",
+        failures=(RuntimeError,),
+    )
+
+    with pytest.raises(ValueError, match="'validation'"):
+        held_out_receipt(
+            run,
+            seed_text=SEED_TEXT,
+            evolved_text=EVOLVED_TEXT,
+            backend="vllm",
+            model="judge",
+            pins={},
+            identity={},
+        )

@@ -91,6 +91,24 @@ def test_counter_and_gauge_deltas_from_fixed_metrics_text() -> None:
     assert delta["queue"] == "unknown"
 
 
+def test_a_gauge_of_two_engines_is_refused() -> None:
+    two = _AFTER + 'vllm:kv_cache_usage_perc{engine="1",model_name="m"} 0.3\n'
+
+    with pytest.raises(ValueError, match="engine") as caught:
+        run_server_delta(_BEFORE, two)
+    assert "vllm:kv_cache_usage_perc" in str(caught.value)
+    with pytest.raises(ValueError, match="engine"):
+        run_server_delta(two, _AFTER)
+
+
+def test_a_gauge_of_one_engine_sums_over_its_other_labels() -> None:
+    one = _AFTER + 'vllm:num_requests_running{engine="0",model_name="n"} 4.0\n'
+
+    delta = run_server_delta(_BEFORE, one)
+
+    assert delta["gauges"]["num_requests_running"] == {"before": 0.0, "after": 7.0}
+
+
 def test_metric_names_follow_the_vllm_pin() -> None:
     assert COUNTERS["prefix_cache_hits"] == "vllm:prefix_cache_hits"
     assert COUNTERS["prefix_cache_queries"] == "vllm:prefix_cache_queries"
