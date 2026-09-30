@@ -170,6 +170,7 @@ nav:
           - LFW loader: reference/eval-lfw-loader.md
           - CEDAR loader: reference/eval-cedar-loader.md
           - Synthetic checks: reference/eval-synthetic-checks.md
+          - Receipt blocks: reference/eval-receipt-blocks.md
           - PSAI metadata map: reference/eval-psai-metadata-map.md
           - PubMedQA loader: reference/eval-pubmedqa-loader.md
   - Maintainers:

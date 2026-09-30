@@ -49,6 +49,12 @@ def test_missing_gauge_or_reading_is_none() -> None:
     assert cache_config("") is None
 
 
+def test_a_sample_with_a_timestamp_is_read() -> None:
+    # The Prometheus text format allows a timestamp after the value (#347).
+    text = 'vllm:cache_config_info{block_size="16",engine="0"} 1.0 1700000000\n'
+    assert cache_config(text) == {"block_size": "16", "engine": "0"}
+
+
 def test_first_sample_wins_and_escapes_are_read() -> None:
     text = (
         'vllm:cache_config_info_extra{block_size="99"} 1.0\n'

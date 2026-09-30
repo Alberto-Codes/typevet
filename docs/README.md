@@ -117,6 +117,7 @@ answers a question, and a reference gives facts.
 - [CEDAR signature loader and signature-match request](reference/eval-cedar-loader.md) (reference): pinned CEDAR archive, balanced 60 + 60 + 60 slice, two-image judgment, no signature bytes stored.
 - [LFW View 2 loader and face-match request](reference/eval-lfw-loader.md) (reference): pinned figshare files, balanced 100 + 100 slice, two-image judgment, no face bytes stored.
 - [Synthetic checks and the check-match run](reference/eval-synthetic-checks.md) (reference): seeded 20 × 7 generated checks, one-image judgment, metrics, key-free receipt, no renders stored.
+- [Receipt blocks shared by the image runs and the sweeps](reference/eval-receipt-blocks.md) (reference): serving-metrics `server` block and `server_args` block.
 - [Complementary eval manifest](reference/eval-complementary-manifest.md) (reference): JevBench-primary ranked open sets; see also `evals/`.
 - [TPJEP eight-task runner](reference/eval-tpjep-runner.md) (reference):
   eight vendored JevBench rows as native `Noul` / `Choice` / `Score` questions

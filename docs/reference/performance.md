@@ -50,7 +50,7 @@ The revision comes from the pre-registered contract.
 
 The #236 receipt does not record the server flags.
 Receipts written after #341 hold a `server_args` block.
-The [server arguments block](eval-lfw-loader.md#server-arguments-block) lists its keys.
+The [server arguments block](eval-receipt-blocks.md#server-arguments-block) lists its keys.
 
 ## Method
 

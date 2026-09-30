@@ -165,6 +165,8 @@ percentiles, the `discarded` count and, on vLLM, the `/metrics` changes
 over the run. The
 image count is 2 per signature pair. The `stopped` record also holds `discarded`. The
 [LFW reference](eval-lfw-loader.md#throughput-block) lists each key. The
+[receipt blocks page](eval-receipt-blocks.md) describes the `server` and
+`server_args` blocks. The
 code fingerprint in the experiment identity includes `face_match/pool.py`
 and `serving_metrics.py`.
 
@@ -183,5 +185,7 @@ commit images from the archive, and do not write them into receipts.
   partner data.
 - [LFW loader](eval-lfw-loader.md): the face-match loader that this loader
   follows.
+- [Receipt blocks](eval-receipt-blocks.md): the serving-metrics and
+  `server_args` blocks.
 - [Two-image signature comparison](../explanation/two-image-signature-comparison.md):
   what the signature-match runs measured and their limits.

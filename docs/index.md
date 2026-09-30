@@ -39,6 +39,7 @@ The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.
     - [Typed-judgment release support matrix](reference/typed-judgment-release-support-matrix.md)
     - [Judgment live receipts](reference/judgment-live-receipts.md)
     - [Performance on one H100](reference/performance.md)
+    - [Receipt blocks shared by the image runs and the sweeps](reference/eval-receipt-blocks.md)
     - [Security](reference/security.md)
     - [Eval partner data policy](reference/eval-partner-data-policy.md)
 

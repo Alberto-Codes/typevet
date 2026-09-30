@@ -187,6 +187,8 @@ percentiles, the `discarded` count and, on vLLM, the `/metrics` changes
 over the run. The
 image count is 1 per check. The `stopped` record also holds `discarded`. The
 [LFW reference](eval-lfw-loader.md#throughput-block) lists each key. The
+[receipt blocks page](eval-receipt-blocks.md) describes the `server` and
+`server_args` blocks. The
 code fingerprint in the experiment identity includes `face_match/pool.py`
 and `serving_metrics.py`.
 
@@ -206,5 +208,7 @@ Until then, do not share the router with other clients during a run.
 - [LFW loader](eval-lfw-loader.md): the face-match run that this run
   follows.
 - [CEDAR loader](eval-cedar-loader.md): the signature-match request.
+- [Receipt blocks](eval-receipt-blocks.md): the serving-metrics and
+  `server_args` blocks.
 - [Check images against a synthetic register](../explanation/check-register-matching.md):
   what the check-match runs measured and their limits.

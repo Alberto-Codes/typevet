@@ -6,7 +6,8 @@ vLLM exposes its ``CacheConfig`` on ``/metrics`` as the gauge
 ``enable_prefix_caching`` and ``gpu_memory_utilization``. The Prometheus
 logger also adds the ``engine`` label. ``cache_config`` keeps every label,
 ``engine`` too, so the receipt shows which engine the reading came from. The
-values stay strings, as the server wrote them.
+values stay strings, as the server wrote them. A sample may carry a
+Prometheus timestamp after its value; the parser ignores it (#347).
 
 Scheduler and model flags, for example ``--max-num-seqs``,
 ``--max-num-batched-tokens`` and ``--logprobs-mode``, are not on
@@ -47,8 +48,9 @@ from typing import Any, Final
 SERVER_ARGS_ENV: Final[str] = "TYPEVET_VLLM_SERVER_ARGS"
 CACHE_CONFIG_INFO: Final[str] = "vllm:cache_config_info"
 CACHE_CONFIG_SOURCE: Final[str] = "metrics"
+# The value may carry an optional Prometheus timestamp after it (#347).
 _LINE: Final = re.compile(
-    rf"^{re.escape(CACHE_CONFIG_INFO)}\{{(?P<labels>.*)\}}\s+\S+\s*$"
+    rf"^{re.escape(CACHE_CONFIG_INFO)}\{{(?P<labels>.*)\}}\s+\S+(?:\s+-?\d+)?\s*$"
 )
 _LABEL: Final = re.compile(r'(?P<name>[A-Za-z_]\w*)="(?P<value>(?:[^"\\]|\\.)*)"')
 _ESCAPES: Final[dict[str, str]] = {"\\\\": "\\", '\\"': '"', "\\n": "\n"}
