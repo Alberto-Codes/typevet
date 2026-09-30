@@ -1,6 +1,7 @@
 """Signature-match run over CEDAR pairs and its key-free receipt (#319).
 
-``run_signature_match`` sends one judgment per pair and stops at the first
+``run_signature_match`` sends one judgment per pair, optionally several at
+one time (``concurrency``), and stops at the first
 backend failure. ``signature_match_metrics`` turns the typed answers into
 accuracy, ROC-AUC, ECE with a reliability table, the skilled false-accept
 rates, the ``cannot_tell`` rate, the ``Noul`` and ``Choice`` agreement and the
@@ -40,7 +41,6 @@ from dataclasses import asdict, dataclass
 from typing import Any, Final
 
 from typevet.domain import JudgmentResponse
-from typevet.domain.errors import GenerationError
 from typevet.ports import JudgmentPort
 from typevet_evals.datasets.cedar import PairKind
 from typevet_evals.face_match.metrics import (
@@ -49,6 +49,7 @@ from typevet_evals.face_match.metrics import (
     reliability_table,
     roc_auc,
 )
+from typevet_evals.face_match.pool import judge_in_order
 from typevet_evals.signature_match.metrics import (
     ACCEPT_THRESHOLD,
     kind_accuracy,
@@ -191,42 +192,50 @@ def run_signature_match(
     requests: Iterable[SignatureMatchRequest],
     model: str,
     *,
+    concurrency: int = 1,
     clock: Callable[[], float] = time.perf_counter,
 ) -> SignatureMatchRun:
-    """Judge each request once, in order, and stop at the first failure.
+    """Judge each request once and stop at the first failure.
 
     A backend failure (``GenerationError``, for example ``TransportError`` or
-    ``BackendHttpError``) stops the run. The run records it and keeps the
-    outcomes that came before it.
+    ``BackendHttpError``) stops the run. The run records the first failure in
+    slice order and keeps the outcomes that came before it. With
+    ``concurrency`` above 1, that many judgments run at one time on a thread
+    pool; no request is sent after a failure and the outcomes keep slice
+    order.
 
     Args:
-        port: Judgment port for the backend.
+        port: Judgment port for the backend. It must be safe to call from
+            several threads when ``concurrency`` is above 1.
         requests: Requests in slice order.
         model: Backend model id or alias.
+        concurrency: Most judgments in flight at one time; ``1`` judges one
+            request at a time, as before.
         clock: Monotonic clock in seconds.
 
     Returns:
         The outcomes, the stopping failure and the wall time.
+
+    Raises:
+        ValueError: When ``concurrency`` is less than 1.
     """
     started = clock()
-    outcomes: list[SignatureMatchOutcome] = []
-    stopped: dict[str, object] | None = None
-    for index, request in enumerate(requests):
-        call_started = clock()
-        try:
-            response = judge_signature_match(port, request, model)
-        except GenerationError as exc:
-            stopped = {
-                "index": index,
-                "pair_id": request.pair_id,
-                "error_class": type(exc).__name__,
-                "message": str(exc),
-            }
-            break
-        outcomes.append(
-            outcome_from_response(request, response, clock() - call_started)
-        )
-    return SignatureMatchRun(tuple(outcomes), stopped, clock() - started)
+    batch = judge_in_order(
+        requests,
+        lambda request: judge_signature_match(port, request, model),
+        concurrency=concurrency,
+        clock=clock,
+    )
+    outcomes = tuple(
+        outcome_from_response(j.request, j.response, j.latency_seconds)
+        for j in batch.judged
+    )
+    stopped = (
+        None
+        if batch.failure is None
+        else batch.failure.record("pair_id", batch.failure.request.pair_id)
+    )
+    return SignatureMatchRun(outcomes, stopped, clock() - started)
 
 
 def _mean(values: Sequence[float]) -> float | None:

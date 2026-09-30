@@ -1,6 +1,7 @@
 """Check-versus-register run and its key-free receipt (#316).
 
-``run_check_match`` sends one judgment per case and stops at the first
+``run_check_match`` sends one judgment per case, optionally several at one
+time (``concurrency``), and stops at the first
 backend failure. ``check_match_metrics`` turns the typed answers into
 accuracy by class and by variant, the false-clear rate, ROC-AUC and ECE of
 each ``Noul``, the ``cannot_tell`` rate, the ``Score`` summary by variant and
@@ -36,7 +37,6 @@ from dataclasses import dataclass
 from typing import Any, Final
 
 from typevet.domain import JudgmentResponse
-from typevet.domain.errors import GenerationError
 from typevet.ports import JudgmentPort
 from typevet_evals.check_match.cases import CheckVariant, ExpectedLabels
 from typevet_evals.check_match.metrics import (
@@ -64,6 +64,7 @@ from typevet_evals.face_match.metrics import (
     reliability_table,
     roc_auc,
 )
+from typevet_evals.face_match.pool import judge_in_order
 
 RECEIPT_ISSUE: Final[int] = 316
 CHECK_CONFIDENCE_NOTE: Final[str] = (
@@ -221,42 +222,50 @@ def run_check_match(
     requests: Iterable[CheckMatchRequest],
     model: str,
     *,
+    concurrency: int = 1,
     clock: Callable[[], float] = time.perf_counter,
 ) -> CheckMatchRun:
-    """Judge each request once, in order, and stop at the first failure.
+    """Judge each request once and stop at the first failure.
 
     A backend failure (``GenerationError``, for example ``TransportError`` or
-    ``BackendHttpError``) stops the run. The run records it and keeps the
-    outcomes that came before it.
+    ``BackendHttpError``) stops the run. The run records the first failure in
+    slice order and keeps the outcomes that came before it. With
+    ``concurrency`` above 1, that many judgments run at one time on a thread
+    pool; no request is sent after a failure and the outcomes keep slice
+    order.
 
     Args:
-        port: Judgment port for the backend.
+        port: Judgment port for the backend. It must be safe to call from
+            several threads when ``concurrency`` is above 1.
         requests: Requests in slice order.
         model: Backend model id or alias.
+        concurrency: Most judgments in flight at one time; ``1`` judges one
+            request at a time, as before.
         clock: Monotonic clock in seconds.
 
     Returns:
         The outcomes, the stopping failure and the wall time.
+
+    Raises:
+        ValueError: When ``concurrency`` is less than 1.
     """
     started = clock()
-    outcomes: list[CheckMatchOutcome] = []
-    stopped: dict[str, object] | None = None
-    for index, request in enumerate(requests):
-        call_started = clock()
-        try:
-            response = judge_check_match(port, request, model)
-        except GenerationError as exc:
-            stopped = {
-                "index": index,
-                "case_id": request.case_id,
-                "error_class": type(exc).__name__,
-                "message": str(exc),
-            }
-            break
-        outcomes.append(
-            check_outcome_from_response(request, response, clock() - call_started)
-        )
-    return CheckMatchRun(tuple(outcomes), stopped, clock() - started)
+    batch = judge_in_order(
+        requests,
+        lambda request: judge_check_match(port, request, model),
+        concurrency=concurrency,
+        clock=clock,
+    )
+    outcomes = tuple(
+        check_outcome_from_response(j.request, j.response, j.latency_seconds)
+        for j in batch.judged
+    )
+    stopped = (
+        None
+        if batch.failure is None
+        else batch.failure.record("case_id", batch.failure.request.case_id)
+    )
+    return CheckMatchRun(outcomes, stopped, clock() - started)
 
 
 def _noul_metrics(confidences: Sequence[float], truth: Sequence[bool]) -> dict:

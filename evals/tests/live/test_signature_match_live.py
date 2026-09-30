@@ -24,6 +24,8 @@ selects the backend, as in ``open_judgment``:
   missing.
 
 ``TYPEVET_SIGNATURE_MATCH_PER_KIND`` sets a smaller slice for a smoke run.
+``TYPEVET_IMAGE_CONCURRENCY`` sets how many judgments run at one time
+(default 1, one at a time). The receipt pins record it.
 A full run checks the slice ids against
 ``evals/fixtures/cedar/default_slice_ids.txt``.
 ``TYPEVET_GIT_STATUS_PORCELAIN`` carries the porcelain status text for the
@@ -95,7 +97,11 @@ from typevet_evals.experiment_identity import (
     snapshot_evaluated_inputs,
     write_receipt_exclusive,
 )
-from typevet_evals.face_match import ensure_key_free, served_weights_pins
+from typevet_evals.face_match import (
+    ensure_key_free,
+    image_concurrency,
+    served_weights_pins,
+)
 from typevet_evals.runner.live_gate import require_live_enabled
 from typevet_evals.signature_match import (
     SignatureMatchRequest,
@@ -108,6 +114,7 @@ from typevet_evals.signature_match import (
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _SIGNATURE_SRC = _REPO_ROOT / "evals" / "src" / "typevet_evals" / "signature_match"
 _SLICE_IDS = _REPO_ROOT / "evals" / "fixtures" / "cedar" / "default_slice_ids.txt"
+_POOL_SRC = _REPO_ROOT / "evals" / "src" / "typevet_evals" / "face_match" / "pool.py"
 _RECEIPT_ENV = "TYPEVET_SIGNATURE_MATCH_RECEIPT"
 _PER_KIND_ENV = "TYPEVET_SIGNATURE_MATCH_PER_KIND"
 _LLAMA_MODEL = "gemma-4-31b-kv9-q4km-mm"
@@ -271,14 +278,18 @@ def test_signature_match_live_receipt() -> None:
     secret = load_vllm_settings(environ).api_key if backend == "vllm" else None
     weights = served_weights_pins(backend, environ)
     per_kind = int(environ.get(_PER_KIND_ENV, str(DEFAULT_PER_KIND)))
+    concurrency = image_concurrency(environ)
     pairs = _slice(per_kind)
     requests = _requests(pairs)
     tree = _working_tree()
     evaluated = snapshot_evaluated_inputs(
         prompts=_prompt_specs(),
         code_paths={
-            name: _SIGNATURE_SRC / f"{name}.py"
-            for name in ("request", "metrics", "runner")
+            **{
+                name: _SIGNATURE_SRC / f"{name}.py"
+                for name in ("request", "metrics", "runner")
+            },
+            "pool": _POOL_SRC,
         },
         fixture_paths={"default_slice_ids": _SLICE_IDS},
     )
@@ -295,7 +306,9 @@ def test_signature_match_live_receipt() -> None:
             ),
             working_tree=tree,
         )
-        run = run_signature_match(session.port, requests, session.model)
+        run = run_signature_match(
+            session.port, requests, session.model, concurrency=concurrency
+        )
 
     identity = finalize_experiment_identity(
         run_start=start,
@@ -309,6 +322,7 @@ def test_signature_match_live_receipt() -> None:
         "archive_sha256": ARCHIVE_SHA256,
         "slice_seed": DEFAULT_SEED,
         "slice_per_kind": per_kind,
+        "concurrency": concurrency,
         "slice_ids_sha256": hashlib.sha256(slice_text.encode()).hexdigest(),
         "server": facts,
         **weights,

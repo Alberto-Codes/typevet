@@ -21,6 +21,8 @@ call when it does. ``TYPEVET_BACKEND`` selects the backend, as in
   missing.
 
 ``TYPEVET_FACE_MATCH_PER_CLASS`` sets a smaller slice for a smoke run.
+``TYPEVET_IMAGE_CONCURRENCY`` sets how many judgments run at one time
+(default 1, one at a time). The receipt pins record it.
 ``TYPEVET_GIT_STATUS_PORCELAIN`` carries the porcelain status text for the
 working-tree fingerprint, as in the CORD smoke. The
 receipt holds pair ids, typed answers, metrics and pins. It holds no image
@@ -97,6 +99,7 @@ from typevet_evals.face_match import (
     build_face_match_request,
     ensure_key_free,
     face_match_questions,
+    image_concurrency,
     run_face_match,
     served_weights_pins,
 )
@@ -247,13 +250,14 @@ def test_face_match_live_receipt() -> None:
     secret = load_vllm_settings(environ).api_key if backend == "vllm" else None
     weights = served_weights_pins(backend, environ)
     per_class = int(environ.get(_PER_CLASS_ENV, str(DEFAULT_PER_CLASS)))
+    concurrency = image_concurrency(environ)
     requests = _requests(per_class)
     tree = _working_tree()
     evaluated = snapshot_evaluated_inputs(
         prompts=_prompt_specs(),
         code_paths={
             name: _FACE_MATCH_SRC / f"{name}.py"
-            for name in ("request", "metrics", "runner")
+            for name in ("request", "metrics", "runner", "pool")
         },
         fixture_paths={},
     )
@@ -270,7 +274,9 @@ def test_face_match_live_receipt() -> None:
             ),
             working_tree=tree,
         )
-        run = run_face_match(session.port, requests, session.model)
+        run = run_face_match(
+            session.port, requests, session.model, concurrency=concurrency
+        )
 
     identity = finalize_experiment_identity(
         run_start=start,
@@ -284,6 +290,7 @@ def test_face_match_live_receipt() -> None:
         "archive_sha256": ARCHIVE_SHA256,
         "slice_seed": DEFAULT_SEED,
         "slice_per_class": per_class,
+        "concurrency": concurrency,
         "server": facts,
         **weights,
     }

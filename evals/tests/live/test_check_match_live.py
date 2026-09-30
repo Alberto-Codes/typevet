@@ -28,6 +28,9 @@ seed, Pillow version, model, revision, git fingerprint). It holds no image
 bytes, no key and no auth header. Generated checks are not evidence about
 real checks.
 
+``TYPEVET_IMAGE_CONCURRENCY`` sets how many judgments run at one time
+(default 1, one at a time). The receipt pins record it.
+
 Examples:
     ```bash
     TYPEVET_CHECK_MATCH_RECEIPT=evals/fixtures/checks/receipts/check_match_llama_cpp_receipt.json \
@@ -94,11 +97,16 @@ from typevet_evals.experiment_identity import (
     snapshot_evaluated_inputs,
     write_receipt_exclusive,
 )
-from typevet_evals.face_match import ensure_key_free, served_weights_pins
+from typevet_evals.face_match import (
+    ensure_key_free,
+    image_concurrency,
+    served_weights_pins,
+)
 from typevet_evals.runner.live_gate import require_live_enabled
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _CHECK_MATCH_SRC = _REPO_ROOT / "evals" / "src" / "typevet_evals" / "check_match"
+_POOL_SRC = _REPO_ROOT / "evals" / "src" / "typevet_evals" / "face_match" / "pool.py"
 _RECEIPT_ENV = "TYPEVET_CHECK_MATCH_RECEIPT"
 _ROWS_ENV = "TYPEVET_CHECK_MATCH_ROWS"
 _LLAMA_MODEL = "gemma-4-31b-kv9-q4km-mm"
@@ -241,11 +249,15 @@ def test_check_match_live_receipt() -> None:
     rows = int(environ.get(_ROWS_ENV, str(ROW_COUNT)))
     if not 1 <= rows <= ROW_COUNT:
         pytest.fail(f"{_ROWS_ENV} must be 1 to {ROW_COUNT}: {rows}")
+    concurrency = image_concurrency(environ)
     requests = _requests(rows)
     tree = _working_tree()
     evaluated = snapshot_evaluated_inputs(
         prompts=_prompt_specs(),
-        code_paths={name: _CHECK_MATCH_SRC / f"{name}.py" for name in _CODE_MODULES},
+        code_paths={
+            **{name: _CHECK_MATCH_SRC / f"{name}.py" for name in _CODE_MODULES},
+            "pool": _POOL_SRC,
+        },
         fixture_paths={},
     )
 
@@ -261,7 +273,9 @@ def test_check_match_live_receipt() -> None:
             ),
             working_tree=tree,
         )
-        run = run_check_match(session.port, requests, session.model)
+        run = run_check_match(
+            session.port, requests, session.model, concurrency=concurrency
+        )
 
     identity = finalize_experiment_identity(
         run_start=start,
@@ -274,6 +288,7 @@ def test_check_match_live_receipt() -> None:
         "generator_seed": DEFAULT_SEED,
         "register_rows": rows,
         "variants_per_row": len(requests) // rows,
+        "concurrency": concurrency,
         "pillow_version": PIL.__version__,
         "slice_sha256": _slice_sha256(requests),
         "server": facts,
