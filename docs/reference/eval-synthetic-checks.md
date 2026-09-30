@@ -170,3 +170,5 @@ Until then, do not share the router with other clients during a run.
 - [LFW loader](eval-lfw-loader.md): the face-match run that this run
   follows.
 - [CEDAR loader](eval-cedar-loader.md): the signature-match request.
+- [Check images against a synthetic register](../explanation/check-register-matching.md):
+  what the check-match runs measured and their limits.

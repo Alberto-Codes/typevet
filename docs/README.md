@@ -35,6 +35,7 @@ answers a question, and a reference gives facts.
 - [Gemma 4 multimodal judgments](explanation/gemma-4-multimodal-judgments.md): how images reach Gemma 4 on llama.cpp and vLLM, what the receipts prove, and the limits.
 - [Two-image face matching](explanation/two-image-face-matching.md): what the LFW face-match runs measured and what the probability means. The results are not an identity check.
 - [Two-image signature comparison](explanation/two-image-signature-comparison.md): what the CEDAR signature-match runs measured and what the probability means. The results are not a fraud control.
+- [Check images against a synthetic register](explanation/check-register-matching.md): what the generated check-match runs measured, the false-clear rate and a legibility gate hypothesis. The results are not a fraud control.
 
 ## Tutorials
 
