@@ -17,6 +17,7 @@ This module does not import judgevet: the caller gives the port and the seed
 Attributes:
     DEFAULT_TRAIN_ROWS (int): Train rows the evolution reflects on by default.
     HELD_OUT_SPLIT (str): The ``split`` every held-out record carries.
+    VALIDATION_SPLIT (str): The ``split`` every smoke record carries (#329).
     REFERENCE_ECE (float): The #133 DIFrauD ECE the seed wording is compared with.
 
 Examples:
@@ -68,6 +69,7 @@ from typevet_evals.wording.transport import JudgePort, SeedNoul
 
 DEFAULT_TRAIN_ROWS: Final[int] = 1000
 HELD_OUT_SPLIT: Final[str] = "test"
+VALIDATION_SPLIT: Final[str] = "validation"
 REFERENCE_ECE: Final[float] = 0.158
 
 
@@ -246,13 +248,43 @@ class HeldOutRows:
                 raise ValueError(msg)
 
 
+@dataclass(frozen=True, slots=True)
+class ValidationRows:
+    """Validation records for a smoke run of the held-out loop (#329).
+
+    Construction refuses a record whose ``split`` is not ``validation``, so a
+    smoke cannot score a held-out row.
+
+    Attributes:
+        records (tuple[DIFrauDRecord, ...]): The validation records, in order.
+
+    Examples:
+        ```python
+        rows = ValidationRows(stratified_subset(splits.validation, 6))
+        ```
+    """
+
+    records: tuple[DIFrauDRecord, ...]
+
+    def __post_init__(self) -> None:
+        """Refuse a record that is not a validation record.
+
+        Raises:
+            ValueError: If a record's ``split`` is not ``validation``.
+        """
+        for record in self.records:
+            if record.example.split != VALIDATION_SPLIT:
+                msg = f"validation rows hold a {record.example.split!r} record"
+                raise ValueError(msg)
+
+
 def score_held_out(
     port: JudgePort,
     seed: SeedNoul,
     key: str,
     *,
     evolved_text: str,
-    rows: HeldOutRows,
+    rows: HeldOutRows | ValidationRows,
     judge_model: str,
     failures: tuple[type[Exception], ...],
 ) -> HeldOutRun:
@@ -263,7 +295,8 @@ def score_held_out(
         seed: The seed ``Noul``; its criteria go with both wordings.
         key: The question name.
         evolved_text: The evolved wording.
-        rows: The checked held-out records.
+        rows: The checked held-out records, or checked validation records
+            for a smoke run.
         judge_model: The model name sent to the port.
         failures: The exception types that count as a backend failure, for
             example judgevet's ``ProviderError``. Any other exception propagates.

@@ -1,5 +1,7 @@
 """Unit checks for the held-out wording metrics, bootstrap and pass rule (#309).
 
+Cohen's kappa (#329) is checked against hand-computed values.
+
 Examples:
     ```bash
     uv run pytest -q evals/tests/unit/test_wording_metrics.py
@@ -19,6 +21,7 @@ import pytest
 from typevet_evals.wording.metrics import (
     Interval,
     WordingMetrics,
+    cohen_kappa,
     paired_bootstrap,
     pass_verdict,
     percentile_interval,
@@ -224,3 +227,44 @@ def test_verdict_counts_an_accuracy_gain_as_no_drop() -> None:
 
     assert verdict.accuracy_drop == pytest.approx(-0.05)
     assert verdict.accuracy_ok
+
+
+def test_kappa_matches_a_hand_computed_value() -> None:
+    # Readings (p >= 0.5): 1, 1, 0, 0, 1. Labels: 1, 0, 0, 0, 1.
+    # Observed agreement: rows 0, 2, 3, 4 -> 4 / 5 = 0.8.
+    # Chance: 3/5 read scam, 2/5 are scam -> 0.6 * 0.4 + 0.4 * 0.6 = 0.48.
+    # Kappa: (0.8 - 0.48) / (1 - 0.48) = 0.32 / 0.52.
+    kappa = cohen_kappa([0.9, 0.6, 0.2, 0.4, 0.5], [1, 0, 0, 0, 1])
+
+    assert kappa == pytest.approx(0.32 / 0.52)
+
+
+def test_kappa_reads_the_threshold_as_scam() -> None:
+    # 0.5 reads scam: perfect agreement. 0.4999 would read legit.
+    assert cohen_kappa([0.5, 0.4999], [1, 0]) == pytest.approx(1.0)
+    assert cohen_kappa([0.4999, 0.5], [1, 0]) == pytest.approx(-1.0)
+
+
+def test_kappa_is_zero_for_a_constant_reading() -> None:
+    # Observed 0.5; chance 1.0 * 0.5 + 0.0 * 0.5 = 0.5.
+    assert cohen_kappa([0.9, 0.9], [1, 0]) == pytest.approx(0.0)
+
+
+def test_kappa_differs_from_accuracy_on_unbalanced_rows() -> None:
+    # Accuracy 0.75 by reading every row legit; kappa gives no credit.
+    probabilities = [0.1, 0.1, 0.1, 0.1]
+    labels = [1, 0, 0, 0]
+
+    assert wording_metrics(probabilities, labels).accuracy == pytest.approx(0.75)
+    assert cohen_kappa(probabilities, labels) == pytest.approx(0.0)
+
+
+def test_kappa_is_undefined_when_chance_agreement_is_one() -> None:
+    assert cohen_kappa([0.9, 0.8], [1, 1]) is None
+
+
+def test_kappa_refuses_bad_rows() -> None:
+    with pytest.raises(ValueError, match="length mismatch"):
+        cohen_kappa([0.5], [1, 0])
+    with pytest.raises(ValueError, match="not 0 or 1"):
+        cohen_kappa([0.5], [2])

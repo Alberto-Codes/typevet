@@ -2,7 +2,8 @@
 
 Plain Python. Each function takes one probability per row in row order and
 the row's label, 1 for ``scam`` and 0 for ``legit``. A probability of 0.5 or
-more reads ``scam``. ECE uses ``ECE_BINS`` equal-width bins.
+more reads ``scam``. ECE uses ``ECE_BINS`` equal-width bins. ``cohen_kappa``
+gives the agreement of the readings with the labels beyond chance (#329).
 
 The pass rule is fixed before any held-out run: the evolved wording's ECE
 drops by at least ``MIN_ECE_DROP`` from the seed wording and ends at most
@@ -156,6 +157,38 @@ def wording_metrics(
         brier=_brier(probabilities, labels),
         ece=_ece(probabilities, labels),
     )
+
+
+def cohen_kappa(probabilities: Sequence[float], labels: Sequence[int]) -> float | None:
+    """Return Cohen's kappa of the readings against the labels.
+
+    A probability of ``POSITIVE_THRESHOLD`` or more reads scam. With observed
+    agreement ``p_o`` (the accuracy), reading share ``r`` and label share
+    ``s`` of scam, chance agreement is ``p_e = r * s + (1 - r) * (1 - s)``
+    and kappa is ``(p_o - p_e) / (1 - p_e)``.
+
+    Args:
+        probabilities: The scam probability, one per row.
+        labels: 1 for scam, 0 for legit, one per row.
+
+    Returns:
+        Kappa, from -1 to 1; None when ``p_e`` is 1 (the readings and the
+        labels are one and the same class), where kappa is undefined.
+
+    Raises:
+        ValueError: When the lengths differ, there are no rows, a label is not
+            0 or 1, or a probability is not between 0 and 1.
+    """
+    _check_rows(probabilities, labels)
+    rows = len(labels)
+    readings = [int(p >= POSITIVE_THRESHOLD) for p in probabilities]
+    observed = sum(r == y for r, y in zip(readings, labels, strict=True)) / rows
+    read_share = sum(readings) / rows
+    label_share = sum(labels) / rows
+    chance = read_share * label_share + (1 - read_share) * (1 - label_share)
+    if chance >= 1.0:
+        return None
+    return (observed - chance) / (1 - chance)
 
 
 def resample_indices(n: int, *, seed: int, resample: int) -> list[int]:

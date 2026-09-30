@@ -58,6 +58,22 @@ same text-only session as the evolution) or ``vllm``
 (``TYPEVET_VLLM__*`` and ``TYPEVET_VLLM_MODEL_REVISION``).
 ``TYPEVET_GIT_STATUS_PORCELAIN`` carries the porcelain status text.
 
+**Jev vs Gemma comparison (#329, parent #252)**
+(``TYPEVET_WORDING_COMPARISON_RECEIPT`` names a new receipt;
+``TYPEVET_WORDING_EVOLVED_ARTIFACT`` names the judge's own evolution
+artifact). One judge scores the seed wording and its own evolved wording once
+each on the 158 held-out rows. ``TYPEVET_WORDING_JUDGE_PROVIDER=jev`` uses
+the Jev judge above (spend cap required before any call); ``gemma`` uses the
+``TYPEVET_BACKEND`` session (``llama_cpp`` or ``vllm``). The artifact's
+``judge_provider`` must be the judge's (``jev`` for Jev, ``gemma`` for both
+Gemma backends), valid and free of budget refusals. The receipt holds per arm
+Cohen's kappa against the DIFrauD labels (p >= 0.5 reads scam), Brier, ECE
+(10 bins) and accuracy, the paired bootstrap (context only), the model,
+backend, quant or revision, the probed served template, per-call latency and
+input tokens and the wall time. It has no pass rule and does not apply the
+#309 verdict. ``TYPEVET_WORDING_COMPARISON_SMOKE_ROWS`` (1 to 6) scores that
+many stratified validation rows instead; a smoke never loads a held-out row.
+
 **Framing smoke** (``TYPEVET_WORDING_SMOKE_RECEIPT`` names a new receipt).
 Scores the seed wording once on 10 stratified validation rows (seed 0) on
 the ``TYPEVET_BACKEND`` backend and writes the served template, each call's
@@ -87,6 +103,13 @@ Examples:
       TYPEVET_WORDING_HELD_OUT_RECEIPT=evals/fixtures/difraud/receipts/wording_held_out_vllm.json \
       uv run pytest evals/tests/live/test_wording_evolution_live.py -m live -q -s \
       -k held_out
+
+    R=evals/fixtures/difraud/receipts
+    TYPEVET_WORDING_JUDGE_PROVIDER=jev JEV_API__SPEND_MAX_ATTEMPTS=400 \
+      TYPEVET_WORDING_EVOLVED_ARTIFACT=$R/wording252_evolution_jev.json \
+      TYPEVET_WORDING_COMPARISON_RECEIPT=$R/wording252_held_out_jev.json \
+      uv run pytest evals/tests/live/test_wording_evolution_live.py -m live -q -s \
+      -k comparison
     ```
 
 See Also:
@@ -132,6 +155,7 @@ from typevet_evals.datasets.difraud import (
     IS_SCAM_NOUL_SCHEMA,
     PINNED_REVISION,
     PRIMARY_NOUL_NAME,
+    DIFrauDSplits,
     load_splits,
 )
 from typevet_evals.experiment_identity import (
@@ -157,7 +181,16 @@ from typevet_evals.wording import (
     train_subset,
 )
 from typevet_evals.wording.calls import TimedJudgePort, call_summary, error_count
-from typevet_evals.wording.held_out import DEFAULT_TRAIN_ROWS, HeldOutRows
+from typevet_evals.wording.comparison import (
+    ComparisonSubject,
+    comparison_receipt,
+    evolved_text_for,
+)
+from typevet_evals.wording.held_out import (
+    DEFAULT_TRAIN_ROWS,
+    HeldOutRows,
+    ValidationRows,
+)
 from typevet_evals.wording.served import (
     TEXT_JUDGE,
     probe_llama_template,
@@ -678,3 +711,186 @@ def test_wording_framing_smoke_live_receipt() -> None:
     print(f"receipt {path}\n{json.dumps(receipt['call_summary'])}")
     assert all(r.example.split == "validation" for r in rows)
     assert len(timed.records) == _SMOKE_ROWS
+
+
+_MAX_COMPARISON_SMOKE_ROWS = 6
+_COMPARISON_JUDGE = {"jev": "jev", "llama_cpp": "gemma_llama_cpp", "vllm": "gemma_vllm"}
+
+
+@dataclass(frozen=True)
+class _ComparisonJudge:
+    """One judge of the #252 comparison and what its receipt records.
+
+    Attributes:
+        port (JudgePort): The judgevet ``SystemOnePort``.
+        model (str): The model name sent with each call.
+        template (str): The probed served template, or ``jev_http``.
+        facts (dict[str, object]): Server, quant or revision facts.
+        spend (Callable[[], dict[str, object]] | None): The spend so far, or None.
+        key_free (Callable[[str], None]): Raises if text holds a key.
+    """
+
+    port: JudgePort
+    model: str
+    template: str
+    facts: dict[str, object]
+    spend: Callable[[], dict[str, object]] | None
+    key_free: Callable[[str], None]
+
+
+def _comparison_rows(splits: DIFrauDSplits) -> tuple[HeldOutRows | ValidationRows, str]:
+    """Return the held-out rows, or the validation rows of a smoke.
+
+    Returns:
+        The checked rows and their split name.
+    """
+    smoke = _int_env("TYPEVET_WORDING_COMPARISON_SMOKE_ROWS", None)
+    if smoke is None:
+        assert len(splits.held_out) == 158, "held-out row count drifted"
+        return HeldOutRows(splits.held_out, splits.prior_measured_ids), "test"
+    if not 1 <= smoke <= _MAX_COMPARISON_SMOKE_ROWS:
+        pytest.fail(
+            "TYPEVET_WORDING_COMPARISON_SMOKE_ROWS must be 1 to "
+            f"{_MAX_COMPARISON_SMOKE_ROWS}"
+        )
+    return ValidationRows(stratified_subset(splits.validation, smoke)), "validation"
+
+
+def _weights_facts(
+    backend: str, client: httpx.Client, model: str, environ: Mapping[str, str]
+) -> dict[str, object]:
+    """Return the quant of a llama.cpp model or the vLLM weights revision.
+
+    Returns:
+        ``model_ftype`` and ``model_file`` for llama.cpp; the revision pin
+        for vLLM.
+    """
+    if backend == "vllm":
+        return dict(served_weights_pins(backend, environ))
+    body = client.get("/props", params={"model": model}).raise_for_status().json()
+    path = body.get("model_path")
+    return {
+        "model_ftype": body.get("model_ftype"),
+        "model_file": None if path is None else Path(str(path)).name,
+    }
+
+
+@contextmanager
+def _comparison_judge(
+    backend: str, environ: Mapping[str, str]
+) -> Iterator[_ComparisonJudge]:
+    """Open the Jev or Gemma judge of the comparison.
+
+    Yields:
+        The judge.
+    """
+    if backend == "jev":
+        with _jev_judge(_jev_api(), environ) as jev:
+            yield _ComparisonJudge(
+                jev.port,
+                jev.model,
+                "jev_http",
+                dict(jev.facts),
+                jev.spend,
+                jev.key_free,
+            )
+        return
+    secret = load_vllm_settings(environ).api_key if backend == "vllm" else None
+
+    def key_free(text: str) -> None:
+        ensure_key_free(text, secrets=(secret,))
+
+    with _held_out_session(environ, backend) as (port, model, client, template):
+        facts = {
+            **_server_facts(backend, client, model),
+            **_weights_facts(backend, client, model, environ),
+        }
+        yield _ComparisonJudge(
+            TypevetSystemOnePort(port), model, template, facts, None, key_free
+        )
+
+
+@pytest.mark.live
+def test_wording_comparison_live_receipt() -> None:
+    """Score one judge's seed and own evolved wording for the #252 comparison."""
+    path = _required_path("TYPEVET_WORDING_COMPARISON_RECEIPT", new=True)
+    evolved_path = _required_path("TYPEVET_WORDING_EVOLVED_ARTIFACT", new=False)
+    environ = dict(os.environ)
+    provider = _judge_provider(environ)
+    backend = "jev" if provider == "jev" else load_backend(environ)
+    artifact = json.loads(evolved_path.read_text(encoding="utf-8"))
+    evolved_text = evolved_text_for(artifact, backend=backend, seed_text=_SEED_TEXT)
+    rows, split = _comparison_rows(load_splits(seed=0))
+    tree = _working_tree()
+    snapshot = snapshot_evaluated_inputs(
+        prompts=(
+            PromptSpec("seed", ("true", "false"), _SEED_TEXT, {}),
+            PromptSpec("evolved", ("true", "false"), evolved_text, {}),
+        ),
+        code_paths={
+            n: _WORDING_SRC / f"{n}.py" for n in ("held_out", "metrics", "comparison")
+        },
+        fixture_paths={"evolution_artifact": evolved_path},
+    )
+    started = time.monotonic()
+    with _comparison_judge(backend, environ) as judge:
+        build = str(judge.facts.get("build_info", "unknown"))
+        start = begin_run_identity(
+            repo_root=_REPO_ROOT,
+            runtime=RuntimeBuild(judge.model, judge.template, build),
+            working_tree=tree,
+        )
+        timed = TimedJudgePort(judge.port)
+        run = score_held_out(
+            timed,
+            _SEED,
+            PRIMARY_NOUL_NAME,
+            evolved_text=evolved_text,
+            rows=rows,
+            judge_model=judge.model,
+            failures=(ProviderError,),
+        )
+        run = replace(run, call_records=timed.records)
+        spend = None if judge.spend is None else judge.spend()
+    identity = finalize_experiment_identity(
+        run_start=start, evaluated=snapshot, arm_call_counts={"judgments": run.calls}
+    )
+    refusals = error_count(timed.records, _BUDGET_REFUSAL)
+    pins = {
+        "finished_utc": datetime.now(UTC).isoformat(),
+        "wall_seconds": round(time.monotonic() - started, 1),
+        "dataset": "difraud/difraud sms",
+        "dataset_revision": PINNED_REVISION,
+        "split_seed": 0,
+        "served_template": None if backend == "jev" else judge.template,
+        "evolution_artifact": evolved_path.name,
+        "evolution_artifact_sha256": hashlib.sha256(
+            evolved_path.read_bytes()
+        ).hexdigest(),
+        "server": judge.facts,
+        "reported_models": call_summary(run.call_records)["models"],
+        "budget_refusals": refusals,
+        "spend": spend,
+    }
+    subject = ComparisonSubject(_COMPARISON_JUDGE[backend], backend, judge.model, split)
+    receipt = comparison_receipt(
+        run,
+        subject,
+        seed_text=_SEED_TEXT,
+        evolved_text=evolved_text,
+        pins=pins,
+        identity=identity.to_receipt_mapping(),
+    )
+    judge.key_free(json.dumps(receipt, indent=2))
+    write_receipt_exclusive(path, receipt)
+    print(
+        f"receipt {path} sha256 {hashlib.sha256(path.read_bytes()).hexdigest()}\n"
+        f"judge {subject.judge} split {split} rows {receipt['rows']}\n"
+        f"metrics {json.dumps(receipt['metrics'])}\n"
+        f"calls {json.dumps(receipt['call_summary'])}\n"
+        f"spend {json.dumps(spend)} budget_refusals {refusals}"
+    )
+    assert refusals == 0, f"{refusals} calls were refused by the spend cap"
+    assert run.stopped is None, run.stopped
+    assert len(run.pairs) == len(rows.records)
+    assert all(r.example.split == split for r in rows.records)

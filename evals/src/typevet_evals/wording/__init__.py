@@ -8,13 +8,19 @@ Brier reward and a proposal length cap (#308). ``score_held_out`` and
 ``held_out_receipt`` check the seed and evolved wording on the held-out rows
 against the pre-registered pass rule (#309). ``TimedJudgePort`` records each
 call's latency and input tokens, and the ``served`` probes require the native
-Gemma 4 template (#327).
+Gemma 4 template (#327). ``comparison_receipt`` records the #252 Jev vs Gemma
+comparison with Cohen's kappa and no pass rule (#329).
 
 Attributes:
     ALLOW_DEGRADED_ENV (str): The variable that allows a non-native template.
     TEXT_JUDGE (str): The router alias that serves native Gemma 4 for text.
     BrierScorer (type): The gepa-adk reward, one minus the Brier score.
     CallRecord (type): The latency and input tokens of one judge call.
+    ComparisonSubject (type): The judge, backend, model and split of a receipt.
+    ValidationRows (type): Validation records for a smoke of the held-out loop.
+    cohen_kappa (callable): Cohen's kappa of the readings against the labels.
+    comparison_receipt (callable): Build the #252 comparison receipt.
+    evolved_text_for (callable): The evolved wording of the backend's judge.
     TimedJudgePort (type): A ``SystemOnePort`` wrapper that records each call.
     call_summary (callable): Total the call records for a receipt.
     probe_llama_template (callable): Classify the llama.cpp served template.
@@ -61,6 +67,7 @@ See Also:
     - [typevet_evals.wording.runner][]: the evolution runner
     - [typevet_evals.wording.metrics][]: held-out metrics and the pass rule
     - [typevet_evals.wording.held_out][]: held-out scoring and receipts
+    - [typevet_evals.wording.comparison][]: the #252 comparison receipt
     - [typevet_evals.wording.calls][]: per-call latency and input tokens
     - [typevet_evals.wording.served][]: served-template probes
     - [typevet.adapters.inbound.judgevet][]: the typevet ``SystemOnePort`` bridge
@@ -69,10 +76,16 @@ See Also:
 from __future__ import annotations
 
 from typevet_evals.wording.calls import CallRecord, TimedJudgePort, call_summary
+from typevet_evals.wording.comparison import (
+    ComparisonSubject,
+    comparison_receipt,
+    evolved_text_for,
+)
 from typevet_evals.wording.held_out import (
     HeldOutRows,
     HeldOutRun,
     ScoredPair,
+    ValidationRows,
     evolution_artifact,
     held_out_receipt,
     score_held_out,
@@ -83,6 +96,7 @@ from typevet_evals.wording.metrics import (
     PairedBootstrap,
     PassVerdict,
     WordingMetrics,
+    cohen_kappa,
     paired_bootstrap,
     pass_verdict,
     wording_metrics,
@@ -118,6 +132,7 @@ __all__ = [
     "TRANSPORT_MODEL",
     "BrierScorer",
     "CallRecord",
+    "ComparisonSubject",
     "HeldOutRows",
     "HeldOutRun",
     "JudgePort",
@@ -126,14 +141,18 @@ __all__ = [
     "ScoredPair",
     "SeedNoul",
     "TimedJudgePort",
+    "ValidationRows",
     "WordingMetrics",
     "WordingRun",
     "WordingRunConfig",
     "WordingTransport",
     "brier_score",
     "call_summary",
+    "cohen_kappa",
+    "comparison_receipt",
     "evolution_artifact",
     "evolve_wording",
+    "evolved_text_for",
     "held_out_receipt",
     "last_user_text",
     "length_cap",
