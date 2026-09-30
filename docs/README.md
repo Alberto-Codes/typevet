@@ -64,6 +64,9 @@ answers a question, and a reference gives facts.
 - [Connect Gemma 4 native vision judgment](how-to/connect-gemma4-native-vision-judgment.md):
   one `typevet.runtime` factory composes the llama.cpp scoring adapter and
   `ScoringJudgmentAdapter` for Gemma 4 native-turn vision.
+- [Use typevet as a judgevet provider](how-to/use-typevet-as-a-judgevet-provider.md):
+  the `typevet[judgevet]` extra, a judgevet `SystemOnePort` over typevet, and the
+  declared capabilities (#284).
 
 ## Architecture decisions
 

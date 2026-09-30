@@ -65,14 +65,26 @@ Alternatively, add the wheel to an existing uv project:
 uv add /tmp/typevet-dist/typevet-0.1.0-py3-none-any.whl
 ```
 
-## Install the optional extra
+## Install an optional extra
 
-The package declares one extra, `cli`. It installs Typer.
+The package declares two extras.
+
+The `cli` extra installs Typer.
 typevet does not yet ship a console script, so the extra adds no command.
 
 ```bash
 uv add "typevet[cli]"
 ```
+
+The `judgevet` extra installs `judgevet>=0.14,<0.15`.
+It lets judgevet use typevet as its judgment provider.
+See [use typevet as a judgevet provider](use-typevet-as-a-judgevet-provider.md).
+
+```bash
+uv add "typevet[judgevet]"
+```
+
+A bare install never imports judgevet.
 
 ## Check the installation
 

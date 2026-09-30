@@ -37,6 +37,7 @@ dependencies = [
 
 [project.optional-dependencies]
 cli = ["typer>=0.12"]
+judgevet = ["judgevet>=0.14,<0.15"]
 
 [project.urls]
 Homepage = "https://github.com/Alberto-Codes/typevet"
@@ -56,6 +57,7 @@ include = ["src/typevet/py.typed"]
 dev = [
     "docvet[griffe]>=1.16.0",
     "import-linter>=2.15",
+    "judgevet[mcp]>=0.14,<0.15",
     "pre-commit>=4.6.2",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
@@ -189,6 +191,23 @@ name = "The library does not import the evals"
 type = "forbidden"
 source_modules = ["typevet"]
 forbidden_modules = ["typevet_evals"]
+
+[[tool.importlinter.contracts]]
+# The judgevet bridge (#284) is the one module that may import judgevet.
+name = "Only the judgevet bridge imports judgevet"
+type = "forbidden"
+source_modules = ["typevet", "typevet_evals"]
+forbidden_modules = ["judgevet"]
+ignore_imports = ["typevet.adapters.inbound.judgevet -> judgevet"]
+
+[[tool.importlinter.contracts]]
+# No package init or other module imports the bridge, so bare typevet stays judgevet-free.
+name = "No typevet module imports the judgevet bridge"
+type = "forbidden"
+# Module by module: as packages, typevet.adapters.inbound would contain the bridge and be skipped.
+source_modules = ["typevet", "typevet.**", "typevet_evals", "typevet_evals.**"]
+forbidden_modules = ["typevet.adapters.inbound.judgevet"]
+as_packages = false
 
 [[tool.importlinter.contracts]]
 name = "Evaluation families"

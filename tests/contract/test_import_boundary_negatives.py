@@ -24,6 +24,7 @@ import importlib.util
 import io
 import json
 import multiprocessing
+import re
 import shutil
 import sys
 import tomllib
@@ -107,6 +108,26 @@ _EDGES = (
         "Serving backends stay independent",
         "typevet/adapters/outbound/vllm/http_mapping.py",
         "import typevet.adapters.outbound.llama_cpp.http_mapping",
+    ),
+    _Edge(
+        "Only the judgevet bridge imports judgevet",
+        "typevet/domain/errors.py",
+        "import judgevet",
+    ),
+    _Edge(
+        "Only the judgevet bridge imports judgevet",
+        "typevet/adapters/inbound/api.py",
+        "import judgevet.providers",
+    ),
+    _Edge(
+        "No typevet module imports the judgevet bridge",
+        "typevet/adapters/inbound/__init__.py",
+        "import typevet.adapters.inbound.judgevet",
+    ),
+    _Edge(
+        "No typevet module imports the judgevet bridge",
+        "typevet/__init__.py",
+        "from typevet.adapters.inbound import judgevet",
     ),
     _Edge(
         "Evaluation families",
@@ -247,10 +268,11 @@ def _status(report: str, contract: str) -> str | None:
         contract: Contract name to find.
 
     Returns:
-        str | None: ``"KEPT"``, ``"BROKEN"`` or ``None`` when absent.
+        str | None: ``"KEPT"``, ``"BROKEN"`` or ``None`` when absent. A
+        trailing ``(N ignored import)`` note after the status is allowed.
     """
     for line in report.splitlines():
-        stripped = line.strip()
+        stripped = re.sub(r" \(\d+ ignored imports?\)$", "", line.strip())
         for status in ("KEPT", "BROKEN"):
             if stripped == f"{contract} {status}":
                 return status

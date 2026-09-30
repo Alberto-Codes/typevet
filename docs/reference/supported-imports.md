@@ -156,6 +156,26 @@ instead of duplicating sync wrappers on each adapter.
 The inbound package holds no command-line module. The eval runner command is
 in the `typevet-evals` workspace member. See [Not in the wheel](#not-in-the-wheel).
 
+## judgevet bridge
+
+The `typevet[judgevet]` extra adds one module, `typevet.adapters.inbound.judgevet`.
+No package `__init__` imports it, so `typevet.adapters.inbound` does not list it.
+Import it by module path.
+It is the only typevet module that imports judgevet (#284).
+
+| Name | Role |
+|---|---|
+| `TypevetSystemOnePort` | judgevet `SystemOnePort` over a typevet `JudgmentPort`, text only |
+| `TypevetMediaSystemOnePort` | judgevet `MediaSystemOnePort` for declared `MediaCapabilities` |
+| `AsyncTypevetSystemOnePort` | judgevet `AsyncSystemOnePort` that runs the sync port on a worker thread |
+| `provider_factory` | Build a judgevet `ProviderFactory` from a typevet session opener |
+| `BridgeCapabilities` | The capabilities a bridge port declares |
+| `JudgmentSession` | Protocol for a typevet session with a `port` |
+| `DEFAULT_MAX_CHOICE_OPTIONS` | The default Choice option and Score level cap, `MAX_ENUM_CHOICES` (24) |
+
+Two import-linter contracts keep judgevet in this module.
+See [use typevet as a judgevet provider](../how-to/use-typevet-as-a-judgevet-provider.md).
+
 ## `typevet.adapters.outbound`
 
 | Name | Role |
@@ -371,7 +391,8 @@ reason and exits `0`. See [live eval runner](eval-live-runner.md).
 | Library | Initial public hex surface | Root, domain, ports, runtime, inbound, outbound (with `llama_cpp`, `vllm` and `gemma`), diagnostics, testing |
 | Evaluation | Not shipped | All evaluation code is in the `typevet-evals` workspace member. See [Not in the wheel](#not-in-the-wheel) |
 | CLI | Not shipped | No console script and no module entry in the wheel. In a checkout: `python -m typevet_evals.cli.eval_runner` and `python -m typevet_evals.cli.cord_semantic_acceptance`. The `cli` extra lists Typer only and no module imports it |
-| MCP | Not shipped | No extra or entry point |
+| MCP | Not shipped | No entry point. With the `judgevet` extra, judgevet's MCP server can serve a typevet provider |
+| judgevet bridge | Optional extra | `typevet[judgevet]` adds `judgevet>=0.14,<0.15`. See [judgevet bridge](#judgevet-bridge) |
 | Dependencies | `httpx`, `jsonschema`, `structlog` | Locked via `uv.lock` in development |
 
 Additive changes should extend `__all__` and this page. Breaking renames or

@@ -59,9 +59,29 @@ judgevet callers already depend on:
   [judgments](https://github.com/Alberto-Codes/judgevet/blob/main/docs/explanation/judgments.md),
   [verification](https://github.com/Alberto-Codes/judgevet/blob/main/docs/explanation/verification.md))
 
-A future `HTTPSystemOneAdapter` peer could be a **typevet-backed** adapter
-only if typevet can answer those primitives with distributions, not merely
-emit a schema-valid JSON blob. No such judgevet adapter ships.
+A typevet-backed provider is useful only if typevet answers those primitives
+with distributions, not merely a schema-valid JSON blob. It does: the
+`typevet[judgevet]` extra ships `typevet.adapters.inbound.judgevet`, which
+implements judgevet's `SystemOnePort` over typevet's `JudgmentPort` (#284).
+Any code that holds a `SystemOnePort` can now swap Jev for a typevet backend,
+such as Gemma 4. That includes judgevet's command line and MCP server.
+
+The bridge is **compatible in shape, not equivalent in judgment**. The
+question and answer types match, but the numbers come from a different judge
+model. Calibration does not transfer between judge models
+(source: [arXiv 2605.06939](https://arxiv.org/abs/2605.06939)). A threshold
+tuned on Jev needs a new measurement on Gemma. The bridge declares what it
+cannot do instead of approximating it. Logprobs are required. Choice and Score
+take at most 24 options. Instructions must be text. Images reach every
+question or none. See
+[use typevet as a judgevet provider](../how-to/use-typevet-as-a-judgevet-provider.md).
+
+Why a bridge module and not a typevet server? judgevet owns the provider
+interface: `SystemOnePort`, `ProviderError` and `provider_scope`. So the
+adapter lives on the typevet side and depends on judgevet. An OpenTelemetry
+exporter depends on the OpenTelemetry API in the same way. The model server
+stays the only host. A bare `import typevet` never loads judgevet, and two
+import-linter contracts keep judgevet inside the one bridge module.
 
 How typevet’s native questions map to decisions today:
 
@@ -84,7 +104,10 @@ How typevet’s native questions map to decisions today:
   candidate logprobs from llama.cpp `/completion`.
 - `JudgmentPort` with `Noul`, `Choice`, and `Score` questions, and
   `ScoringJudgmentAdapter`, which answers them from candidate scoring
-  (judgevet-aligned vocabulary; no judgevet dependency).
+  (judgevet-aligned vocabulary; the core library has no judgevet dependency).
+- The optional judgevet bridge, `typevet.adapters.inbound.judgevet`, which
+  makes typevet a judgevet provider. Offline tests prove it on typevet fakes
+  through judgevet's command line and MCP server. No live receipt exists yet.
 - Evaluation harnesses: loader eval runner and TPJEP eight-task runner.
 
 See [supported imports](../reference/supported-imports.md) for paths and
@@ -104,15 +127,14 @@ typevet does **not** yet prove:
 Treat grammar-JSON as the **transport floor**. The **product spine** is the
 decision runtime plus the consumer-facing `JudgmentPort`.
 
-## Design rules so judgevet can use typevet later
+## Design rules that keep the bridge thin
 
 1. Keep hex: domain types for requests/results stay IO-free; outbound owns
    llama.cpp (and later scoring).
 2. Prefer **Decision / Choice** compilation in domain or a pure compiler
    module before freeform schema dump to the backend.
-3. Keep `JudgmentPort` close enough to judgevet’s `SystemOnePort` shape that
-   an adapter can wrap it — do not force judgevet to speak raw JSON Schema
-   forever.
+3. Keep `JudgmentPort` close to judgevet’s `SystemOnePort` shape, so the
+   bridge stays a thin mapping. Do not force judgevet to speak raw JSON Schema.
 4. Preserve **probabilities** on categorical answers; grammar JSON alone
    usually drops them.
 5. Keep judgevet’s evidence language: contract tests vs live; structure vs
