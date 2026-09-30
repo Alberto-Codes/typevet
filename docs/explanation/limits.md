@@ -133,7 +133,10 @@ Sources: [0.1.0 compatibility assessment](../reference/supported-imports.md#010-
 typevet sets no cap on image bytes, image pixels or images per request.
 `ImageInput` checks the mime type and non-empty bytes only, and an 8 MiB payload passes.
 The tested vLLM server allows two images per prompt, and typevet does not check that before the request.
-No test covers long-running service behaviour beyond the adapter lifetime rules.
+One live run on the llama.cpp vision alias answered synthetic images up to 4096 px on a side.
+That run is one receipt, not a pixel limit.
+Offline tests run 200 calls on one session and restart the router in the middle.
+A call while the router is down raises `TransportError` ([#298](https://github.com/Alberto-Codes/typevet/issues/298)).
 
 Sources: [runtime limits and ownership](../reference/typed-judgment-release-support-matrix.md#runtime-limits-and-ownership),
 [Gemma 4 multimodal judgments, limits](gemma-4-multimodal-judgments.md#limits).
@@ -143,7 +146,6 @@ Sources: [runtime limits and ownership](../reference/typed-judgment-release-supp
 Each item is an open gap at the time of writing.
 None of them has a promised fix date.
 
-- [#204](https://github.com/Alberto-Codes/typevet/issues/204): image pixel limits and long-lived service behaviour are not characterized.
 - [#188](https://github.com/Alberto-Codes/typevet/issues/188) and [#193](https://github.com/Alberto-Codes/typevet/issues/193): no guard checks off-menu mass.
   On llama.cpp, a caller framing that omits the Gemma 4 no-thinking prefill gives a confident, wrong answer with no error.
   The `ModelFramingPort` docstring states the requirement ([#235](https://github.com/Alberto-Codes/typevet/issues/235)), and typevet does not check it.

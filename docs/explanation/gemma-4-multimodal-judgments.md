@@ -178,10 +178,14 @@ The receipts do not compare backends, and a difference is not a backend effect.
   scoring adapter sends every image it gets. The tested vLLM server allows two
   images per prompt. typevet does not check that limit before the request.
 - **Image size.** `ImageInput` checks the mime type and non-empty bytes only.
-  An 8 MiB payload passes. Pixel limits on the served projector are not
-  characterized ([#204](https://github.com/Alberto-Codes/typevet/issues/204)).
-- **Long-running service.** No test covers long-running behaviour beyond the
-  adapter lifetime rules ([#204](https://github.com/Alberto-Codes/typevet/issues/204)).
+  An 8 MiB payload passes. One live run on the llama.cpp alias answered
+  synthetic images from 256 px to 4096 px on a side. Prompt tokens stopped at
+  1160 from 2048 px up ([#204](https://github.com/Alberto-Codes/typevet/issues/204)).
+  One run is not a pixel limit.
+- **Long-running service.** Offline tests run 200 calls on one session and
+  restart the router in the middle ([#204](https://github.com/Alberto-Codes/typevet/issues/204)).
+  A call while the router is down raises `TransportError`
+  ([#298](https://github.com/Alberto-Codes/typevet/issues/298)).
   The llama.cpp marker changes when the router reloads the model. Build a new
   session after a reload. A stale marker fails tokenization with HTTP 400.
   The [native vision how-to](../how-to/connect-gemma4-native-vision-judgment.md)

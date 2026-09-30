@@ -136,6 +136,11 @@ POSTs to `v1/chat/completions` with `response_format` `json_schema`. HTTP status
 | Parsed object holds a non-finite number (`NaN`, `Infinity`) | `SchemaValidationError` | `structured output contains a non-finite number` (`payload` set) |
 | `jsonschema.validate` fails on parsed object | `SchemaValidationError` | `output failed schema:` (`payload` set) |
 
+The `/tokenize` call of the Gemma 4 native vision factory uses the same HTTP
+mapping. A failure before a response raises `TransportError`. A status of 400
+or above raises `BackendHttpError`
+([#298](https://github.com/Alberto-Codes/typevet/issues/298)).
+
 This table describes local mapping only. It does not assert which HTTP statuses
 a given llama.cpp build returns for every failure mode. See
 [Run Gemma 4 on llama.cpp](../how-to/run-gemma4-llamacpp.md) for the live path.

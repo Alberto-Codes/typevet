@@ -1,0 +1,87 @@
+{
+  "issue": 204,
+  "alias": "gemma-4-31b-kv9-q4km-mm",
+  "typevet_commit": "09f6787f39241b3506aa99f3dedf8f4299aa1a6d",
+  "utc": "2026-09-30T04:43:15+00:00",
+  "http_timeout_s": 600.0,
+  "wall_budget_s": 900.0,
+  "router": {
+    "router_build_info": "b11243-fc07d781e",
+    "model_build_info": "b11243-fc07d781e",
+    "model_alias": "gemma-4-31b-kv9-q4km-mm",
+    "modalities": {
+      "vision": true,
+      "video": true,
+      "audio": false
+    },
+    "n_ctx": 4096
+  },
+  "rungs": [
+    {
+      "width": 256,
+      "height": 256,
+      "png_bytes": 564,
+      "outcome": "answer",
+      "error_class": null,
+      "error_message": null,
+      "noul": 0.9999992769805578,
+      "prompt_tokens": 152,
+      "latency_s": 38.915
+    },
+    {
+      "width": 1024,
+      "height": 1024,
+      "png_bytes": 4542,
+      "outcome": "answer",
+      "error_class": null,
+      "error_message": null,
+      "noul": 0.9999996914769717,
+      "prompt_tokens": 512,
+      "latency_s": 1.844
+    },
+    {
+      "width": 2048,
+      "height": 2048,
+      "png_bytes": 15385,
+      "outcome": "answer",
+      "error_class": null,
+      "error_message": null,
+      "noul": 0.9999998738800061,
+      "prompt_tokens": 1160,
+      "latency_s": 2.962
+    },
+    {
+      "width": 4096,
+      "height": 4096,
+      "png_bytes": 55690,
+      "outcome": "answer",
+      "error_class": null,
+      "error_message": null,
+      "noul": 0.9999998738800061,
+      "prompt_tokens": 1160,
+      "latency_s": 3.073
+    },
+    {
+      "width": 64,
+      "height": 4096,
+      "png_bytes": 3149,
+      "outcome": "answer",
+      "error_class": null,
+      "error_message": null,
+      "noul": 0.9996138174359557,
+      "prompt_tokens": 156,
+      "latency_s": 1.685
+    },
+    {
+      "width": 4096,
+      "height": 64,
+      "png_bytes": 949,
+      "outcome": "answer",
+      "error_class": null,
+      "error_message": null,
+      "noul": 0.9999582189779744,
+      "prompt_tokens": 156,
+      "latency_s": 1.317
+    }
+  ]
+}

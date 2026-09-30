@@ -15,6 +15,8 @@ Examples:
 The factory pins ``session.model`` on ``session.port``; other model ids fail
 before tokenization. Optional ``tokenize_content`` and ``scoring_port_wrapper``
 hooks support consumer dispatch ledgers without importing ``typevet_evals``.
+The default ``/tokenize`` hook maps an httpx failure to ``TransportError`` and
+a status of 400 or above to ``BackendHttpError`` ([#298][i298]).
 
 See Also:
     - [typevet.adapters.outbound.judgment_scoring][]: ``ScoringJudgmentAdapter``
@@ -23,6 +25,7 @@ See Also:
 
 [i174]: https://github.com/Alberto-Codes/typevet/issues/174
 [i196]: https://github.com/Alberto-Codes/typevet/issues/196
+[i298]: https://github.com/Alberto-Codes/typevet/issues/298
 """
 
 from __future__ import annotations
@@ -39,6 +42,10 @@ from typevet.adapters.outbound.gemma import (
     classify_served_template,
 )
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
+from typevet.adapters.outbound.llama_cpp.http_mapping import (
+    ensure_success_status,
+    map_transport_error,
+)
 from typevet.adapters.outbound.llama_cpp.multimodal import (
     MediaCapability,
     fetch_media_capability,
@@ -152,12 +159,20 @@ def _tokenize_factory(
 
         Returns:
             Token id tuple from the router JSON body.
+
+        Raises:
+            TransportError: When the HTTP client fails before a response.
+            BackendHttpError: When ``/tokenize`` returns status 400 or higher.
         """
-        body = client.post(
-            "/tokenize",
-            json={"model": model, "content": text, "add_special": False},
-        )
-        return tuple(body.raise_for_status().json()["tokens"])
+        try:
+            response = client.post(
+                "/tokenize",
+                json={"model": model, "content": text, "add_special": False},
+            )
+        except httpx.HTTPError as exc:
+            raise map_transport_error(exc) from exc
+        ensure_success_status(response)
+        return tuple(response.json()["tokens"])
 
     return tokenize
 
