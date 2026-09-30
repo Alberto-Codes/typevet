@@ -26,6 +26,26 @@ repository. Settings:
 - ``TYPEVET_WORDING_JUDGE``, ``TYPEVET_WORDING_REFLECTOR``,
   ``TYPEVET_WORDING_REFLECTOR_BASE`` (router ``/v1``) and
   ``TYPEVET_WORDING_REFLECTOR_TIMEOUT`` (1800 seconds).
+- ``TYPEVET_WORDING_JUDGE_PROVIDER``: ``gemma`` (default, the session above)
+  or ``jev`` (#328). ``TYPEVET_WORDING_CONCURRENCY`` sets gepa-adk's
+  ``max_concurrent_evals`` (default 5 for Gemma, 1 for Jev).
+
+**Jev judge** (``TYPEVET_WORDING_JUDGE_PROVIDER=jev``). The judge is
+judgevet's ``HTTPSystemOneAdapter``, built from judgevet's ``Settings``
+(``JEV_API__*``; key ``JEV_API__KEY`` or ``TYPESAFE_API_KEY``). The test
+fails before any network call unless ``JEV_API__SPEND_MAX_ATTEMPTS`` sets a
+spend cap. One ``SpendCap`` spans the run; a refused attempt sends nothing,
+and a gepa-adk stopper ends the run when the cap is spent. The requested
+model is ``TYPEVET_WORDING_JUDGE`` or ``JEV_API__DEFAULT_MODEL``
+(``jev-latest``); each call records the model id Jev reports. The adapter
+retries a 429 or a 5xx under ``JEV_API__MAX_ATTEMPTS`` (3), and every attempt
+counts against the cap. The default concurrency is 1, as in finvet's Jev
+evolutions, because Jev states no rate limit. The artifact adds the spend,
+the stop reason and the judge identity, and passes the key-free check.
+A call the cap refuses scores its row 0 and can reject a better candidate, so
+the artifact counts ``budget_refusals`` and sets ``valid`` false when any
+occur, and the test then fails after it writes the artifact. The key is
+resolved at each use and is not bound to a local of the test.
 
 **Held-out check** (``TYPEVET_WORDING_HELD_OUT_RECEIPT`` names a new receipt;
 ``TYPEVET_WORDING_EVOLVED_ARTIFACT`` names the evolution artifact). Scores
@@ -55,6 +75,11 @@ Examples:
       uv run pytest evals/tests/live/test_wording_evolution_live.py -m live -q -s \
       -k evolution
 
+    TYPEVET_WORDING_JUDGE_PROVIDER=jev JEV_API__SPEND_MAX_ATTEMPTS=4000 \
+      TYPEVET_WORDING_ARTIFACT=$HOME/typevet-328/evolution_jev.json \
+      uv run pytest evals/tests/live/test_wording_evolution_live.py -m live -q -s \
+      -k evolution
+
     TYPEVET_BACKEND=vllm TYPEVET_VLLM_MODEL_REVISION=<sha> \
       TYPEVET_VLLM__BASE_URL=https://<pod>-8000.proxy.runpod.net \
       TYPEVET_VLLM__MODEL=google/gemma-4-31B-it \
@@ -76,7 +101,7 @@ import hashlib
 import json
 import os
 import time
-from collections.abc import Iterator, Mapping
+from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
@@ -84,8 +109,13 @@ from pathlib import Path
 
 import httpx
 import pytest
+from gepa_adk.domain.stopper import StopperState
+from gepa_adk.ports.stopper import StopperProtocol
 from google.adk.models.lite_llm import LiteLlm
+from judgevet.adapters.inbound.settings import ApiSettings, Settings
+from judgevet.adapters.outbound.http import HTTPSystemOneAdapter
 from judgevet.domain.questions import Noul
+from judgevet.domain.spend import SpendCap
 from judgevet.providers import ProviderError
 
 from typevet.adapters.inbound.backend_settings import (
@@ -126,7 +156,7 @@ from typevet_evals.wording import (
     stratified_subset,
     train_subset,
 )
-from typevet_evals.wording.calls import TimedJudgePort, call_summary
+from typevet_evals.wording.calls import TimedJudgePort, call_summary, error_count
 from typevet_evals.wording.held_out import DEFAULT_TRAIN_ROWS, HeldOutRows
 from typevet_evals.wording.served import (
     TEXT_JUDGE,
@@ -134,6 +164,7 @@ from typevet_evals.wording.served import (
     probe_vllm_template,
     require_native_template,
 )
+from typevet_evals.wording.transport import JudgePort
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _WORDING_SRC = _REPO_ROOT / "evals" / "src" / "typevet_evals" / "wording"
@@ -264,11 +295,146 @@ def _reflector(environ: Mapping[str, str]) -> LiteLlm:
     )
 
 
+_PROVIDERS = ("gemma", "jev")
+_DEFAULT_CONCURRENCY = {"gemma": 5, "jev": 1}
+_BUDGET_REFUSAL = "JevBudgetExceededError"
+
+
+def _no_secret_key_free(text: str) -> None:
+    ensure_key_free(text, secrets=())
+
+
+@dataclass(frozen=True)
+class _EvolutionJudge:
+    """The judge of one evolution and what the artifact records about it.
+
+    Attributes:
+        port (JudgePort): The judgevet ``SystemOnePort``.
+        model (str): The model name sent with each call.
+        facts (dict[str, object]): Judge facts for the artifact.
+        stoppers (tuple[StopperProtocol, ...]): gepa-adk stoppers.
+        spend (Callable[[], dict[str, object]] | None): The spend so far, or None.
+        key_free (Callable[[str], None]): Raises if text holds the key.
+    """
+
+    port: JudgePort
+    model: str
+    facts: dict[str, object]
+    stoppers: tuple[StopperProtocol, ...] = ()
+    spend: Callable[[], dict[str, object]] | None = None
+    key_free: Callable[[str], None] = _no_secret_key_free
+
+
+def _judge_provider(environ: Mapping[str, str]) -> str:
+    provider = environ.get("TYPEVET_WORDING_JUDGE_PROVIDER", "").strip() or "gemma"
+    if provider not in _PROVIDERS:
+        pytest.fail(f"TYPEVET_WORDING_JUDGE_PROVIDER must be one of {_PROVIDERS}")
+    return provider
+
+
+def _jev_api() -> ApiSettings:
+    """Read judgevet's settings; refuse a run without a spend cap or a key.
+
+    Returns:
+        The Jev API settings.
+    """
+    api = Settings().api
+    if api.spend_max_attempts is None:
+        pytest.fail(
+            "JEV_API__SPEND_MAX_ATTEMPTS must be set: the Jev evolution does not "
+            "run without a spend cap"
+        )
+    if not api.has_key_source:
+        pytest.fail("the Jev key is not set (JEV_API__KEY or TYPESAFE_API_KEY)")
+    return api
+
+
+def _spend(cap: SpendCap) -> dict[str, object]:
+    limit = cap.max_attempts
+    return {
+        "attempts": cap.attempts,
+        "input_tokens": cap.input_tokens,
+        "max_attempts": limit,
+        "max_input_tokens": cap.max_input_tokens,
+        "attempts_exhausted": limit is not None and cap.attempts >= limit,
+    }
+
+
+def _jev_key(api: ApiSettings) -> str:
+    """Resolve the Jev key for one use; no caller binds it to a name.
+
+    Returns:
+        The key value.
+    """
+    key = api.resolve_key()
+    if key is None:
+        pytest.fail("the Jev key source resolved to nothing")
+    return key.get_secret_value()
+
+
+@contextmanager
+def _jev_judge(
+    api: ApiSettings, environ: Mapping[str, str]
+) -> Iterator[_EvolutionJudge]:
+    """Build judgevet's HTTP adapter with one spend cap for the run.
+
+    Yields:
+        The Jev judge; the adapter closes on exit.
+    """
+    cap = api.spend_cap
+    limit = api.spend_max_attempts
+    if cap is None or limit is None:
+        pytest.fail("the spend cap is not set")
+
+    def spent(state: StopperState) -> bool:
+        return cap.attempts >= limit
+
+    def key_free(text: str) -> None:
+        ensure_key_free(text, secrets=(_jev_key(api),))
+
+    with HTTPSystemOneAdapter(
+        api_key=_jev_key(api),
+        base_url=api.base_url,
+        default_model=api.default_model,
+        timeout_seconds=api.timeout_seconds,
+        retry=api.retry_policy,
+        network=api.network_config,
+        gateway=api.gateway_config,
+        spend_cap=cap,
+    ) as adapter:
+        yield _EvolutionJudge(
+            port=adapter,
+            model=environ.get("TYPEVET_WORDING_JUDGE", "").strip() or api.default_model,
+            facts={"base_url": api.base_url, "served_template": None},
+            stoppers=(spent,),
+            spend=lambda: _spend(cap),
+            key_free=key_free,
+        )
+
+
+@contextmanager
+def _gemma_judge(environ: Mapping[str, str]) -> Iterator[_EvolutionJudge]:
+    """Open the llama.cpp text session for the Gemma judge.
+
+    Yields:
+        The Gemma judge.
+    """
+    judge = environ.get("TYPEVET_WORDING_JUDGE", _JUDGE)
+    with _llama_text_session(judge, environ) as session:
+        yield _EvolutionJudge(
+            port=TypevetSystemOnePort(session.port),
+            model=judge,
+            facts={"served_template": session.served_template},
+        )
+
+
 @pytest.mark.live
 def test_wording_evolution_live_artifact() -> None:
-    """Evolve the is_scam wording on the local router and write the artifact."""
+    """Evolve the is_scam wording with the chosen judge and write the artifact."""
     artifact_path = _required_path("TYPEVET_WORDING_ARTIFACT", new=True)
     environ = dict(os.environ)
+    provider = _judge_provider(environ)
+    jev_api = _jev_api() if provider == "jev" else None
     checkpoint = _outside_repo(
         Path(
             environ.get("TYPEVET_WORDING_CHECKPOINT", "").strip()
@@ -282,19 +448,22 @@ def test_wording_evolution_live_artifact() -> None:
     train = train_subset(
         splits.train, _int_env("TYPEVET_WORDING_TRAIN_ROWS", DEFAULT_TRAIN_ROWS)
     )
-    judge = environ.get("TYPEVET_WORDING_JUDGE", _JUDGE)
     reflector = _reflector(environ)
-    config = WordingRunConfig(
-        reflector=reflector,
-        judge_model=judge,
-        max_iterations=_int_env("TYPEVET_WORDING_MAX_ITERATIONS", 10) or 10,
-        reflection_minibatch_size=_int_env("TYPEVET_WORDING_MINIBATCH", 8),
-        checkpoint_path=checkpoint,
-        resume=environ.get("TYPEVET_WORDING_RESUME", "") == "1",
-    )
+    concurrency = _int_env("TYPEVET_WORDING_CONCURRENCY", None)
     started = time.monotonic()
-    with _llama_text_session(judge, environ) as session:
-        timed = TimedJudgePort(TypevetSystemOnePort(session.port))
+    session = _gemma_judge(environ) if jev_api is None else _jev_judge(jev_api, environ)
+    with session as judge:
+        config = WordingRunConfig(
+            reflector=reflector,
+            judge_model=judge.model,
+            max_iterations=_int_env("TYPEVET_WORDING_MAX_ITERATIONS", 10) or 10,
+            reflection_minibatch_size=_int_env("TYPEVET_WORDING_MINIBATCH", 8),
+            max_concurrent_evals=concurrency or _DEFAULT_CONCURRENCY[provider],
+            checkpoint_path=checkpoint,
+            resume=environ.get("TYPEVET_WORDING_RESUME", "") == "1",
+            stop_callbacks=judge.stoppers,
+        )
+        timed = TimedJudgePort(judge.port)
         run = asyncio.run(
             evolve_wording(
                 port=timed,
@@ -305,6 +474,7 @@ def test_wording_evolution_live_artifact() -> None:
                 config=config,
             )
         )
+        spend = None if judge.spend is None else judge.spend()
     artifact = evolution_artifact(
         run,
         config=config,
@@ -312,15 +482,27 @@ def test_wording_evolution_live_artifact() -> None:
         validation=validation,
         call_records=timed.records,
     )
+    summary = artifact["call_summary"]
     artifact["reflector_base"] = environ.get(
         "TYPEVET_WORDING_REFLECTOR_BASE", _router_v1(environ)
     )
     artifact["dataset_revision"] = PINNED_REVISION
-    artifact["served_template"] = session.served_template
+    artifact["served_template"] = judge.facts["served_template"]
+    artifact["judge_provider"] = provider
+    artifact["judge_identity"] = {
+        "requested_model": judge.model,
+        "reported_models": summary["models"],
+        **{k: v for k, v in judge.facts.items() if k != "served_template"},
+    }
+    artifact["stop_reason"] = run.result.stop_reason.value
+    refusals = error_count(timed.records, _BUDGET_REFUSAL)
+    artifact["budget_refusals"] = refusals
+    artifact["valid"] = refusals == 0
+    if spend is not None:
+        artifact["spend"] = spend
     artifact["wall_seconds"] = round(time.monotonic() - started, 1)
     artifact["finished_utc"] = datetime.now(UTC).isoformat()
-    text = json.dumps(artifact, indent=2)
-    ensure_key_free(text, secrets=())
+    judge.key_free(json.dumps(artifact, indent=2))
     write_receipt_exclusive(artifact_path, artifact)
     history = [
         (r.iteration_number, r.accepted, r.skip_reason)
@@ -329,8 +511,18 @@ def test_wording_evolution_live_artifact() -> None:
     print(
         f"artifact {artifact_path} wall_seconds {artifact['wall_seconds']}\n"
         f"seed {run.seed_text!r}\nevolved {run.evolved_text!r}\n"
-        f"valset_score {run.result.valset_score} iterations {history}"
+        f"valset_score {run.result.valset_score} iterations {history}\n"
+        f"stop_reason {artifact['stop_reason']} spend {json.dumps(spend)}\n"
+        f"judge {json.dumps(artifact['judge_identity'])}\n"
+        f"calls {json.dumps(summary)}\n"
+        f"budget_refusals {refusals} valid {artifact['valid']}"
     )
+    assert refusals == 0, (
+        f"{refusals} judge calls were refused by the spend cap and scored 0; "
+        "the run is not a valid comparison (the artifact is kept)"
+    )
+    if provider == "jev":
+        assert summary["failed"] < summary["calls"], "every Jev call failed"
     assert run.result.total_iterations >= 1
 
 

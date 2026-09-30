@@ -2,8 +2,11 @@
 
 ``TimedJudgePort`` wraps a judgevet ``SystemOnePort``. Each ``system_one``
 call adds one ``CallRecord``: the call index, the SHA-256 of the state, the
-question names, the latency, the input tokens the backend reports and the
-error of a failed call. ``call_summary`` totals the records for a receipt.
+question names, the latency, the input tokens the backend reports, the
+error of a failed call and the model id the backend reports (#328). A
+request for ``jev-latest`` thus records the resolved Jev model.
+``call_summary`` totals the records for a receipt; ``error_count`` counts the
+calls that failed with one exception type.
 
 Calls may run in several threads, as gepa-adk evaluates concurrently. One
 lock covers the index step, the append of each record and the copy of the
@@ -52,6 +55,8 @@ class CallRecord:
         latency_seconds (float): Wall time of the call.
         input_tokens (int | None): Input tokens the backend reports, or None.
         error (str | None): ``Type: message`` of a failed call, or None.
+        model (str | None): The model id the response reports, or None for a
+            failed call.
 
     Examples:
         ```python
@@ -65,12 +70,13 @@ class CallRecord:
     latency_seconds: float
     input_tokens: int | None
     error: str | None
+    model: str | None = None
 
     def to_mapping(self) -> dict[str, Any]:
         """Return the JSON fields, latency rounded to microseconds.
 
         Returns:
-            A JSON-serializable mapping.
+            A JSON-serializable mapping, with the reported ``model``.
         """
         return {
             "index": self.index,
@@ -79,6 +85,7 @@ class CallRecord:
             "latency_seconds": round(self.latency_seconds, 6),
             "input_tokens": self.input_tokens,
             "error": self.error,
+            "model": self.model,
         }
 
 
@@ -122,7 +129,7 @@ class TimedJudgePort:
     def system_one(
         self, state: str, questions: Mapping[str, Any], model: str
     ) -> SystemOneResponse:
-        """Call the wrapped port and record the call.
+        """Call the wrapped port and record the call and the reported model.
 
         Args:
             state: The state text.
@@ -151,7 +158,8 @@ class TimedJudgePort:
         latency = self._clock() - start
         usage = response.usage
         tokens = None if usage is None else usage.input_tokens
-        self._add(CallRecord(index, digest, names, latency, tokens, None))
+        record = CallRecord(index, digest, names, latency, tokens, None, response.model)
+        self._add(record)
         return response
 
     def _add(self, record: CallRecord) -> None:
@@ -160,14 +168,15 @@ class TimedJudgePort:
 
 
 def call_summary(records: Sequence[CallRecord]) -> dict[str, Any]:
-    """Total the calls, failures, input tokens and latency.
+    """Total the calls, failures, input tokens, latency and reported models.
 
     Args:
         records: The call records.
 
     Returns:
         Counts, the known input-token total and the latency total, median
-        and maximum; the median and maximum are None without records.
+        and maximum, and the sorted distinct model ids the responses
+        report; the median and maximum are None without records.
     """
     latencies = [r.latency_seconds for r in records]
     tokens = [r.input_tokens for r in records if r.input_tokens is not None]
@@ -179,4 +188,23 @@ def call_summary(records: Sequence[CallRecord]) -> dict[str, Any]:
         "latency_seconds_total": sum(latencies),
         "latency_seconds_median": statistics.median(latencies) if latencies else None,
         "latency_seconds_max": max(latencies) if latencies else None,
+        "models": sorted({r.model for r in records if r.model is not None}),
     }
+
+
+def error_count(records: Sequence[CallRecord], error_type: str) -> int:
+    """Count the calls that failed with the exception type ``error_type``.
+
+    A judge spend-cap refusal (``JevBudgetExceededError``) scores its row 0,
+    so a run with any refusal is not a valid comparison (#328).
+
+    Args:
+        records: The call records.
+        error_type: The exception class name, for example
+            ``JevBudgetExceededError``.
+
+    Returns:
+        The number of records whose error is ``error_type: message``.
+    """
+    prefix = f"{error_type}: "
+    return sum(r.error is not None and r.error.startswith(prefix) for r in records)

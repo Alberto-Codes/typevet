@@ -8,6 +8,8 @@ tool-less agent whose model is the #306 ``WordingTransport``. The reward is
 reflects on the train rows and scores and accepts candidates on the
 validation rows. The reflection prompt states the length limit, and a
 proposal longer than 1.5 times the seed is rejected before any evaluation.
+Caller stoppers, such as a judge spend-cap check (#328), reach gepa-adk
+through ``WordingRunConfig.stop_callbacks``.
 
 The runner takes train and validation records only. It never imports a split
 loader, and it refuses a record whose ``split`` is not the one it expects, so
@@ -59,6 +61,7 @@ from gepa_adk import EvolutionConfig, EvolutionResult, ProposalValidator, evolve
 from gepa_adk.adapters.components.component_handlers import ComponentHandlerRegistry
 from gepa_adk.adapters.components.mapping_handler import register_mapping_components
 from gepa_adk.domain.types import REFLECTION_INSTRUCTION
+from gepa_adk.ports.stopper import StopperProtocol
 from google.adk.agents import LlmAgent
 from google.adk.models import BaseLlm
 
@@ -281,6 +284,10 @@ class WordingRunConfig:
         resume (bool): Continue from ``checkpoint_path``.
         seed (int | None): The seed of gepa-adk's engine decisions.
         length_ratio (float): The proposal length cap, as a multiple of the seed.
+        stop_callbacks (tuple[StopperProtocol, ...]): gepa-adk stoppers, for
+            example a judge spend-cap check (#328). gepa-adk checks them after
+            the baseline and after each iteration, and a stop reports
+            ``stopper_triggered``.
 
     Examples:
         ```python
@@ -299,6 +306,7 @@ class WordingRunConfig:
     resume: bool = False
     seed: int | None = 0
     length_ratio: float = LENGTH_RATIO
+    stop_callbacks: tuple[StopperProtocol, ...] = ()
 
     def __post_init__(self) -> None:
         """Refuse ``resume`` without a checkpoint to resume from.
@@ -342,8 +350,8 @@ def evolution_config(config: WordingRunConfig, seed_text: str) -> EvolutionConfi
 
     Returns:
         An ``EvolutionConfig`` with the reflector, the reflection minibatch
-        size, the length limit in the reflection prompt, the length cap and
-        the checkpoint settings.
+        size, the length limit in the reflection prompt, the length cap, the
+        stoppers and the checkpoint settings.
     """
     return EvolutionConfig(
         max_iterations=config.max_iterations,
@@ -357,6 +365,7 @@ def evolution_config(config: WordingRunConfig, seed_text: str) -> EvolutionConfi
         checkpoint_path=config.checkpoint_path,
         resume=config.resume,
         seed=config.seed,
+        stop_callbacks=list(config.stop_callbacks),
     )
 
 

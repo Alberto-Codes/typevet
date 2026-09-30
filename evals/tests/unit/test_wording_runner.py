@@ -302,6 +302,34 @@ def test_the_reflection_minibatch_size_reaches_gepa_adk(tmp_path: Path) -> None:
     assert run.result.total_iterations == 1
 
 
+def test_a_stop_callback_stops_the_run_with_its_reason(tmp_path: Path) -> None:
+    """A caller's stopper, such as a spend-cap check, ends the run (#328)."""
+    port = WordingPort()
+    seen: list[int] = []
+
+    def after_baseline(state: Any) -> bool:
+        seen.append(state.iteration)
+        return True
+
+    config = _config(
+        tmp_path, BETTER, max_iterations=5, stop_callbacks=(after_baseline,)
+    )
+
+    run = _run(port, config)
+
+    assert runner.evolution_config(config, SEED_TEXT).stop_callbacks == [after_baseline]
+    assert run.result.stop_reason.value == "stopper_triggered"
+    assert run.result.total_iterations == 0
+    assert seen == [0]
+    assert len(port.calls) == len(TRAIN) + len(VALIDATION), "baseline calls only"
+
+
+def test_the_default_run_has_no_stop_callback(tmp_path: Path) -> None:
+    engine = runner.evolution_config(_config(tmp_path, BETTER), SEED_TEXT)
+
+    assert engine.stop_callbacks == []
+
+
 def test_the_reflection_prompt_states_the_length_cap(tmp_path: Path) -> None:
     cap = int(1.5 * len(SEED_TEXT))
 

@@ -17,13 +17,19 @@ import hashlib
 import threading
 import time
 from collections.abc import Iterator, Mapping
+from dataclasses import replace
 from typing import Any
 
 import pytest
 from judgevet import NoulAnswer, SystemOneResponse, Usage
 from judgevet.domain.questions import Noul
 
-from typevet_evals.wording.calls import CallRecord, TimedJudgePort, call_summary
+from typevet_evals.wording.calls import (
+    CallRecord,
+    TimedJudgePort,
+    call_summary,
+    error_count,
+)
 
 pytestmark = pytest.mark.unit
 
@@ -69,8 +75,8 @@ def test_each_call_records_latency_input_tokens_and_the_state_hash() -> None:
     assert first.nouls[KEY].noul == pytest.approx(0.7)
     digest = hashlib.sha256(b"Win cash now").hexdigest()
     assert port.records == (
-        CallRecord(0, digest, (KEY,), 0.25, 12, None),
-        CallRecord(1, hashlib.sha256(b"hi").hexdigest(), (KEY,), 0.5, 2, None),
+        CallRecord(0, digest, (KEY,), 0.25, 12, None, "gemma"),
+        CallRecord(1, hashlib.sha256(b"hi").hexdigest(), (KEY,), 0.5, 2, None, "gemma"),
     )
 
 
@@ -118,10 +124,36 @@ def test_concurrent_calls_get_unique_contiguous_indices_and_every_record() -> No
     assert sorted(r.index for r in port.records) == list(range(total))
 
 
+class ServedModelPort(TokenPort):
+    """Answer as ``TokenPort`` but report the served model ``jev-1.4``."""
+
+    def system_one(
+        self, state: str, questions: Mapping[str, Any], model: str
+    ) -> SystemOneResponse:
+        """Answer with the served model id in place of the requested one.
+
+        Returns:
+            The ``TokenPort`` answer, with ``model`` set to ``jev-1.4``.
+        """
+        return replace(super().system_one(state, questions, model), model="jev-1.4")
+
+
+def test_each_call_records_the_model_the_backend_reports() -> None:
+    """A request for ``jev-latest`` records the resolved id (#328)."""
+    port = TimedJudgePort(ServedModelPort())
+
+    port.system_one("Win cash now", QUESTIONS, "jev-latest")
+    with pytest.raises(RuntimeError):
+        port.system_one("down", QUESTIONS, "jev-latest")
+
+    assert [r.model for r in port.records] == ["jev-1.4", None]
+    assert call_summary(port.records)["models"] == ["jev-1.4"]
+
+
 def test_the_summary_counts_calls_tokens_and_latency() -> None:
     records = (
-        CallRecord(0, "a", (KEY,), 0.2, 10, None),
-        CallRecord(1, "b", (KEY,), 0.4, None, None),
+        CallRecord(0, "a", (KEY,), 0.2, 10, None, "m2"),
+        CallRecord(1, "b", (KEY,), 0.4, None, None, "m1"),
         CallRecord(2, "c", (KEY,), 0.9, 30, "RuntimeError: x"),
     )
 
@@ -135,6 +167,7 @@ def test_the_summary_counts_calls_tokens_and_latency() -> None:
         "latency_seconds_total": pytest.approx(1.5),
         "latency_seconds_median": pytest.approx(0.4),
         "latency_seconds_max": pytest.approx(0.9),
+        "models": ["m1", "m2"],
     }
 
 
@@ -152,4 +185,20 @@ def test_a_record_maps_to_json_fields() -> None:
         "latency_seconds": 0.123457,
         "input_tokens": 5,
         "error": None,
+        "model": None,
     }
+
+
+def test_error_count_counts_only_calls_refused_with_that_error() -> None:
+    """A spend-cap refusal counts; another error or a prefix match does not (#328)."""
+    refused = "JevBudgetExceededError: attempts cap 6 reached (spent 6)"
+    records = (
+        CallRecord(0, "a", (KEY,), 0.1, 10, None),
+        CallRecord(1, "b", (KEY,), 0.0, None, refused),
+        CallRecord(2, "c", (KEY,), 0.0, None, refused),
+        CallRecord(3, "d", (KEY,), 0.2, None, "JevRateLimitError: 429"),
+        CallRecord(4, "e", (KEY,), 0.2, None, "JevBudgetExceededErrorX: other"),
+    )
+
+    assert error_count(records, "JevBudgetExceededError") == 2
+    assert error_count(records[:1], "JevBudgetExceededError") == 0
