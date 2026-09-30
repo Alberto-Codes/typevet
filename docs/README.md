@@ -40,8 +40,8 @@ answers a question, and a reference gives facts.
 
 ## How-to
 
-- [Install typevet](how-to/install.md): build a wheel, install it with the optional `cli`
-  extra, and check the version. PyPI is not yet published.
+- [Install typevet](how-to/install.md): install the PyPI release with
+  `pip install typevet` or `uv add typevet`, or build a wheel from a checkout.
 - [Run Gemma 4 on llama.cpp](how-to/run-gemma4-llamacpp.md): stock
   `llama-server`, nested `json_schema`, and opt-in live pytest.
 - [Serve typevet on vLLM](how-to/serve-typevet-on-vllm.md): the tested
@@ -61,11 +61,16 @@ answers a question, and a reference gives facts.
 - [Run the PSAI vision smoke](how-to/run-the-psai-vision-smoke.md): five
   vendored computer-use screenshots, annotation-backed and manual visual
   questions, and matched present / omitted / swapped image controls (#154).
+- [Connect Gemma 4 native vision judgment](how-to/connect-gemma4-native-vision-judgment.md):
+  one `typevet.runtime` factory composes the llama.cpp scoring adapter and
+  `ScoringJudgmentAdapter` for Gemma 4 native-turn vision.
 
 ## Architecture decisions
 
 - [ADR index](adr/README.md) (reference): accepted architecture decisions and their source evidence.
 - [0001: Runtime orchestration](adr/0001-runtime-orchestration.md) (reference): thin runtime facades without an engine layer.
+- [0002: Package layout](adr/0002-package-layout.md) (reference): the narrow
+  library root and the `evals/` workspace member.
 
 ## Reference
 
@@ -96,6 +101,16 @@ answers a question, and a reference gives facts.
   throughput per concurrency level, calibration per set, cold start, cost and limits (#236).
 - [Hyperpartisan loader and hyperpartisan Noul fixture](reference/eval-hyperpartisan-loader.md) (reference): byarticle train only, HTML cleanup, stratified holdout, excludes bypublisher.
 - [Complementary eval manifest](reference/eval-complementary-manifest.md) (reference): JevBench-primary ranked open sets; see also `evals/`.
+- [TPJEP eight-task runner](reference/eval-tpjep-runner.md) (reference):
+  eight vendored JevBench rows as native `Noul` / `Choice` / `Score` questions
+  through `JudgmentPort`.
+- [TPJEP attempt result records](reference/eval-tpjep-records.md) (reference):
+  one frozen JSONL object per scheduled attempt, required fields and summary.
+- [PSAI metadata loader and Decision map](reference/eval-psai-metadata-map.md)
+  (reference): metadata-only computer-use PSAI slice, field map and license.
+- [PSAI vision Choice probability evidence](reference/psai-vision-choice-probability-evidence.md)
+  (reference): offline raw probability fixtures and the completeness verdict
+  ([#180](https://github.com/Alberto-Codes/typevet/issues/180)).
 - [Question records → JSON Schema](reference/question-schema-map.md) (reference): Noul/Choice/Score export records to `compile_json_schema` fixtures ([#102](https://github.com/Alberto-Codes/typevet/issues/102)).
 - [Glossary](reference/glossary.md) (reference): the one meaning of each term.
 - [Python API reference](reference/api.md) (reference): the public package
@@ -112,6 +127,8 @@ answers a question, and a reference gives facts.
   ASD-STE100 local profile and prose modes.
 - [Commit messages](reference/commits.md) (reference): Conventional Commits
   1.0.0 vocabulary for this repo.
+- [LOC gate](reference/loc-gate.md) (reference): what the line-of-code gate
+  counts and its limits.
 
 ## For maintainers and agents
 
@@ -124,3 +141,9 @@ answers a question, and a reference gives facts.
 - [Verify package typing and version](https://github.com/Alberto-Codes/typevet/blob/main/docs/maintainers/verify-package.md) (how-to):
   wheel `py.typed` marker, isolated consumer, and `__version__` checks before
   publish.
+- [Issue #177 handoff](https://github.com/Alberto-Codes/typevet/blob/main/docs/maintainers/issue-177-handoff.md) (reference): phase status,
+  freeze protocol and commands for the consumer proof.
+- [Frozen live protocol, rev 2](https://github.com/Alberto-Codes/typevet/blob/main/docs/maintainers/consumer-live-protocol-rev2.md) (reference):
+  call budget, case pins and expected outcomes for a #177 live rerun.
+- [Frozen instruction-variant protocol](https://github.com/Alberto-Codes/typevet/blob/main/docs/maintainers/consumer-instruction-variant-protocol.md)
+  (reference): call budget, case pins and instruction variants for #177 slice 4.
