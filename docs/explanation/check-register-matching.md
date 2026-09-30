@@ -180,9 +180,30 @@ checks too. It would not stop the three llama.cpp false clears.
 Those checks were sharp, at level 4, and a legibility gate does not look at the
 amounts.
 
-The threshold was chosen after seeing this data. It is a hypothesis for a new
-run on new renders, not a measured result. No code in typevet 0.4.0 applies
-such a gate.
+The threshold was chosen after seeing this data. No code in typevet applies
+such a gate. [#344](https://github.com/Alberto-Codes/typevet/issues/344)
+tested it once on new renders.
+
+### One test on a fresh seed
+
+The rule was fixed before the run: level 3 or lower holds, level 4 passes.
+The owner signed off the seed-1 contact sheets. Then the same 20 rows times 7
+variants ran once on local llama.cpp, from seed 1, with no rendering change.
+The verdict rule was also fixed first: the hypothesis holds when the gate holds
+15 or more of the 20 blurred renders and 2 or fewer of the 120 sharp ones.
+
+| Measure | Seed 0 (#316) | Seed 1 (#344) |
+|---|---|---|
+| Blurred renders held | 18 of 20 | 17 of 20 |
+| Sharp renders held | 0 of 120 | 0 of 120 |
+| Accuracy without the gate | 0.821 | 0.864 |
+| Accuracy of the passed cases | 0.918 | 0.976 |
+
+The hypothesis holds on seed 1. Every sharp render scored level 4 again. The
+gate has the same cost as before: it holds blurred checks the model would have
+answered correctly. Two seeds on one backend do not calibrate the level. The
+receipt is
+`evals/fixtures/checks/receipts/check_match_llama_cpp_seed1_receipt.json`.
 
 ## What this is not
 
