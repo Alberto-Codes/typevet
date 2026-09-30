@@ -3,7 +3,7 @@
 Kind: reference, the index. This page lists every typevet page and its kind.
 
 The pages follow [Diátaxis](https://diataxis.fr/). Each page is one of four
-kinds: a tutorial teaches, a how-to gives steps for a task, an explanation
+kinds. A tutorial teaches, and a how-to gives steps for a task. An explanation
 answers a question, and a reference gives facts.
 
 ## Overview
@@ -18,13 +18,13 @@ answers a question, and a reference gives facts.
 - [How typevet works with Gemma 4](explanation/how-typevet-works-with-gemma-4.md):
   typed judgment and schema-bound generation on llama.cpp and vLLM, with receipts.
 - [TypeLLM, Jev and judgevet](explanation/typellm-and-judgevet.md): why
-  grammar-JSON is the transport floor, which TypeLLM decision ideas typevet
-  ships (compiler, candidate scoring, `JudgmentPort`), and what stays unproven.
+  grammar-JSON is the transport floor. It names which TypeLLM decision ideas typevet
+  ships (compiler, candidate scoring, `JudgmentPort`) and what stays unproven.
 - [Verified evidence and inferred claims](explanation/verification.md): what
   unit, contract and live each prove; fixture labeling; link to the testing
   pyramid law.
 - [Library-first architecture](explanation/library-first-architecture.md): why
-  the importable library is the artifact; composition root vs explicit adapter
+  the importable library is the artifact. It covers composition root vs explicit adapter
   args; hex layers including runtime and evaluation; module command vs console
   script.
 
@@ -60,8 +60,8 @@ answers a question, and a reference gives facts.
 
 - [Run the CORD expense smoke](how-to/run-the-cord-expense-smoke.md) (how-to): 18 synthetic claims on six CORD receipts; semantic metrics + attachment gates ([#165](https://github.com/Alberto-Codes/typevet/issues/165)).
 - [Run the PSAI vision smoke](how-to/run-the-psai-vision-smoke.md): five
-  vendored computer-use screenshots, annotation-backed and manual visual
-  questions, and matched present / omitted / swapped image controls (#154).
+  vendored computer-use screenshots with annotation-backed and manual visual
+  questions. It has matched present / omitted / swapped image controls (#154).
 - [Connect Gemma 4 native vision judgment](how-to/connect-gemma4-native-vision-judgment.md):
   one `typevet.runtime` factory composes the llama.cpp scoring adapter and
   `ScoringJudgmentAdapter` for Gemma 4 native-turn vision.
@@ -119,7 +119,7 @@ answers a question, and a reference gives facts.
 - [Question records → JSON Schema](reference/question-schema-map.md) (reference): Noul/Choice/Score export records to `compile_json_schema` fixtures ([#102](https://github.com/Alberto-Codes/typevet/issues/102)).
 - [Glossary](reference/glossary.md) (reference): the one meaning of each term.
 - [Python API reference](reference/api/index.md) (reference): the index of
-  the package pages generated from the public docstrings:
+  the package pages generated from the public docstrings. The pages are
   [root package](reference/api/root.md), [domain](reference/api/domain.md),
   [ports](reference/api/ports.md), [runtime](reference/api/runtime.md) and
   [inbound adapters](reference/api/inbound.md).

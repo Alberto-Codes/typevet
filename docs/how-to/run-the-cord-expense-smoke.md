@@ -38,10 +38,10 @@ Each pass writes an immutable receipt under
 `scratchpad/cord-expense/receipt-<run_id>.json` (the prior
 `receipt.json` name is not overwritten). A second write with the same
 `run_id` fails and leaves the first file unchanged. Before any scoring call,
-the harness snapshots prompt wording plus the digests of the evaluated harness
-source, the expense-smoke manifest, and each receipt PNG the smoke attaches;
-finalization records call counts only and does not re-read those paths, so late
-edits cannot change `experiment_identity` digests.
+the harness snapshots prompt wording and three kinds of digests. The digests
+cover the evaluated harness source, the expense-smoke manifest, and each receipt
+PNG the smoke attaches. Finalization records call counts only and does not
+re-read those paths. Thus late edits cannot change `experiment_identity` digests.
 
 | Result | Cause |
 |---|---|
@@ -109,7 +109,7 @@ Each arm is compared with its image-omitted control
 For `image_only`, compare each receipt row to
 `image_only.omission_tokens_evaluated`, the same claim text with no image.
 The test passes the served family to `ScoringJudgmentAdapter` as
-`served_template`, so `text_only` and `combined` share one native turn family
+`served_template`. So `text_only` and `combined` share one native turn family,
 and the gap holds the image and its marker only. Every `/completion` request
 sends `"cache_prompt": false`.
 
@@ -117,7 +117,7 @@ sends `"cache_prompt": false`.
 
 On 2026-09-26 against `gemma-3-4b-it-q4km-mm`, recorded with the smoke from
 revision `387285e`, before `aa1ad37`. At that revision the `text_only` prefix was
-ChatML and the imaged prefix was the native Gemma 3 turn, so the token gap below
+ChatML and the imaged prefix was the native Gemma 3 turn. So the token gap below
 also holds a small template difference. Run the smoke again before you quote a
 value for the current revision.
 
@@ -149,8 +149,8 @@ two [#161](https://github.com/Alberto-Codes/typevet/issues/161) revision 1
 semantic floors on the combined arm (recorded, not live-gated):
 
 The vendored receipt’s `experiment_identity` block is flawed on this historical
-run: `working_tree.dirty` was falsely `false`, identity was captured after
-scoring, the live harness path is missing from `code_path_digests`, and
+run. `working_tree.dirty` was falsely `false`, and identity was captured after
+scoring. The live harness path is missing from `code_path_digests`, and
 `runtime.server_build` is `unknown`. See the sibling annotation
 [`gemma4_kv9_direct_receipt.note.md`](https://github.com/Alberto-Codes/typevet/blob/main/tests/fixtures/cord/expense_smoke/gemma4_kv9_direct_receipt.note.md).
 Semantic FAIL rows below are unchanged; only identity metadata is annotated.

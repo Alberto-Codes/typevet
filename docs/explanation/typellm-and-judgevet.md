@@ -14,7 +14,7 @@ logprobs are the part of the TypeLLM decision model that typevet ships today.
 |---|---|
 | **Jev (TypeSafe)** | Hosted System One model. Questions are Noul, Choice, Score. Answers carry probabilities (and confidence where defined). |
 | **judgevet** | Hex library around Jev: `SystemOnePort`, domain questions/answers, HTTP adapter, offline fakes, local policy. |
-| **TypeLLM** | Open-weight path to Jev-like typed decisions: compile JSON Schema → decisions, score single-token choices, optional numeric FSM, optional permutation averaging (enum bias). Today wired to SGLang. |
+| **TypeLLM** | Open-weight path to Jev-like typed decisions. It compiles JSON Schema → decisions and scores single-token choices. It optionally adds a numeric FSM and permutation averaging (enum bias). Today wired to SGLang. |
 | **typevet** | Hex rebuild of that open path on llama.cpp (and later peers), without SGLang. |
 
 TypeLLM’s README states the inspiration explicitly and ships **JevBench**
@@ -34,16 +34,16 @@ Portable core (see also closed research [#2](https://github.com/Alberto-Codes/ty
 2. **Runtime `Choice`** binds labels; builds Field / Type / Instructions /
    Answer prompts; prefills `{"name":` for open or choice continuations.
 3. **Categorical path** scores candidate token ids (logprobs), softmax,
-   argmax or sample; optional **permutation averaging** reduces enum-order
-   bias in the product — the published JevBench protocol does not use it.
+   argmax or sample. Optional **permutation averaging** reduces enum-order
+   bias in the product. The published JevBench protocol does not use it.
 4. **Numeric path** digit-by-digit FSM with tokenizer tables (not “dump a
    JSON number into a grammar and hope”).
 5. **SGLang glue** (`sglang.py`) is the HTTP/logprob/prefix-cache adapter —
    replaceable. The decision engine is not.
 
-Public call shape mirrors Jev’s vocabulary: exactly one of `state` or
+Public call shape mirrors Jev’s vocabulary. It takes exactly one of `state` or
 `context`, and exactly one of `questions` or `schema` (mutual exclusion in
-each pair), plus `model` → a mapping of field answers (with optional
+each pair). It also takes `model` → a mapping of field answers (with optional
 probabilities).
 
 ## What judgevet needs from a local backend
