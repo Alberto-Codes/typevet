@@ -75,6 +75,15 @@
   font-weight: 700;
 }
 
+/* Narrow screens: the title margins must not push the header buttons
+   past the viewport when the root font is enlarged (for example 2x). */
+@media screen and (max-width: 29.984375em) {
+  [dir="ltr"] .md-header__title,
+  [dir="rtl"] .md-header__title {
+    margin-inline: 0.2rem;
+  }
+}
+
 /* Content links keep an underline, so colour is not the only cue. */
 .md-typeset a:not(.headerlink, .md-button, .md-annotation__index) {
   text-decoration: underline;
@@ -97,6 +106,20 @@
   outline-color: var(--tv-focus-header);
 }
 
+/* The palette toggle focuses a hidden radio; ring its visible label.
+   The focused radio is not always the one before the visible label,
+   so a second rule matches on the whole form. Keep the rules apart:
+   a browser without :has() then still applies the first rule. */
+.md-option:focus-visible + .md-header__button {
+  outline: 2px solid var(--tv-focus-header);
+  outline-offset: 2px;
+}
+
+.md-header__option:has(.md-option:focus-visible) > .md-header__button {
+  outline: 2px solid var(--tv-focus-header);
+  outline-offset: 2px;
+}
+
 /* Tables: a tinted header row and borders that read at 3:1. */
 .md-typeset table:not([class]) {
   border-color: var(--tv-border);
@@ -105,6 +128,16 @@
 .md-typeset table:not([class]) th {
   background-color: var(--tv-table-head-bg);
   color: var(--md-default-fg-color);
+}
+
+/* Card titles are headings; keep the card spacing of a bold line. */
+.md-typeset .grid.cards > ul > li > h3 {
+  margin-block: 0;
+}
+
+/* Card titles keep their id for deep links but show no permalink. */
+.md-typeset .grid.cards > ul > li > h3 .headerlink {
+  display: none;
 }
 
 /* Code line highlights use the accent at low strength. */

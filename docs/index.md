@@ -17,7 +17,7 @@ The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.
 
 <div class="grid cards" markdown>
 
--   :material-power-plug-off-outline:{ .lg .middle } **Run offline, with no model**
+-   ### :material-power-plug-off-outline:{ .lg .middle } Run offline, with no model
 
     ---
 
@@ -27,7 +27,7 @@ The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.
     - [First typed judgment offline](tutorials/first-typed-judgment-offline.md)
     - [Generate a schema-bound object offline](how-to/call-typevet-from-python.md#runnable-example-offline-fake)
 
--   :material-clipboard-check-outline:{ .lg .middle } **Evaluate typevet**
+-   ### :material-clipboard-check-outline:{ .lg .middle } Evaluate typevet
 
     ---
 
@@ -42,7 +42,7 @@ The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.
     - [Security](reference/security.md)
     - [Eval partner data policy](reference/eval-partner-data-policy.md)
 
--   :material-language-python:{ .lg .middle } **Integrate typevet from Python**
+-   ### :material-language-python:{ .lg .middle } Integrate typevet from Python
 
     ---
 
@@ -55,7 +55,7 @@ The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.
     - [Errors](reference/errors.md)
     - [Glossary](reference/glossary.md)
 
--   :material-server-outline:{ .lg .middle } **Host typevet on vLLM**
+-   ### :material-server-outline:{ .lg .middle } Host typevet on vLLM
 
     ---
 
@@ -64,7 +64,7 @@ The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.
     - [Serve typevet on vLLM](how-to/serve-typevet-on-vllm.md)
     - [Serve Gemma 4 31B on a rented H100](how-to/serve-gemma-4-31b-on-a-rented-h100.md)
 
--   :material-laptop:{ .lg .middle } **Run typevet on llama.cpp locally**
+-   ### :material-laptop:{ .lg .middle } Run on llama.cpp locally
 
     ---
 
@@ -72,7 +72,7 @@ The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.
 
     - [Run Gemma 4 on llama.cpp](how-to/run-gemma4-llamacpp.md)
 
--   :material-image-outline:{ .lg .middle } **Send images with a question**
+-   ### :material-image-outline:{ .lg .middle } Send images with a question
 
     ---
 

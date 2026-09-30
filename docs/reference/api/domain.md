@@ -1,3 +1,8 @@
+---
+search:
+  boost: 2
+---
+
 # Domain package
 
 Kind: reference. This page is generated from the docstrings of
