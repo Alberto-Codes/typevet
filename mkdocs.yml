@@ -106,6 +106,7 @@ nav:
       - Call typevet from Python: how-to/call-typevet-from-python.md
       - Run Gemma 4 on llama.cpp: how-to/run-gemma4-llamacpp.md
       - Serve typevet on vLLM: how-to/serve-typevet-on-vllm.md
+      - Use a vLLM server behind an API gateway: how-to/use-a-vllm-server-behind-an-api-gateway.md
       - Serve Gemma 4 31B on a rented H100: how-to/serve-gemma-4-31b-on-a-rented-h100.md
       - Connect Gemma 4 native vision judgment: how-to/connect-gemma4-native-vision-judgment.md
       - Use typevet as a judgevet provider: how-to/use-typevet-as-a-judgevet-provider.md

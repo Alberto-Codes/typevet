@@ -72,13 +72,16 @@ mapping below.
 | `TYPEVET_VLLM__BASE_URL` | `base_url` | URL string | none | Required; trailing slash stripped |
 | `TYPEVET_VLLM__MODEL` | `model` | string | none | Required; served model name |
 | `TYPEVET_VLLM__TIMEOUT` | `timeout` | float, seconds | `300` | Must be positive and finite; `nan`, `inf` and `-inf` fail |
-| `TYPEVET_VLLM__API_KEY` | `api_key` | string or empty | none | Sent as `Authorization: Bearer <key>` |
+| `TYPEVET_VLLM__API_KEY` | `api_key` | string or empty | none | Sent in `auth_header` after `auth_scheme`. The defaults give `Authorization: Bearer <key>` |
 | `TYPEVET_VLLM__MAX_CONCURRENCY` | `max_concurrency` | integer | `1` | Must be a positive integer; POST limit for one `AsyncVllmGenerationAdapter` |
 | `TYPEVET_VLLM__USER_AGENT` | `user_agent` | string or empty | none | Sent as `User-Agent` only when set; otherwise the httpx default |
+| `TYPEVET_VLLM__AUTH_HEADER` | `auth_header` | header name or empty | `Authorization` | The header that carries the key. An empty value gives the default |
+| `TYPEVET_VLLM__AUTH_SCHEME` | `auth_scheme` | token or empty | `Bearer` | Sent before the key and a space. A set but empty value sends the key alone |
+| `TYPEVET_VLLM__HEADERS` | `headers` | JSON object of strings | `{}` | Extra headers on each request. Values are literal. Not in `repr` |
+| `TYPEVET_VLLM__REQUEST_ID_HEADER` | `request_id_header` | header name or empty | none | When set, each request gets a new UUID4 hex value in this header |
 
 The key does not appear in `repr(VllmSettings)`. The sync and async clients
-are built the same way with or without a key. Only the `Authorization` header
-differs. So `HTTPS_PROXY` and the other proxy variables apply in both cases.
+are built the same way with or without a key. Only the auth header differs. So `HTTPS_PROXY` and the other proxy variables apply in both cases.
 The key must be ASCII. The adapters from `generation_adapter` and
 `async_vllm_generation_adapter` mask the key in errors. Each adapter checks
 each generation error, its attributes and its cause for the raw or
@@ -90,6 +93,34 @@ therefore cannot put the key into a `BackendHttpError` message. Successful
 results are not changed. Error messages name the variable, not its value. An
 invalid `TYPEVET_VLLM__TIMEOUT` or `TYPEVET_VLLM__MAX_CONCURRENCY` error has
 no cause, so a traceback does not show the value.
+
+### API gateway headers
+
+The four gateway variables serve a vLLM server behind an API gateway.
+[Use a vLLM server behind an API gateway](../how-to/use-a-vllm-server-behind-an-api-gateway.md)
+gives the steps. `VllmSettings` checks these rules when it is built:
+
+| Rule | Limit |
+|---|---|
+| Header name, `auth_header` and `request_id_header` | An HTTP token of at most 128 bytes |
+| `auth_scheme` | Empty or an HTTP token |
+| Header value | ASCII characters 0x20 to 0x7E only, at most 2,048 bytes |
+| Number of extra headers | At most 32 |
+| Extra names and values together | At most 8,192 bytes |
+
+`headers` must not name a hop-by-hop header, `Host`, `Content-Length` or
+the auth header. The match ignores letter case. `auth_header` and
+`request_id_header` must not name a hop-by-hop header, `Host` or
+`Content-Length` either. `request_id_header` must not name the auth header or
+an extra header. A failed rule raises `ValueError`. The message names the
+field and never shows a value. A `TYPEVET_VLLM__HEADERS` value that is not a
+JSON object of strings raises `ValueError` with no cause or context.
+
+typevet sends each header value as written. It does not expand `$NAME` or run
+`!command`. The adapters mask each extra header value in errors, the same way
+as the key. The clients follow no redirect. A 3xx status raises
+`BackendHttpError` without the `Location` header. An HTML error body is not
+in the `BackendHttpError`, and its `body_snippet` is empty.
 
 `generation_adapter` builds the sync adapter and does not read
 `max_concurrency`. `async_vllm_generation_adapter` builds an
@@ -129,5 +160,6 @@ See [Diagnostic events](diagnostic-events.md) for `TYPEVET_LOG__FORMAT`,
 ## Related pages
 
 - [Library-first architecture](../explanation/library-first-architecture.md)
+- [Use a vLLM server behind an API gateway](../how-to/use-a-vllm-server-behind-an-api-gateway.md)
 - [Run Gemma 4 on llama.cpp](../how-to/run-gemma4-llamacpp.md)
 - [Supported imports](supported-imports.md)

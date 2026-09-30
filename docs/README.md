@@ -54,6 +54,8 @@ answers a question, and a reference gives facts.
   `llama-server`, nested `json_schema`, and opt-in live pytest.
 - [Serve typevet on vLLM](how-to/serve-typevet-on-vllm.md): the tested
   vLLM v0.30.0 pin, `TYPEVET_VLLM__*` settings and the live acceptance test (#170).
+- [Use a vLLM server behind an API gateway](how-to/use-a-vllm-server-behind-an-api-gateway.md):
+  path prefix, key header, extra headers and request id for Apigee, Kong or APIM (#331).
 - [Serve Gemma 4 31B on a rented H100](how-to/serve-gemma-4-31b-on-a-rented-h100.md):
   one RunPod H100, stock vLLM, one judgment (#236).
 - [Call typevet from Python](how-to/call-typevet-from-python.md): Fake and

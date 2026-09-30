@@ -62,6 +62,7 @@ The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.
     Serve the tested vLLM pin on one H100, your own or rented.
 
     - [Serve typevet on vLLM](how-to/serve-typevet-on-vllm.md)
+    - [Use a vLLM server behind an API gateway](how-to/use-a-vllm-server-behind-an-api-gateway.md)
     - [Serve Gemma 4 31B on a rented H100](how-to/serve-gemma-4-31b-on-a-rented-h100.md)
 
 -   ### :material-laptop:{ .lg .middle } Run on llama.cpp locally

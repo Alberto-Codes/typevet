@@ -2,7 +2,7 @@
 
 ``TYPEVET_BACKEND`` selects ``llama_cpp`` (the default) or ``vllm``. The vLLM
 branch reads ``TYPEVET_VLLM__*`` variables and builds one ``httpx.Client``
-that carries the base URL, timeout and optional bearer key.
+that carries the base URL, timeout, optional key and gateway headers.
 ``TYPEVET_VLLM__MAX_CONCURRENCY`` sets ``VllmSettings.max_concurrency``, the
 POST limit for the ``AsyncVllmGenerationAdapter`` that
 ``async_vllm_generation_adapter`` builds on an ``httpx.AsyncClient`` with the
@@ -10,6 +10,15 @@ same settings. The optional
 ``TYPEVET_VLLM__USER_AGENT`` sets the ``User-Agent`` header; when it is unset
 the client sends the httpx default. Outbound adapters never read the
 environment.
+
+A server behind an API gateway (#331) needs more. ``TYPEVET_VLLM__AUTH_HEADER``
+and ``TYPEVET_VLLM__AUTH_SCHEME`` set the header and scheme for the key,
+``TYPEVET_VLLM__HEADERS`` adds literal headers from a JSON object, and
+``TYPEVET_VLLM__REQUEST_ID_HEADER`` sends a fresh UUID4 hex value on each
+request. ``typevet.adapters.inbound.gateway_headers`` checks each rule when
+``VllmSettings`` is built. The clients follow no redirect: a redirect raises
+``BackendHttpError`` without the ``Location`` header, and an HTML error body
+is withheld from the error.
 
 The configured key never reaches the caller in clear text. ``VllmSettings``
 leaves it out of ``repr``. The adapters that ``generation_adapter`` and
@@ -22,10 +31,11 @@ key in the text or an attribute, such as a parsed payload, is replaced by
 masked too, and masked bytes stay bytes. The copy is made even when the key
 text is absent, because an httpx error in the cause chain holds the request
 headers. A server that echoes the ``Authorization`` header therefore cannot put
-the key into a ``BackendHttpError``. Without a key, errors pass through
-unchanged. Successful results are not changed. The HTTP clients are built the
-same way with or without a key, so environment proxy settings apply in both
-cases. ``TYPEVET_VLLM__TIMEOUT`` must be finite and positive, so ``nan`` and
+the key into a ``BackendHttpError``. Each value in ``TYPEVET_VLLM__HEADERS`` is
+masked in the same way, with or without a key. Without a key or extra headers,
+errors pass through unchanged. Successful results are not changed. The HTTP
+clients are built the same way with or without a key, so environment proxy
+settings apply in both cases. ``TYPEVET_VLLM__TIMEOUT`` must be finite and positive, so ``nan`` and
 ``inf`` fail. Error messages name variables, never values, and a parse failure
 raises with no cause or context.
 
@@ -68,6 +78,14 @@ from typing import TYPE_CHECKING, Any, Literal
 import httpx
 
 from typevet.adapters.diagnostics.redaction import REDACTED
+from typevet.adapters.inbound.gateway_headers import (
+    async_event_hooks,
+    check_auth_scheme,
+    check_gateway_headers,
+    check_header_name,
+    parse_headers_json,
+    sync_event_hooks,
+)
 from typevet.adapters.inbound.settings import llama_cpp_adapter, load_llama_settings
 from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
     GemmaNativeVisionSession,
@@ -92,6 +110,7 @@ if TYPE_CHECKING:
 Backend = Literal["llama_cpp", "vllm"]
 
 _DEFAULT_TIMEOUT = 300.0
+_ENV = "TYPEVET_VLLM__"
 _BACKENDS: tuple[Backend, ...] = ("llama_cpp", "vllm")
 MASK = REDACTED
 
@@ -104,10 +123,17 @@ class VllmSettings:
         base_url (str): Server root without a trailing slash.
         model (str): Served model name.
         timeout (float): HTTP request timeout in seconds.
-        api_key (str | None): Bearer key, or ``None``. Excluded from ``repr``.
+        api_key (str | None): Key sent in ``auth_header``, or ``None``.
+            Excluded from ``repr``.
         max_concurrency (int): Maximum POSTs in flight for one async adapter.
         user_agent (str | None): ``User-Agent`` header value, or ``None`` for
             the httpx default.
+        auth_header (str): Header that carries the key.
+        auth_scheme (str): Scheme before the key; empty sends the key bare.
+        headers (Mapping[str, str]): Extra headers with literal values, sent
+            on every request. Excluded from ``repr``.
+        request_id_header (str | None): Header that gets a fresh UUID4 hex
+            value on each request, or ``None``.
 
     Examples:
         ```python
@@ -123,6 +149,36 @@ class VllmSettings:
     api_key: str | None = field(default=None, repr=False)
     max_concurrency: int = 1
     user_agent: str | None = None
+    auth_header: str = "Authorization"
+    auth_scheme: str = "Bearer"
+    headers: Mapping[str, str] = field(default_factory=dict, repr=False)
+    request_id_header: str | None = None
+
+    def __post_init__(self) -> None:
+        """Copy ``headers`` and check the gateway header rules.
+
+        Raises:
+            TypeError: When ``headers`` is not a mapping.
+            ValueError: When a gateway field breaks a rule of
+                ``typevet.adapters.inbound.gateway_headers``. The message
+                names the field and never holds a value.
+        """
+        if not isinstance(self.headers, Mapping):
+            msg = f"headers ({_ENV}HEADERS) must be a mapping of header values"
+            raise TypeError(msg)
+        object.__setattr__(self, "headers", dict(self.headers))
+        check_header_name(self.auth_header, f"auth_header ({_ENV}AUTH_HEADER)")
+        check_auth_scheme(self.auth_scheme, f"auth_scheme ({_ENV}AUTH_SCHEME)")
+        check_gateway_headers(
+            self.headers, auth_header=self.auth_header, field=f"headers ({_ENV}HEADERS)"
+        )
+        if self.request_id_header is not None:
+            label = f"request_id_header ({_ENV}REQUEST_ID_HEADER)"
+            name = check_header_name(self.request_id_header, label).lower()
+            taken = {self.auth_header.lower(), *(k.lower() for k in self.headers)}
+            if name in taken:
+                msg = f"{label} names a header that is already set"
+                raise ValueError(msg)
 
 
 _PLAIN_CONTAINERS: tuple[type, ...] = (list, tuple, set, frozenset)
@@ -197,10 +253,10 @@ def _masked_error(exc: GenerationError, needles: tuple[str, ...]) -> GenerationE
     return masked
 
 
-def _key_needles(key: str | None) -> tuple[str, ...]:
-    if key is None:
-        return ()
-    return tuple(sorted({key, json.dumps(key)[1:-1]}, key=len, reverse=True))
+def _key_needles(settings: VllmSettings) -> tuple[str, ...]:
+    secrets = [settings.api_key, *settings.headers.values()]
+    forms = {form for s in secrets if s for form in (s, json.dumps(s)[1:-1])}
+    return tuple(sorted(forms, key=len, reverse=True))
 
 
 def _masked_if_keyed(
@@ -233,7 +289,7 @@ class _KeyMaskingJudgmentPort:
 
     Examples:
         ```python
-        _KeyMaskingJudgmentPort(session.port, _key_needles("sk-..."))
+        _KeyMaskingJudgmentPort(session.port, _key_needles(settings))
         ```
     """
 
@@ -289,7 +345,7 @@ class _ClientOwningVllmAdapter(VllmGenerationAdapter):
     def __init__(self, settings: VllmSettings, client: httpx.Client) -> None:
         super().__init__(settings.base_url, timeout=settings.timeout, client=client)
         self._settings_client = client
-        self._needles = _key_needles(settings.api_key)
+        self._needles = _key_needles(settings)
 
     def generate(self, request: GenerationRequest) -> GenerationResult:
         """Generate, and mask the configured key in any raised error.
@@ -346,7 +402,7 @@ class _ClientOwningAsyncVllmAdapter(AsyncVllmGenerationAdapter):
             max_concurrency=settings.max_concurrency,
         )
         self._settings_client = client
-        self._needles = _key_needles(settings.api_key)
+        self._needles = _key_needles(settings)
         self._binds_loop = True
 
     async def generate(self, request: GenerationRequest) -> GenerationResult:
@@ -448,21 +504,27 @@ def load_vllm_settings(environ: Mapping[str, str] | None = None) -> VllmSettings
         environ: Mapping to read. Defaults to ``os.environ``.
 
     Returns:
-        Frozen settings. An empty ``TYPEVET_VLLM__API_KEY`` or
-        ``TYPEVET_VLLM__USER_AGENT`` gives ``None``.
+        Frozen settings. An empty ``TYPEVET_VLLM__API_KEY``,
+        ``TYPEVET_VLLM__USER_AGENT`` or ``TYPEVET_VLLM__REQUEST_ID_HEADER``
+        gives ``None``. An empty ``TYPEVET_VLLM__AUTH_HEADER`` gives
+        ``Authorization``. An unset ``TYPEVET_VLLM__AUTH_SCHEME`` gives
+        ``Bearer``; a set but empty one sends the key bare.
+        ``TYPEVET_VLLM__HEADERS`` is a JSON object of literal string values.
 
     Raises:
         ValueError: When ``TYPEVET_VLLM__BASE_URL`` or ``TYPEVET_VLLM__MODEL``
             is missing, ``TYPEVET_VLLM__TIMEOUT`` is not a finite positive
             number,
-            ``TYPEVET_VLLM__MAX_CONCURRENCY`` is not a positive integer, or
-            ``TYPEVET_VLLM__API_KEY`` holds a non-ASCII character.
+            ``TYPEVET_VLLM__MAX_CONCURRENCY`` is not a positive integer,
+            ``TYPEVET_VLLM__API_KEY`` holds a non-ASCII character, or a
+            gateway variable breaks a header rule. No message holds a value.
     """
     source = os.environ if environ is None else environ
     api_key = source.get("TYPEVET_VLLM__API_KEY", "").strip()
     if not api_key.isascii():
         msg = "TYPEVET_VLLM__API_KEY must contain only ASCII characters"
         raise ValueError(msg)
+    scheme = source.get(f"{_ENV}AUTH_SCHEME")
     return VllmSettings(
         base_url=_read_required(source, "TYPEVET_VLLM__BASE_URL").rstrip("/"),
         model=_read_required(source, "TYPEVET_VLLM__MODEL"),
@@ -470,6 +532,10 @@ def load_vllm_settings(environ: Mapping[str, str] | None = None) -> VllmSettings
         api_key=api_key or None,
         max_concurrency=_read_max_concurrency(source, "TYPEVET_VLLM__MAX_CONCURRENCY"),
         user_agent=source.get("TYPEVET_VLLM__USER_AGENT", "").strip() or None,
+        auth_header=source.get(f"{_ENV}AUTH_HEADER", "").strip() or "Authorization",
+        auth_scheme="Bearer" if scheme is None else scheme.strip(),
+        headers=parse_headers_json(source.get(f"{_ENV}HEADERS", ""), f"{_ENV}HEADERS"),
+        request_id_header=source.get(f"{_ENV}REQUEST_ID_HEADER", "").strip() or None,
     )
 
 
@@ -485,24 +551,31 @@ def vllm_http_client(
         transport: Optional transport, for example ``httpx.MockTransport``.
 
     Returns:
-        A client with ``base_url`` and ``timeout`` set. When a key is set, the
-        client also sends ``Authorization: Bearer <key>``. When a user agent
-        is set, the client sends it as ``User-Agent``. Nothing else changes,
-        so environment proxy settings apply with or without a key. The async
-        client from ``async_vllm_generation_adapter`` gets the same headers.
+        A client with ``base_url`` and ``timeout`` set. It sends the extra
+        ``settings.headers``. When a key is set, the client also sends it in
+        ``settings.auth_header`` after ``settings.auth_scheme``, which by
+        default gives ``Authorization: Bearer <key>``. When a user agent is
+        set, the client sends it as ``User-Agent``. The event hooks from
+        ``sync_event_hooks`` add the request id and refuse redirects. Nothing
+        else changes, so environment proxy settings apply with or without a
+        key. The async client from ``async_vllm_generation_adapter`` gets the
+        same headers and hooks.
     """
     return httpx.Client(
         base_url=settings.base_url,
         timeout=settings.timeout,
         headers=_vllm_headers(settings),
         transport=transport,
+        event_hooks=sync_event_hooks(settings.request_id_header),
     )
 
 
 def _vllm_headers(settings: VllmSettings) -> dict[str, str]:
-    headers: dict[str, str] = {}
+    headers = dict(settings.headers)
     if settings.api_key is not None:
-        headers["Authorization"] = f"Bearer {settings.api_key}"
+        scheme = settings.auth_scheme
+        key = settings.api_key
+        headers[settings.auth_header] = f"{scheme} {key}" if scheme else key
     if settings.user_agent is not None:
         headers["User-Agent"] = settings.user_agent
     return headers
@@ -544,8 +617,8 @@ def async_vllm_generation_adapter(
     """Build the async vLLM generation adapter from ``TYPEVET_VLLM__*``.
 
     The adapter reads the vLLM settings whatever ``TYPEVET_BACKEND`` says. Its
-    ``httpx.AsyncClient`` has the same base URL, timeout, headers and proxy
-    handling as ``vllm_http_client``, and ``TYPEVET_VLLM__MAX_CONCURRENCY``
+    ``httpx.AsyncClient`` has the same base URL, timeout, headers, event hooks
+    and proxy handling as ``vllm_http_client``, and ``TYPEVET_VLLM__MAX_CONCURRENCY``
     sets its POST limit. That client binds to the first event loop that uses
     it, so build one adapter per event loop, for example per ``asyncio.run``.
     The adapter records the first running loop that calls ``generate``, and a
@@ -569,6 +642,7 @@ def async_vllm_generation_adapter(
         timeout=settings.timeout,
         headers=_vllm_headers(settings),
         transport=transport,
+        event_hooks=async_event_hooks(settings.request_id_header),
     )
     return _ClientOwningAsyncVllmAdapter(settings, client)
 
@@ -589,8 +663,9 @@ def open_judgment(
     Yields:
         A llama.cpp session from ``open_gemma_native_vision_judgment`` with
         ``load_llama_settings``, or a vLLM session from ``open_vllm_judgment``
-        on the ``vllm_http_client``. The vLLM client closes on exit, and
-        judgment errors never show the configured key.
+        on the ``vllm_http_client``, so ``/tokenize`` and scoring carry the
+        gateway headers. The vLLM client closes on exit, and judgment errors
+        never show the configured key or a header value.
 
     Raises:
         ValueError: When a backend or vLLM variable is invalid.
@@ -609,5 +684,5 @@ def open_judgment(
             client=client, model=settings.model, base_url=settings.base_url
         ) as session,
     ):
-        masked = _KeyMaskingJudgmentPort(session.port, _key_needles(settings.api_key))
+        masked = _KeyMaskingJudgmentPort(session.port, _key_needles(settings))
         yield replace(session, port=masked)

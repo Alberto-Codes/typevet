@@ -26,7 +26,8 @@ Attributes:
     LlamaSettings (type): llama.cpp connection settings for composition roots.
     load_llama_settings (function): Read ``TYPEVET_LLAMA__*`` from the environment.
     llama_cpp_adapter (function): Build ``LlamaCppGenerationAdapter`` from settings.
-    VllmSettings (type): vLLM connection settings; ``api_key`` is not in ``repr``.
+    VllmSettings (type): vLLM connection and API gateway settings; ``api_key``
+        and ``headers`` are not in ``repr``.
     load_backend (function): Read ``TYPEVET_BACKEND``.
     load_vllm_settings (function): Read ``TYPEVET_VLLM__*`` from the environment.
     vllm_http_client (function): Build the shared vLLM ``httpx.Client``.

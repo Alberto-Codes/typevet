@@ -13,7 +13,7 @@ See Also:
     - [typevet.adapters.outbound.llama_cpp.http_mapping][]: httpx to domain error mapping
 
 Attributes:
-    BackendHttpError (type): llama.cpp HTTP status 400 or above.
+    BackendHttpError (type): Backend HTTP status 400 or above, or a redirect.
     GenerationError (type): Base failure for a generation call.
     GenerationUnsupportedCapabilityError (type): Backend cannot honor the ask.
     JudgmentError (type): Base failure for a judgment call.
@@ -72,11 +72,15 @@ class TransportError(GenerationError):
 
 
 class BackendHttpError(GenerationError):
-    """llama.cpp returned an HTTP error status (400 or above).
+    """The backend returned an HTTP error status (400 or above) or a redirect.
+
+    The vLLM clients that ``backend_settings`` builds do not follow redirects;
+    a 3xx raises this error with the 3xx status and no ``Location`` value.
 
     Attributes:
-        status_code (int): HTTP status from the router.
+        status_code (int): HTTP status from the router or the gateway.
         body_snippet (str): Truncated response body text for diagnostics.
+            Empty when the body is HTML, which a gateway error page often is.
 
     Examples:
         ```python

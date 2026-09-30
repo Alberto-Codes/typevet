@@ -41,10 +41,20 @@ A request body holds the data for one call:
 
 Both backends send the httpx default headers, such as `Accept`,
 `Accept-Encoding`, `Connection` and `User-Agent: python-httpx/<version>`.
-The vLLM client changes two headers:
+The vLLM client changes or adds these headers:
 
 - `Authorization: Bearer <key>`, only when you set a key.
+  `TYPEVET_VLLM__AUTH_HEADER` and `TYPEVET_VLLM__AUTH_SCHEME` change the name
+  and the scheme.
 - `User-Agent`: the value of `TYPEVET_VLLM__USER_AGENT`, or the httpx default.
+- Each header in `TYPEVET_VLLM__HEADERS`, with its literal value.
+- The `TYPEVET_VLLM__REQUEST_ID_HEADER` header, with a new UUID4 hex value
+  on each request.
+
+The vLLM clients that typevet builds follow no redirect. A 3xx status raises
+`BackendHttpError`, and the error does not show the `Location` header.
+[Use a vLLM server behind an API gateway](../how-to/use-a-vllm-server-behind-an-api-gateway.md)
+gives the gateway steps and the header rules.
 
 The llama.cpp adapters send no key.
 
@@ -91,7 +101,8 @@ Only the vLLM path takes an API key. The settings are in
 | Setting | `TYPEVET_VLLM__API_KEY`. The value must be ASCII. An empty value sends no key. |
 | `repr` | `repr(VllmSettings)` does not show the key. |
 | Settings errors | An error names the variable, never its value. |
-| Adapter errors | The adapters from `generation_adapter` and `async_vllm_generation_adapter` mask the key in a `GenerationError`. The port from `open_judgment` also masks it. When a key is set, each such error is a masked copy with no cause or context. |
+| Adapter errors | The adapters from `generation_adapter` and `async_vllm_generation_adapter` mask the key and each `TYPEVET_VLLM__HEADERS` value in a `GenerationError`. The port from `open_judgment` also masks them. Set a key or an extra header, and each such error becomes a masked copy. The copy has no cause or context. |
+| Gateway error pages | An HTML error body is not in the `BackendHttpError`. Its `body_snippet` is empty. |
 | Receipts | The vLLM live acceptance run in `evals/` masks the key before it writes the receipt. |
 
 When a key is set, each `GenerationError` from these wrappers is a masked
@@ -99,7 +110,9 @@ copy. The copy shows `***` in place of the raw or JSON-escaped key. The copy
 has the same type, and it has no cause or context. The copy is made even when
 the key text is absent. The httpx error in the cause chain holds the request,
 and its headers hold `Authorization: Bearer <key>`. Thus the copy drops that
-chain. Without a key, the wrappers raise the original error. Masking
+chain. Each value in `TYPEVET_VLLM__HEADERS` is masked the same way, with or
+without a key. Without a key or an extra header, the wrappers raise the
+original error. Masking
 applies to strings and bytes inside a dict, list, tuple, set or frozenset, for
 example a parsed payload. A masked bytes value stays bytes, with `***` in place
 of the key. A masked set or frozenset stays the same kind.
@@ -111,6 +124,10 @@ gives the steps and the limits.
 Known gaps:
 
 - Masking does not walk `bytearray` or `memoryview` values.
+- Masking replaces each match of a header value. A short value, such as `1`,
+  also masks the same text in other parts of the message.
+- A `BackendHttpError` keeps a JSON or plain-text error body up to 500
+  characters. Only an HTML body is withheld.
 - Masking exists only in the wrappers from `generation_adapter`,
   `async_vllm_generation_adapter` and `open_judgment`. A vLLM adapter or
   client that you build yourself does not mask the key. This includes the

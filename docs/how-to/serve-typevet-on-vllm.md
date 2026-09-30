@@ -139,8 +139,10 @@ tested run used `curl/8.9.1`.
 - typevet sets no TLS or proxy options. The httpx defaults apply, so the
   client verifies certificates and reads `HTTPS_PROXY` and the other proxy
   variables.
-- The client is the same with or without a key. Only the `Authorization`
-  header differs.
+- The client is the same with or without a key. Only the auth header
+  differs. Behind an API gateway, the settings also give the header name, the
+  scheme and extra headers. See
+  [use a vLLM server behind an API gateway](use-a-vllm-server-behind-an-api-gateway.md).
 
 Use an HTTPS URL or a local address. A plain HTTP URL sends the key without
 encryption.

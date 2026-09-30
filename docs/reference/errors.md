@@ -182,7 +182,8 @@ maps the HTTP outcome. HTTP status **400 and above** is an adapter failure
 |---|---|---|
 | Request `schema` is not a valid JSON Schema | `ValueError` | `schema is not a valid JSON Schema:` (no HTTP call) |
 | `httpx.HTTPError` on POST, including an httpx timeout | `TransportError` | `vLLM request failed:` |
-| HTTP status ≥ 400 | `BackendHttpError` | `vLLM HTTP {status}:` (`body_snippet` truncated to 500 chars) |
+| HTTP status ≥ 400 | `BackendHttpError` | `vLLM HTTP {status}:` (`body_snippet` truncated to 500 chars; empty with `HTML body withheld` when the body is HTML) |
+| HTTP status 3xx | `BackendHttpError` | `vLLM HTTP {status}: redirect not followed` (no `Location` value) |
 | Response body is not JSON | `GenerationError` | `vLLM returned non-JSON HTTP body` |
 | Missing or empty `choices[0].message.content` | `GenerationError` | `vLLM response missing…` or `vLLM returned empty message content` |
 | Message content is not valid JSON | `GenerationError` | `model content was not valid JSON` |
@@ -243,7 +244,8 @@ Use these boundaries when a caller adds retries:
 |---|---|---|
 | `SchemaValidationError` | No (fail-fast) | Same prompt and schema may repeat the same invalid output; fix schema, prompt, or model. Adapter docstring: fail-fast on schema mismatch. |
 | `TransportError`, `BackendHttpError` (5xx) | Optional caller policy | Not implemented in-repo; a supervisor may retry with backoff outside the adapter. |
-| `BackendHttpError` (4xx) | Usually no | Router config, model id, or request the backend rejects. |
+| `BackendHttpError` (4xx) | Usually no | Router config, model id, or request the backend rejects. A gateway 429 is this error too; typevet reads no `Retry-After`. |
+| `BackendHttpError` (3xx) | No | The vLLM clients do not follow redirects. The error carries the 3xx status and no `Location` value. |
 | `GenerationError` (bad JSON shape on 2xx) | Usually no | Non-recoverable response shape from the model or router. |
 | `GenerationUnsupportedCapabilityError` | No | Use an adapter that supports the request, or remove the images. |
 | `SchemaError`, `NotImplementedError` | No | Fix or narrow the schema before calling generation. |
