@@ -197,6 +197,16 @@ caches do the image reuse. At concurrency 16, most multimodal cache lookups hit.
 A future code change could ask all questions of a judgment in one request.
 That is an open possibility only. No receipt measures it.
 
+The [#342 design](https://github.com/Alberto-Codes/typevet/issues/342#issuecomment-5919250989)
+looked at that possibility and closed it for now. One prompt with several
+scoring positions changes what the model conditions on, so its probabilities
+would need new calibration evidence, and llama.cpp gives no prompt-side
+logprobs. One shared prefix with batched continuations works on llama.cpp
+only. The one small change left is to send the questions of one judgment at
+the same time instead of one after the other. That change belongs to
+[#121](https://github.com/Alberto-Codes/typevet/issues/121). It needs a new
+concurrency 32 receipt before any claim.
+
 ## Cost
 
 The pod ran from 19:13:28Z to about 19:31:50Z, about 18.4 minutes. At $3.49
