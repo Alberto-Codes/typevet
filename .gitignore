@@ -9,6 +9,7 @@ htmlcov/
 dist/
 build/
 /site/
+/docs/assets/javascripts/mermaid.min.js
 *.egg-info/
 .env
 .envrc

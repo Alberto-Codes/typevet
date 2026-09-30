@@ -35,6 +35,19 @@ jobs:
 
       - uses: actions/configure-pages@v6.0.0
 
+      # Mermaid 11.17.2 (MIT), dist/mermaid.min.js from jsDelivr. The site
+      # serves it locally so Material does not fetch Mermaid from unpkg.
+      - name: Vendor pinned Mermaid
+        env:
+          MERMAID_VERSION: "11.17.2"
+          MERMAID_SHA256: "581ed7d74bd9048d0e3a91363927d72ef22942d7722546b27f7cc29e35390eb8"
+          MERMAID_PATH: docs/assets/javascripts/mermaid.min.js
+        run: |
+          mkdir -p "$(dirname "$MERMAID_PATH")"
+          curl -fsSL -o "$MERMAID_PATH" \
+            "https://cdn.jsdelivr.net/npm/mermaid@${MERMAID_VERSION}/dist/mermaid.min.js"
+          echo "${MERMAID_SHA256}  ${MERMAID_PATH}" | sha256sum -c -
+
       - name: Build documentation site
         run: uv run mkdocs build --strict
 

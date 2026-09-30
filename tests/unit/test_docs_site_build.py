@@ -5,12 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import yaml
 from click.testing import CliRunner
 from markdown import Markdown
 from mkdocs.__main__ import cli
 from mkdocs.config import load_config
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+MERMAID_ASSET = "assets/javascripts/mermaid.min.js"
+MERMAID_VERSION = "11.17.2"
+MERMAID_SHA256 = "581ed7d74bd9048d0e3a91363927d72ef22942d7722546b27f7cc29e35390eb8"
 
 pytestmark = pytest.mark.unit
 
@@ -41,7 +45,30 @@ def test_mkdocs_strict_build_succeeds(
     gemma_page = (
         site_dir / "explanation" / "how-typevet-works-with-gemma-4" / "index.html"
     )
-    assert '<pre class="mermaid">' in gemma_page.read_text(encoding="utf-8")
+    gemma_html = gemma_page.read_text(encoding="utf-8")
+    assert '<pre class="mermaid">' in gemma_html
+    assert f'<script src="../../{MERMAID_ASSET}"></script>' in gemma_html
+
+
+def test_docs_workflow_pins_mermaid_to_the_extra_javascript_path() -> None:
+    config = load_config(str(REPO_ROOT / "mkdocs.yml"))
+    assert MERMAID_ASSET in [str(script) for script in config.extra_javascript]
+    workflow = yaml.safe_load(
+        (REPO_ROOT / ".github" / "workflows" / "docs.yml").read_text(encoding="utf-8")
+    )
+    steps = workflow["jobs"]["build"]["steps"]
+    names = [step.get("name") for step in steps]
+    fetch = steps[names.index("Vendor pinned Mermaid")]
+
+    assert fetch["env"] == {
+        "MERMAID_VERSION": MERMAID_VERSION,
+        "MERMAID_SHA256": MERMAID_SHA256,
+        "MERMAID_PATH": f"docs/{MERMAID_ASSET}",
+    }
+    assert "sha256sum -c" in fetch["run"]
+    assert names.index("Vendor pinned Mermaid") < names.index(
+        "Build documentation site"
+    )
 
 
 def test_site_markdown_renders_mermaid_fence_as_diagram_block() -> None:

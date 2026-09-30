@@ -57,6 +57,8 @@ plugins:
             docstring_section_style: table
             docstring_options:
               ignore_init_summary: true
+extra_javascript:
+  - assets/javascripts/mermaid.min.js
 markdown_extensions:
   - abbr
   - admonition
