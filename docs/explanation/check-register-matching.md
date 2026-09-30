@@ -207,6 +207,33 @@ synthetic strokes.
   the llama.cpp alias, not the weights file.
 - **Labels.** The owner checked the labels on a contact sheet once, for seed 0.
 
+## Latency and cost
+
+One item is one case: one typed judgment that asks all four questions. The
+receipts give `wall_seconds` and, per case, `latency_seconds` and
+`input_tokens`.
+
+| Backend | Items | Wall time | Mean seconds per item | Items per minute | Mean input tokens |
+|---|---|---|---|---|---|
+| llama.cpp | 140 | 762 s (12.7 min) | 5.44 | 11.0 | 1,598 |
+| vLLM | 140 | 1,100 s (18.3 min) | 7.85 | 7.6 | 1,918 |
+
+Read these numbers with their limits:
+
+- **One request at a time.** Each run sent one case, then waited for the
+  answer. This is not a throughput test. The H100 throughput reference is the
+  #236 receipt on the [performance page](../reference/performance.md).
+- **Network time is included on vLLM.** The vLLM requests went through the
+  RunPod proxy to a pod in data center AP-IN-2. The check run and the
+  signature run shared that pod at the same time.
+- **Input tokens differ.** vLLM counted more input tokens per case than
+  llama.cpp: 1,918 against 1,598. The cause was not checked.
+
+The H100 pod cost about $2.24 in total
+([#316 pod record](https://github.com/Alberto-Codes/typevet/issues/316#issuecomment-5914299864)).
+That cost is shared with the signature run (#319) and the wording check
+(#309). It is not the cost of this run alone.
+
 ## Pins
 
 | Pin | llama.cpp | vLLM |

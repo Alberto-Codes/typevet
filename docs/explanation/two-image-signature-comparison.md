@@ -173,6 +173,33 @@ signature, a cheque, a contract or a person.
 - **One slice, one run.** Each backend ran 180 pairs once. The slice gives no
   variance estimate. Five writers appear twice in each kind.
 
+## Latency and cost
+
+One item is one pair: one typed judgment that asks all its questions. The
+receipts give `wall_seconds` and, per pair, `latency_seconds` and
+`input_tokens`.
+
+| Backend | Items | Wall time | Mean seconds per item | Items per minute | Mean input tokens |
+|---|---|---|---|---|---|
+| llama.cpp | 180 | 776 s (12.9 min) | 4.31 | 13.9 | 1,063 |
+| vLLM | 180 | 1,176 s (19.6 min) | 6.53 | 9.2 | 2,045 |
+
+Read these numbers with their limits:
+
+- **One request at a time.** Each run sent one pair, then waited for the
+  answer. This is not a throughput test. The H100 throughput reference is the
+  #236 receipt on the [performance page](../reference/performance.md).
+- **Network time is included on vLLM.** The vLLM requests went through the
+  RunPod proxy to a pod in data center AP-IN-2. The signature run and the
+  check run shared that pod at the same time.
+- **Input tokens differ.** vLLM counted more input tokens per pair than
+  llama.cpp: 2,045 against 1,063. The cause was not checked.
+
+The H100 pod cost about $2.24 in total
+([#316 pod record](https://github.com/Alberto-Codes/typevet/issues/316#issuecomment-5914299864)).
+That cost is shared with the check run (#316) and the wording check (#309).
+It is not the cost of this run alone.
+
 ## Data terms and storage
 
 CEDAR publishes no licence. The CEDAR page links the archive under "Published

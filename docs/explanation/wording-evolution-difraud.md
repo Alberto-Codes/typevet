@@ -179,6 +179,42 @@ contradict it.
 - **One question and one dataset.** The result says nothing about other
   questions, other data or other models.
 
+## Latency and cost
+
+One item is one call: one typed judgment with the one `is_scam` question.
+Each held-out check made 316 calls, 158 rows times two wordings. The
+held-out receipts give one `wall_seconds` value in `pins`. They give no
+per-call latency and no input tokens, so this page shows no token count.
+[#324](https://github.com/Alberto-Codes/typevet/issues/324) asks the next
+run to record both per row.
+
+| Backend | Items | Wall time | Mean seconds per item | Items per minute | Mean input tokens |
+|---|---|---|---|---|---|
+| llama.cpp | 316 | 371 s (6.2 min) | 1.17 | 51.1 | Not recorded |
+| vLLM | 316 | 317 s (5.3 min) | 1.00 | 59.8 | Not recorded |
+
+The receipt clock starts after the dataset loads. The supervisor's run logs
+(not in the repository) give pytest wall times of 372 s on llama.cpp and
+318 s on vLLM. Those include the dataset download, so they are upper bounds.
+
+The evolution itself ran on the local llama.cpp router. Its artifact gives a
+wall time of 1,958 s (32.6 min). That time includes the judge calls and the
+reflector calls.
+
+Read these numbers with their limits:
+
+- **One request at a time.** Each run sent one call, then waited for the
+  answer. This is not a throughput test. The H100 throughput reference is the
+  #236 receipt on the [performance page](../reference/performance.md).
+- **Network time is included on vLLM.** The vLLM requests went through the
+  RunPod proxy to a pod in data center AP-IN-2. For about the first minute,
+  the signature run (#319) used the same pod.
+
+The H100 pod cost about $2.24 in total
+([#316 pod record](https://github.com/Alberto-Codes/typevet/issues/316#issuecomment-5914299864)).
+That cost is shared with the check run (#316) and the signature run (#319).
+It is not the cost of this run alone. The local runs had no rental cost.
+
 ## Receipts
 
 - [`wording_evolution_artifact.json`](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/difraud/receipts/wording_evolution_artifact.json):
