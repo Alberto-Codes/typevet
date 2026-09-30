@@ -119,14 +119,15 @@ def test_collections_record_positive_equals_engaged() -> None:
     assert PublicRecord(state="t", positive=True).positive is True
 
 
-def test_choice_over_ten_options_raises_and_ten_passes() -> None:
+def test_choice_over_native_cap_raises_and_twenty_four_passes() -> None:
     def choice(n: int) -> dict[str, Noul | Choice]:
         return {"c": Choice(criteria={f"o{i}": None for i in range(n)})}
 
-    assert MAX_CHOICE_OPTIONS == 10
-    validate_questions(choice(10))
-    with pytest.raises(ValueError, match="11 options"):
-        validate_questions(choice(11))
+    assert MAX_CHOICE_OPTIONS == 24
+    validate_questions(choice(11))
+    validate_questions(choice(24))
+    with pytest.raises(ValueError, match="25 options"):
+        validate_questions(choice(25))
 
 
 def test_collections_parity_default_is_unchanged() -> None:
@@ -229,13 +230,13 @@ def _collections() -> dict[str, Noul | Choice]:
     }
 
 
-def test_banking77_workload_rejects_an_eleven_option_choice(
+def test_banking77_workload_rejects_a_choice_over_the_native_cap(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    wide = {"fraud_type": Choice(criteria={f"o{i}": None for i in range(11)})}
+    wide = {"fraud_type": Choice(criteria={f"o{i}": None for i in range(25)})}
     monkeypatch.setattr(public_workload, "_BANKING77_QUESTIONS", wide)
     rows = banking77.load_test_split(csv_text=_CSV)
-    with pytest.raises(ValueError, match="11 options"):
+    with pytest.raises(ValueError, match="25 options"):
         banking77_workload(rows)
 
 

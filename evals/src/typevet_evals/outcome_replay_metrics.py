@@ -1,5 +1,16 @@
 """Offline metrics from saved complete label distributions ([#132][i132]).
 
+Multi-class calibration ([#296][i296]) uses the equal-width bins of
+``typevet_evals.face_match.metrics.expected_calibration_error`` (10 by
+default). ``top_label_ece`` bins the top-label confidence against
+correctness. ``classwise_ece`` bins the mass of each class against a
+one-vs-rest gold and takes the mean over the classes with at least
+``MIN_CLASS_COUNT`` gold instances.
+
+Attributes:
+    MIN_CLASS_COUNT (int): Fewest gold instances for a class-wise ECE.
+    INSUFFICIENT_N (str): Status of a class below ``MIN_CLASS_COUNT``.
+
 Examples:
     ```python
     from typevet_evals.outcome_replay_metrics import (
@@ -17,22 +28,27 @@ Examples:
 
 See Also:
     - [typevet_evals.tpjep.outcome][]: ``prob_valid`` tolerance rules
+    - [typevet_evals.face_match.metrics][]: shared equal-width binning
 
 [i132]: https://github.com/Alberto-Codes/typevet/issues/132
+[i296]: https://github.com/Alberto-Codes/typevet/issues/296
 """
 
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Final
 
+from typevet_evals.face_match.metrics import DEFAULT_BINS, expected_calibration_error
 from typevet_evals.tpjep.outcome import prob_valid
 
 _PROB_SUM_TOLERANCE: Final[float] = 0.001
 _LOG_FLOOR: Final[float] = 1e-15
 _REPLAY_SCHEMA: Final[str] = "descriptive_v2"
+MIN_CLASS_COUNT: Final[int] = 30
+INSUFFICIENT_N: Final[str] = "insufficient N"
 
 
 @dataclass(frozen=True, slots=True)
@@ -252,3 +268,119 @@ def replay_identical_reports(
         ``True`` when mappings are equal.
     """
     return dict(first) == dict(second)
+
+
+def _check_calibration_inputs(
+    distributions: Sequence[Mapping[str, float]],
+    gold: Sequence[str],
+    labels: tuple[str, ...],
+) -> None:
+    if len(distributions) != len(gold):
+        msg = "distributions and gold must have the same length"
+        raise ValueError(msg)
+    if not labels:
+        msg = "labels must not be empty"
+        raise ValueError(msg)
+    if len(set(labels)) != len(labels):
+        msg = "duplicate labels are not allowed"
+        raise ValueError(msg)
+    for index, (probabilities, gold_label) in enumerate(
+        zip(distributions, gold, strict=True)
+    ):
+        if gold_label not in labels:
+            msg = f"gold label {gold_label!r} at row {index} is not in labels"
+            raise ValueError(msg)
+        if not prob_valid(probabilities, labels=labels):
+            msg = f"row {index} is not a valid distribution over labels"
+            raise ValueError(msg)
+
+
+def top_label_ece(
+    distributions: Sequence[Mapping[str, float]],
+    gold: Sequence[str],
+    *,
+    labels: tuple[str, ...],
+    n_bins: int = DEFAULT_BINS,
+) -> float:
+    """Return the top-label ECE over any label tuple.
+
+    The confidence of a row is its highest label mass. A row is correct when
+    the label with that mass is the gold label. When labels tie on that
+    mass, the first of them in ``labels`` order is the predicted label.
+
+    Args:
+        distributions: One complete label distribution per row.
+        gold: Gold label per row, in the same order.
+        labels: Label set; each distribution must cover it exactly.
+        n_bins: Number of equal-width bins.
+
+    Returns:
+        ECE in [0, 1]; 0.0 when there are no rows.
+
+    Raises:
+        ValueError: When lengths differ, ``labels`` is empty or has
+            duplicates, a gold label is not in ``labels`` or a distribution
+            is not valid.
+    """
+    _check_calibration_inputs(distributions, gold, labels)
+    confidences = [max(float(v) for v in p.values()) for p in distributions]
+    correct = [
+        max(labels, key=lambda label: float(p[label])) == gold_label
+        for p, gold_label in zip(distributions, gold, strict=True)
+    ]
+    return expected_calibration_error(confidences, correct, n_bins)
+
+
+def classwise_ece(
+    distributions: Sequence[Mapping[str, float]],
+    gold: Sequence[str],
+    *,
+    labels: tuple[str, ...],
+    n_bins: int = DEFAULT_BINS,
+) -> dict[str, Any]:
+    """Return the class-wise ECE and the value for each class.
+
+    Each class gets a one-vs-rest ECE over all rows: its mass against
+    ``gold == class``. A class with fewer than ``MIN_CLASS_COUNT`` gold
+    instances gets the status ``INSUFFICIENT_N`` and no value. The
+    class-wise ECE is the mean over the other classes.
+
+    Args:
+        distributions: One complete label distribution per row.
+        gold: Gold label per row, in the same order.
+        labels: Label set; each distribution must cover it exactly.
+        n_bins: Number of equal-width bins.
+
+    Returns:
+        ``classwise_ece`` (``None`` when no class has enough instances),
+        ``classes`` with ``count``, ``ece`` and ``status`` for each label,
+        ``insufficient_n`` in label order, ``min_class_count`` and
+        ``n_bins``.
+
+    Raises:
+        ValueError: When lengths differ, ``labels`` is empty or has
+            duplicates, a gold label is not in ``labels`` or a distribution
+            is not valid.
+    """
+    _check_calibration_inputs(distributions, gold, labels)
+    classes: dict[str, dict[str, Any]] = {}
+    insufficient: list[str] = []
+    values: list[float] = []
+    for label in labels:
+        count = sum(1 for gold_label in gold if gold_label == label)
+        if count < MIN_CLASS_COUNT:
+            insufficient.append(label)
+            classes[label] = {"count": count, "ece": None, "status": INSUFFICIENT_N}
+            continue
+        masses = [float(p[label]) for p in distributions]
+        hits = [gold_label == label for gold_label in gold]
+        value = expected_calibration_error(masses, hits, n_bins)
+        values.append(value)
+        classes[label] = {"count": count, "ece": value, "status": "ok"}
+    return {
+        "classwise_ece": (sum(values) / len(values)) if values else None,
+        "classes": classes,
+        "insufficient_n": insufficient,
+        "min_class_count": MIN_CLASS_COUNT,
+        "n_bins": n_bins,
+    }

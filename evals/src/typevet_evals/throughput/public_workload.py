@@ -11,7 +11,8 @@ Attributes:
     PUBLIC_DATASET_ENV (str): Env var for the directory with both data files.
     BANKING77_FILE (str): File name of the Banking77 test CSV.
     DIFRAUD_FILE (str): File name of the DIFrauD SMS test JSONL.
-    MAX_CHOICE_OPTIONS (int): Highest option count of one Choice (#234).
+    MAX_CHOICE_OPTIONS (int): Highest option count of one Choice; equal to
+        typevet's ``MAX_ENUM_CHOICES`` (24, #296).
     DIFRAUD_LIMIT (int): DIFrauD SMS rows in the parity set.
     SEED (int): Seed for the loaders' hash-based order.
     BANKING77_BASELINE (Baseline): finvet ECE 0.17 on the balanced 480 rows.
@@ -44,6 +45,7 @@ from typing import Final
 
 import httpx
 
+from typevet.domain import MAX_ENUM_CHOICES
 from typevet.domain.judgment_questions import Choice, Noul
 from typevet_evals.datasets import banking77, difraud
 from typevet_evals.throughput.collections_workload import Baseline
@@ -51,7 +53,7 @@ from typevet_evals.throughput.collections_workload import Baseline
 PUBLIC_DATASET_ENV: Final[str] = "TYPEVET_PUBLIC_DATASET"
 BANKING77_FILE: Final[str] = "banking77_test.csv"
 DIFRAUD_FILE: Final[str] = "difraud_sms_test.jsonl"
-MAX_CHOICE_OPTIONS: Final[int] = 10
+MAX_CHOICE_OPTIONS: Final[int] = MAX_ENUM_CHOICES
 DIFRAUD_LIMIT: Final[int] = 500
 SEED: Final[int] = 0
 BANKING77_BASELINE: Final[Baseline] = Baseline(ece=0.17, base_rate=0.5, max_ece=0.20)

@@ -59,6 +59,9 @@ The multimodal evidence covers one model pin per backend.
   More than 36 options raise `JudgmentValidationError` before that question's scoring call.
   No calibration receipt exists for more than 10 options.
   One live 24-option run on the local Q2_K Gemma 4 pin gave a valid distribution (#288). One run is not calibration.
+  The eval code can compute top-label ECE and class-wise ECE for any label set, and the public workloads accept 24 options (#296).
+  A class with fewer than 30 gold instances gets the status "insufficient N" and is not in the class-wise mean.
+  No live run has used these metrics yet.
 - `TYPEVET_LLAMA__MULTIMODAL_MODEL` defaults to a Gemma 3 id.
   If the router serves the Gemma 3 id, the native vision factory raises `ValueError`.
   Set the variable, or pass `model=`, to the Gemma 4 id.
