@@ -13,6 +13,7 @@ from mkdocs.config import load_config
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MERMAID_ASSET = "assets/javascripts/mermaid.min.js"
+DRAWER_SCRIPT = "javascripts/drawer-keyboard.js"
 MERMAID_VERSION = "11.17.2"
 MERMAID_SHA256 = "581ed7d74bd9048d0e3a91363927d72ef22942d7722546b27f7cc29e35390eb8"
 API_PACKAGE_PAGES = {
@@ -61,6 +62,8 @@ def test_mkdocs_strict_build_succeeds(
     gemma_html = gemma_page.read_text(encoding="utf-8")
     assert '<pre class="mermaid">' in gemma_html
     assert f'<script src="../../{MERMAID_ASSET}"></script>' in gemma_html
+    assert f'<script src="../../{DRAWER_SCRIPT}"></script>' in gemma_html
+    assert (site_dir / DRAWER_SCRIPT).is_file()
 
 
 def test_docs_workflow_pins_mermaid_to_the_extra_javascript_path() -> None:

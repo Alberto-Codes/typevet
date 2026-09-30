@@ -65,6 +65,7 @@ extra_css:
   - stylesheets/theme.css
 extra_javascript:
   - assets/javascripts/mermaid.min.js
+  - javascripts/drawer-keyboard.js
 markdown_extensions:
   - abbr
   - admonition
