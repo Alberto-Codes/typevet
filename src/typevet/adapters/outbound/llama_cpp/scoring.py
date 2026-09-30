@@ -5,6 +5,8 @@ off-option mass, the probability outside the candidate tokens, on the result.
 It reads the model vocabulary size from ``/v1/models`` (#321) unless the
 caller gives ``n_vocab``. It keeps a known size and makes at most 3 reads per
 model.
+A media request that fails to tokenize after a router model reload reads the
+new media marker once and sends the request once more (#322).
 
 Examples:
     ```python
@@ -79,6 +81,11 @@ A read that fails, or that finds no size, runs again on a later call up to
 this limit. After it, the adapter stops reading and the size stays unknown.
 """
 
+_BAD_REQUEST = 400
+_TOKENIZE_FAILURE = "failed to tokenize prompt"
+"""Case-folded llama.cpp message for a prompt it cannot tokenize, for example
+one that holds a stale media marker after a model reload (#322)."""
+
 _FULL_DISTRIBUTION_TOLERANCE = 1e-2
 """Largest distance of the returned total mass from 1 that still counts as the
 full distribution.
@@ -104,6 +111,8 @@ class LlamaCppCandidateScoringAdapter:
         _vocab_reads (dict[str, int]): Per-model count of ``/v1/models`` reads.
         _vocab_lock (threading.Lock): Guards the read count and size cache.
         _media_capabilities (dict[str, MediaCapability]): Per-model props cache.
+        _media_lock (threading.Lock): Guards ``_media_capabilities`` for
+            callers on worker threads.
 
     Examples:
         ```python
@@ -120,7 +129,7 @@ class LlamaCppCandidateScoringAdapter:
         n_vocab: int | None = None,
         media_capabilities: Mapping[str, MediaCapability] | None = None,
     ) -> None:
-        """Create the scoring adapter with an empty media capability cache.
+        """Create the scoring adapter and the lock that guards its media cache.
 
         Args:
             base_url: llama.cpp server root URL.
@@ -144,6 +153,7 @@ class LlamaCppCandidateScoringAdapter:
         self._media_capabilities: dict[str, MediaCapability] = dict(
             media_capabilities or {}
         )
+        self._media_lock = threading.Lock()
 
     def close(self) -> None:
         """Close the owned HTTP client when the adapter created it."""
@@ -172,6 +182,11 @@ class LlamaCppCandidateScoringAdapter:
         closes the connection (new or reused) before a response head, the request is sent once
         more on a fresh connection (#305).
 
+        The router gives each model load a new media marker. When a media
+        request gets HTTP 400 "Failed to tokenize prompt", the adapter reads
+        ``/props`` once more, rebuilds the prompt with the new marker and
+        sends it once more (#322). A successful request sends no extra call.
+
         Args:
             request: Model id, prefix, ordered single-token candidates, stage,
                 and optional images.
@@ -189,7 +204,8 @@ class LlamaCppCandidateScoringAdapter:
             ScoringValidationError: Missing candidate token coverage or invalid
                 logprob values (via ``build_and_validate_result``).
             TransportError: When the HTTP client fails before a response.
-            BackendHttpError: When llama.cpp returns HTTP status 400 or above.
+            BackendHttpError: When llama.cpp returns HTTP status 400 or above,
+                including a second tokenize failure after the marker refresh.
             GenerationError: When the JSON body shape is not usable.
         """
         if request.stage is not ScoreStage.PRE_SAMPLING:
@@ -206,21 +222,10 @@ class LlamaCppCandidateScoringAdapter:
                 )
                 raise ScoringUnsupportedCapabilityError(msg)
 
-        body: dict[str, Any] = {
-            "prompt": self._prompt_field(request),
-            "model": request.model,
-            "n_predict": 0,
-            "n_probs": self._n_probs(request.model),
-            "temperature": 0,
-            "top_k": 0,
-            "top_p": 1,
-            "post_sampling_probs": False,
-            "stream": False,
-            "cache_prompt": False,
-        }
-        url = urljoin(self._base_url, "completion")
-        client = self._ensure_client()
-        response = send_idempotent(lambda: client.post(url, json=body))
+        response = self._post_completion(request)
+        if request.media and _is_tokenize_failure(response):
+            self._refresh_media_capability(request.model)
+            response = self._post_completion(request)
         ensure_success_status(response)
         payload = parse_json_response(response)
         # Validates the root is an object, which _extract_usage then assumes.
@@ -296,6 +301,31 @@ class LlamaCppCandidateScoringAdapter:
                 self._vocab_sizes[model] = size
         return size
 
+    def _post_completion(self, request: CandidateScoringRequest) -> httpx.Response:
+        """Build the ``/completion`` body and send it with the early-close retry.
+
+        Args:
+            request: The scoring ask, with or without images.
+
+        Returns:
+            The router response, with any status.
+        """
+        body: dict[str, Any] = {
+            "prompt": self._prompt_field(request),
+            "model": request.model,
+            "n_predict": 0,
+            "n_probs": self._n_probs(request.model),
+            "temperature": 0,
+            "top_k": 0,
+            "top_p": 1,
+            "post_sampling_probs": False,
+            "stream": False,
+            "cache_prompt": False,
+        }
+        url = urljoin(self._base_url, "completion")
+        client = self._ensure_client()
+        return send_idempotent(lambda: client.post(url, json=body))
+
     def _prompt_field(self, request: CandidateScoringRequest) -> Any:
         """Return the ``prompt`` body value for a text or media request.
 
@@ -328,19 +358,34 @@ class LlamaCppCandidateScoringAdapter:
     def _media_capability(self, model: str) -> MediaCapability:
         """Return the cached media capability for ``model``, probing once.
 
+        The cache read holds ``_media_lock``; the probe does not.
+
         Args:
             model: Router model id.
 
         Returns:
             Declared ``MediaCapability`` for that model.
         """
-        cached = self._media_capabilities.get(model)
+        with self._media_lock:
+            cached = self._media_capabilities.get(model)
         if cached is not None:
             return cached
+        return self._refresh_media_capability(model)
+
+    def _refresh_media_capability(self, model: str) -> MediaCapability:
+        """Probe ``/props`` for ``model`` and replace the cached capability.
+
+        Args:
+            model: Router model id.
+
+        Returns:
+            The capability the router declares now.
+        """
         capability = fetch_media_capability(
             self._ensure_client(), self._base_url, model
         )
-        self._media_capabilities[model] = capability
+        with self._media_lock:
+            self._media_capabilities[model] = capability
         return capability
 
     def _ensure_client(self) -> httpx.Client:
@@ -352,6 +397,23 @@ class LlamaCppCandidateScoringAdapter:
         if self._client is None:
             self._client = httpx.Client(timeout=self._timeout)
         return self._client
+
+
+def _is_tokenize_failure(response: httpx.Response) -> bool:
+    """Return whether llama.cpp refused the prompt at tokenization.
+
+    A stale media marker gives HTTP 400 with the message "Failed to tokenize
+    prompt" (#322).
+
+    Args:
+        response: Router response to a ``/completion`` request.
+
+    Returns:
+        ``True`` only for HTTP 400 with that message in the body.
+    """
+    return response.status_code == _BAD_REQUEST and (
+        _TOKENIZE_FAILURE in response.text.casefold()
+    )
 
 
 def _off_option_mass(

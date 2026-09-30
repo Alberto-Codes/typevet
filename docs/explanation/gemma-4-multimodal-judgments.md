@@ -186,8 +186,11 @@ The receipts do not compare backends, and a difference is not a backend effect.
   restart the router in the middle ([#204](https://github.com/Alberto-Codes/typevet/issues/204)).
   A call while the router is down raises `TransportError`
   ([#298](https://github.com/Alberto-Codes/typevet/issues/298)).
-  The llama.cpp marker changes when the router reloads the model. Build a new
-  session after a reload. A stale marker fails tokenization with HTTP 400.
+  The llama.cpp marker changes when the router reloads the model. A stale
+  marker fails tokenization with HTTP 400. The scoring adapter then reads the
+  new marker once and sends the request once more
+  ([#322](https://github.com/Alberto-Codes/typevet/issues/322)). A second
+  failure raises `BackendHttpError`.
   The [native vision how-to](../how-to/connect-gemma4-native-vision-judgment.md)
   describes session ownership.
 - **One model pin per backend.** Evidence covers the alias

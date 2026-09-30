@@ -208,5 +208,7 @@ and each imaged request evaluated 362, a gap of 259. Run the smoke again before
 you quote a count for the current revision.
 
 The marker rotates when the router reloads the model. A stale marker returns
-HTTP 400 `Failed to tokenize prompt`, so build a new adapter per session
-rather than holding one across a reload.
+HTTP 400 `Failed to tokenize prompt`. The scoring adapter then reads the new
+marker from `GET /props` once and sends the request once more
+([#322](https://github.com/Alberto-Codes/typevet/issues/322)). If the request
+fails again, the adapter raises `BackendHttpError`.
