@@ -53,7 +53,7 @@ uv run python -m typevet_evals.cli.check_sheets --seed 1 --out scratchpad/check_
 
 | Option | Use |
 |---|---|
-| `--seed` | Generator seed. The default is 0, the #316 slice. |
+| `--seed` | Generator seed. The default is 0, the #316 slice. ASCII digits only, with outer spaces allowed; a blank value gives 0, as `TYPEVET_CHECK_MATCH_SEED` does. |
 | `--rows` | Register rows, 1 to 20. The default is 20. |
 | `--out` | Output directory. The command makes it when it is missing. |
 

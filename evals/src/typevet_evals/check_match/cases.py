@@ -5,7 +5,8 @@ per :class:`CheckVariant`, so the slice has 140 cases. Amendment A1 of the
 #303 design sets the expected labels per variant. Each check is not
 negotiable by construction: the routing number fails the ABA check digit and
 the account number prints as zeros. Payees come from a fixed list of
-invented names.
+invented names. ``parse_seed`` is the one seed rule of the live run and the
+contact-sheet command (#349).
 
 Attributes:
     ACCOUNT_NUMBER (str): Account number that every check prints.
@@ -456,6 +457,8 @@ def check_cases(seed: int = DEFAULT_SEED, count: int = ROW_COUNT) -> list[CheckC
 def check_match_seed(environ: Mapping[str, str]) -> int:
     """Return the generator seed that ``TYPEVET_CHECK_MATCH_SEED`` names (#344).
 
+    The value goes through ``parse_seed``, the rule of the ``--seed`` flag.
+
     Args:
         environ: Process environment, or a mapping in its place.
 
@@ -466,13 +469,32 @@ def check_match_seed(environ: Mapping[str, str]) -> int:
     Raises:
         ValueError: When the value is not a non-negative integer.
     """
-    raw = environ.get(SEED_ENV, "").strip()
-    if not raw:
+    return parse_seed(environ.get(SEED_ENV, ""), SEED_ENV)
+
+
+def parse_seed(raw: str, name: str) -> int:
+    """Return the generator seed that ``raw`` names (#349).
+
+    ``check_match_seed`` and the ``check_sheets --seed`` flag share this rule,
+    so both accept the same strings: ASCII digits only, with outer spaces.
+
+    Args:
+        raw: The seed text.
+        name: Name of the variable or flag, for the error message.
+
+    Returns:
+        The seed; :data:`DEFAULT_SEED` when ``raw`` is blank.
+
+    Raises:
+        ValueError: When ``raw`` is not blank and not ASCII digits.
+    """
+    text = raw.strip()
+    if not text:
         return DEFAULT_SEED
-    if not (raw.isascii() and raw.isdigit()):
-        msg = f"{SEED_ENV} must be a non-negative integer: {raw!r}"
+    if not (text.isascii() and text.isdigit()):
+        msg = f"{name} must be a non-negative integer: {text!r}"
         raise ValueError(msg)
-    return int(raw)
+    return int(text)
 
 
 def generator_pins(seed: int) -> dict[str, object]:

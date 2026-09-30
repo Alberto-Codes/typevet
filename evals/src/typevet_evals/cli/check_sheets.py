@@ -3,7 +3,9 @@ r"""Offline contact sheets of one synthetic check slice (#344).
 The command makes the check slice for one seed and writes one contact sheet
 per register row. Each sheet holds the 7 variants of that row with their
 expected labels. The command makes no model call. Keep the output directory
-outside the repository or under the git-ignored ``scratchpad/``.
+outside the repository or under the git-ignored ``scratchpad/``. ``--seed``
+takes the strings that ``TYPEVET_CHECK_MATCH_SEED`` takes (#349). A usage
+error prints the usage line.
 
 Examples:
     ```console
@@ -21,7 +23,6 @@ See Also:
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
 from typevet_evals.check_match import (
@@ -29,11 +30,19 @@ from typevet_evals.check_match import (
     ROW_COUNT,
     CheckVariant,
     check_cases,
+    parse_seed,
     write_contact_sheet,
 )
 
 _EXIT_OK = 0
 _EXIT_USAGE = 2
+
+
+def _seed(raw: str) -> int:
+    try:
+        return parse_seed(raw, "--seed")
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from exc
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -44,7 +53,7 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
-        "--seed", type=int, default=DEFAULT_SEED, help="Generator seed (default 0)"
+        "--seed", type=_seed, default=DEFAULT_SEED, help="Generator seed (default 0)"
     )
     parser.add_argument(
         "--rows",
@@ -65,18 +74,16 @@ def main(argv: list[str] | None = None) -> int:
         argv: CLI args; defaults to ``sys.argv[1:]``.
 
     Returns:
-        ``0`` when every sheet is written; ``2`` on a usage error.
+        ``0`` when every sheet is written; ``2`` on a usage error, which
+        prints the usage line and the error to stderr.
     """
+    parser = _build_parser()
     try:
-        args = _build_parser().parse_args(argv)
+        args = parser.parse_args(argv)
+        if not 1 <= args.rows <= ROW_COUNT:
+            parser.error(f"--rows must be 1 to {ROW_COUNT}: {args.rows}")
     except SystemExit as exc:
         return _EXIT_OK if exc.code in (0, None) else _EXIT_USAGE
-    if not 1 <= args.rows <= ROW_COUNT:
-        print(f"error: --rows must be 1 to {ROW_COUNT}: {args.rows}", file=sys.stderr)
-        return _EXIT_USAGE
-    if args.seed < 0:
-        print(f"error: --seed must be non-negative: {args.seed}", file=sys.stderr)
-        return _EXIT_USAGE
     cases = check_cases(args.seed, args.rows)
     per_row = len(CheckVariant)
     for row in range(args.rows):

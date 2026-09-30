@@ -5,6 +5,8 @@ text; the media holds one check image. The judgment asks four questions: a
 ``Noul`` on the payee, a ``Noul`` on the amounts, a six-label ``Choice``
 verdict and a 0 to 4 ``Score`` on legibility. The state never holds the
 printed check face, so a changed payee shows only in the image.
+``check_match_slice`` builds the seeded requests and slice pins of the live
+run (#349).
 
 Attributes:
     PAYEE_MATCHES (str): ``Noul`` question id for the payee.
@@ -35,6 +37,7 @@ See Also:
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Final
@@ -48,7 +51,14 @@ from typevet.domain import (
     Score,
 )
 from typevet.ports import JudgmentPort
-from typevet_evals.check_match.cases import CheckCase
+from typevet_evals.check_match.cases import (
+    CheckCase,
+    CheckVariant,
+    check_cases,
+    check_match_seed,
+    generator_pins,
+)
+from typevet_evals.check_match.render import render_check
 
 PAYEE_MATCHES: Final[str] = "payee_matches"
 AMOUNTS_MATCH: Final[str] = "amounts_match"
@@ -193,3 +203,59 @@ def judge_check_match(
         Typed answers for the four questions.
     """
     return port.judge(request.state, request.questions, model, media=request.media)
+
+
+@dataclass(frozen=True, slots=True)
+class CheckMatchSlice:
+    """The seeded requests of one live run and the pins that name them.
+
+    Attributes:
+        seed (int): Generator seed from ``TYPEVET_CHECK_MATCH_SEED``.
+        requests (tuple[CheckMatchRequest, ...]): One request per case.
+        pins (dict[str, object]): ``generator_pins`` plus ``register_rows``,
+            ``variants_per_row`` and ``slice_sha256``.
+
+    Examples:
+        ```python
+        made = check_match_slice(os.environ, rows=20)
+        made.pins["generator_seed"]
+        ```
+    """
+
+    seed: int
+    requests: tuple[CheckMatchRequest, ...]
+    pins: dict[str, object]
+
+
+def check_match_slice(environ: Mapping[str, str], rows: int) -> CheckMatchSlice:
+    """Build the seeded requests and slice pins of the live run (#349).
+
+    The live test calls this helper, so a unit test can prove offline that
+    the seed reaches both the requests and the ``generator_seed`` pin.
+
+    Args:
+        environ: Process environment, or a mapping in its place.
+        rows: Register rows in the slice.
+
+    Returns:
+        The seed, the requests in slice order and the slice pins.
+
+    Raises:
+        ValueError: When ``TYPEVET_CHECK_MATCH_SEED`` is not a seed.
+    """
+    seed = check_match_seed(environ)
+    requests = tuple(
+        build_check_match_request(case, image=render_check(case))
+        for case in check_cases(seed, rows)
+    )
+    digest = hashlib.sha256()
+    for request in requests:
+        digest.update(request.case_id.encode())
+        digest.update(hashlib.sha256(request.media[0].data).digest())
+    pins: dict[str, object] = {
+        **generator_pins(seed),
+        "register_rows": rows,
+        "variants_per_row": len(CheckVariant),
+        "slice_sha256": digest.hexdigest(),
+    }
+    return CheckMatchSlice(seed, requests, pins)

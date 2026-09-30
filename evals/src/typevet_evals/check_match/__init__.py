@@ -34,6 +34,7 @@ Attributes:
     CheckMatchOutcome (type): Typed answers and timing for one case.
     CheckMatchRequest (type): One one-image request for one case.
     CheckMatchRun (type): Outcomes of one run and its stopping failure.
+    CheckMatchSlice (type): Seeded live requests and their slice pins.
     CheckVariant (type): How the face differs from the register row.
     ExpectedLabels (type): Expected answers for one variant.
     RegisterRow (type): One row of the synthetic register.
@@ -48,6 +49,7 @@ Attributes:
     check_match_metrics (callable): Every metric over the outcomes.
     check_match_questions (callable): New ``Noul``, ``Choice`` and ``Score``.
     check_match_seed (callable): Generator seed from the environment.
+    check_match_slice (callable): Seeded live requests and slice pins.
     check_outcome_from_response (callable): Typed answers to one outcome.
     class_key (callable): Accuracy class name of one label set.
     counts_for_false_clear (callable): Whether a case enters false clear.
@@ -58,6 +60,7 @@ Attributes:
     legibility_gap (callable): Clean minus low-legibility mean ``Score``.
     noul_choice_agreement (callable): Whether the ``Noul`` answers support
         the verdict.
+    parse_seed (callable): The one seed rule of the variable and the flag.
     register_rows (callable): Seeded register rows.
     render_check (callable): One case to PNG bytes.
     render_check_image (callable): One case to a Pillow image.
@@ -108,6 +111,7 @@ from typevet_evals.check_match.cases import (
     check_cases,
     check_match_seed,
     generator_pins,
+    parse_seed,
     register_rows,
 )
 from typevet_evals.check_match.metrics import (
@@ -139,8 +143,10 @@ from typevet_evals.check_match.request import (
     VERDICT,
     VERDICT_LABELS,
     CheckMatchRequest,
+    CheckMatchSlice,
     build_check_match_request,
     check_match_questions,
+    check_match_slice,
     judge_check_match,
 )
 from typevet_evals.check_match.runner import (
@@ -186,6 +192,7 @@ __all__ = [
     "CheckMatchOutcome",
     "CheckMatchRequest",
     "CheckMatchRun",
+    "CheckMatchSlice",
     "CheckVariant",
     "ExpectedLabels",
     "RegisterRow",
@@ -200,6 +207,7 @@ __all__ = [
     "check_match_metrics",
     "check_match_questions",
     "check_match_seed",
+    "check_match_slice",
     "check_outcome_from_response",
     "class_key",
     "counts_for_false_clear",
@@ -209,6 +217,7 @@ __all__ = [
     "judge_check_match",
     "legibility_gap",
     "noul_choice_agreement",
+    "parse_seed",
     "register_rows",
     "render_check",
     "render_check_image",

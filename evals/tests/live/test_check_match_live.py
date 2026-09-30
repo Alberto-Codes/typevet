@@ -81,14 +81,9 @@ from typevet.adapters.outbound.vllm.judgment_factory import VllmJudgmentSession
 from typevet.domain import Choice, Noul, Score
 from typevet_evals.check_match import (
     ROW_COUNT,
-    CheckMatchRequest,
     build_check_match_receipt,
-    build_check_match_request,
-    check_cases,
     check_match_questions,
-    check_match_seed,
-    generator_pins,
-    render_check,
+    check_match_slice,
     run_check_match,
 )
 from typevet_evals.experiment_identity import (
@@ -146,13 +141,6 @@ def _environ() -> dict[str, str]:
     environ.setdefault("TYPEVET_LLAMA__MULTIMODAL_MODEL", _LLAMA_MODEL)
     environ.setdefault("TYPEVET_LLAMA__TIMEOUT", _LLAMA_TIMEOUT)
     return environ
-
-
-def _requests(seed: int, rows: int) -> list[CheckMatchRequest]:
-    return [
-        build_check_match_request(case, image=render_check(case))
-        for case in check_cases(seed, rows)
-    ]
 
 
 def _prompt_specs() -> tuple[PromptSpec, ...]:
@@ -227,14 +215,6 @@ def _server_facts(backend: str, client: httpx.Client, model: str) -> dict[str, o
     return facts
 
 
-def _slice_sha256(requests: Sequence[CheckMatchRequest]) -> str:
-    digest = hashlib.sha256()
-    for request in requests:
-        digest.update(request.case_id.encode())
-        digest.update(hashlib.sha256(request.media[0].data).digest())
-    return digest.hexdigest()
-
-
 def _summary(receipt: Mapping[str, object], digest: str, path: Path) -> str:
     metrics = receipt["metrics"]
     assert isinstance(metrics, Mapping)
@@ -265,8 +245,8 @@ def test_check_match_live_receipt() -> None:
     if not 1 <= rows <= ROW_COUNT:
         pytest.fail(f"{_ROWS_ENV} must be 1 to {ROW_COUNT}: {rows}")
     concurrency = image_concurrency(environ)
-    seed = check_match_seed(environ)
-    requests = _requests(seed, rows)
+    made = check_match_slice(environ, rows)
+    requests = made.requests
     tree = _working_tree()
     evaluated = snapshot_evaluated_inputs(
         prompts=_prompt_specs(),
@@ -308,12 +288,9 @@ def test_check_match_live_receipt() -> None:
     )
     pins = {
         "finished_utc": datetime.now(UTC).isoformat(),
-        **generator_pins(seed),
-        "register_rows": rows,
-        "variants_per_row": len(requests) // rows,
+        **made.pins,
         "concurrency": concurrency,
         "pillow_version": PIL.__version__,
-        "slice_sha256": _slice_sha256(requests),
         "server": facts,
         **weights,
     }
