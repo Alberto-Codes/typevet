@@ -112,6 +112,7 @@ nav:
   - Reference:
       - Python API: reference/api.md
       - Supported imports: reference/supported-imports.md
+      - Releases: reference/releases.md
       - Configuration: reference/configuration.md
       - Errors: reference/errors.md
       - Diagnostic events: reference/diagnostic-events.md
