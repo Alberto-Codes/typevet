@@ -9,6 +9,7 @@ classifiers = ["Private :: Do Not Upload"]
 dependencies = [
     "typevet",
     "httpx>=0.28",
+    "gepa-adk>=2.6,<3",
     "jsonschema>=4.26.0",
 ]
 
