@@ -220,7 +220,7 @@ layers = [
     "typevet_evals.psai_vision_consumer | typevet_evals.outcome_replay_metrics",
     "typevet_evals.signature_match | typevet_evals.check_match",
     "typevet_evals.runner | typevet_evals.tpjep | typevet_evals.experiment_identity | typevet_evals.face_match",
-    "typevet_evals.datasets",
+    "typevet_evals.datasets | typevet_evals.serving_metrics",
 ]
 
 [[tool.importlinter.contracts]]

@@ -30,6 +30,8 @@ real checks.
 
 ``TYPEVET_IMAGE_CONCURRENCY`` sets how many judgments run at one time
 (default 1, one at a time). The receipt pins record it.
+The receipt `throughput` block records the rates, the latency percentiles,
+the discarded count and, on vLLM, the `/metrics` deltas over the run (#335).
 
 Examples:
     ```bash
@@ -103,10 +105,14 @@ from typevet_evals.face_match import (
     served_weights_pins,
 )
 from typevet_evals.runner.live_gate import require_live_enabled
+from typevet_evals.serving_metrics import read_metrics
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _CHECK_MATCH_SRC = _REPO_ROOT / "evals" / "src" / "typevet_evals" / "check_match"
 _POOL_SRC = _REPO_ROOT / "evals" / "src" / "typevet_evals" / "face_match" / "pool.py"
+_SERVING_METRICS_SRC = (
+    _REPO_ROOT / "evals" / "src" / "typevet_evals" / "serving_metrics.py"
+)
 _RECEIPT_ENV = "TYPEVET_CHECK_MATCH_RECEIPT"
 _ROWS_ENV = "TYPEVET_CHECK_MATCH_ROWS"
 _LLAMA_MODEL = "gemma-4-31b-kv9-q4km-mm"
@@ -234,6 +240,7 @@ def _summary(receipt: Mapping[str, object], digest: str, path: Path) -> str:
         f"metrics {json.dumps(shown)}\n"
         f"accuracy_by_variant {json.dumps(metrics['accuracy_by_variant'])}\n"
         f"wall_seconds {receipt['wall_seconds']} stopped {receipt['stopped']}\n"
+        f"throughput {json.dumps(receipt['throughput'])}\n"
         "Noul values are model confidence; generated checks are not real checks."
     )
 
@@ -257,6 +264,7 @@ def test_check_match_live_receipt() -> None:
         code_paths={
             **{name: _CHECK_MATCH_SRC / f"{name}.py" for name in _CODE_MODULES},
             "pool": _POOL_SRC,
+            "serving_metrics": _SERVING_METRICS_SRC,
         },
         fixture_paths={},
     )
@@ -273,8 +281,15 @@ def test_check_match_live_receipt() -> None:
             ),
             working_tree=tree,
         )
+        client = session.client
         run = run_check_match(
-            session.port, requests, session.model, concurrency=concurrency
+            session.port,
+            requests,
+            session.model,
+            concurrency=concurrency,
+            server_metrics=(
+                (lambda: read_metrics(client)) if backend == "vllm" else None
+            ),
         )
 
     identity = finalize_experiment_identity(

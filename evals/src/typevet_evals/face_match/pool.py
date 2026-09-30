@@ -9,7 +9,9 @@ The first backend failure (``GenerationError``) in slice order stops the run.
 No request is sent after a failure; judgments already in flight finish. The
 result keeps only the requests before the failing index, so a run at any
 concurrency records the same outcomes and failure as a one-at-a-time run
-when the backend answers each request the same way.
+when the backend answers each request the same way. The failure record
+counts the ``discarded`` judgments (#335): completions and failures after
+the failing index that reached the server but are dropped by design.
 
 Attributes:
     IMAGE_CONCURRENCY_ENV (str): Variable the live image runs read for the
@@ -68,6 +70,8 @@ class JudgmentFailure[R]:
         index (int): Slice index of the failing request.
         request (R): The failing request.
         error (GenerationError): The failure the port raised.
+        discarded (int): Judgments after ``index`` that finished or failed
+            but are dropped by design; ``0`` for a one-at-a-time run.
 
     Examples:
         ```python
@@ -78,6 +82,7 @@ class JudgmentFailure[R]:
     index: int
     request: R
     error: GenerationError
+    discarded: int = 0
 
     def record(self, id_key: str, id_value: str) -> dict[str, object]:
         """Return the receipt mapping for the failure.
@@ -87,13 +92,14 @@ class JudgmentFailure[R]:
             id_value: Id of the failing request.
 
         Returns:
-            Index, request id, error class and message.
+            Index, request id, error class, message and discarded count.
         """
         return {
             "index": self.index,
             id_key: id_value,
             "error_class": type(self.error).__name__,
             "message": str(self.error),
+            "discarded": self.discarded,
         }
 
 
@@ -230,4 +236,6 @@ def _judge_pooled[R](
     judged = tuple(done[i] for i in range(stop))
     if first is None:
         return JudgedBatch(judged, None)
-    return JudgedBatch(judged, JudgmentFailure(first, requests[first], failures[first]))
+    discarded = sum(1 for i in (*done, *failures) if i > first)
+    failure = JudgmentFailure(first, requests[first], failures[first], discarded)
+    return JudgedBatch(judged, failure)

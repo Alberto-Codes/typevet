@@ -64,7 +64,8 @@ def test_evaluation_families_contract_configured() -> None:
             "wheel_isolated",
         )
     }
-    assert layers[-1] == f"{_EVALS}.datasets"
+    bottom = {name.strip() for name in layers[-1].split("|")}
+    assert f"{_EVALS}.datasets" in bottom
     listed = {name.strip() for layer in layers for name in layer.split("|")}
     for family in (
         "cli",
@@ -78,6 +79,7 @@ def test_evaluation_families_contract_configured() -> None:
         "tpjep",
         "experiment_identity",
         "datasets",
+        "serving_metrics",
     ):
         assert f"{_EVALS}.{family}" in listed, family
 

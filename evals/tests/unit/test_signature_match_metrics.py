@@ -319,6 +319,7 @@ def test_run_stops_on_first_transport_failure() -> None:
         "pair_id": "genuine_random:original_2_1:original_3_1",
         "error_class": "TransportError",
         "message": "connection refused",
+        "discarded": 0,
     }
 
 

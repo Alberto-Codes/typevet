@@ -11,6 +11,8 @@ The ``same_person`` probability is model confidence. It is not a calibrated
 match percentage.
 
 Attributes:
+    IMAGES_PER_JUDGMENT (int): Images sent with each judgment; the
+        ``throughput`` receipt block counts images with it.
     RECEIPT_ISSUE (int): Issue number recorded in every receipt.
     CONFIDENCE_NOTE (str): Honesty note stored with the metrics.
     VLLM_REVISION_ENV (str): Variable that names the served vLLM weights
@@ -54,7 +56,9 @@ from typevet_evals.face_match.request import (
     FaceMatchRequest,
     judge_face_match,
 )
+from typevet_evals.serving_metrics import run_server_delta, run_throughput
 
+IMAGES_PER_JUDGMENT: Final[int] = 2
 RECEIPT_ISSUE: Final[int] = 301
 CONFIDENCE_NOTE: Final[str] = (
     "same_person_confidence is model confidence from the Noul answer. "
@@ -129,6 +133,11 @@ class FaceMatchRun:
         stopped (dict[str, object] | None): Index, pair id, error class and
             message of the first failure; ``None`` when every pair ran.
         wall_seconds (float): Wall time of the whole run.
+        concurrency (int): Most judgments in flight at one time.
+        discarded (int): Judgments after the first failure that were
+            dropped by design.
+        server (dict[str, Any] | None): vLLM ``/metrics`` deltas over the
+            run; ``None`` when no reading was asked for.
 
     Examples:
         ```python
@@ -139,6 +148,9 @@ class FaceMatchRun:
     outcomes: tuple[FaceMatchOutcome, ...]
     stopped: dict[str, object] | None
     wall_seconds: float
+    concurrency: int = 1
+    discarded: int = 0
+    server: dict[str, Any] | None = None
 
 
 def outcome_from_response(
@@ -178,6 +190,7 @@ def run_face_match(
     *,
     concurrency: int = 1,
     clock: Callable[[], float] = time.perf_counter,
+    server_metrics: Callable[[], str | None] | None = None,
 ) -> FaceMatchRun:
     """Judge each request once and stop at the first failure.
 
@@ -196,13 +209,18 @@ def run_face_match(
         concurrency: Most judgments in flight at one time; ``1`` judges one
             request at a time, as before.
         clock: Monotonic clock in seconds.
+        server_metrics: Reads the vLLM ``/metrics`` text once, or returns
+            ``None`` when the read fails. The run reads it before and after
+            the judgments, outside the wall time. ``None`` skips the reading.
 
     Returns:
-        The outcomes, the stopping failure and the wall time.
+        The outcomes, the stopping failure, the wall time, the concurrency,
+        the discarded count and the ``/metrics`` deltas.
 
     Raises:
         ValueError: When ``concurrency`` is less than 1.
     """
+    before = None if server_metrics is None else server_metrics()
     started = clock()
     batch = judge_in_order(
         requests,
@@ -219,7 +237,12 @@ def run_face_match(
         if batch.failure is None
         else batch.failure.record("pair_id", batch.failure.request.pair_id)
     )
-    return FaceMatchRun(outcomes, stopped, clock() - started)
+    wall_seconds = clock() - started
+    server = (
+        None if server_metrics is None else run_server_delta(before, server_metrics())
+    )
+    discarded = 0 if batch.failure is None else batch.failure.discarded
+    return FaceMatchRun(outcomes, stopped, wall_seconds, concurrency, discarded, server)
 
 
 def face_match_metrics(outcomes: Sequence[FaceMatchOutcome]) -> dict[str, Any]:
@@ -284,8 +307,10 @@ def build_face_match_receipt(
         identity: Experiment identity mapping.
 
     Returns:
-        JSON-ready receipt with pair ids, typed answers and metrics. It holds
-        no image bytes.
+        JSON-ready receipt with pair ids, typed answers, metrics and the
+        ``throughput`` block (concurrency, rates, latency percentiles,
+        discarded count and vLLM ``/metrics`` deltas). It holds no image
+        bytes.
     """
     return {
         "issue": RECEIPT_ISSUE,
@@ -295,6 +320,14 @@ def build_face_match_receipt(
         "identity": dict(identity),
         "stopped": run.stopped,
         "wall_seconds": round(run.wall_seconds, 3),
+        "throughput": run_throughput(
+            [o.latency_seconds for o in run.outcomes],
+            images_per_judgment=IMAGES_PER_JUDGMENT,
+            wall_seconds=run.wall_seconds,
+            concurrency=run.concurrency,
+            discarded=run.discarded,
+            server=run.server,
+        ),
         "metrics": face_match_metrics(run.outcomes),
         "pairs": [o.to_receipt() for o in run.outcomes],
     }

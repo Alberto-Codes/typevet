@@ -286,6 +286,7 @@ def test_run_stops_on_first_transport_failure() -> None:
         "pair_id": "1:Alpha_Example_0002:Bravo_Example_0003",
         "error_class": "TransportError",
         "message": "connection refused",
+        "discarded": 0,
     }
 
 

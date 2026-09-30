@@ -118,6 +118,41 @@ no image bytes. The test refuses to write
 a receipt that holds the vLLM key or an auth header. Receipts are in
 `evals/fixtures/lfw/receipts/`.
 
+### Throughput block
+
+Issue [#335](https://github.com/Alberto-Codes/typevet/issues/335) adds a
+`throughput` key to the face, signature and check receipts. The other keys
+do not change. `TYPEVET_IMAGE_CONCURRENCY` sets how many judgments run at
+one time. The default is 1.
+
+| Key | Meaning |
+|---|---|
+| `concurrency` | Most judgments in flight at one time |
+| `wall_seconds` | Wall time of the run, the same value as the top-level `wall_seconds` |
+| `judgments`, `images` | Kept judgments and the images they sent: 2 per face pair |
+| `judgments_per_second`, `images_per_second` | Each count divided by the wall time; `null` when the wall time is 0 |
+| `latency_seconds` | `n` and the nearest-rank `p50`, `p95` and `p99` of the client latency per judgment |
+| `discarded` | Judgments after the first failure that reached the server and were dropped |
+| `server` | vLLM `/metrics` changes over the run; `null` for llama.cpp |
+
+The `stopped` record also holds `discarded`. The rates count only the kept
+judgments.
+
+The `server` block holds the `e2e`, `queue` and `prefill` histogram changes,
+`prefix_cache_hit_rate`, `counters` and `gauges`. The `counters` are the
+changes of `vllm:prefix_cache_hits`, `vllm:prefix_cache_queries`,
+`vllm:mm_cache_hits`, `vllm:mm_cache_queries`, `vllm:prompt_tokens`,
+`vllm:prompt_tokens_cached`, `vllm:generation_tokens`,
+`vllm:request_success` and `vllm:num_preemptions`. The `gauges` are
+`vllm:kv_cache_usage_perc`, `vllm:num_requests_running` and
+`vllm:num_requests_waiting`, read before and after the run. A gauge is a
+point value, not a peak. A missing series is `unknown`. The two `/metrics`
+reads are outside the wall time. Requests from other clients of the same
+server also change the counters. The names come from vLLM `v0.30.0`.
+
+The code fingerprint in the experiment identity includes
+`face_match/pool.py` and `serving_metrics.py`.
+
 ## Licence and policy
 
 LFW has no formal licence. The photographers keep the image copyright. The

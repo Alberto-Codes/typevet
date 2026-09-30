@@ -154,6 +154,18 @@ The receipt also holds the experiment identity with the git fingerprint.
 The receipt holds no image bytes. The test refuses a receipt that holds the
 vLLM key or an auth header.
 
+### Throughput block
+
+The receipt also holds the `throughput` key from
+[#335](https://github.com/Alberto-Codes/typevet/issues/335). It records the concurrency, the wall time
+and the judgments and images per second. It also records the latency
+percentiles, the `discarded` count and, on vLLM, the `/metrics` changes
+over the run. The
+image count is 1 per check. The `stopped` record also holds `discarded`. The
+[LFW reference](eval-lfw-loader.md#throughput-block) lists each key. The
+code fingerprint in the experiment identity includes `face_match/pool.py`
+and `serving_metrics.py`.
+
 ## llama.cpp media marker
 
 The llama.cpp router gives each model load a new random media marker. The

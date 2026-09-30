@@ -23,6 +23,8 @@ call when it does. ``TYPEVET_BACKEND`` selects the backend, as in
 ``TYPEVET_FACE_MATCH_PER_CLASS`` sets a smaller slice for a smoke run.
 ``TYPEVET_IMAGE_CONCURRENCY`` sets how many judgments run at one time
 (default 1, one at a time). The receipt pins record it.
+The receipt `throughput` block records the rates, the latency percentiles,
+the discarded count and, on vLLM, the `/metrics` deltas over the run (#335).
 ``TYPEVET_GIT_STATUS_PORCELAIN`` carries the porcelain status text for the
 working-tree fingerprint, as in the CORD smoke. The
 receipt holds pair ids, typed answers, metrics and pins. It holds no image
@@ -104,9 +106,13 @@ from typevet_evals.face_match import (
     served_weights_pins,
 )
 from typevet_evals.runner.live_gate import require_live_enabled
+from typevet_evals.serving_metrics import read_metrics
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _FACE_MATCH_SRC = _REPO_ROOT / "evals" / "src" / "typevet_evals" / "face_match"
+_SERVING_METRICS_SRC = (
+    _REPO_ROOT / "evals" / "src" / "typevet_evals" / "serving_metrics.py"
+)
 _RECEIPT_ENV = "TYPEVET_FACE_MATCH_RECEIPT"
 _PER_CLASS_ENV = "TYPEVET_FACE_MATCH_PER_CLASS"
 _LLAMA_MODEL = "gemma-4-31b-kv9-q4km-mm"
@@ -237,6 +243,7 @@ def _summary(receipt: Mapping[str, object], digest: str, path: Path) -> str:
         f"metrics {json.dumps(shown)}\n"
         f"score_distribution {json.dumps(metrics['score_distribution'])}\n"
         f"wall_seconds {receipt['wall_seconds']} stopped {receipt['stopped']}\n"
+        f"throughput {json.dumps(receipt['throughput'])}\n"
         "same_person values are model confidence, not a match percentage."
     )
 
@@ -256,8 +263,11 @@ def test_face_match_live_receipt() -> None:
     evaluated = snapshot_evaluated_inputs(
         prompts=_prompt_specs(),
         code_paths={
-            name: _FACE_MATCH_SRC / f"{name}.py"
-            for name in ("request", "metrics", "runner", "pool")
+            **{
+                name: _FACE_MATCH_SRC / f"{name}.py"
+                for name in ("request", "metrics", "runner", "pool")
+            },
+            "serving_metrics": _SERVING_METRICS_SRC,
         },
         fixture_paths={},
     )
@@ -274,8 +284,15 @@ def test_face_match_live_receipt() -> None:
             ),
             working_tree=tree,
         )
+        client = session.client
         run = run_face_match(
-            session.port, requests, session.model, concurrency=concurrency
+            session.port,
+            requests,
+            session.model,
+            concurrency=concurrency,
+            server_metrics=(
+                (lambda: read_metrics(client)) if backend == "vllm" else None
+            ),
         )
 
     identity = finalize_experiment_identity(

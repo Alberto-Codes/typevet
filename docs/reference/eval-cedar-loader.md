@@ -156,6 +156,18 @@ receipt holds no image bytes. The test refuses to write a receipt that holds
 the vLLM key or an auth header. Receipts are in
 `evals/fixtures/cedar/receipts/`.
 
+### Throughput block
+
+The receipt also holds the `throughput` key from
+[#335](https://github.com/Alberto-Codes/typevet/issues/335). It records the concurrency, the wall time
+and the judgments and images per second. It also records the latency
+percentiles, the `discarded` count and, on vLLM, the `/metrics` changes
+over the run. The
+image count is 2 per signature pair. The `stopped` record also holds `discarded`. The
+[LFW reference](eval-lfw-loader.md#throughput-block) lists each key. The
+code fingerprint in the experiment identity includes `face_match/pool.py`
+and `serving_metrics.py`.
+
 ## Licence and policy
 
 The CEDAR page states no licence. typevet uses the data for research only

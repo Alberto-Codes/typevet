@@ -285,6 +285,7 @@ def test_run_stops_on_first_transport_failure() -> None:
         "case_id": "r00:payee_changed",
         "error_class": "TransportError",
         "message": "refused",
+        "discarded": 0,
     }
 
 

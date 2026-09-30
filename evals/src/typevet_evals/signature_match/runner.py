@@ -12,6 +12,8 @@ The ``same_writer`` probability is model confidence. It is not a match
 percentage or a forensic score.
 
 Attributes:
+    IMAGES_PER_JUDGMENT (int): Images sent with each judgment; the
+        ``throughput`` receipt block counts images with it.
     RECEIPT_ISSUE (int): Issue number recorded in every receipt.
     CONFIDENCE_NOTE (str): Honesty note stored with the metrics.
     QUALITY_LEVELS (int): Levels of the image-quality ``Score``.
@@ -50,6 +52,7 @@ from typevet_evals.face_match.metrics import (
     roc_auc,
 )
 from typevet_evals.face_match.pool import judge_in_order
+from typevet_evals.serving_metrics import run_server_delta, run_throughput
 from typevet_evals.signature_match.metrics import (
     ACCEPT_THRESHOLD,
     kind_accuracy,
@@ -68,6 +71,7 @@ from typevet_evals.signature_match.request import (
     judge_signature_match,
 )
 
+IMAGES_PER_JUDGMENT: Final[int] = 2
 RECEIPT_ISSUE: Final[int] = 319
 CONFIDENCE_NOTE: Final[str] = (
     "same_writer_confidence is model confidence from the Noul answer. "
@@ -144,6 +148,11 @@ class SignatureMatchRun:
         stopped (dict[str, object] | None): Index, pair id, error class and
             message of the first failure; ``None`` when every pair ran.
         wall_seconds (float): Wall time of the whole run.
+        concurrency (int): Most judgments in flight at one time.
+        discarded (int): Judgments after the first failure that were
+            dropped by design.
+        server (dict[str, Any] | None): vLLM ``/metrics`` deltas over the
+            run; ``None`` when no reading was asked for.
 
     Examples:
         ```python
@@ -154,6 +163,9 @@ class SignatureMatchRun:
     outcomes: tuple[SignatureMatchOutcome, ...]
     stopped: dict[str, object] | None
     wall_seconds: float
+    concurrency: int = 1
+    discarded: int = 0
+    server: dict[str, Any] | None = None
 
 
 def outcome_from_response(
@@ -194,6 +206,7 @@ def run_signature_match(
     *,
     concurrency: int = 1,
     clock: Callable[[], float] = time.perf_counter,
+    server_metrics: Callable[[], str | None] | None = None,
 ) -> SignatureMatchRun:
     """Judge each request once and stop at the first failure.
 
@@ -212,13 +225,18 @@ def run_signature_match(
         concurrency: Most judgments in flight at one time; ``1`` judges one
             request at a time, as before.
         clock: Monotonic clock in seconds.
+        server_metrics: Reads the vLLM ``/metrics`` text once, or returns
+            ``None`` when the read fails. The run reads it before and after
+            the judgments, outside the wall time. ``None`` skips the reading.
 
     Returns:
-        The outcomes, the stopping failure and the wall time.
+        The outcomes, the stopping failure, the wall time, the concurrency,
+        the discarded count and the ``/metrics`` deltas.
 
     Raises:
         ValueError: When ``concurrency`` is less than 1.
     """
+    before = None if server_metrics is None else server_metrics()
     started = clock()
     batch = judge_in_order(
         requests,
@@ -235,7 +253,14 @@ def run_signature_match(
         if batch.failure is None
         else batch.failure.record("pair_id", batch.failure.request.pair_id)
     )
-    return SignatureMatchRun(outcomes, stopped, clock() - started)
+    wall_seconds = clock() - started
+    server = (
+        None if server_metrics is None else run_server_delta(before, server_metrics())
+    )
+    discarded = 0 if batch.failure is None else batch.failure.discarded
+    return SignatureMatchRun(
+        outcomes, stopped, wall_seconds, concurrency, discarded, server
+    )
 
 
 def _mean(values: Sequence[float]) -> float | None:
@@ -351,8 +376,10 @@ def build_signature_match_receipt(
         identity: Experiment identity mapping.
 
     Returns:
-        JSON-ready receipt with pair ids, typed answers and metrics. It holds
-        no image bytes.
+        JSON-ready receipt with pair ids, typed answers, metrics and the
+        ``throughput`` block (concurrency, rates, latency percentiles,
+        discarded count and vLLM ``/metrics`` deltas). It holds no image
+        bytes.
     """
     return {
         "issue": RECEIPT_ISSUE,
@@ -362,6 +389,14 @@ def build_signature_match_receipt(
         "identity": dict(identity),
         "stopped": run.stopped,
         "wall_seconds": round(run.wall_seconds, 3),
+        "throughput": run_throughput(
+            [o.latency_seconds for o in run.outcomes],
+            images_per_judgment=IMAGES_PER_JUDGMENT,
+            wall_seconds=run.wall_seconds,
+            concurrency=run.concurrency,
+            discarded=run.discarded,
+            server=run.server,
+        ),
         "metrics": signature_match_metrics(run.outcomes),
         "pairs": [o.to_receipt() for o in run.outcomes],
     }
