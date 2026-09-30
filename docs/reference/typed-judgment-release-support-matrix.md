@@ -85,6 +85,7 @@ The message is `native Choice supports N options on this tokenizer; got M`.
 More than 36 options raise `native Choice supports at most 36 options; got M`.
 The #286 check tokenized `"0"` to `"9"` and `"A"` to `"Z"` on the local Gemma 4 GGUF tokenizer (llama.cpp) and on the cached Hugging Face tokenizer for vLLM. Each is a single token, with the same ids on both ([#286](https://github.com/Alberto-Codes/typevet/issues/286)).
 Thus control binding can label 36 options there, and the usable limit is the execute limit of 24. Other tokenizers can support fewer.
+The #299 check did the same on the `allenai/Molmo2-4B` tokenizer (revision `042abfa7`, tokenizer files only). Each control is one token after the ChatML assistant header, so the limit there is also 24. No Molmo2 model call was made ([#299](https://github.com/Alberto-Codes/typevet/issues/299)).
 The Hugging Face check used the QAT checkpoint tokenizer, not the exact BF16 serving pin.
 No calibration receipt exists for more than 10 options.
 One live 24-option run on the local Q2_K Gemma 4 pin gave a valid distribution ([#288](https://github.com/Alberto-Codes/typevet/issues/288)). One run is not calibration.
