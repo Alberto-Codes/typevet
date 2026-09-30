@@ -1,6 +1,12 @@
+---
+status: draft
+---
+
 # Serve typevet on vLLM
 
 Kind: how-to.
+
+Status: **draft**.
 
 Use this page to run typevet generation and judgment against a vLLM
 OpenAI-compatible server. The steps follow the one tested pin from the

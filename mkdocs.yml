@@ -103,6 +103,7 @@ nav:
       - How typevet works with Gemma 4: explanation/how-typevet-works-with-gemma-4.md
       - Gemma 4 multimodal judgments: explanation/gemma-4-multimodal-judgments.md
       - Library-first architecture: explanation/library-first-architecture.md
+      - Limits and known gaps: explanation/limits.md
       - Native typed judgments: explanation/native-typed-judgments.md
       - TypeLLM, Jev and judgevet: explanation/typellm-and-judgevet.md
       - Verified evidence and inferred claims: explanation/verification.md

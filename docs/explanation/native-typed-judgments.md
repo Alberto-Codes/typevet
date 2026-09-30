@@ -1,6 +1,12 @@
+---
+status: draft
+---
+
 # Native typed judgments in typevet
 
 Kind: explanation.
+
+Status: **draft**.
 
 typevet ships **native** System One–shaped judgment: `Noul`, `Choice`, and
 `Score` questions, normalized answers, and probability maps from candidate

@@ -31,6 +31,7 @@ answers a question, and a reference gives facts.
 - [Native typed judgments](explanation/native-typed-judgments.md): what typevet
   owns after M2 — questions → Gemma judgments → TPJEP eight-task smoke; validity
   vs calibration; control-token binding.
+- [Limits and known gaps](explanation/limits.md): the known limits and open gaps, each with its source, and the page status values.
 - [Gemma 4 multimodal judgments](explanation/gemma-4-multimodal-judgments.md): how images reach Gemma 4 on llama.cpp and vLLM, what the receipts prove, and the limits.
 
 ## Tutorials

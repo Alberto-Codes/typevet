@@ -17,6 +17,8 @@ The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.
   the scoring path, the two backends and what each receipt proves.
 - [Verified evidence and inferred claims](explanation/verification.md):
   what unit, contract and live tests each prove.
+- [Limits and known gaps](explanation/limits.md):
+  the known limits and open gaps, each linked to its source.
 - [Typed-judgment release support matrix](reference/typed-judgment-release-support-matrix.md):
   supported APIs, tested pins, evidence commands and exclusions.
 - [Judgment live receipts](reference/judgment-live-receipts.md):

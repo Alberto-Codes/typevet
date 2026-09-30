@@ -1,0 +1,156 @@
+---
+status: draft
+---
+
+# Limits and known gaps
+
+Kind: explanation.
+
+Status: **draft**.
+
+This page collects the known limits of typevet 0.1.0 in one place.
+Each section states one limit and links to the page or issue that is its source.
+The source page holds the full detail. When this page and a source differ, the source wins.
+
+## Page status
+
+Some typevet pages carry a `status:` value in the front matter and a `Status:` line under the title.
+The value tells you how far the page is backed by evidence.
+
+| Status | Meaning |
+|---|---|
+| `sketch` | The page comes from first principles. No code or measurement verifies it yet. |
+| `draft` | Working code or real measurements back part of the page. Details can change. |
+| `stable` | The page was verified against the current state of `main`. |
+
+A page moves to a higher status in the commit that lands the proof.
+A page without a status line makes no status claim.
+
+## Tested pins per backend
+
+Each backend has a small number of tested pins, and each pin has one receipt.
+A pin is not a minimum version.
+It says nothing about other versions, quantizations or hardware.
+
+- **vLLM.** Stock `vllm/vllm-openai:v0.30.0` with BF16 `google/gemma-4-31B-it` at one revision on one H100 80 GB.
+  Other vLLM versions, models, precisions and GPUs are not tested.
+- **llama.cpp.** One `llama-server` build for image input and one build for generation.
+  The image-input row does not record its hardware.
+- **No backend comparison.** The vLLM and llama.cpp rows use different weights.
+  Do not attribute a result difference to the backend.
+- **Untested on vLLM.** Quantized weights, mixed scoring batches and the `/metrics` KV-cache metric names are not tested.
+
+Sources: [tested serving pins](../reference/typed-judgment-release-support-matrix.md#tested-serving-pins),
+[Serve typevet on vLLM, limits](../how-to/serve-typevet-on-vllm.md#limits).
+
+## Model scope
+
+The tested pins cover Gemma 4 31B only.
+Some older smoke rows use a Gemma 3 model, but they are not release pins.
+Other models are not tested.
+The multimodal evidence covers one model pin per backend.
+
+- Native `Choice` supports 10 options on the checked Gemma 4 GGUF tokenizer.
+  More options raise `JudgmentValidationError` before any scoring call.
+  The vLLM tokenizer was not checked.
+- `TYPEVET_LLAMA__MULTIMODAL_MODEL` defaults to a Gemma 3 id.
+  If the router serves the Gemma 3 id, the native vision factory raises `ValueError`.
+  Set the variable, or pass `model=`, to the Gemma 4 id.
+- typevet does not promise byte parity with TypeLLM or SGLang.
+
+Sources: [behaviour at HEAD](../reference/typed-judgment-release-support-matrix.md#behaviour-at-head-on-both-backends),
+[Gemma 4 multimodal judgments, limits](gemma-4-multimodal-judgments.md#limits),
+[Native typed judgments, limitations](native-typed-judgments.md#limitations).
+
+## The local alias does not name its quantization
+
+Several receipts and pages name the local llama.cpp alias `gemma-4-31b-kv9-q4km-mm` and describe it as Q4.
+On the operator's router, that alias loads a file whose `/props` ftype is `Q2_K - Medium`, not Q4_K_M.
+The router also uses a chat template file override.
+The docs do not yet record the true identity next to each receipt.
+Until they do, treat the quantization of the llama.cpp image-input pin as unknown.
+
+Source: [#233](https://github.com/Alberto-Codes/typevet/issues/233) (open).
+The pin itself is in the [tested serving pins](../reference/typed-judgment-release-support-matrix.md#tested-serving-pins).
+
+## What live receipts prove and do not prove
+
+A live pass shows that one exercised call completed for the prompt, schema and model that the test used.
+It does not show calibration, task accuracy or identical future answers.
+A valid structure is not a correct answer.
+
+- Smoke runs prove typed wiring, image attachment and controls.
+  They do not prove model quality or calibration.
+- The samples are small. Each multimodal set has 18 or fewer items per check.
+  Treat them as smoke evidence, not as accuracy you can expect in production.
+- A saved receipt can pass pytest and still fail the semantic acceptance floors.
+- The receipts cover a few CORD receipts and screenshots.
+  They make no general OCR claim.
+
+Sources: [Verified evidence and inferred claims](verification.md),
+[Judgment live receipts](../reference/judgment-live-receipts.md),
+[deliberate exclusions](../reference/typed-judgment-release-support-matrix.md#deliberate-exclusions).
+
+## Performance
+
+typevet has one throughput measurement: one run, one pod and one model pin on vLLM.
+At concurrency level 64, Banking77-480 ran at 39.63 records/s with 0 errors.
+
+- The texts are short public texts of 89 to 254 mean prompt tokens per record.
+  The throughput does not transfer to longer prompts.
+- Client latency includes the RunPod proxy.
+- DIFrauD SMS-500 failed calibration parity: ECE 0.1578 against a threshold of 0.10.
+- The full Banking77 test split of 3,080 records was not measured.
+  GPU memory was not measured.
+- Cold start was 6 min 46 s on that pod.
+- The page makes no claim about other GPUs, models, precisions or vLLM versions.
+
+Source: [Performance on one H100](../reference/performance.md#limits).
+
+## Pre-1.0 API
+
+typevet is pre-1.0, at version `0.1.0`.
+The public surface is the union of the package `__all__` lists.
+No page promises a stable API before 1.0.
+The supported imports page requires a compatibility note for a breaking rename or a removed export.
+
+- No async judgment API ships. Async generation adapters exist for llama.cpp and vLLM.
+- No CLI and no MCP server ship in the wheel.
+- Evaluation code is not in the wheel.
+
+Sources: [0.1.0 compatibility assessment](../reference/supported-imports.md#010-compatibility-assessment),
+[deliberate exclusions](../reference/typed-judgment-release-support-matrix.md#deliberate-exclusions).
+
+## Runtime limits without a cap
+
+typevet sets no cap on image bytes, image pixels or images per request.
+`ImageInput` checks the mime type and non-empty bytes only, and an 8 MiB payload passes.
+The tested vLLM server allows two images per prompt, and typevet does not check that before the request.
+No test covers long-running service behaviour beyond the adapter lifetime rules.
+
+Sources: [runtime limits and ownership](../reference/typed-judgment-release-support-matrix.md#runtime-limits-and-ownership),
+[Gemma 4 multimodal judgments, limits](gemma-4-multimodal-judgments.md#limits).
+
+## Open issues that affect hosting
+
+Each item is an open gap at the time of writing.
+None of them has a promised fix date.
+
+- [#204](https://github.com/Alberto-Codes/typevet/issues/204): image pixel limits and long-lived service behaviour are not characterized.
+- [#251](https://github.com/Alberto-Codes/typevet/issues/251): a failing live test can print an API key in pytest output, because the default options include `--showlocals`.
+- [#227](https://github.com/Alberto-Codes/typevet/issues/227): `TYPEVET_VLLM__TIMEOUT` accepts `nan` and `inf`.
+  Key masking does not walk `set`, `frozenset` or `bytes` values.
+- [#235](https://github.com/Alberto-Codes/typevet/issues/235): a caller framing can omit the Gemma 4 no-thinking prefill.
+  The result is a confident, wrong answer with no error.
+- [#231](https://github.com/Alberto-Codes/typevet/issues/231): the vLLM KV-cache reading has offline proof only. No live run on the tested pin has recorded it.
+- [#260](https://github.com/Alberto-Codes/typevet/issues/260): the docs state a fixed cost of 245 prompt tokens per Gemma 4 image.
+  The #203 receipt shows a different cost for each image.
+- [#257](https://github.com/Alberto-Codes/typevet/issues/257): the docs site loads Mermaid from the unpkg CDN.
+  A reader who blocks unpkg sees diagram source instead of diagrams.
+
+## Related pages
+
+- [Typed-judgment release support matrix](../reference/typed-judgment-release-support-matrix.md)
+- [Performance on one H100](../reference/performance.md)
+- [Verified evidence and inferred claims](verification.md)
+- [Serve typevet on vLLM](../how-to/serve-typevet-on-vllm.md)
