@@ -7,6 +7,10 @@
 // drawer or a section moves focus to the first link of the panel on show.
 // Escape closes the drawer and returns focus to the menu button. The header
 // search button is focusable too, and Escape from search returns focus to it.
+// Closed search is inert: at drawer-free widths only the results area, since
+// the header input is on show there and focusing it opens search; below that
+// the whole search panel, which is off-screen. Search is usable again before
+// Material focuses the input (button, "/", "s" or "f").
 // Toggles go through Material's own checkboxes so its state stays consistent;
 // Material itself clicks a focused label on Enter. With the sidebar visible
 // (desktop) nothing changes.
@@ -15,6 +19,8 @@
 
   // Material shows the primary sidebar as a drawer below 76.25em.
   var drawerWidth = window.matchMedia("(max-width: 76.234375em)");
+  // Material shows the search input in the header from 60em.
+  var searchWidth = window.matchMedia("(max-width: 59.984375em)");
   var focusable = 'a[href], [tabindex]:not([tabindex="-1"]), input, button';
   var INERT = "data-drawer-inert";
   var TABINDEX = "data-drawer-tabindex";
@@ -147,6 +153,31 @@
     }, 50);
   }
 
+  // A closed search panel is inert; see the header comment for the widths.
+  function syncSearch(open) {
+    var search = byId("__search");
+    var inner = document.querySelector(".md-search__inner");
+    var output = document.querySelector(".md-search__output");
+    var closed = !!search && !search.checked && !open;
+    if (inner) inner.inert = closed && searchWidth.matches;
+    if (output) output.inert = closed;
+  }
+
+  function onSearchChange(event) {
+    if (event.target === byId("__search")) syncSearch();
+  }
+
+  // Material focuses the input during a click on the search button, before
+  // the checkbox changes, so make search usable first and re-check after.
+  function onSearchPress(event) {
+    var search = byId("__search");
+    var target = event.target;
+    if (!search || search.checked || !(target instanceof Element)) return;
+    if (!target.closest('label[for="__search"]')) return;
+    syncSearch(true);
+    window.setTimeout(syncSearch, 0);
+  }
+
   // Sync inert, aria-expanded and panels with the checkboxes and the width.
   function sync() {
     var toggle = byId("__drawer");
@@ -156,6 +187,7 @@
     if (button) button.setAttribute("aria-expanded", String(toggle.checked));
     if (nav) nav.inert = drawerWidth.matches && !toggle.checked;
     applyPanels();
+    syncSearch();
   }
 
   function onChange(event) {
@@ -194,6 +226,11 @@
     if (!toggle || event.metaKey || event.ctrlKey || event.altKey) return;
     var target = event.target;
     var isSearch = search && target === headerButton("__search");
+    if (search && !search.checked && /^[/sf]$/.test(event.key)) {
+      // Material's search shortcuts focus the input: allow it, then re-check.
+      syncSearch(true);
+      window.setTimeout(syncSearch, 0);
+    }
     if (event.key === "Enter" || event.key === " ") {
       if (target !== headerButton("__drawer") && !isSearch) return;
       // Material clicks a focused label on Enter; click only for Space.
@@ -229,7 +266,12 @@
     window.__typevetDrawerKeyboard = true;
     window.addEventListener("keydown", onKeydown, true);
     document.addEventListener("change", onChange);
+    // Capture runs before Material's own listener focuses the input.
+    document.addEventListener("change", onSearchChange, true);
+    window.addEventListener("pointerdown", onSearchPress, true);
+    window.addEventListener("click", onSearchPress, true);
     drawerWidth.addEventListener("change", sync);
+    searchWidth.addEventListener("change", sync);
   }
 
   if (window.document$ && typeof window.document$.subscribe === "function") {
