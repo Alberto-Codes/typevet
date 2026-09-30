@@ -27,6 +27,7 @@ from judgevet.domain.questions import Noul
 
 from typevet_evals.datasets.difraud import DIFrauDRecord, map_row, record_id
 from typevet_evals.wording import WordingRun, WordingRunConfig
+from typevet_evals.wording.calls import CallRecord, call_summary
 from typevet_evals.wording.held_out import (
     DEFAULT_TRAIN_ROWS,
     REFERENCE_ECE,
@@ -206,6 +207,27 @@ def _run() -> Any:
     )
 
 
+def test_receipt_holds_the_per_call_records_and_their_summary() -> None:
+    records = (
+        CallRecord(0, "a", (KEY,), 0.5, 11, None),
+        CallRecord(1, "b", (KEY,), 1.5, 13, None),
+    )
+
+    receipt = held_out_receipt(
+        replace(_run(), call_records=records),
+        seed_text=SEED_TEXT,
+        evolved_text=EVOLVED_TEXT,
+        backend="llama_cpp",
+        model="judge",
+        pins={},
+        identity={},
+    )
+
+    assert receipt["per_call"] == [r.to_mapping() for r in records]
+    assert receipt["call_summary"] == call_summary(records)
+    assert receipt["call_summary"]["input_tokens_total"] == 24
+
+
 def test_receipt_holds_metrics_bootstrap_verdict_and_the_133_reference() -> None:
     run = _run()
     labels = [1, 0, 1, 0]
@@ -311,6 +333,35 @@ def test_evolution_artifact_holds_both_texts_and_the_selection_rows() -> None:
     assert artifact["settings"]["max_iterations"] == 10
     assert artifact["settings"]["reflection_minibatch_size"] == 4
     assert artifact["result"]["valset_score"] == 0.75
+    assert artifact["per_call"] == []
+    assert artifact["call_summary"]["calls"] == 0
+    json.dumps(artifact)
+
+
+def test_evolution_artifact_holds_the_per_call_records() -> None:
+    result = EvolutionResult(
+        original_score=1.2,
+        final_score=1.5,
+        evolved_components={KEY: EVOLVED_TEXT},
+        iteration_history=[],
+        total_iterations=0,
+        valset_score=0.75,
+    )
+    records = (
+        CallRecord(0, "a", (KEY,), 0.5, 11, None),
+        CallRecord(1, "b", (KEY,), 1.5, None, "RuntimeError: down"),
+    )
+
+    artifact = evolution_artifact(
+        WordingRun(SEED_TEXT, EVOLVED_TEXT, result),
+        config=WordingRunConfig(reflector="openai/reflector", judge_model="judge"),
+        train=_records(1, 1, "train"),
+        validation=_records(1, 1, "validation"),
+        call_records=records,
+    )
+
+    assert artifact["per_call"] == [r.to_mapping() for r in records]
+    assert artifact["call_summary"] == call_summary(records)
     json.dumps(artifact)
 
 

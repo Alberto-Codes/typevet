@@ -6,10 +6,20 @@ wording as a judgevet ``Noul`` to a judgevet ``SystemOnePort``.
 ``evolve_wording`` runs gepa-adk on train and validation records with a
 Brier reward and a proposal length cap (#308). ``score_held_out`` and
 ``held_out_receipt`` check the seed and evolved wording on the held-out rows
-against the pre-registered pass rule (#309).
+against the pre-registered pass rule (#309). ``TimedJudgePort`` records each
+call's latency and input tokens, and the ``served`` probes require the native
+Gemma 4 template (#327).
 
 Attributes:
+    ALLOW_DEGRADED_ENV (str): The variable that allows a non-native template.
+    TEXT_JUDGE (str): The router alias that serves native Gemma 4 for text.
     BrierScorer (type): The gepa-adk reward, one minus the Brier score.
+    CallRecord (type): The latency and input tokens of one judge call.
+    TimedJudgePort (type): A ``SystemOnePort`` wrapper that records each call.
+    call_summary (callable): Total the call records for a receipt.
+    probe_llama_template (callable): Classify the llama.cpp served template.
+    probe_vllm_template (callable): Classify the vLLM served chat template.
+    require_native_template (callable): Refuse a non-native template.
     HeldOutRows (type): Held-out records checked against the excluded ids.
     HeldOutRun (type): The scored held-out pairs and the call count.
     PairedBootstrap (type): Paired bootstrap intervals of the differences.
@@ -51,11 +61,14 @@ See Also:
     - [typevet_evals.wording.runner][]: the evolution runner
     - [typevet_evals.wording.metrics][]: held-out metrics and the pass rule
     - [typevet_evals.wording.held_out][]: held-out scoring and receipts
+    - [typevet_evals.wording.calls][]: per-call latency and input tokens
+    - [typevet_evals.wording.served][]: served-template probes
     - [typevet.adapters.inbound.judgevet][]: the typevet ``SystemOnePort`` bridge
 """
 
 from __future__ import annotations
 
+from typevet_evals.wording.calls import CallRecord, TimedJudgePort, call_summary
 from typevet_evals.wording.held_out import (
     HeldOutRows,
     HeldOutRun,
@@ -83,6 +96,13 @@ from typevet_evals.wording.runner import (
     length_cap,
     reflection_prompt,
 )
+from typevet_evals.wording.served import (
+    ALLOW_DEGRADED_ENV,
+    TEXT_JUDGE,
+    probe_llama_template,
+    probe_vllm_template,
+    require_native_template,
+)
 from typevet_evals.wording.transport import (
     TRANSPORT_MODEL,
     JudgePort,
@@ -93,8 +113,11 @@ from typevet_evals.wording.transport import (
 )
 
 __all__ = [
+    "ALLOW_DEGRADED_ENV",
+    "TEXT_JUDGE",
     "TRANSPORT_MODEL",
     "BrierScorer",
+    "CallRecord",
     "HeldOutRows",
     "HeldOutRun",
     "JudgePort",
@@ -102,11 +125,13 @@ __all__ = [
     "PassVerdict",
     "ScoredPair",
     "SeedNoul",
+    "TimedJudgePort",
     "WordingMetrics",
     "WordingRun",
     "WordingRunConfig",
     "WordingTransport",
     "brier_score",
+    "call_summary",
     "evolution_artifact",
     "evolve_wording",
     "held_out_receipt",
@@ -114,7 +139,10 @@ __all__ = [
     "length_cap",
     "paired_bootstrap",
     "pass_verdict",
+    "probe_llama_template",
+    "probe_vllm_template",
     "reflection_prompt",
+    "require_native_template",
     "score_held_out",
     "stratified_subset",
     "train_subset",

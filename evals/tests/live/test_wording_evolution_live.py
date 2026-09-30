@@ -1,12 +1,14 @@
 r"""Opt-in live DIFrauD ``is_scam`` wording evolution and held-out check (#309).
 
-Two tests, each gated by its own variable. Each skips when its variable is
+Three tests, each gated by its own variable. Each skips when its variable is
 unset and fails when ``TYPEVET_REQUIRE_LIVE`` is truthy and it is unset.
 
 **Evolution** (``TYPEVET_WORDING_ARTIFACT`` names a new JSON file). gepa-adk
 evolves the finvet-matching ``is_scam`` instructions on the local llama.cpp
-router. The judge is ``gemma-4-31b-24gib-kv11-decoder`` through
-``TypevetSystemOnePort`` over a text-only scoring session. The reflector is
+router. The judge is ``gemma-4-31b-kv9-q4km-mm`` through
+``TypevetSystemOnePort`` over a text-only scoring session. That alias serves
+the native Gemma 4 template; the decoder alias
+``gemma-4-31b-24gib-kv11-decoder`` serves ChatML (#324, #327). The reflector is
 ``Qwen3.8-27B-UD-Q4_K_M`` through the router's OpenAI-compatible ``/v1``
 (LiteLLM, dummy key). The router holds one of the two models at a time, so
 it swaps between evaluation and reflection. Train is a stratified
@@ -35,6 +37,17 @@ selects the backend as in ``open_judgment``: ``llama_cpp`` (default; the
 same text-only session as the evolution) or ``vllm``
 (``TYPEVET_VLLM__*`` and ``TYPEVET_VLLM_MODEL_REVISION``).
 ``TYPEVET_GIT_STATUS_PORCELAIN`` carries the porcelain status text.
+
+**Framing smoke** (``TYPEVET_WORDING_SMOKE_RECEIPT`` names a new receipt).
+Scores the seed wording once on 10 stratified validation rows (seed 0) on
+the ``TYPEVET_BACKEND`` backend and writes the served template, each call's
+latency and input tokens and the wall time. No held-out row is loaded.
+
+**Served template (#327).** Each session probes the served template:
+llama.cpp ``/apply-template`` or vLLM ``/tokenize`` with chat messages. A
+session refuses any template other than ``native_gemma4_turn`` unless
+``TYPEVET_WORDING_ALLOW_DEGRADED_TEMPLATE=1``. Receipts and the evolution
+artifact record per-call latency and input tokens.
 
 Examples:
     ```bash
@@ -65,7 +78,7 @@ import os
 import time
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -82,7 +95,6 @@ from typevet.adapters.inbound.backend_settings import (
 )
 from typevet.adapters.inbound.judgevet import TypevetSystemOnePort
 from typevet.adapters.inbound.settings import load_llama_settings
-from typevet.adapters.outbound.gemma import classify_served_template
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.adapters.outbound.llama_cpp.scoring import LlamaCppCandidateScoringAdapter
 from typevet.ports.judgment import JudgmentPort
@@ -114,11 +126,19 @@ from typevet_evals.wording import (
     stratified_subset,
     train_subset,
 )
+from typevet_evals.wording.calls import TimedJudgePort, call_summary
 from typevet_evals.wording.held_out import DEFAULT_TRAIN_ROWS, HeldOutRows
+from typevet_evals.wording.served import (
+    TEXT_JUDGE,
+    probe_llama_template,
+    probe_vllm_template,
+    require_native_template,
+)
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _WORDING_SRC = _REPO_ROOT / "evals" / "src" / "typevet_evals" / "wording"
-_JUDGE = "gemma-4-31b-24gib-kv11-decoder"
+_JUDGE = TEXT_JUDGE
+_SMOKE_ROWS = 10
 _REFLECTOR = "Qwen3.8-27B-UD-Q4_K_M"
 _N_VOCAB = 262144
 _TIMEOUT = 900.0
@@ -164,28 +184,23 @@ def _int_env(name: str, default: int | None) -> int | None:
 
 
 @contextmanager
-def _llama_text_session(model: str) -> Iterator[_TextSession]:
+def _llama_text_session(
+    model: str, environ: Mapping[str, str]
+) -> Iterator[_TextSession]:
     """Open a text-only scoring session on the router, pinned to ``model``.
 
     ``LlamaCppCandidateScoringAdapter`` sends a request once more when the
-    router closes a connection before a response (#305).
+    router closes a connection before a response (#305). The session refuses
+    a template other than native Gemma 4 unless the override is set (#327).
 
     Yields:
         The session.
     """
-    settings = load_llama_settings()
+    settings = load_llama_settings(environ)
     base = settings.base_url.rstrip("/")
     timeout = max(settings.timeout, _TIMEOUT)
     with httpx.Client(base_url=base, timeout=timeout) as client:
-        rendered = client.post(
-            "/apply-template",
-            json={
-                "model": model,
-                "messages": [{"role": "user", "content": "hello"}],
-                "add_generation_prompt": True,
-            },
-        )
-        served = classify_served_template(rendered.raise_for_status().json()["prompt"])
+        served = require_native_template(probe_llama_template(client, model), environ)
 
         def tokenize(text: str) -> tuple[int, ...]:
             body = client.post(
@@ -278,10 +293,11 @@ def test_wording_evolution_live_artifact() -> None:
         resume=environ.get("TYPEVET_WORDING_RESUME", "") == "1",
     )
     started = time.monotonic()
-    with _llama_text_session(judge) as session:
+    with _llama_text_session(judge, environ) as session:
+        timed = TimedJudgePort(TypevetSystemOnePort(session.port))
         run = asyncio.run(
             evolve_wording(
-                port=TypevetSystemOnePort(session.port),
+                port=timed,
                 seed=_SEED,
                 key=PRIMARY_NOUL_NAME,
                 train=train,
@@ -290,12 +306,17 @@ def test_wording_evolution_live_artifact() -> None:
             )
         )
     artifact = evolution_artifact(
-        run, config=config, train=train, validation=validation
+        run,
+        config=config,
+        train=train,
+        validation=validation,
+        call_records=timed.records,
     )
     artifact["reflector_base"] = environ.get(
         "TYPEVET_WORDING_REFLECTOR_BASE", _router_v1(environ)
     )
     artifact["dataset_revision"] = PINNED_REVISION
+    artifact["served_template"] = session.served_template
     artifact["wall_seconds"] = round(time.monotonic() - started, 1)
     artifact["finished_utc"] = datetime.now(UTC).isoformat()
     text = json.dumps(artifact, indent=2)
@@ -336,10 +357,12 @@ def _held_out_session(
     """
     if backend == "vllm":
         with open_judgment(environ) as vllm:
-            yield vllm.port, vllm.model, vllm.client, "vllm_chat"
+            served = probe_vllm_template(vllm.client, vllm.model)
+            require_native_template(served, environ)
+            yield vllm.port, vllm.model, vllm.client, served.value
         return
     judge = environ.get("TYPEVET_WORDING_JUDGE", _JUDGE)
-    with _llama_text_session(judge) as llama:
+    with _llama_text_session(judge, environ) as llama:
         yield llama.port, llama.model, llama.client, llama.served_template
 
 
@@ -374,8 +397,9 @@ def test_wording_held_out_live_receipt() -> None:
             runtime=RuntimeBuild(model, template, str(facts["build_info"])),
             working_tree=tree,
         )
+        timed = TimedJudgePort(TypevetSystemOnePort(port))
         run = score_held_out(
-            TypevetSystemOnePort(port),
+            timed,
             _SEED,
             PRIMARY_NOUL_NAME,
             evolved_text=evolved_text,
@@ -383,6 +407,7 @@ def test_wording_held_out_live_receipt() -> None:
             judge_model=model,
             failures=(ProviderError,),
         )
+        run = replace(run, call_records=timed.records)
     identity = finalize_experiment_identity(
         run_start=start, evaluated=snapshot, arm_call_counts={"judgments": run.calls}
     )
@@ -392,6 +417,7 @@ def test_wording_held_out_live_receipt() -> None:
         "dataset": "difraud/difraud sms",
         "dataset_revision": PINNED_REVISION,
         "split_seed": 0,
+        "served_template": template,
         "evolution_artifact_sha256": hashlib.sha256(
             evolved_path.read_bytes()
         ).hexdigest(),
@@ -419,3 +445,44 @@ def test_wording_held_out_live_receipt() -> None:
     )
     assert run.stopped is None, run.stopped
     assert len(run.pairs) == len(splits.held_out)
+
+
+@pytest.mark.live
+def test_wording_framing_smoke_live_receipt() -> None:
+    """Score the seed wording on 10 validation rows and record each call."""
+    path = _required_path("TYPEVET_WORDING_SMOKE_RECEIPT", new=True)
+    environ = dict(os.environ)
+    backend = load_backend(environ)
+    secret = load_vllm_settings(environ).api_key if backend == "vllm" else None
+    rows = stratified_subset(load_splits(seed=0).validation, _SMOKE_ROWS)
+    started = time.monotonic()
+    with _held_out_session(environ, backend) as (port, model, client, template):
+        facts = _server_facts(backend, client, model)
+        timed = TimedJudgePort(TypevetSystemOnePort(port))
+        answers = [
+            timed.system_one(r.example.text, {PRIMARY_NOUL_NAME: _SEED}, model)
+            .nouls[PRIMARY_NOUL_NAME]
+            .noul
+            for r in rows
+        ]
+    receipt = {
+        "issue": 327,
+        "backend": backend,
+        "model": model,
+        "served_template": template,
+        "split": "validation",
+        "rows": [
+            {"record_id": r.record_id, "label": r.example.label, "seed": p}
+            for r, p in zip(rows, answers, strict=True)
+        ],
+        "per_call": [c.to_mapping() for c in timed.records],
+        "call_summary": call_summary(timed.records),
+        "wall_seconds": round(time.monotonic() - started, 1),
+        "finished_utc": datetime.now(UTC).isoformat(),
+        "server": facts,
+    }
+    ensure_key_free(json.dumps(receipt, indent=2), secrets=(secret,))
+    write_receipt_exclusive(path, receipt)
+    print(f"receipt {path}\n{json.dumps(receipt['call_summary'])}")
+    assert all(r.example.split == "validation" for r in rows)
+    assert len(timed.records) == _SMOKE_ROWS

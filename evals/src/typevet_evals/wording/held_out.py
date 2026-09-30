@@ -5,7 +5,8 @@ then the evolved wording about each held-out row, once each. It refuses a
 record whose ``split`` is not ``test`` before any call, and it stops at the
 first failure and records it. ``held_out_receipt`` turns the scored pairs
 into the metrics of both wordings, the paired bootstrap intervals (context
-only), the pre-registered verdict and the #133 re-measurement.
+only), the pre-registered verdict, the #133 re-measurement and each call's
+latency and input tokens with their totals (#327).
 
 ``stratified_subset`` picks the fixed validation rows the evolution selects
 on, and ``evolution_artifact`` records what one evolution run produced.
@@ -56,6 +57,7 @@ from dataclasses import dataclass
 from typing import Any, Final
 
 from typevet_evals.datasets.difraud import DIFrauDRecord
+from typevet_evals.wording.calls import CallRecord, call_summary
 from typevet_evals.wording.metrics import (
     paired_bootstrap,
     pass_verdict,
@@ -178,6 +180,9 @@ class HeldOutRun:
         evolved_calls (int): Port calls made with the evolved wording,
             including a failed one.
         stopped (str | None): The first failure as ``Type: message``, or None.
+        call_records (tuple[CallRecord, ...]): Per-call latency and input
+            tokens, for example ``TimedJudgePort.records`` (#327); empty by
+            default.
 
     Examples:
         ```python
@@ -191,6 +196,7 @@ class HeldOutRun:
     seed_calls: int
     evolved_calls: int
     stopped: str | None
+    call_records: tuple[CallRecord, ...] = ()
 
     @property
     def calls(self) -> int:
@@ -302,7 +308,8 @@ def held_out_receipt(
     """Build the key-free held-out receipt.
 
     Metrics, bootstrap, verdict and the #133 comparison are None when the run
-    stopped or scored no row: a partial run gives no verdict.
+    stopped or scored no row: a partial run gives no verdict. ``per_call``
+    and ``call_summary`` come from ``run.call_records``.
 
     Args:
         run: The scored held-out run.
@@ -358,6 +365,8 @@ def held_out_receipt(
             }
             for p in run.pairs
         ],
+        "per_call": [r.to_mapping() for r in run.call_records],
+        "call_summary": call_summary(run.call_records),
         "pins": dict(pins),
         "identity": dict(identity),
     }
@@ -369,6 +378,7 @@ def evolution_artifact(
     config: WordingRunConfig,
     train: Sequence[DIFrauDRecord],
     validation: Sequence[DIFrauDRecord],
+    call_records: Sequence[CallRecord] = (),
 ) -> dict[str, Any]:
     """Record the seed and evolved wording and how they were chosen.
 
@@ -378,10 +388,12 @@ def evolution_artifact(
             ``model`` name.
         train: The train records gepa-adk reflected on.
         validation: The validation records gepa-adk selected on.
+        call_records: Per-call latency and input tokens of the judge, for
+            example ``TimedJudgePort.records`` (#327).
 
     Returns:
         A JSON-serializable artifact with both texts, the settings, the
-        validation record ids and gepa-adk's result.
+        validation record ids, gepa-adk's result and the judge calls.
     """
     reflector = config.reflector
     return {
@@ -403,4 +415,6 @@ def evolution_artifact(
             "length_ratio": config.length_ratio,
         },
         "result": run.result.to_dict(),
+        "per_call": [r.to_mapping() for r in call_records],
+        "call_summary": call_summary(call_records),
     }
