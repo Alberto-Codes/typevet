@@ -8,7 +8,7 @@ Kind: explanation.
 
 Status: **draft**.
 
-This page collects the known limits of typevet 0.1.0 in one place.
+This page collects the known limits of typevet 0.2.0 in one place.
 Each section states one limit and links to the page or issue that is its source.
 The source page holds the full detail. When this page and a source differ, the source wins.
 
@@ -116,7 +116,7 @@ Source: [Performance on one H100](../reference/performance.md#limits).
 
 ## Pre-1.0 API
 
-typevet is pre-1.0, at version `0.1.0`.
+typevet is pre-1.0, at version `0.2.0`.
 The public surface is the union of the package `__all__` lists.
 No page promises a stable API before 1.0.
 The supported imports page requires a compatibility note for a breaking rename or a removed export.

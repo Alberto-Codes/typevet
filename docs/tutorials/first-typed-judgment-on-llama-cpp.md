@@ -46,10 +46,9 @@ pip install typevet
 
 With uv, run `uv init` and then `uv add typevet` instead.
 
-We checked these steps against the code for the next release, not against
-PyPI 0.1.0. The imports in this tutorial are also in 0.1.0. Until the next
-release ships, `pip install typevet` gives you 0.1.0, and your numbers can
-differ. To use the newest code, install from a checkout.
+We checked these steps against the code that became typevet 0.2.0.
+A later release can print different numbers. To use the newest code, install
+from a checkout.
 [Install typevet](../how-to/install.md#install-from-a-checkout) shows how.
 
 ## Step 2 — Tell typevet where the server is

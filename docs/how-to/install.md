@@ -42,11 +42,11 @@ uv build --wheel --out-dir /tmp/typevet-dist
 Expected output ends with this line:
 
 ```text
-Successfully built /tmp/typevet-dist/typevet-0.1.0-py3-none-any.whl
+Successfully built /tmp/typevet-dist/typevet-0.2.0-py3-none-any.whl
 ```
 
 The version in the file name comes from `[project].version` in `pyproject.toml`.
-Replace `0.1.0` in the next steps if your checkout has a different version.
+Replace `0.2.0` in the next steps if your checkout has a different version.
 
 ### Install the wheel into a fresh virtual environment
 
@@ -54,7 +54,7 @@ In your own project directory, run:
 
 ```bash
 uv venv
-uv pip install /tmp/typevet-dist/typevet-0.1.0-py3-none-any.whl
+uv pip install /tmp/typevet-dist/typevet-0.2.0-py3-none-any.whl
 ```
 
 uv also installs the runtime dependencies: `httpx`, `jsonschema` and `structlog`.
@@ -62,7 +62,7 @@ uv also installs the runtime dependencies: `httpx`, `jsonschema` and `structlog`
 Alternatively, add the wheel to an existing uv project:
 
 ```bash
-uv add /tmp/typevet-dist/typevet-0.1.0-py3-none-any.whl
+uv add /tmp/typevet-dist/typevet-0.2.0-py3-none-any.whl
 ```
 
 ## Install an optional extra
@@ -97,7 +97,7 @@ uv run python -c "import typevet; print(typevet.__version__)"
 Expected output:
 
 ```text
-0.1.0
+0.2.0
 ```
 
 `typevet.__version__` reads the version from the installed distribution metadata.

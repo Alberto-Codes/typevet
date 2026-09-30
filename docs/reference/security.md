@@ -9,7 +9,7 @@ It also covers API keys, redaction and vulnerability reports.
 
 Status: **draft**.
 
-The facts below describe the library in `src/typevet` at the 0.1.0 release.
+The facts below describe the library in `src/typevet` at the 0.2.0 release.
 The evaluation code in `evals/` (`typevet_evals`) is not part of the wheel.
 This page is an implementation review, not a security certification.
 

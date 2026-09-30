@@ -68,7 +68,7 @@ Do not edit changelog entries by hand.
 
 ## What pre-1.0 means
 
-The current version is `0.1.0`, from `pyproject.toml` and `.release-please-manifest.json`.
+The current version is `0.2.0`, from `pyproject.toml` and `.release-please-manifest.json`.
 The package declares the classifier `Development Status :: 3 - Alpha`.
 
 - The config sets `bump-minor-pre-major` to `true`.

@@ -19,7 +19,7 @@ Read the documentation at <https://alberto-codes.github.io/typevet/>.
 
 ## Status
 
-- typevet is pre-1.0. The package version is `0.1.0`.
+- typevet is pre-1.0. The package version is `0.2.0`.
 - Install typevet from PyPI: `pip install typevet` or `uv add typevet`.
   See [Install typevet](https://alberto-codes.github.io/typevet/how-to/install/).
 - typevet requires Python 3.12 or later.
