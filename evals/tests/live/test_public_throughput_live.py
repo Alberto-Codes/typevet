@@ -59,6 +59,7 @@ from typevet_evals.throughput.public_workload import (
     load_public_workloads,
     missing_data,
 )
+from typevet_evals.throughput.server_args import stated_server_args
 from typevet_evals.vllm_acceptance.core import (
     CallCaps,
     live_gate_reason,
@@ -107,6 +108,7 @@ def _run(
     transport: httpx.BaseTransport,
     levels: tuple[int, ...],
     earlier: list[dict[str, Any]],
+    stated: str | None,
 ) -> dict[str, Any]:
     spent = {"elapsed_seconds": sum(r["elapsed_seconds"] for r in earlier)}
     return run_throughput(
@@ -116,7 +118,9 @@ def _run(
         transport=transport,
         levels=levels,
         caps=_left(earlier) if earlier else CAPS,
-        options=RunOptions(run_seconds=remaining_run_seconds(spent)),
+        options=RunOptions(
+            run_seconds=remaining_run_seconds(spent), caller_stated=stated
+        ),
         noul=work.noul,
         baseline=work.baseline,
     )
@@ -135,14 +139,15 @@ def test_public_throughput_run() -> None:
         "datasets": DATASETS,
         "record_counts": {name: len(w.records) for name, w in sets.items()},
     }
+    stated = stated_server_args(os.environ)
     with httpx.HTTPTransport() as transport:
-        sweep = _run(sets["banking77_balanced"], transport, (1, 8, 32, 64), [])
+        sweep = _run(sets["banking77_balanced"], transport, (1, 8, 32, 64), [], stated)
         receipt["banking77_balanced"] = sweep
         best = sweep["best_level"]
         if isinstance(best, int):
             done = [sweep]
             for name in ("difraud_sms", "banking77_full"):
-                out = _run(sets[name], transport, (best,), done)
+                out = _run(sets[name], transport, (best,), done, stated)
                 receipt[name] = out
                 done.append(out)
     path = Path(os.environ["TYPEVET_VLLM_RECEIPT"])

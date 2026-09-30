@@ -31,6 +31,7 @@ from typing import Any
 import httpx
 import pytest
 
+from evals.tests.unit.test_server_args import CACHE_CONFIG, CACHE_CONFIG_TEXT, STATED
 from typevet.domain.judgment_questions import Choice, Noul
 from typevet_evals.throughput.collections_metrics import (
     histogram_delta,
@@ -164,6 +165,7 @@ class FakeVllm:
         with self._cond:
             self.metrics_reads += 1
             text = _BEFORE if self.metrics_reads % 3 == 1 else _AFTER
+        text += CACHE_CONFIG_TEXT
         return httpx.Response(200, text=text + 'vllm:kv_cache_usage_perc{e="0"} 0.25\n')
 
     def _tokenize(self, prompt: str) -> dict[str, Any]:
@@ -476,3 +478,26 @@ def test_receipt_states_its_method() -> None:
     assert "before each send" in METHOD["time_cap"]
     assert "failed" in METHOD["client_latency"]
     assert "+Inf" in METHOD["server_percentiles"]
+
+
+def test_receipt_records_cache_config_and_stated_server_args() -> None:
+    server = FakeVllm()
+    receipt = run(server, records(2), options=RunOptions(caller_stated=STATED))
+
+    assert receipt["server_args"] == {
+        "cache_config": CACHE_CONFIG,
+        "cache_config_source": "metrics",
+        "caller_stated": STATED,
+    }
+    assert server.metrics_reads == 3
+
+
+def test_stop_before_any_level_still_records_server_args() -> None:
+    caps = CallCaps(model=100, tokenizer=256, metadata=1)
+    receipt = run(FakeVllm(), records(2), caps=caps)
+
+    assert receipt["server_args"] == {
+        "cache_config": None,
+        "cache_config_source": "metrics",
+        "caller_stated": None,
+    }

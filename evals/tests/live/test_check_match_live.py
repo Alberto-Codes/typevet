@@ -106,6 +106,11 @@ from typevet_evals.face_match import (
 )
 from typevet_evals.runner.live_gate import require_live_enabled
 from typevet_evals.serving_metrics import read_metrics
+from typevet_evals.throughput.server_args import (
+    first_cache_config,
+    server_args_block,
+    stated_server_args,
+)
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _CHECK_MATCH_SRC = _REPO_ROOT / "evals" / "src" / "typevet_evals" / "check_match"
@@ -315,6 +320,9 @@ def test_check_match_live_receipt() -> None:
         model=session.model,
         pins=pins,
         identity=identity.to_receipt_mapping(),
+        server_args=server_args_block(
+            first_cache_config(run.metrics_readings), stated_server_args(environ)
+        ),
     )
     text = json.dumps(receipt, indent=2)
     ensure_key_free(text, secrets=(secret,))

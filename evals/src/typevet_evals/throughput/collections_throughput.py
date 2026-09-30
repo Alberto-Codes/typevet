@@ -13,7 +13,9 @@ A1 ``parity`` scores each level against ``baseline``; a skipped or failed
 record counts as a failure. Any record with ``state`` and ``positive`` fits,
 and ``noul`` names the question whose probability is scored.
 ``cold_start_seconds``, ``hourly_usd``, ``gpu_memory`` and ``pod_cost_usd``
-are ``unknown`` unless the caller supplies them.
+are ``unknown`` unless the caller supplies them. ``server_args`` (#341) holds
+the ``vllm:cache_config_info`` labels from the first level's ``/metrics``
+reading and the caller-stated server flags; it adds no ``/metrics`` read.
 
 Attributes:
     LEVELS (tuple[int, ...]): Pre-registered in-flight record counts.
@@ -74,6 +76,7 @@ from typevet_evals.throughput.collections_workload import (
     Baseline,
     parity,
 )
+from typevet_evals.throughput.server_args import first_cache_config, server_args_block
 from typevet_evals.vllm_acceptance.core import (
     AcceptanceStoppedError,
     CallCaps,
@@ -158,6 +161,8 @@ class RunOptions:
         level_seconds (float): Time cap for one level.
         run_seconds (float): Time cap for the whole run.
         supplied (Mapping[str, Any]): Values for ``SUPPLIED`` keys.
+        caller_stated (str | None): ``TYPEVET_VLLM_SERVER_ARGS`` text, kept
+            verbatim in ``server_args``; ``None`` when not stated.
 
     Examples:
         ```python
@@ -168,6 +173,7 @@ class RunOptions:
     level_seconds: float = 900.0
     run_seconds: float = RUN_SECONDS
     supplied: Mapping[str, Any] = field(default_factory=dict)
+    caller_stated: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -309,7 +315,9 @@ def remaining_run_seconds(
     return max(total - earlier["elapsed_seconds"], 0.0)
 
 
-def _run_level(run: _Run, width: int, deadline: float) -> dict[str, Any]:
+def _run_level(
+    run: _Run, width: int, deadline: float
+) -> tuple[dict[str, Any], dict[str, str] | None]:
     size = len(run.records)
     level = _Level(size, deadline)
     before, calls = read_metrics(run.client), run.counter.calls["model"]
@@ -325,7 +333,7 @@ def _run_level(run: _Run, width: int, deadline: float) -> dict[str, Any]:
     wall = timing["wall_seconds"]
     scoring = run.counter.calls["model"] - calls
     probs = [None if r is None or "error" in r else r["p"] for r in level.rows]
-    return {
+    out = {
         "level": width,
         "records": size,
         "sent": len(done),
@@ -347,6 +355,7 @@ def _run_level(run: _Run, width: int, deadline: float) -> dict[str, Any]:
             run.baseline,
         ),
     }
+    return out, first_cache_config((before, after))
 
 
 def best_level(levels: Sequence[Mapping[str, Any]]) -> int | str:
@@ -437,8 +446,10 @@ def run_throughput(
     Returns:
         Receipt with ``pins``, ``caps``, ``time_caps``, ``method``,
         ``elapsed_seconds``, ``levels``,
-        ``best_level``, ``calls``, ``stopped``, the ``SUPPLIED`` fields and
-        ``cost_per_1000``. A stop leaves ``stopped`` set and still returns.
+        ``best_level``, ``calls``, ``stopped``, the ``SUPPLIED`` fields,
+        ``cost_per_1000`` and ``server_args`` (cache config from the first
+        level reading that holds it, and ``options.caller_stated``). A stop
+        leaves ``stopped`` set and still returns.
 
     Raises:
         TypeError: When a keyword is not a ``Scoring`` key.
@@ -457,6 +468,7 @@ def run_throughput(
     receipt.update(time_caps={"level_seconds": opts.level_seconds})
     receipt["time_caps"]["run_seconds"] = opts.run_seconds
     receipt.update(transport_retries=0, stopped=None, levels=[], method=dict(METHOD))
+    receipt["server_args"] = server_args_block(None, opts.caller_stated)
     started = perf_counter()
     run_deadline = started + opts.run_seconds
     try:
@@ -474,7 +486,11 @@ def run_throughput(
             )
             for width in levels:
                 deadline = min(perf_counter() + opts.level_seconds, run_deadline)
-                out = _run_level(run, width, deadline)
+                out, cache = _run_level(run, width, deadline)
+                if receipt["server_args"]["cache_config"] is None:
+                    receipt["server_args"] = server_args_block(
+                        cache, opts.caller_stated
+                    )
                 receipt["levels"].append(out)
                 if out["stopped"] is not None:
                     receipt["stopped"] = f"level {width}: {out['stopped']}"

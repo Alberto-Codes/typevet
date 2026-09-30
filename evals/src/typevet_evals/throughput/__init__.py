@@ -48,6 +48,12 @@ Attributes:
         files.
     load_public_workloads (function): Build the three #236 sets from the
         fetched files, offline.
+    cache_config (function): ``vllm:cache_config_info`` labels from one
+        ``/metrics`` text (#341).
+    first_cache_config (function): Cache config from the first reading that
+        holds it.
+    server_args_block (function): The ``server_args`` receipt block.
+    stated_server_args (function): ``TYPEVET_VLLM_SERVER_ARGS`` verbatim.
 
 Examples:
     ```python
@@ -59,6 +65,7 @@ See Also:
     - [typevet_evals.throughput.collections_throughput][]: the sweep runner
     - [typevet_evals.throughput.collections_workload][]: collections workload
     - [typevet_evals.throughput.public_workload][]: public-dataset workloads
+    - [typevet_evals.throughput.server_args][]: the ``server_args`` block
     - [typevet_evals.vllm_acceptance][]: call caps and the receipt writer
 """
 
@@ -104,6 +111,12 @@ from typevet_evals.throughput.public_workload import (
     missing_data,
     validate_questions,
 )
+from typevet_evals.throughput.server_args import (
+    cache_config,
+    first_cache_config,
+    server_args_block,
+    stated_server_args,
+)
 
 __all__ = [
     "Baseline",
@@ -117,9 +130,11 @@ __all__ = [
     "Snapshot",
     "banking77_workload",
     "best_level",
+    "cache_config",
     "difraud_workload",
     "ece",
     "fetch_public_data",
+    "first_cache_config",
     "histogram_delta",
     "judge_record",
     "latency",
@@ -136,8 +151,10 @@ __all__ = [
     "reliability",
     "remaining_run_seconds",
     "run_throughput",
+    "server_args_block",
     "server_delta",
     "snapshot",
+    "stated_server_args",
     "validate_questions",
     "workload_paths",
 ]

@@ -32,6 +32,7 @@ from evals.tests.unit.test_collections_throughput import (
     env,
     records,
 )
+from evals.tests.unit.test_server_args import CACHE_CONFIG
 from typevet_evals.throughput.collections_throughput import run_throughput
 
 
@@ -58,3 +59,8 @@ def test_level_64_peaks_at_64_in_flight_masks_key_and_sends_user_agent() -> None
     assert server.requests
     assert all(r.headers.get("user-agent") == AGENT for r in server.requests)
     assert receipt["pins"]["user_agent"] == AGENT
+    assert receipt["server_args"] == {
+        "cache_config": CACHE_CONFIG,
+        "cache_config_source": "metrics",
+        "caller_stated": None,
+    }

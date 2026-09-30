@@ -49,6 +49,7 @@ from typevet_evals.throughput.collections_workload import (
     load_records,
     workload_paths,
 )
+from typevet_evals.throughput.server_args import stated_server_args
 from typevet_evals.vllm_acceptance.core import (
     CallCaps,
     live_gate_reason,
@@ -86,10 +87,15 @@ def test_collections_throughput_run() -> None:
         pytest.skip(reason)
     val_path, seed_path = workload_paths(os.environ)
     questions = load_questions(seed_path)
+    stated = stated_server_args(os.environ)
     receipt: dict[str, Any] = {}
     with httpx.HTTPTransport() as transport:
         sweep = run_throughput(
-            os.environ, load_records(val_path), questions, transport=transport
+            os.environ,
+            load_records(val_path),
+            questions,
+            transport=transport,
+            options=RunOptions(caller_stated=stated),
         )
         receipt["sweep"] = sweep
         best = sweep["best_level"]
@@ -106,7 +112,9 @@ def test_collections_throughput_run() -> None:
                 transport=transport,
                 levels=(best,),
                 caps=_left(sweep["calls"]),
-                options=RunOptions(run_seconds=remaining_run_seconds(sweep)),
+                options=RunOptions(
+                    run_seconds=remaining_run_seconds(sweep), caller_stated=stated
+                ),
             )
     path = Path(os.environ["TYPEVET_VLLM_RECEIPT"])
     digest = write_receipt(path, receipt, settings=load_vllm_settings(os.environ))

@@ -11,6 +11,7 @@ real image. The ``throughput`` receipt tests
 
 from __future__ import annotations
 
+import json
 import threading
 from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ALL_COMPLETED
@@ -19,6 +20,7 @@ from typing import Any
 
 import pytest
 
+from evals.tests.unit.test_server_args import CACHE_CONFIG, CACHE_CONFIG_TEXT, STATED
 from typevet.domain import (
     Choice,
     ChoiceAnswer,
@@ -53,6 +55,7 @@ from typevet_evals.signature_match import (
     build_signature_match_request,
     run_signature_match,
 )
+from typevet_evals.throughput.server_args import first_cache_config, server_args_block
 
 pytestmark = pytest.mark.unit
 
@@ -536,3 +539,52 @@ def test_failed_metrics_read_is_unknown(family: _Family) -> None:
     assert server["prefix_cache_hit_rate"] == "unknown"
     assert set(server["counters"].values()) == {"unknown"}
     assert set(server["gauges"].values()) == {"unknown"}
+
+
+# --- server_args receipt block (#341) -------------------------------------
+
+
+@pytest.mark.parametrize("family", FAMILIES, ids=_IDS)
+def test_receipt_records_cache_config_and_stated_server_args(family: _Family) -> None:
+    readings = iter([CACHE_CONFIG_TEXT + _BEFORE_METRICS, _AFTER_METRICS])
+    run = family.run(
+        _IndexedPort(), family.build(1), "m", server_metrics=readings.__next__
+    )
+    block = server_args_block(first_cache_config(run.metrics_readings), STATED)
+    receipt = _RECEIPTS[family.name](
+        run, backend="vllm", model="m", pins={}, identity={}, server_args=block
+    )
+
+    assert "cache_config_info" not in json.dumps(receipt)
+    assert receipt["server_args"] == {
+        "cache_config": CACHE_CONFIG,
+        "cache_config_source": "metrics",
+        "caller_stated": STATED,
+    }
+
+
+@pytest.mark.parametrize("family", FAMILIES, ids=_IDS)
+def test_cache_config_falls_back_to_the_after_reading(family: _Family) -> None:
+    readings = iter([None, CACHE_CONFIG_TEXT])
+    run = family.run(
+        _IndexedPort(), family.build(1), "m", server_metrics=readings.__next__
+    )
+    assert run.metrics_readings == (None, CACHE_CONFIG_TEXT)
+    assert first_cache_config(run.metrics_readings) == CACHE_CONFIG
+
+
+@pytest.mark.parametrize("family", FAMILIES, ids=_IDS)
+def test_run_without_metrics_records_null_server_args(family: _Family) -> None:
+    run = family.run(_IndexedPort(), family.build(1), "m")
+    block = server_args_block(first_cache_config(run.metrics_readings), None)
+    receipt = _RECEIPTS[family.name](
+        run, backend="llama_cpp", model="m", pins={}, identity={}, server_args=block
+    )
+
+    assert run.metrics_readings == ()
+    assert receipt["server_args"] == {
+        "cache_config": None,
+        "cache_config_source": "metrics",
+        "caller_stated": None,
+    }
+    assert _receipt(family, run)["server_args"] is None

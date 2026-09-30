@@ -6,7 +6,9 @@ backend failure. ``check_match_metrics`` turns the typed answers into
 accuracy by class and by variant, the false-clear rate, ROC-AUC and ECE of
 each ``Noul``, the ``cannot_tell`` rate, the ``Score`` summary by variant and
 Noul-Choice agreement. ``build_check_match_receipt`` writes case ids, typed
-answers, render digests, metrics and pins, never image bytes.
+answers, render digests, metrics and pins, never image bytes. The run keeps
+its two ``/metrics`` readings so that the caller can build the
+``server_args`` block (#341).
 
 ``Noul`` probabilities are model confidence. The checks are generated, so
 these metrics are not evidence about real checks, fraud or counterfeits.
@@ -181,6 +183,9 @@ class CheckMatchRun:
             dropped by design.
         server (dict[str, Any] | None): vLLM ``/metrics`` deltas over the
             run; ``None`` when no reading was asked for.
+        metrics_readings (tuple[str | None, ...]): The ``/metrics`` texts
+            before and after the run, for the ``server_args`` block; empty
+            when no reading was asked for. The receipt does not copy them.
 
     Examples:
         ```python
@@ -194,6 +199,7 @@ class CheckMatchRun:
     concurrency: int = 1
     discarded: int = 0
     server: dict[str, Any] | None = None
+    metrics_readings: tuple[str | None, ...] = ()
 
 
 def check_outcome_from_response(
@@ -261,7 +267,7 @@ def run_check_match(
 
     Returns:
         The outcomes, the stopping failure, the wall time, the concurrency,
-        the discarded count and the ``/metrics`` deltas.
+        the discarded count, the ``/metrics`` deltas and the two readings.
 
     Raises:
         ValueError: When ``concurrency`` is less than 1.
@@ -284,12 +290,17 @@ def run_check_match(
         else batch.failure.record("case_id", batch.failure.request.case_id)
     )
     wall_seconds = clock() - started
-    server = (
-        None if server_metrics is None else run_server_delta(before, server_metrics())
-    )
+    after = None if server_metrics is None else server_metrics()
+    server = None if server_metrics is None else run_server_delta(before, after)
     discarded = 0 if batch.failure is None else batch.failure.discarded
     return CheckMatchRun(
-        outcomes, stopped, wall_seconds, concurrency, discarded, server
+        outcomes,
+        stopped,
+        wall_seconds,
+        concurrency,
+        discarded,
+        server,
+        () if server_metrics is None else (before, after),
     )
 
 
@@ -419,6 +430,7 @@ def build_check_match_receipt(
     model: str,
     pins: Mapping[str, object],
     identity: Mapping[str, object],
+    server_args: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the receipt body for one run.
 
@@ -428,12 +440,15 @@ def build_check_match_receipt(
         model: Model id sent to the backend.
         pins: Generator, Pillow and server pins.
         identity: Experiment identity mapping.
+        server_args: Block from
+            ``typevet_evals.throughput.server_args.server_args_block`` over
+            ``run.metrics_readings``; ``None`` when the caller built none.
 
     Returns:
         JSON-ready receipt with case ids, typed answers, render digests,
-        metrics and the ``throughput`` block (concurrency, rates, latency
-        percentiles, discarded count and vLLM ``/metrics`` deltas). It holds
-        no image bytes.
+        metrics, the ``throughput`` block (concurrency, rates, latency
+        percentiles, discarded count and vLLM ``/metrics`` deltas) and the
+        ``server_args`` block. It holds no image bytes.
     """
     return {
         "issue": RECEIPT_ISSUE,
@@ -451,6 +466,7 @@ def build_check_match_receipt(
             discarded=run.discarded,
             server=run.server,
         ),
+        "server_args": None if server_args is None else dict(server_args),
         "metrics": check_match_metrics(run.outcomes),
         "cases": [o.to_receipt() for o in run.outcomes],
     }

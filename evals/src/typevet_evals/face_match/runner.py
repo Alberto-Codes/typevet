@@ -5,7 +5,8 @@
 failure. ``face_match_metrics`` turns the typed answers into accuracy,
 ROC-AUC, ECE with a reliability table, the ``cannot_tell`` rate and the
 ``Score`` distribution. ``build_face_match_receipt`` writes pair ids, answers,
-metrics and pins, never image bytes.
+metrics and pins, never image bytes. The run keeps its two ``/metrics``
+readings so that the caller can build the ``server_args`` block (#341).
 
 The ``same_person`` probability is model confidence. It is not a calibrated
 match percentage.
@@ -138,6 +139,9 @@ class FaceMatchRun:
             dropped by design.
         server (dict[str, Any] | None): vLLM ``/metrics`` deltas over the
             run; ``None`` when no reading was asked for.
+        metrics_readings (tuple[str | None, ...]): The ``/metrics`` texts
+            before and after the run, for the ``server_args`` block; empty
+            when no reading was asked for. The receipt does not copy them.
 
     Examples:
         ```python
@@ -151,6 +155,7 @@ class FaceMatchRun:
     concurrency: int = 1
     discarded: int = 0
     server: dict[str, Any] | None = None
+    metrics_readings: tuple[str | None, ...] = ()
 
 
 def outcome_from_response(
@@ -215,7 +220,7 @@ def run_face_match(
 
     Returns:
         The outcomes, the stopping failure, the wall time, the concurrency,
-        the discarded count and the ``/metrics`` deltas.
+        the discarded count, the ``/metrics`` deltas and the two readings.
 
     Raises:
         ValueError: When ``concurrency`` is less than 1.
@@ -238,11 +243,18 @@ def run_face_match(
         else batch.failure.record("pair_id", batch.failure.request.pair_id)
     )
     wall_seconds = clock() - started
-    server = (
-        None if server_metrics is None else run_server_delta(before, server_metrics())
-    )
+    after = None if server_metrics is None else server_metrics()
+    server = None if server_metrics is None else run_server_delta(before, after)
     discarded = 0 if batch.failure is None else batch.failure.discarded
-    return FaceMatchRun(outcomes, stopped, wall_seconds, concurrency, discarded, server)
+    return FaceMatchRun(
+        outcomes,
+        stopped,
+        wall_seconds,
+        concurrency,
+        discarded,
+        server,
+        () if server_metrics is None else (before, after),
+    )
 
 
 def face_match_metrics(outcomes: Sequence[FaceMatchOutcome]) -> dict[str, Any]:
@@ -296,6 +308,7 @@ def build_face_match_receipt(
     model: str,
     pins: Mapping[str, object],
     identity: Mapping[str, object],
+    server_args: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the receipt body for one run.
 
@@ -305,12 +318,15 @@ def build_face_match_receipt(
         model: Model id sent to the backend.
         pins: Dataset, slice and server pins.
         identity: Experiment identity mapping.
+        server_args: Block from
+            ``typevet_evals.throughput.server_args.server_args_block`` over
+            ``run.metrics_readings``; ``None`` when the caller built none.
 
     Returns:
-        JSON-ready receipt with pair ids, typed answers, metrics and the
+        JSON-ready receipt with pair ids, typed answers, metrics, the
         ``throughput`` block (concurrency, rates, latency percentiles,
-        discarded count and vLLM ``/metrics`` deltas). It holds no image
-        bytes.
+        discarded count and vLLM ``/metrics`` deltas) and the
+        ``server_args`` block. It holds no image bytes.
     """
     return {
         "issue": RECEIPT_ISSUE,
@@ -328,6 +344,7 @@ def build_face_match_receipt(
             discarded=run.discarded,
             server=run.server,
         ),
+        "server_args": None if server_args is None else dict(server_args),
         "metrics": face_match_metrics(run.outcomes),
         "pairs": [o.to_receipt() for o in run.outcomes],
     }

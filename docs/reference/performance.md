@@ -2,8 +2,12 @@
 
 Kind: reference.
 
-This page lists the typed-judgment throughput that typevet measured on vLLM.
-The source of every number is the
+typevet has two throughput measurements on vLLM.
+This page lists the text judgment measurement (#236).
+[Image judgment throughput on one H100](../explanation/image-throughput-h100.md)
+explains the image judgment measurement (#336).
+
+The source of every number on this page is the
 [#236 attempt-2 live receipt](https://github.com/Alberto-Codes/typevet/issues/236#issuecomment-5898660690).
 The pod cost comes from the
 [#236 supervisor pod record](https://github.com/Alberto-Codes/typevet/issues/236#issuecomment-5898685257).
@@ -43,6 +47,10 @@ Server times are histogram bucket upper bounds.
 
 `/v1/models` does not show a model revision.
 The revision comes from the pre-registered contract.
+
+The #236 receipt does not record the server flags.
+Receipts written after #341 hold a `server_args` block.
+The [server arguments block](eval-lfw-loader.md#server-arguments-block) lists its keys.
 
 ## Method
 
@@ -156,6 +164,8 @@ It excludes cold start, idle time and the proxy.
 
 - Public datasets only. No partner data was measured.
 - The data is from one run, one pod and one model pin.
+  The image measurement is a separate run; see
+  [Image judgment throughput on one H100](../explanation/image-throughput-h100.md).
 - The texts are short public texts of 89 to 254 mean prompt tokens per record.
   The throughput does not transfer to longer prompts.
 - Client latency includes the RunPod proxy from the operator machine to US-MO-1.

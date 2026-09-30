@@ -104,8 +104,13 @@ Sources: [Verified evidence and inferred claims](verification.md),
 
 ## Performance
 
-typevet has one throughput measurement: one run, one pod and one model pin on vLLM.
-At concurrency level 64, Banking77-480 ran at 39.63 records/s with 0 errors.
+typevet has two throughput measurements on vLLM.
+Each is one run on one H100 pod with one model pin.
+
+- **Text judgments (#236).** At concurrency level 64, Banking77-480 ran at 39.63 records/s with 0 errors.
+- **Image judgments (#336).** At 16 in flight, the full face, check and signature sets ran at 4.4 to 5.3 judgments/s.
+
+Limits of the text measurement:
 
 - The texts are short public texts of 89 to 254 mean prompt tokens per record.
   The throughput does not transfer to longer prompts.
@@ -114,9 +119,16 @@ At concurrency level 64, Banking77-480 ran at 39.63 records/s with 0 errors.
 - The full Banking77 test split of 3,080 records was not measured.
   GPU memory was not measured.
 - Cold start was 6 min 46 s on that pod.
-- The page makes no claim about other GPUs, models, precisions or vLLM versions.
 
-Source: [Performance on one H100](../reference/performance.md#limits).
+Limits of both measurements:
+
+- The receipts of both runs do not record the vLLM server flags.
+  The flags come from the issue comments of each run.
+  Receipts written after #341 hold a `server_args` block with the observed cache config.
+- The pages make no claim about other GPUs, models, precisions or vLLM versions.
+
+Sources: [Performance on one H100](../reference/performance.md#limits),
+[Image judgment throughput on one H100](image-throughput-h100.md).
 
 ## Pre-1.0 API
 
