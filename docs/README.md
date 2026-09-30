@@ -114,8 +114,11 @@ answers a question, and a reference gives facts.
   ([#180](https://github.com/Alberto-Codes/typevet/issues/180)).
 - [Question records → JSON Schema](reference/question-schema-map.md) (reference): Noul/Choice/Score export records to `compile_json_schema` fixtures ([#102](https://github.com/Alberto-Codes/typevet/issues/102)).
 - [Glossary](reference/glossary.md) (reference): the one meaning of each term.
-- [Python API reference](reference/api.md) (reference): the public package
-  docstrings in the site build.
+- [Python API reference](reference/api/index.md) (reference): the index of
+  the package pages generated from the public docstrings:
+  [root package](reference/api/root.md), [domain](reference/api/domain.md),
+  [ports](reference/api/ports.md), [runtime](reference/api/runtime.md) and
+  [inbound adapters](reference/api/inbound.md).
 - [Supported imports](reference/supported-imports.md) (reference): package
   `__all__` surfaces, modules removed before 0.1.0, and the module command entry.
 - [Releases](reference/releases.md) (reference): PyPI and GitHub release channels, release-please version cuts and pre-1.0 stability.

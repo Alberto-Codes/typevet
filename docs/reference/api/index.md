@@ -1,31 +1,29 @@
 # Python API reference
 
-Kind: reference. This page is generated from the docstrings of the public
-packages. [Supported imports](supported-imports.md) lists the stable names.
+Kind: reference. These pages are generated from the docstrings of the public
+packages. Each package has its own page. [Supported imports](../supported-imports.md)
+lists the stable names and the import path for each name.
 
-## Root package
+## Packages
 
-::: typevet
+| Page | Package | Contents |
+|---|---|---|
+| [Root package](root.md) | `typevet` | The names most callers import: the generation request and result, the errors, the generation ports and `decide_categorical`. |
+| <span id="domain"></span>[Domain](domain.md) | `typevet.domain` | Models, errors, question types, decisions and schema compilation, with no I/O. |
+| <span id="ports"></span>[Ports](ports.md) | `typevet.ports` | The protocols that adapters implement: generation, scoring, judgment and model framing. |
+| <span id="runtime"></span>[Runtime](runtime.md) | `typevet.runtime` | Categorical decisions, typed judgment and the vLLM and Gemma 4 native vision sessions. |
+| <span id="inbound-adapters"></span>[Inbound adapters](inbound.md) | `typevet.adapters.inbound` | The caller entry points: `generate`, settings loaders and backend selection. |
 
-## Domain
+## Links from before the split
 
-::: typevet.domain
-
-## Ports
-
-::: typevet.ports
-
-## Runtime
-
-::: typevet.runtime
-
-## Inbound adapters
-
-::: typevet.adapters.inbound
+Before this split, one page held every package. A link to a symbol anchor
+on that page, such as `reference/api/#typevet.domain.Noul`, now opens this
+index and not the symbol. Use the table above to open the package page.
+Links inside this site resolve to the package page.
 
 ## Source modules
 
-The package docstrings above link to these modules. Each entry opens the
+The package docstrings link to these modules. Each entry opens the
 module source.
 
 - [](){#typevet._version} [`typevet._version`](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/_version.py)

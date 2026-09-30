@@ -120,7 +120,13 @@ nav:
       - Verified evidence and inferred claims: explanation/verification.md
   - Reference:
       - Library:
-          - Python API: reference/api.md
+          - Python API:
+              - Overview: reference/api/index.md
+              - Root package: reference/api/root.md
+              - Domain: reference/api/domain.md
+              - Ports: reference/api/ports.md
+              - Runtime: reference/api/runtime.md
+              - Inbound adapters: reference/api/inbound.md
           - Supported imports: reference/supported-imports.md
           - Configuration: reference/configuration.md
           - Errors: reference/errors.md

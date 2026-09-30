@@ -49,7 +49,7 @@ The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.
     Find the public surface, the settings and the errors.
 
     - [Call typevet from Python](how-to/call-typevet-from-python.md)
-    - [Python API reference](reference/api.md)
+    - [Python API reference](reference/api/index.md)
     - [Supported imports](reference/supported-imports.md)
     - [Configuration](reference/configuration.md)
     - [Errors](reference/errors.md)

@@ -15,6 +15,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 MERMAID_ASSET = "assets/javascripts/mermaid.min.js"
 MERMAID_VERSION = "11.17.2"
 MERMAID_SHA256 = "581ed7d74bd9048d0e3a91363927d72ef22942d7722546b27f7cc29e35390eb8"
+API_PACKAGE_PAGES = {
+    "root": "typevet",
+    "domain": "typevet.domain",
+    "ports": "typevet.ports",
+    "runtime": "typevet.runtime",
+    "inbound": "typevet.adapters.inbound",
+}
 
 pytestmark = pytest.mark.unit
 
@@ -41,7 +48,13 @@ def test_mkdocs_strict_build_succeeds(
 
     assert result.exit_code == 0, result.output
     assert (site_dir / "index.html").is_file()
-    assert (site_dir / "reference" / "api" / "index.html").is_file()
+    api_dir = site_dir / "reference" / "api"
+    api_index = (api_dir / "index.html").read_text(encoding="utf-8")
+    for package, symbol in API_PACKAGE_PAGES.items():
+        page = api_dir / package / "index.html"
+        assert page.is_file(), f"missing API package page: {package}"
+        assert f'id="{symbol}"' in page.read_text(encoding="utf-8")
+        assert f'href="{package}/"' in api_index
     gemma_page = (
         site_dir / "explanation" / "how-typevet-works-with-gemma-4" / "index.html"
     )
