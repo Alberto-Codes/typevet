@@ -107,6 +107,8 @@ class LlamaCppCandidateScoringAdapter:
         _timeout (float): HTTP timeout in seconds.
         _client (httpx.Client | None): Shared or owned HTTP client.
         _owns_client (bool): Whether ``close`` should close the client.
+        _client_lock (threading.Lock): Guards lazy creation of the owned
+            client.
         _n_vocab (int | None): Caller vocabulary size override, or ``None``
             to read it from the server.
         _vocab_sizes (dict[str, int]): Per-model cache of known vocabulary sizes.
@@ -133,7 +135,10 @@ class LlamaCppCandidateScoringAdapter:
         n_vocab: int | None = None,
         media_capabilities: Mapping[str, MediaCapability] | None = None,
     ) -> None:
-        """Create the scoring adapter and the lock that guards its media cache.
+        """Create the scoring adapter and its locks.
+
+        One lock guards the lazy creation of an owned client. Other locks
+        guard the vocabulary and media caches.
 
         Args:
             base_url: llama.cpp server root URL.
@@ -150,6 +155,7 @@ class LlamaCppCandidateScoringAdapter:
         self._timeout = timeout
         self._client = client
         self._owns_client = client is None
+        self._client_lock = threading.Lock()
         self._n_vocab = n_vocab
         self._vocab_sizes: dict[str, int] = {}
         self._vocab_reads: dict[str, int] = {}
@@ -437,12 +443,20 @@ class LlamaCppCandidateScoringAdapter:
     def _ensure_client(self) -> httpx.Client:
         """Return the HTTP client, creating one when needed.
 
+        Creation is double-checked under ``_client_lock``, so threads that
+        race here share one client. The lock is never held across a request.
+
         Returns:
             An open ``httpx.Client``.
         """
-        if self._client is None:
-            self._client = httpx.Client(timeout=self._timeout)
-        return self._client
+        client = self._client
+        if client is None:
+            with self._client_lock:
+                client = self._client
+                if client is None:
+                    client = httpx.Client(timeout=self._timeout)
+                    self._client = client
+        return client
 
 
 def _is_tokenize_failure(response: httpx.Response) -> bool:

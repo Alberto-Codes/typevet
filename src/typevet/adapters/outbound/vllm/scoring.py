@@ -7,7 +7,9 @@ through ``logprob_token_ids`` and reads their logprobs from the first
 generated position. A request with images sends the content as a list of
 ``text`` and ``image_url`` blocks, one ``data:`` URI per image. The response
 holds at most ``MAX_LOGPROB_TOKEN_IDS`` ids, not the full distribution, so the
-result reports ``off_option_mass`` as ``None`` (unavailable).
+result reports ``off_option_mass`` as ``None`` (unavailable). An adapter
+without a caller client creates one client on first use, safely across
+threads.
 
 Examples:
     ```python
@@ -42,6 +44,7 @@ Attributes:
 
 from __future__ import annotations
 
+import threading
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, Self
 from urllib.parse import urljoin
@@ -110,6 +113,8 @@ class VllmCandidateScoringAdapter:
         _timeout (float): HTTP timeout in seconds.
         _client (httpx.Client | None): Shared or owned HTTP client.
         _owns_client (bool): Whether ``close`` should close the client.
+        _client_lock (threading.Lock): Guards lazy creation of the owned
+            client.
 
     Examples:
         ```python
@@ -131,11 +136,14 @@ class VllmCandidateScoringAdapter:
             timeout: Request timeout in seconds for an owned client.
             client: Optional caller-built httpx client, for example one that
                 carries authentication headers. The adapter does not close it.
+                ``None`` makes the adapter create its own client on first
+                use, under a lock, so threads share one client.
         """
         self._base_url = base_url.rstrip("/") + "/"
         self._timeout = timeout
         self._client = client
         self._owns_client = client is None
+        self._client_lock = threading.Lock()
 
     def close(self) -> None:
         """Close the owned HTTP client when the adapter created it."""
@@ -194,12 +202,20 @@ class VllmCandidateScoringAdapter:
     def _ensure_client(self) -> httpx.Client:
         """Return the HTTP client, creating one when needed.
 
+        Creation is double-checked under ``_client_lock``, so threads that
+        race here share one client. The lock is never held across a request.
+
         Returns:
             An open ``httpx.Client``.
         """
-        if self._client is None:
-            self._client = httpx.Client(timeout=self._timeout)
-        return self._client
+        client = self._client
+        if client is None:
+            with self._client_lock:
+                client = self._client
+                if client is None:
+                    client = httpx.Client(timeout=self._timeout)
+                    self._client = client
+        return client
 
 
 def _ensure_supported(request: CandidateScoringRequest) -> None:
