@@ -9,11 +9,15 @@ theme:
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -57,6 +61,8 @@ plugins:
             docstring_section_style: table
             docstring_options:
               ignore_init_summary: true
+extra_css:
+  - stylesheets/theme.css
 extra_javascript:
   - assets/javascripts/mermaid.min.js
 markdown_extensions:

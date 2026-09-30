@@ -1,0 +1,113 @@
+/* typevet: neutral surfaces with one teal accent.
+   Structure follows docvet's theme.css. Tokens are scoped per scheme.
+   Contrast targets (WCAG 2.2): text and links >= 4.5:1, focus and
+   meaningful borders >= 3:1. Syntax colours stay Material defaults. */
+
+/* Light mode */
+[data-md-color-scheme="default"] {
+  --md-default-bg-color: #fbfbfa;
+  --md-default-fg-color: #1f2328;
+  --md-default-fg-color--light: #5a636b;
+  --md-primary-fg-color: #0f4c5c;
+  --md-primary-fg-color--light: #1b6474;
+  --md-primary-fg-color--dark: #0a3a47;
+  --md-primary-bg-color: #ffffff;
+  --md-primary-bg-color--light: #d6e4e8;
+  --md-accent-fg-color: #084f57;
+  --md-accent-fg-color--transparent: #0b6e791a;
+  --md-accent-bg-color: #ffffff;
+  --md-accent-bg-color--light: #ffffffb3;
+  --md-typeset-a-color: #0b6e79;
+  --md-code-fg-color: #2b3a42;
+  --md-code-bg-color: #f5f6f7;
+  --md-footer-fg-color: #ffffff;
+  --md-footer-fg-color--light: #d0dde0;
+  --md-footer-fg-color--lighter: #a9bcc1;
+  --md-footer-bg-color: #0a3a47;
+  --md-footer-bg-color--dark: #082e38;
+  --tv-table-head-bg: #e7eff0;
+  --tv-focus: #0b6e79;
+  --tv-focus-header: #ffffff;
+  --tv-border: #7d858c;
+  --md-typeset-table-color: var(--tv-border);
+}
+
+/* Dark mode */
+[data-md-color-scheme="slate"] {
+  --md-hue: 200deg;
+  --md-default-bg-color: #1c2226;
+  --md-default-fg-color: #d9dfe2;
+  --md-default-fg-color--light: #a3adb3;
+  --md-primary-fg-color: #123840;
+  --md-primary-fg-color--light: #1a4a54;
+  --md-primary-fg-color--dark: #0d2a31;
+  --md-primary-bg-color: #e8f1f2;
+  --md-primary-bg-color--light: #b8ccd0;
+  --md-accent-fg-color: #8fdade;
+  --md-accent-fg-color--transparent: #5ec4c91a;
+  --md-accent-bg-color: #0d2a31;
+  --md-accent-bg-color--light: #0d2a31b3;
+  --md-typeset-a-color: #5ec4c9;
+  --md-code-fg-color: #d0d8dc;
+  --md-code-bg-color: #21272b;
+  --md-footer-fg-color: #e8f1f2;
+  --md-footer-fg-color--light: #c9d6d9;
+  --md-footer-fg-color--lighter: #a3b3b7;
+  --md-footer-bg-color: #0d2a31;
+  --md-footer-bg-color--dark: #0a2126;
+  --tv-table-head-bg: #22343a;
+  --tv-focus: #5ec4c9;
+  --tv-focus-header: #8fdade;
+  --tv-border: #76828a;
+  --md-typeset-table-color: var(--tv-border);
+}
+
+/* Header and tabs share the primary colour; tabs sit one step darker. */
+.md-header {
+  background-color: var(--md-primary-fg-color);
+}
+
+.md-tabs {
+  background-color: var(--md-primary-fg-color--dark);
+}
+
+.md-header__topic:first-child {
+  font-weight: 700;
+}
+
+/* Content links keep an underline, so colour is not the only cue. */
+.md-typeset a:not(.headerlink, .md-button, .md-annotation__index) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+
+.md-typeset a:not(.headerlink, .md-button, .md-annotation__index):hover {
+  text-decoration-thickness: 2px;
+}
+
+/* One visible focus ring for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--tv-focus);
+  outline-offset: 2px;
+}
+
+.md-header :focus-visible,
+.md-tabs :focus-visible {
+  outline-color: var(--tv-focus-header);
+}
+
+/* Tables: a tinted header row and borders that read at 3:1. */
+.md-typeset table:not([class]) {
+  border-color: var(--tv-border);
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--tv-table-head-bg);
+  color: var(--md-default-fg-color);
+}
+
+/* Code line highlights use the accent at low strength. */
+.md-typeset .highlight .hll {
+  background-color: var(--md-accent-fg-color--transparent);
+}
