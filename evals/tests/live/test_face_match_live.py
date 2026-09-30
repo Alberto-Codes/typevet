@@ -176,10 +176,9 @@ def _open_session(
 ) -> Iterator[GemmaNativeVisionSession | VllmJudgmentSession]:
     """Open the judgment session for ``backend``.
 
-    The llama.cpp branch opens the Gemma native vision session on a client
-    without keep-alive. Two earlier runs on a pooled client stopped with
-    "Server disconnected without sending a response" while the model process
-    stayed up, which points at a closed keep-alive connection.
+    The llama.cpp branch opens the Gemma native vision session on the
+    factory's pooled client. The scoring calls send a request once more when
+    the router closes a reused connection before a response (#305).
 
     Yields:
         The judgment session.
@@ -189,16 +188,7 @@ def _open_session(
             yield vllm_session
         return
     settings = load_llama_settings(environ)
-    with (
-        httpx.Client(
-            base_url=settings.base_url.rstrip("/"),
-            timeout=settings.timeout,
-            limits=httpx.Limits(max_keepalive_connections=0),
-        ) as client,
-        open_gemma_native_vision_judgment(
-            settings=settings, http_client=client
-        ) as llama_session,
-    ):
+    with open_gemma_native_vision_judgment(settings=settings) as llama_session:
         yield llama_session
 
 
@@ -217,7 +207,7 @@ def _server_facts(backend: str, client: httpx.Client, model: str) -> dict[str, o
         facts["build_info"] = body.get("build_info", "unknown")
         facts["model_alias"] = body.get("model_alias")
         facts["n_ctx"] = body.get("default_generation_settings", {}).get("n_ctx")
-        facts["http_keepalive"] = False
+        facts["http_keepalive"] = True
     else:
         version = client.get("/version")
         facts["build_info"] = (

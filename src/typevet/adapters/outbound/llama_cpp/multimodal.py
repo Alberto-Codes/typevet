@@ -26,6 +26,8 @@ Examples:
 
 See Also:
     - [typevet.adapters.outbound.llama_cpp.scoring][]: Caller of this module
+    - [typevet.adapters.outbound.llama_cpp.http_mapping][]: One-retry send
+      that the ``/props`` probe uses (#305)
     - [typevet.domain.media][]: ``ImageInput`` and the documented marker
 """
 
@@ -40,8 +42,8 @@ import httpx
 
 from typevet.adapters.outbound.llama_cpp.http_mapping import (
     ensure_success_status,
-    map_transport_error,
     parse_json_response,
+    send_idempotent,
 )
 from typevet.domain.errors import GenerationError
 from typevet.domain.media import MEDIA_MARKER, ImageInput
@@ -99,6 +101,8 @@ def fetch_media_capability(
 ) -> MediaCapability:
     """Probe ``GET /props?model=<model>`` for image support and the marker.
 
+    An early close on a new or reused connection gets one retry (#305).
+
     Args:
         client: Open HTTP client for the router.
         base_url: Router root with a trailing slash.
@@ -113,10 +117,7 @@ def fetch_media_capability(
         GenerationError: When the props body shape is not usable.
     """
     url = urljoin(base_url, "props")
-    try:
-        response = client.get(url, params={"model": model})
-    except httpx.HTTPError as exc:
-        raise map_transport_error(exc) from exc
+    response = send_idempotent(lambda: client.get(url, params={"model": model}))
     ensure_success_status(response)
     return _capability_from_props(parse_json_response(response))
 

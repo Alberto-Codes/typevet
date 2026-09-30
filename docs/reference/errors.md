@@ -139,7 +139,21 @@ POSTs to `v1/chat/completions` with `response_format` `json_schema`. HTTP status
 The `/tokenize` call of the Gemma 4 native vision factory uses the same HTTP
 mapping. A failure before a response raises `TransportError`. A status of 400
 or above raises `BackendHttpError`
-([#298](https://github.com/Alberto-Codes/typevet/issues/298)).
+([#298](https://github.com/Alberto-Codes/typevet/issues/298)). A 200 body that
+is not JSON raises `GenerationError` with the prefix
+`llama.cpp returned non-JSON HTTP body`. A JSON body without a `tokens` list of
+integers raises `GenerationError` with the prefix
+`llama.cpp /tokenize response missing a tokens list`
+([#310](https://github.com/Alberto-Codes/typevet/issues/310)).
+
+The llama.cpp scoring calls `/tokenize`, `/props` and `/completion` with
+`n_predict: 0` change no server state. The router can read a request on a
+connection (new or reused) and then close it with no response head. httpx then raises
+`RemoteProtocolError` ("Server disconnected without sending a response").
+These calls then send the request one more time on a new connection. A second close, a timeout, a malformed response and an error
+status do not cause a retry. They raise `TransportError` or `BackendHttpError`
+as the table shows
+([#305](https://github.com/Alberto-Codes/typevet/issues/305)).
 
 This table describes local mapping only. It does not assert which HTTP statuses
 a given llama.cpp build returns for every failure mode. See
@@ -209,7 +223,9 @@ a fixed or callable mapping with the same `jsonschema` path as llama.cpp:
 
 typevet **does not** expose a `retryable` flag or a built-in retry loop on
 generation adapters. Each `generate` call performs at most one HTTP round trip
-(llama.cpp or vLLM) or one validation pass (fake).
+(llama.cpp or vLLM) or one validation pass (fake). The llama.cpp scoring calls
+have one narrow retry. It covers a close before a complete status line and
+headers, on a new or reused connection (see [llama.cpp adapter mapping](#llamacpp-adapter-mapping)).
 
 Use these boundaries when a caller adds retries:
 

@@ -45,7 +45,8 @@ Each backend ran the slice once. There are no repeats.
 | Mean latency | 4.18 s per pair | 5.27 s per pair, through a remote proxy |
 
 Two earlier llama.cpp attempts stopped on keep-alive disconnects
-([#305](https://github.com/Alberto-Codes/typevet/issues/305)). The vLLM pod
+([#305](https://github.com/Alberto-Codes/typevet/issues/305)).
+The #305 fix now retries such a close once, so later runs keep keep-alive on. The vLLM pod
 cost about 1.69 USD, shared with
 [#231](https://github.com/Alberto-Codes/typevet/issues/231).
 

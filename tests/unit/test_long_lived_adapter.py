@@ -6,7 +6,9 @@ pool sees a real restart: the stub closes every open connection and stops
 listening. No request leaves the host.
 
 A call while the stub is down raises ``TransportError``. An error status on
-``/tokenize`` raises ``BackendHttpError`` ([#298][i298]).
+``/tokenize`` raises ``BackendHttpError`` ([#298][i298]). A 200 ``/tokenize``
+body that is not JSON, or that has no ``tokens`` list of integers, raises
+``GenerationError`` ([#310][i310]).
 
 Examples:
     ```bash
@@ -19,6 +21,7 @@ See Also:
 
 [i204]: https://github.com/Alberto-Codes/typevet/issues/204
 [i298]: https://github.com/Alberto-Codes/typevet/issues/298
+[i310]: https://github.com/Alberto-Codes/typevet/issues/310
 """
 
 from __future__ import annotations
@@ -39,7 +42,7 @@ from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
     GemmaNativeVisionSession,
     open_gemma_native_vision_judgment,
 )
-from typevet.domain.errors import BackendHttpError, TransportError
+from typevet.domain.errors import BackendHttpError, GenerationError, TransportError
 from typevet.domain.judgment_answers import NoulAnswer
 from typevet.domain.judgment_questions import Noul
 from typevet.domain.media import ImageInput
@@ -64,6 +67,8 @@ class _StubState:
         completions (int): ``/completion`` requests the stub answered.
         props_calls (int): ``/props`` requests the stub answered.
         tokenize_status (int): HTTP status the stub sends for ``/tokenize``.
+        tokenize_raw (tuple[str, bytes] | None): Content type and raw body of
+            a 200 reply that replaces the ``/tokenize`` JSON when set.
         open_sockets (list[socket.socket]): Accepted sockets, closed on stop.
     """
 
@@ -71,6 +76,7 @@ class _StubState:
     completions: int = 0
     props_calls: int = 0
     tokenize_status: int = 200
+    tokenize_raw: tuple[str, bytes] | None = None
     open_sockets: list[socket.socket] = field(default_factory=list)
 
 
@@ -103,9 +109,11 @@ def _handler(state: _StubState) -> type[BaseHTTPRequestHandler]:
         wbufsize = -1
 
         def _reply(self, body: dict[str, Any], status: int = 200) -> None:
-            payload = json.dumps(body).encode()
+            self._send(json.dumps(body).encode(), "application/json", status)
+
+        def _send(self, payload: bytes, content_type: str, status: int) -> None:
             self.send_response(status)
-            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(payload)))
             self.end_headers()
             self.wfile.write(payload)
@@ -116,6 +124,9 @@ def _handler(state: _StubState) -> type[BaseHTTPRequestHandler]:
         def do_POST(self) -> None:
             length = int(self.headers.get("Content-Length", "0"))
             body = json.loads(self.rfile.read(length) or b"{}")
+            if self.path == "/tokenize" and state.tokenize_raw is not None:
+                self._send(state.tokenize_raw[1], state.tokenize_raw[0], 200)
+                return
             if self.path == "/tokenize" and state.tokenize_status != 200:
                 self._reply({"error": "tokenize failed"}, state.tokenize_status)
                 return
@@ -251,4 +262,26 @@ def test_tokenize_error_status_raises_backend_http_error(stub: _StubRouter) -> N
     with _session(stub) as session, pytest.raises(BackendHttpError) as info:
         session.port.judge("Look.", _QUESTIONS, _MODEL, media=(_PNG,))
     assert info.value.status_code == 500
+    assert stub.state.completions == 0
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        ("text/plain", b"oops"),
+        ("application/json", b'{"no_tokens": []}'),
+        ("application/json", b'{"tokens": "abc"}'),
+        ("application/json", b'{"tokens": [1, "x"]}'),
+        ("application/json", b"[1, 2]"),
+    ],
+)
+def test_malformed_tokenize_body_raises_generation_error(
+    stub: _StubRouter, raw: tuple[str, bytes]
+) -> None:
+    """A 200 ``/tokenize`` body with no usable ``tokens`` raises ``GenerationError``."""
+    stub.state.tokenize_raw = raw
+    with _session(stub) as session, pytest.raises(GenerationError) as info:
+        session.port.judge("Look.", _QUESTIONS, _MODEL, media=(_PNG,))
+    assert type(info.value) is GenerationError
+    assert "llama.cpp" in str(info.value)
     assert stub.state.completions == 0

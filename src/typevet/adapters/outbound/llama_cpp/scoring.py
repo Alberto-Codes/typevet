@@ -20,7 +20,8 @@ Examples:
     ```
 
 See Also:
-    - [typevet.adapters.outbound.llama_cpp.http_mapping][]: Shared HTTP error mapping
+    - [typevet.adapters.outbound.llama_cpp.http_mapping][]: Shared HTTP error
+      mapping and the one-retry send for idempotent requests
     - [typevet.adapters.outbound.llama_cpp.multimodal][]: Media probe and shaping
     - [typevet.domain.candidate_scoring_validate][]: Fail-closed result assembly
     - [typevet.ports.scoring][]: CandidateScoringPort protocol
@@ -39,8 +40,8 @@ import httpx
 
 from typevet.adapters.outbound.llama_cpp.http_mapping import (
     ensure_success_status,
-    map_transport_error,
     parse_json_response,
+    send_idempotent,
 )
 from typevet.adapters.outbound.llama_cpp.multimodal import (
     MediaCapability,
@@ -128,7 +129,9 @@ class LlamaCppCandidateScoringAdapter:
         support and marker, then sends the nested object prompt that attaches
         the images. A text request sends a plain string ``prompt`` and never
         probes ``/props``. Every request sends ``cache_prompt: false`` so a
-        cached KV prefix cannot shift the scores (#154, #155).
+        cached KV prefix cannot shift the scores (#154, #155). When the router
+        closes the connection (new or reused) before a response head, the request is sent once
+        more on a fresh connection (#305).
 
         Args:
             request: Model id, prefix, ordered single-token candidates, stage,
@@ -174,11 +177,7 @@ class LlamaCppCandidateScoringAdapter:
         }
         url = urljoin(self._base_url, "completion")
         client = self._ensure_client()
-        try:
-            response = client.post(url, json=body)
-        except httpx.HTTPError as exc:
-            raise map_transport_error(exc) from exc
-
+        response = send_idempotent(lambda: client.post(url, json=body))
         ensure_success_status(response)
         payload = parse_json_response(response)
         # Validates the root is an object, which _extract_usage then assumes.

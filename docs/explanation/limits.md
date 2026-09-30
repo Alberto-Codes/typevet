@@ -138,6 +138,7 @@ One live run on the llama.cpp vision alias answered synthetic images up to 4096 
 That run is one receipt, not a pixel limit.
 Offline tests run 200 calls on one session and restart the router in the middle.
 A call while the router is down raises `TransportError` ([#298](https://github.com/Alberto-Codes/typevet/issues/298)).
+A router that closes a connection (new or reused) before a response head gets one retry on a new connection; a second close raises `TransportError` ([#305](https://github.com/Alberto-Codes/typevet/issues/305)).
 
 Sources: [runtime limits and ownership](../reference/typed-judgment-release-support-matrix.md#runtime-limits-and-ownership),
 [Gemma 4 multimodal judgments, limits](gemma-4-multimodal-judgments.md#limits).
