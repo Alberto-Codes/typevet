@@ -1,0 +1,172 @@
+# Synthetic checks and the check-match run
+
+Kind: reference. Generated paper checks, judged against a synthetic check
+register row. Parent epic:
+[#303](https://github.com/Alberto-Codes/typevet/issues/303); generator issue
+[#315](https://github.com/Alberto-Codes/typevet/issues/315); run issue
+[#316](https://github.com/Alberto-Codes/typevet/issues/316).
+
+## Role in typevet
+
+| Piece | Module / path |
+|---|---|
+| Register rows, variants and expected labels | `typevet_evals.check_match.cases` |
+| Renders and contact sheet | `typevet_evals.check_match.render` |
+| One-image request builder | `typevet_evals.check_match.request` |
+| Metric rules | `typevet_evals.check_match.metrics` |
+| Run and receipt | `typevet_evals.check_match.runner` |
+| Metric and runner unit tests | `evals/tests/unit/test_check_match_metrics.py` |
+| Contract test | `evals/tests/contract/test_check_match_contract.py` |
+| Live run | `evals/tests/live/test_check_match_live.py` |
+
+## Generator
+
+`check_cases` returns 20 register rows times 7 variants, so 140 cases. The
+default seed is 0. SHA-256 keys set every draw, so one seed gives one slice.
+
+Each register row has a check number, a date, a payee and an amount. Payees
+come from a fixed list of invented names. The case id is
+`r<row>:<variant>`, for example `r00:clean`.
+
+Every check is not negotiable by construction:
+
+- The routing number fails the ABA check digit.
+- The account number prints as zeros.
+- A `SPECIMEN` mark crosses the face.
+- A `VOID` mark crosses the signature line on every render.
+- The bank name says that the bank is not real.
+- Signatures are seeded synthetic strokes, never a real signature.
+
+Renders use the bundled Pillow font only. The repository stores no render.
+Renders are byte-identical for one case within one Pillow build.
+
+## Variants and expected labels
+
+These are amendment A1 of the #303 design. The owner signed off the labels
+on a contact sheet of all 140 renders (amendment A2).
+
+| Variant | Accepted `verdict` | Payee truth | Amounts truth |
+|---|---|---|---|
+| `clean` | `consistent` | yes | yes |
+| `payee_changed` | `payee_mismatch` | no | yes |
+| `written_amount_changed` | `amount_mismatch` | yes | no |
+| `both_amounts_changed` | `amount_mismatch` | yes | no |
+| `wrong_date` | `date_mismatch` | yes | yes |
+| `unsigned` | `unsigned` | yes | yes |
+| `low_legibility` | `consistent` or `cannot_tell` | yes | yes |
+
+In `written_amount_changed`, the number amount equals the register. The
+`low_legibility` variant has clean content and a Gaussian blur.
+
+## Judgment request
+
+`build_check_match_request` makes one typevet judgment per case. The state
+holds the register row as text. The media holds one check image.
+
+| Question id | Type | Answer |
+|---|---|---|
+| `payee_matches` | `Noul` | Probability that the check names the register payee |
+| `amounts_match` | `Noul` | Probability that both check amounts equal the register amount |
+| `verdict` | `Choice` | `consistent`, `payee_mismatch`, `amount_mismatch`, `date_mismatch`, `unsigned` or `cannot_tell` |
+| `legibility` | `Score` | 0 to 4, how clearly the check text can be read |
+
+`judge_check_match` sends the request to a `JudgmentPort`.
+
+## Run
+
+`run_check_match` sends one judgment per case, in slice order. A backend
+failure (`GenerationError`) stops the run. The run keeps the earlier
+outcomes and records the index, case id and error class of the failure.
+
+## Metrics
+
+`check_match_metrics` computes these values. A rate is `null` when no case
+counts.
+
+| Metric | Definition |
+|---|---|
+| `accuracy` | Share of cases whose `verdict` is in the accepted set |
+| `accuracy_by_class` | Accuracy per accepted set, for example `cannot_tell\|consistent` |
+| `accuracy_by_variant` | Accuracy per variant; `unsigned` shows separately |
+| `false_clear_rate` | Share of counted cases answered `consistent` |
+| `false_clear_by_variant` | The same rate for each counted variant |
+| `cannot_tell_rate`, `cannot_tell_by_variant` | Share of `cannot_tell` verdicts, overall and per variant |
+| `nouls.<id>.roc_auc` | ROC-AUC of the `Noul` against its truth, average ranks for ties |
+| `nouls.<id>.ece` | Expected calibration error over ten equal-width bins |
+| `nouls.<id>.reliability` | The ten bins: count, mean confidence, share of true cases |
+| `score_by_variant` | Mean `legibility` value and the level counts per variant |
+| `legibility_gap_clean_minus_low` | Clean mean `legibility` minus the low-legibility mean |
+| `noul_choice_agreement` | Share of counted cases whose `Noul` answers agree with the `verdict` |
+
+The false-clear rate counts the five variants whose accepted set does not
+hold `consistent`. These are `payee_changed`, both amount variants,
+`wrong_date` and `unsigned`. The `low_legibility` variant never counts.
+
+The agreement rule uses a limit of 0.5. A `Noul` below 0.5 says "mismatch".
+
+| `verdict` | Agrees when |
+|---|---|
+| `payee_mismatch` | The payee `Noul` says mismatch |
+| `amount_mismatch` | The amounts `Noul` says mismatch |
+| `consistent`, `date_mismatch`, `unsigned` | Neither `Noul` says mismatch |
+| `cannot_tell` | Not counted |
+
+`Noul` values are model confidence. They are not calibrated match
+percentages. Generated checks are not evidence about real checks, fraud or
+counterfeits.
+
+## Live run and receipt
+
+| Variable | Use |
+|---|---|
+| `TYPEVET_CHECK_MATCH_RECEIPT` | Receipt path. It must name a new file. The test skips when it is not set. |
+| `TYPEVET_CHECK_MATCH_ROWS` | Register rows, 1 to 20, for a smoke run. Each row gives all 7 variants. |
+| `TYPEVET_REQUIRE_LIVE` | When true, a missing receipt path fails the test |
+| `TYPEVET_BACKEND` | `llama_cpp` (default) or `vllm` |
+| `TYPEVET_LLAMA__MULTIMODAL_MODEL` | llama.cpp model; the test default is `gemma-4-31b-kv9-q4km-mm` |
+| `TYPEVET_VLLM__BASE_URL`, `TYPEVET_VLLM__MODEL`, `TYPEVET_VLLM__API_KEY`, `TYPEVET_VLLM__USER_AGENT` | vLLM session |
+| `TYPEVET_VLLM_MODEL_REVISION` | Served weights revision. Required when `TYPEVET_BACKEND` is `vllm`. |
+| `TYPEVET_GIT_STATUS_PORCELAIN` | Porcelain status text for the working-tree fingerprint |
+
+The test checks the receipt path, the row count and the vLLM revision
+before any network call.
+
+```bash
+TYPEVET_GIT_STATUS_PORCELAIN="$(git status --porcelain)" \
+  TYPEVET_CHECK_MATCH_RECEIPT=evals/fixtures/checks/receipts/check_match_llama_cpp_receipt.json \
+  uv run pytest evals/tests/live/test_check_match_live.py -m live -q -s
+```
+
+Each receipt case holds the case id, the variant, the expected labels, the
+typed answers, and the agreement flag. It also holds the render SHA-256,
+the latency and the prompt tokens. The receipt also holds the metrics and
+the stopping failure.
+
+| Pin | Meaning |
+|---|---|
+| `generator_seed`, `register_rows`, `variants_per_row` | The slice |
+| `pillow_version` | Pillow build that drew the renders |
+| `slice_sha256` | SHA-256 over each case id and render digest |
+| `server` | Served model entry and server build |
+| `model_revision` | Served weights revision, vLLM only |
+
+The receipt also holds the experiment identity with the git fingerprint.
+The receipt holds no image bytes. The test refuses a receipt that holds the
+vLLM key or an auth header.
+
+## llama.cpp media marker
+
+The llama.cpp router gives each model load a new random media marker. The
+session reads the marker once, when it opens. A model swap by another
+router client can make that marker stale. The server then refuses each
+request with HTTP 400 "Failed to tokenize prompt". Issue
+[#322](https://github.com/Alberto-Codes/typevet/issues/322) tracks the fix.
+Until then, do not share the router with other clients during a run.
+
+## Related pages
+
+- [Eval partner data policy](eval-partner-data-policy.md): public, partner
+  and generated data.
+- [LFW loader](eval-lfw-loader.md): the face-match run that this run
+  follows.
+- [CEDAR loader](eval-cedar-loader.md): the signature-match request.
