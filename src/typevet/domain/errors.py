@@ -19,6 +19,11 @@ Attributes:
     GenerationUnsupportedCapabilityError (type): Backend cannot honor the ask.
     JudgmentError (type): Base failure for a judgment call.
     JudgmentValidationError (type): Answer failed judgment shape rules.
+    CalibrationMapError (type): Calibration map is malformed or refused.
+    CalibrationDigestError (type): Map file digest is missing, malformed or wrong.
+    CalibrationTaskMismatchError (type): Map was fitted for another task.
+    CalibrationModelMismatchError (type): Map was fitted for another model or backend.
+    CalibrationTargetError (type): Map targets a Choice or Score question.
     GemmaTemplateError (type): Gemma served-template or answer-prefix violation.
     DecisionExecutionError (type): Categorical decision execute rejected inputs.
     ScoringError (type): Base failure for a candidate scoring call.
@@ -149,6 +154,69 @@ class JudgmentValidationError(JudgmentError):
         from typevet.domain.errors import JudgmentValidationError
 
         raise JudgmentValidationError("choice not in criteria")
+        ```
+    """
+
+
+class CalibrationMapError(JudgmentError):
+    """A calibration map is malformed or cannot apply to this judgment.
+
+    Messages name fields and rules only. They never carry a probability,
+    a digest, a task id, a model id or a backend name.
+
+    Examples:
+        ```python
+        from typevet.domain.errors import CalibrationMapError
+
+        raise CalibrationMapError("calibration map field 'method' is invalid")
+        ```
+    """
+
+
+class CalibrationDigestError(CalibrationMapError):
+    """The sha256 of the map file is missing, malformed or does not match.
+
+    Examples:
+        ```python
+        from typevet.domain.errors import CalibrationDigestError
+
+        raise CalibrationDigestError("calibration map digest does not match")
+        ```
+    """
+
+
+class CalibrationTaskMismatchError(CalibrationMapError):
+    """The map was fitted for a task other than the wrapper task id.
+
+    Examples:
+        ```python
+        from typevet.domain.errors import CalibrationTaskMismatchError
+
+        raise CalibrationTaskMismatchError("calibration map task does not match")
+        ```
+    """
+
+
+class CalibrationModelMismatchError(CalibrationMapError):
+    """The map was fitted on another model or another serving backend.
+
+    Examples:
+        ```python
+        from typevet.domain.errors import CalibrationModelMismatchError
+
+        raise CalibrationModelMismatchError("calibration map model does not match")
+        ```
+    """
+
+
+class CalibrationTargetError(CalibrationMapError):
+    """A map names a question that is not a Noul question.
+
+    Examples:
+        ```python
+        from typevet.domain.errors import CalibrationTargetError
+
+        raise CalibrationTargetError("calibration maps apply to Noul questions only")
         ```
     """
 

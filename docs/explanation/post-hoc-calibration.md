@@ -144,6 +144,27 @@ rose from 0.141 to between 0.237 and 0.325.
 
 So each task and backend needs its own map. One shared map does not work.
 
+## Use a calibration map
+
+[#352](https://github.com/Alberto-Codes/typevet/issues/352) lets a caller
+apply a fitted map at judgment time. The map is one JSON file per task and
+question. Its schema id is `typevet.calibration_map/1`.
+
+`load_calibration_map(path, sha256=...)` reads the file. It refuses the file
+when the sha256 of its bytes differs from the caller's digest.
+
+`CalibratedJudgment(inner, maps, task_id=..., backend=...)` wraps a judgment
+port. The caller declares the task and the backend once. The wrapper refuses
+a map for another task or backend. It refuses a response from another model.
+Maps do not transfer, so these checks fail closed.
+
+The answer carries the calibrated Noul. `JudgmentResponse.calibration`
+records the raw value, the calibrated value, the method and the map digest.
+Each refusal is a `CalibrationMapError` with no values in its message.
+
+This slice maps Noul answers only. A map for a Choice or Score question is
+refused. A map whose evaluation failed the rule is recorded, not refused.
+
 ## Limits
 
 - **Small halves.** Each evaluation half has 70 to 98 rows. A 10-bin ECE on

@@ -29,6 +29,16 @@ Attributes:
     Decision (type): One compiled TypeLLM field from JSON Schema.
     BackendHttpError (type): llama.cpp HTTP status 400 or above.
     CandidateScoringRequest (type): Prompt and candidate tokens to score.
+    CALIBRATION_CLIP (float): Clip bound for calibration map inputs and outputs.
+    CALIBRATION_MAP_SCHEMA (str): Schema id of a calibration map document.
+    CalibrationMap (type): One validated calibration map.
+    CalibrationRecord (type): Raw and calibrated value of one Noul answer.
+    calibration_map_from_mapping (callable): Validate a parsed map document.
+    CalibrationMapError (type): Calibration map is malformed or refused.
+    CalibrationDigestError (type): Map file digest is missing, malformed or wrong.
+    CalibrationTaskMismatchError (type): Map was fitted for another task.
+    CalibrationModelMismatchError (type): Map was fitted for another model or backend.
+    CalibrationTargetError (type): Map targets a Choice or Score question.
     ImageInput (type): One image to condition a judgment on.
     MEDIA_MARKER (str): Documented media placeholder in a scoring prefix.
     SUPPORTED_IMAGE_MIME_TYPES (frozenset): Accepted v1 image mime types.
@@ -68,6 +78,13 @@ Attributes:
         object schema.
 """
 
+from typevet.domain.calibration import (
+    CALIBRATION_CLIP,
+    CALIBRATION_MAP_SCHEMA,
+    CalibrationMap,
+    CalibrationRecord,
+    calibration_map_from_mapping,
+)
 from typevet.domain.candidate_scoring_request import (
     CandidateScoringRequest,
     CandidateTokenSpec,
@@ -94,6 +111,11 @@ from typevet.domain.decisions import (
 )
 from typevet.domain.errors import (
     BackendHttpError,
+    CalibrationDigestError,
+    CalibrationMapError,
+    CalibrationModelMismatchError,
+    CalibrationTargetError,
+    CalibrationTaskMismatchError,
     DecisionExecutionError,
     GemmaTemplateError,
     GenerationError,
@@ -147,12 +169,21 @@ from typevet.domain.question_schema import (
 from typevet.domain.scoring_stage import ScoreStage
 
 __all__ = [
+    "CALIBRATION_CLIP",
+    "CALIBRATION_MAP_SCHEMA",
     "MAX_ENUM_CHOICES",
     "MAX_PERMUTATIONS",
     "MEDIA_MARKER",
     "SUPPORTED_IMAGE_MIME_TYPES",
     "Answer",
     "BackendHttpError",
+    "CalibrationDigestError",
+    "CalibrationMap",
+    "CalibrationMapError",
+    "CalibrationModelMismatchError",
+    "CalibrationRecord",
+    "CalibrationTargetError",
+    "CalibrationTaskMismatchError",
     "CandidateScoringRequest",
     "CandidateScoringResult",
     "CandidateTokenSpec",
@@ -189,6 +220,7 @@ __all__ = [
     "apply_off_option_threshold",
     "bind_control_candidates",
     "build_and_validate_result",
+    "calibration_map_from_mapping",
     "check_off_option_threshold",
     "compile_json_schema",
     "compile_question_records",

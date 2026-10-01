@@ -1,0 +1,20 @@
+{
+  "schema": "typevet.calibration_map/1",
+  "method": "platt",
+  "parameters": {"slope": 2.0, "intercept": -1.0},
+  "fitted_on": {
+    "task_id": "fraud-message",
+    "receipt": "evals/fixtures/difraud/receipts/example.json",
+    "receipt_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "n_calibration": 68,
+    "model": "fake-judgment",
+    "backend": "llama_cpp"
+  },
+  "evaluation": {
+    "n_evaluation": 90,
+    "before": {"ece": 0.2, "brier": 0.17, "accuracy": 0.81},
+    "after": {"ece": 0.07, "brier": 0.07, "accuracy": 0.89},
+    "rule_met": true
+  },
+  "producer": {"typevet_evals": "0.6.0"}
+}

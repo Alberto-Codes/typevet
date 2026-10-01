@@ -23,6 +23,7 @@ See Also:
 Attributes:
     generate (function): Build a request and invoke a generation port.
     run_sync (function): Run an async generation coroutine from sync code.
+    load_calibration_map (function): Read a calibration map file and check its sha256.
     LlamaSettings (type): llama.cpp connection settings for composition roots.
     load_llama_settings (function): Read ``TYPEVET_LLAMA__*`` from the environment.
     llama_cpp_adapter (function): Build ``LlamaCppGenerationAdapter`` from settings.
@@ -44,6 +45,7 @@ from typevet.adapters.inbound.backend_settings import (
     load_vllm_settings,
     vllm_http_client,
 )
+from typevet.adapters.inbound.calibration_map import load_calibration_map
 from typevet.adapters.inbound.helpers import run_sync
 from typevet.adapters.inbound.settings import (
     LlamaSettings,
@@ -59,6 +61,7 @@ __all__ = [
     "generation_adapter",
     "llama_cpp_adapter",
     "load_backend",
+    "load_calibration_map",
     "load_llama_settings",
     "load_vllm_settings",
     "run_sync",

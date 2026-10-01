@@ -10,6 +10,7 @@ See Also:
     - [typevet.runtime.judgment][]: Scoring-backed judgment facade
 
 Attributes:
+    CalibratedJudgment (type): ``JudgmentPort`` wrapper that calibrates Noul answers.
     decide_categorical (callable): M1 categorical decision via scoring port.
     judge_with_scoring (callable): One-shot scoring-backed judgment helper.
     ScoringJudgmentAdapter (type): Sync ``JudgmentPort`` over ``CandidateScoringPort``.
@@ -22,6 +23,7 @@ Attributes:
     vllm_tokenize (callable): vLLM ``/tokenize`` hook factory.
 """
 
+from typevet.runtime.calibrated_judgment import CalibratedJudgment
 from typevet.runtime.categorical import decide_categorical
 from typevet.runtime.judgment import ScoringJudgmentAdapter, judge_with_scoring
 from typevet.runtime.llama_cpp_gemma_vision import (
@@ -37,6 +39,7 @@ from typevet.runtime.vllm_judgment import (
 )
 
 __all__ = [
+    "CalibratedJudgment",
     "GemmaNativeVisionSession",
     "ScoringJudgmentAdapter",
     "VllmJudgmentSession",

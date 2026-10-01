@@ -19,12 +19,14 @@ Examples:
 See Also:
     - [typevet.domain.judgment_answers][]: Answer types
     - [typevet.ports.judgment][]: JudgmentPort protocol
+    - [typevet.domain.calibration][]: Calibration records on a response
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from typevet.domain.calibration import CalibrationRecord
 from typevet.domain.judgment_answers import (
     Answer,
     ChoiceAnswer,
@@ -123,6 +125,9 @@ class JudgmentResponse:
         answers (dict[str, Answer]): Answer objects keyed by question name.
         off_option (dict[str, OffOptionReceipt]): Off-option receipt keyed by
             question name; empty when the adapter does not report one.
+        calibration (dict[str, CalibrationRecord]): Raw and calibrated values
+            keyed by question name, for each answer that a calibration map
+            changed. Empty when no map applied.
 
     Examples:
         ```python
@@ -140,6 +145,7 @@ class JudgmentResponse:
     usage: TokenUsage = field(default_factory=TokenUsage)
     answers: dict[str, Answer] = field(default_factory=dict)
     off_option: dict[str, OffOptionReceipt] = field(default_factory=dict)
+    calibration: dict[str, CalibrationRecord] = field(default_factory=dict)
 
     @property
     def nouls(self) -> dict[str, NoulAnswer]:

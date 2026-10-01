@@ -78,6 +78,9 @@ compiler types, judgment types, and scoring types, import from
 | `JudgmentResponse`, `TokenUsage` | Judgment call result and token metadata |
 | `OffOptionReceipt` | Off-option mass, caller threshold and guard flag for one answer |
 | `JudgmentError`, `JudgmentValidationError` | Judgment failure types |
+| `CalibrationMap`, `CalibrationRecord`, `calibration_map_from_mapping` | Calibration map for Noul answers, its per-answer record and its validator |
+| `CALIBRATION_MAP_SCHEMA`, `CALIBRATION_CLIP` | Calibration map schema id and the clip bound for map inputs and outputs |
+| `CalibrationMapError`, `CalibrationDigestError`, `CalibrationTaskMismatchError`, `CalibrationModelMismatchError`, `CalibrationTargetError` | Calibration map refusals; each message names fields only, never values |
 | `question_types` | Map question ids to wire type names |
 | `CandidateScoringRequest`, `CandidateTokenSpec` | Candidate logprob scoring ask |
 | `ImageInput` | One image to condition a judgment on |
@@ -112,6 +115,7 @@ Thin orchestration facades over domain, ports, and outbound adapters
 | Name | Role |
 |---|---|
 | `ScoringJudgmentAdapter` | Sync ``JudgmentPort`` over ``CandidateScoringPort`` |
+| `CalibratedJudgment` | ``JudgmentPort`` wrapper that applies calibration maps to Noul answers |
 | `judge_with_scoring` | One-shot helper wrapping the adapter |
 | `decide_categorical` | M1 categorical decision via injected scoring port |
 | `compose_scoring_prefix` | Degraded ChatML scoring prefix composition |
@@ -137,6 +141,7 @@ default), or `open_vllm_judgment` on the `TYPEVET_VLLM__*` client for `vllm`.
 |---|---|
 | `generate` | Build a `GenerationRequest` and invoke a sync port |
 | `run_sync` | Run an async generation coroutine from sync scripts |
+| `load_calibration_map` | Read one calibration map file and check the sha256 of its bytes |
 | `LlamaSettings` | Frozen llama.cpp connection settings for composition roots |
 | `load_llama_settings` | Read `TYPEVET_LLAMA__*` (and legacy aliases) from the environment |
 | `llama_cpp_adapter` | Construct `LlamaCppGenerationAdapter` from `LlamaSettings` |
