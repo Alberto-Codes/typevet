@@ -195,6 +195,30 @@ image count is 1 per check. The `stopped` record also holds `discarded`. The
 code fingerprint in the experiment identity includes `face_match/pool.py`
 and `serving_metrics.py`.
 
+### Option-order run
+
+The option-order live test scores the seed-1 verdict once per balanced
+ordering. Issue [#105](https://github.com/Alberto-Codes/typevet/issues/105)
+holds the rule.
+
+| Variable | Use |
+|---|---|
+| `TYPEVET_CHECK_ORDERINGS_RECEIPT` | Receipt path. It must name a new file. The test skips when it is not set. |
+| `TYPEVET_CHECK_ORDERINGS_ROWS` | Register rows, 1 to 20. The default is 3, the 21-case receipt. ASCII digits only, with outer spaces allowed. |
+
+The test sends rows × 7 × 6 requests. Twenty rows give 140 cases and 840
+requests. A refused rows value gives an error that names the variable, not
+the value.
+
+| Statistics key | Meaning |
+|---|---|
+| `spread_interval` | 95% bootstrap interval of the position spread, as two floats |
+| `accuracy_difference_interval` | 95% bootstrap interval of averaged minus single-order accuracy, as two floats |
+| `bootstrap` | `resamples` (1000) and `seed` (0) of the resampling over cases |
+
+The decision label uses the point estimates only. The intervals are
+reported, not part of the rule.
+
 ## llama.cpp media marker
 
 The llama.cpp router gives each model load a new random media marker. The

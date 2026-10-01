@@ -8,7 +8,9 @@ label. It never averages logprobs. ``permutations`` stays 1; each ordering
 is a ``Choice`` whose options are listed in that order.
 
 ``orderings_statistics`` is a pure function of the receipt cases, so the
-result comment can be reproduced from the committed receipt.
+result comment can be reproduced from the committed receipt. It also
+reports seeded bootstrap intervals over cases (the full seed-1 amendment).
+``orderings_rows`` reads the register rows of the live study.
 
 Attributes:
     ORDERINGS_RECEIPT_ISSUE (int): Issue number recorded in the receipt.
@@ -19,6 +21,11 @@ Attributes:
         accuracy at or above the single-order accuracy.
     INCONCLUSIVE (str): Decision label for a larger spread with lower
         averaged accuracy.
+    BOOTSTRAP_RESAMPLES (int): Bootstrap resamples over cases.
+    BOOTSTRAP_SEED (int): Seed of ``resample_indices``.
+    INTERVAL_LEVEL (float): Level of the percentile intervals.
+    ROWS_ENV (str): Variable that sets the register rows of the live study.
+    DEFAULT_ROWS (int): Register rows when ``ROWS_ENV`` is blank or unset.
 
 Examples:
     ```python
@@ -45,13 +52,46 @@ from typing import Any, Final
 
 from typevet.domain import Choice, GenerationError
 from typevet.ports import JudgmentPort
+from typevet_evals.check_match.cases import ROW_COUNT
 from typevet_evals.check_match.request import VERDICT, CheckMatchRequest
+from typevet_evals.wording.metrics import percentile_interval, resample_indices
 
 ORDERINGS_RECEIPT_ISSUE: Final[int] = 105
 POSITION_SPREAD_LIMIT: Final[float] = 0.05
 DO_NOT_ADOPT: Final[str] = "do_not_adopt"
 ADOPT_OPT_IN: Final[str] = "adopt_opt_in"
 INCONCLUSIVE: Final[str] = "inconclusive"
+BOOTSTRAP_RESAMPLES: Final[int] = 1000
+BOOTSTRAP_SEED: Final[int] = 0
+INTERVAL_LEVEL: Final[float] = 0.95
+ROWS_ENV: Final[str] = "TYPEVET_CHECK_ORDERINGS_ROWS"
+DEFAULT_ROWS: Final[int] = 3
+
+
+def orderings_rows(environ: Mapping[str, str]) -> int:
+    """Return the register rows of the live study (#105).
+
+    The rule is that of ``parse_seed``: ASCII digits only, with outer
+    spaces. A blank or missing value gives ``DEFAULT_ROWS``, the slice of
+    the committed 21-case receipt.
+
+    Args:
+        environ: Process environment, or a mapping in its place.
+
+    Returns:
+        Register rows, 1 to ``ROW_COUNT``.
+
+    Raises:
+        ValueError: When the value is not an integer from 1 to
+            ``ROW_COUNT``. The message names the variable, not the value.
+    """
+    text = environ.get(ROWS_ENV, "").strip()
+    if not text:
+        return DEFAULT_ROWS
+    if not (text.isascii() and text.isdigit() and 1 <= int(text) <= ROW_COUNT):
+        msg = f"{ROWS_ENV} must be an integer from 1 to {ROW_COUNT}"
+        raise ValueError(msg)
+    return int(text)
 
 
 def balanced_orders(k: int) -> tuple[tuple[int, ...], ...]:
@@ -207,8 +247,43 @@ def _case_numbers(case: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _spread(numbers: Sequence[Mapping[str, Any]]) -> tuple[list[float], float]:
+    rows = [row for n in numbers for row in n["positions"]]
+    means = [math.fsum(col) / len(rows) for col in zip(*rows, strict=True)]
+    return means, max(means) - min(means)
+
+
+def _share(numbers: Sequence[Mapping[str, Any]], key: str) -> float:
+    return sum(n[key] for n in numbers) / len(numbers)
+
+
+def _bootstrap(numbers: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    spreads: list[float] = []
+    differences: list[float] = []
+    for b in range(BOOTSTRAP_RESAMPLES):
+        rows = resample_indices(len(numbers), seed=BOOTSTRAP_SEED, resample=b)
+        sample = [numbers[i] for i in rows]
+        spreads.append(_spread(sample)[1])
+        differences.append(
+            _share(sample, "mean_correct") - _share(sample, "single_correct")
+        )
+    spread = percentile_interval(spreads, level=INTERVAL_LEVEL)
+    difference = percentile_interval(differences, level=INTERVAL_LEVEL)
+    return {
+        "spread_interval": [spread.low, spread.high],
+        "accuracy_difference_interval": [difference.low, difference.high],
+        "bootstrap": {"resamples": BOOTSTRAP_RESAMPLES, "seed": BOOTSTRAP_SEED},
+    }
+
+
 def orderings_statistics(cases: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
-    """Compute the four pre-registered statistics and the decision.
+    """Compute the four pre-registered statistics, intervals and decision.
+
+    The intervals come from ``BOOTSTRAP_RESAMPLES`` resamples over cases,
+    drawn by ``resample_indices`` with ``BOOTSTRAP_SEED``. They are the
+    95% percentile intervals of the position spread and of averaged minus
+    single-order accuracy. They are reported only; the decision uses the
+    point estimates.
 
     Args:
         cases: Receipt cases with ``orderings`` (``order`` labels and
@@ -217,7 +292,8 @@ def orderings_statistics(cases: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     Returns:
         Case count, position means and spread, argmax stability, averaged
         and single-order accuracy, ordering 0 agreement and largest
-        probability difference, the spread limit and the decision label.
+        probability difference, the spread limit, the decision label, the
+        two intervals and the bootstrap settings.
 
     Raises:
         ValueError: When ``cases`` is empty.
@@ -226,23 +302,21 @@ def orderings_statistics(cases: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         msg = "statistics need at least one case"
         raise ValueError(msg)
     numbers = [_case_numbers(case) for case in cases]
-    rows = [row for n in numbers for row in n["positions"]]
-    means = [math.fsum(col) / len(rows) for col in zip(*rows, strict=True)]
-    spread = max(means) - min(means)
-    n = len(numbers)
-    averaged = sum(x["mean_correct"] for x in numbers) / n
-    single = sum(x["single_correct"] for x in numbers) / n
+    means, spread = _spread(numbers)
+    averaged = _share(numbers, "mean_correct")
+    single = _share(numbers, "single_correct")
     return {
-        "cases": n,
+        "cases": len(numbers),
         "position_means": means,
         "position_spread": spread,
-        "argmax_stability": sum(x["stable"] for x in numbers) / n,
+        "argmax_stability": _share(numbers, "stable"),
         "averaged_accuracy": averaged,
         "single_order_accuracy": single,
-        "ordering0_agreement": sum(x["agree"] for x in numbers) / n,
+        "ordering0_agreement": _share(numbers, "agree"),
         "ordering0_max_abs_difference": max(x["diff"] for x in numbers),
         "spread_limit": POSITION_SPREAD_LIMIT,
         "decision": decision_label(spread, averaged, single),
+        **_bootstrap(numbers),
     }
 
 

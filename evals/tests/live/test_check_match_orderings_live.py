@@ -1,10 +1,13 @@
 r"""Opt-in live option-order study of the check verdict (#105).
 
 Scores only the six-label verdict ``Choice`` of the seed-1 synthetic checks,
-register rows r00 to r02 and all 7 variants: 21 cases. Each case is scored
-once per ordering of the balanced K=6 design, 126 requests in total, one at
-a time. Ordering 0 is today's option order. The study follows TypeLLM's rule:
-the arithmetic mean of post-softmax probabilities over the orderings.
+all 7 variants of the first ``TYPEVET_CHECK_ORDERINGS_ROWS`` register rows
+(1 to 20, default 3). Each case is scored once per ordering of the balanced
+K=6 design, one request at a time: rows x 7 x 6 requests. The default gives
+the 21 cases and 126 requests of the committed receipt; 20 rows give all 140
+cases and 840 requests. Ordering 0 is today's option order. The study
+follows TypeLLM's rule: the arithmetic mean of post-softmax probabilities
+over the orderings.
 
 The test skips unless ``TYPEVET_CHECK_ORDERINGS_RECEIPT`` names the receipt
 file. It fails when ``TYPEVET_REQUIRE_LIVE`` is truthy and that variable is
@@ -19,13 +22,24 @@ The llama.cpp settings are those of the main check-match live test
 (``TYPEVET_LLAMA__*``; model ``gemma-4-31b-kv9-q4km-mm``, timeout 900
 seconds). ``TYPEVET_GIT_STATUS_PORCELAIN`` carries the porcelain status for
 the working-tree fingerprint. The receipt holds the per-case numbers, the
-four statistics, the decision label, pins and identity. It holds no image
+four statistics, the bootstrap intervals, the decision label, pins and
+identity. It holds no image
 bytes and no key. Generated checks are not evidence about real checks.
 
 Examples:
     ```bash
     RECEIPTS=evals/fixtures/checks/receipts
     TYPEVET_CHECK_ORDERINGS_RECEIPT=$RECEIPTS/check_match_orderings_llama_cpp_seed1.json \
+      TYPEVET_GIT_STATUS_PORCELAIN="$(git status --porcelain)" \
+      uv run pytest evals/tests/live/test_check_match_orderings_live.py -m live -q -s
+    ```
+
+    The full seed-1 run, 140 cases:
+
+    ```bash
+    RECEIPTS=evals/fixtures/checks/receipts
+    TYPEVET_CHECK_ORDERINGS_ROWS=20 \
+      TYPEVET_CHECK_ORDERINGS_RECEIPT=$RECEIPTS/check_match_orderings_llama_cpp_seed1_full.json \
       TYPEVET_GIT_STATUS_PORCELAIN="$(git status --porcelain)" \
       uv run pytest evals/tests/live/test_check_match_orderings_live.py -m live -q -s
     ```
@@ -65,6 +79,7 @@ from typevet_evals.check_match import (
 from typevet_evals.check_match.orderings import (
     balanced_orders,
     build_orderings_receipt,
+    orderings_rows,
     run_orderings,
     single_order_cases,
 )
@@ -91,7 +106,6 @@ _RECEIPT_ENV = "TYPEVET_CHECK_ORDERINGS_RECEIPT"
 _LLAMA_MODEL = "gemma-4-31b-kv9-q4km-mm"
 _LLAMA_TIMEOUT = "900"
 _SEED = 1
-_ROWS = 3
 _CODE_MODULES = ("cases", "render", "words", "request", "orderings")
 
 
@@ -170,7 +184,11 @@ def test_check_match_orderings_live_receipt() -> None:
         pytest.fail(f"the orderings study runs on local llama_cpp only: {backend}")
     if check_match_seed(environ) != _SEED:
         pytest.fail(f"{SEED_ENV} must be {_SEED}: the comparison receipt is seed 1")
-    made = check_match_slice(environ, _ROWS)
+    try:
+        rows = orderings_rows(environ)
+    except ValueError as exc:
+        pytest.fail(str(exc))
+    made = check_match_slice(environ, rows)
     requests = made.requests
     comparison = json.loads(_SINGLE_ORDER_RECEIPT.read_text(encoding="utf-8"))
     single = single_order_cases(comparison, requests, seed=_SEED)
@@ -178,7 +196,10 @@ def test_check_match_orderings_live_receipt() -> None:
     tree = _working_tree()
     evaluated = snapshot_evaluated_inputs(
         prompts=_prompt_specs(),
-        code_paths={name: _CHECK_MATCH_SRC / f"{name}.py" for name in _CODE_MODULES},
+        code_paths={
+            **{name: _CHECK_MATCH_SRC / f"{name}.py" for name in _CODE_MODULES},
+            "wording_metrics": _CHECK_MATCH_SRC.parent / "wording" / "metrics.py",
+        },
         fixture_paths={"single_order_receipt": _SINGLE_ORDER_RECEIPT},
     )
 
@@ -225,5 +246,5 @@ def test_check_match_orderings_live_receipt() -> None:
     print(_summary(receipt, digest, path))
 
     assert run.stopped is None, run.stopped
-    assert len(run.records) == len(requests) == 7 * _ROWS
-    assert run.requests == len(orders) * len(requests) == 126
+    assert len(run.records) == len(requests) == 7 * rows
+    assert run.requests == len(orders) * len(requests) == rows * 7 * 6

@@ -12,8 +12,10 @@ from __future__ import annotations
 
 import dataclasses
 import hashlib
+import json
 import math
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -32,9 +34,13 @@ from typevet_evals.check_match import (
     build_check_match_request,
     check_cases,
     check_match_questions,
+    orderings,
 )
 from typevet_evals.check_match.orderings import (
     ADOPT_OPT_IN,
+    BOOTSTRAP_RESAMPLES,
+    BOOTSTRAP_SEED,
+    DEFAULT_ROWS,
     DO_NOT_ADOPT,
     INCONCLUSIVE,
     POSITION_SPREAD_LIMIT,
@@ -42,6 +48,7 @@ from typevet_evals.check_match.orderings import (
     build_orderings_receipt,
     decision_label,
     mean_probabilities,
+    orderings_rows,
     orderings_statistics,
     position_probabilities,
     remap_positions,
@@ -49,8 +56,19 @@ from typevet_evals.check_match.orderings import (
     run_orderings,
     single_order_cases,
 )
+from typevet_evals.wording.metrics import resample_indices
 
 pytestmark = pytest.mark.unit
+
+_ROWS_ENV = "TYPEVET_CHECK_ORDERINGS_ROWS"
+_RECEIPT_21 = (
+    Path(__file__).resolve().parents[3]
+    / "evals"
+    / "fixtures"
+    / "checks"
+    / "receipts"
+    / "check_match_orderings_llama_cpp_seed1.json"
+)
 
 _PNG = b"\x89PNG\r\n\x1a\nfixture"
 
@@ -372,3 +390,177 @@ def test_run_refuses_a_verdict_that_is_not_a_choice() -> None:
         run_orderings(
             _FakePort([1.0]), [other], "m", balanced_orders(6), _single([request])
         )
+
+
+def _case_n(
+    case_id: str,
+    expected: list[str],
+    single: str,
+    orderings: Sequence[tuple[Sequence[str], Mapping[str, float]]],
+) -> dict[str, object]:
+    return {
+        "case_id": case_id,
+        "expected_verdicts": expected,
+        "single_order": {
+            "verdict": single,
+            "verdict_probabilities": dict(orderings[0][1]),
+        },
+        "orderings": [
+            {"order": list(order), "probabilities": dict(probs)}
+            for order, probs in orderings
+        ],
+    }
+
+
+_XYZ = (("x", "y", "z"), ("y", "z", "x"), ("z", "x", "y"))
+
+
+def test_stability_sees_a_change_in_a_middle_ordering_only() -> None:
+    middle = [{"x": 0.6, "y": 0.3, "z": 0.1}, {"x": 0.2, "y": 0.7, "z": 0.1}]
+    middle.append({"x": 0.5, "y": 0.4, "z": 0.1})
+    steady = [{"x": 0.6, "y": 0.3, "z": 0.1}] * 3
+    cases = [
+        _case_n("M", ["x"], "x", list(zip(_XYZ, middle, strict=True))),
+        _case_n("S", ["x"], "x", list(zip(_XYZ, steady, strict=True))),
+    ]
+
+    stats = orderings_statistics(cases)
+
+    assert stats["argmax_stability"] == 0.5
+
+
+def test_agreement_counts_an_ordering_zero_that_differs_from_single_order() -> None:
+    probs = [{"x": 0.6, "y": 0.3, "z": 0.1}] * 3
+    cases = [
+        _case_n("D", ["x"], "y", list(zip(_XYZ, probs, strict=True))),
+        _case_n("A", ["x"], "x", list(zip(_XYZ, probs, strict=True))),
+    ]
+
+    stats = orderings_statistics(cases)
+
+    assert stats["ordering0_agreement"] == 0.5
+
+
+def test_rows_default_to_three() -> None:
+    assert DEFAULT_ROWS == 3
+    assert orderings_rows({}) == 3
+    assert orderings_rows({_ROWS_ENV: " "}) == 3
+
+
+@pytest.mark.parametrize(("raw", "rows"), [("20", 20), ("1", 1), (" 7 ", 7)])
+def test_rows_accept_ascii_digits_from_one_to_twenty(raw: str, rows: int) -> None:
+    assert orderings_rows({_ROWS_ENV: raw}) == rows
+
+
+@pytest.mark.parametrize("raw", ["0", "21", "\uff11", "-1", "3.0", "abc", "007x"])
+def test_rows_refuse_other_values_without_echoing_them(raw: str) -> None:
+    with pytest.raises(ValueError, match=_ROWS_ENV) as caught:
+        orderings_rows({_ROWS_ENV: raw})
+
+    assert str(caught.value) == f"{_ROWS_ENV} must be an integer from 1 to 20"
+
+
+def _interval_fixture() -> list[dict[str, object]]:
+    rows = [
+        ("A", ["x"], "x", {"x": 0.9, "y": 0.1}, {"x": 0.7, "y": 0.3}),
+        ("B", ["y"], "x", {"x": 0.6, "y": 0.4}, {"x": 0.2, "y": 0.8}),
+        ("C", ["x"], "y", {"x": 0.55, "y": 0.45}, {"x": 0.4, "y": 0.6}),
+        ("D", ["y"], "y", {"x": 0.3, "y": 0.7}, {"x": 0.1, "y": 0.9}),
+        ("E", ["x"], "x", {"x": 0.8, "y": 0.2}, {"x": 0.5, "y": 0.5}),
+        ("F", ["y"], "x", {"x": 0.7, "y": 0.3}, {"x": 0.45, "y": 0.55}),
+    ]
+    return [_case(i, e, s, [a, b]) for i, e, s, a, b in rows]
+
+
+def _spread_and_difference(cases: Sequence[Mapping[str, Any]]) -> tuple[float, float]:
+    positions = [
+        [o["probabilities"][label] for label in o["order"]]
+        for case in cases
+        for o in case["orderings"]
+    ]
+    means = [math.fsum(col) / len(positions) for col in zip(*positions, strict=True)]
+    averaged = single = 0
+    for case in cases:
+        probs = [o["probabilities"] for o in case["orderings"]]
+        mean = {k: math.fsum(p[k] for p in probs) / len(probs) for k in probs[0]}
+        averaged += max(mean, key=mean.__getitem__) in case["expected_verdicts"]
+        single += case["single_order"]["verdict"] in case["expected_verdicts"]
+    return max(means) - min(means), (averaged - single) / len(cases)
+
+
+def test_intervals_are_the_seed_zero_case_bootstrap_percentiles() -> None:
+    cases = _interval_fixture()
+    spreads: list[float] = []
+    differences: list[float] = []
+    for b in range(1000):
+        rows = resample_indices(len(cases), seed=0, resample=b)
+        spread, difference = _spread_and_difference([cases[i] for i in rows])
+        spreads.append(spread)
+        differences.append(difference)
+    spreads.sort()
+    differences.sort()
+
+    stats = orderings_statistics(cases)
+
+    assert (BOOTSTRAP_RESAMPLES, BOOTSTRAP_SEED) == (1000, 0)
+    assert stats["bootstrap"] == {"resamples": 1000, "seed": 0}
+    assert stats["spread_interval"] == [spreads[25], spreads[974]]
+    assert stats["accuracy_difference_interval"] == [differences[25], differences[974]]
+    assert orderings_statistics(cases) == stats
+
+
+def test_bootstrap_draws_resamples_zero_to_999_with_seed_zero(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[int, int, int]] = []
+
+    def recording(n: int, *, seed: int, resample: int) -> list[int]:
+        calls.append((n, seed, resample))
+        return resample_indices(n, seed=seed, resample=resample)
+
+    monkeypatch.setattr(orderings, "resample_indices", recording)
+    cases = _interval_fixture()
+
+    orderings_statistics(cases)
+
+    assert calls == [(len(cases), 0, b) for b in range(1000)]
+
+
+def test_each_point_estimate_lies_inside_its_interval() -> None:
+    stats = orderings_statistics(_interval_fixture())
+    difference = stats["averaged_accuracy"] - stats["single_order_accuracy"]
+
+    low, high = stats["spread_interval"]
+    assert low <= stats["position_spread"] <= high
+    assert low < high
+    low, high = stats["accuracy_difference_interval"]
+    assert low <= difference <= high
+    assert low < high
+
+
+def test_identical_cases_give_a_zero_width_interval() -> None:
+    cases = [_case(str(i), ["x"], "x", [{"x": 0.9, "y": 0.1}] * 2) for i in range(4)]
+
+    stats = orderings_statistics(cases)
+
+    assert stats["spread_interval"] == [stats["position_spread"]] * 2
+    assert stats["accuracy_difference_interval"] == [0.0, 0.0]
+
+
+def test_statistics_reproduce_the_committed_21_case_receipt() -> None:
+    receipt = json.loads(_RECEIPT_21.read_text(encoding="utf-8"))
+
+    stats = orderings_statistics(receipt["cases"])
+
+    assert receipt["statistics"]["cases"] == 21
+    for key, value in receipt["statistics"].items():
+        assert stats[key] == value, key
+    new = {"spread_interval", "accuracy_difference_interval", "bootstrap"}
+    assert set(stats) - set(receipt["statistics"]) == new
+    assert stats["spread_interval"] == pytest.approx(
+        [0.01671433432901953, 0.10600871239072834], abs=1e-12
+    )
+    assert stats["accuracy_difference_interval"] == pytest.approx(
+        [-0.1428571428571429, 0.0], abs=1e-12
+    )
+    assert stats["bootstrap"] == {"resamples": 1000, "seed": 0}
