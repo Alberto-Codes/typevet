@@ -39,6 +39,7 @@ from typevet.domain.text_parts import (
     DEFAULT_OPTION_BLOCK,
     DEFAULT_PART,
     OPTION_BLOCK,
+    TURN_MARKERS,
     TextParts,
 )
 
@@ -82,7 +83,7 @@ _CONTROL_LINES = [
 ]
 _OPTION_BLOCK = (
     "Field {name}. {question}\nReply with one control.\n"
-    "- {control} → {label}{description}\nEnd of options."
+    "- {control} → {label}{description}\nEnd of options.\n{answer_rule}"
 )
 _CONTEXT_TEMPLATE = "Text under review:\n{context}\n---\n{field_block}\nDecide."
 
@@ -207,20 +208,31 @@ def test_framing_and_context_template_are_mutually_exclusive() -> None:
         )
 
 
-@pytest.mark.parametrize(
-    ("keyword", "template"),
-    [
-        ("option_block", "{question}\n{control}: {label}{description}"),
-        ("option_block", "{question}\n{control} → {label}"),
-        ("option_block", "{question}\n{control}{description} → {label}"),
-        ("option_block", "{question}\n{control} →{description} {label}"),
-        ("option_block", "{question} {question}\n{control} → {label}{description}"),
-        ("option_block", "{question} gold answer\n{control} → {label}{description}"),
-        ("context_template", "{context} only"),
-        ("context_template", "{context}{field_block}{field_block}"),
-        ("context_template", "{context} expected answer {field_block}"),
-    ],
-)
+_LINE = "{control} → {label}{description}"
+_RULE = "\n{answer_rule}"
+_BAD_TEMPLATES: list[tuple[str, str]] = [
+    ("option_block", "{question}\n{control}: {label}{description}" + _RULE),
+    ("option_block", "{question}\n{control} → {label}" + _RULE),
+    ("option_block", "{question}\n{control}{description} → {label}" + _RULE),
+    ("option_block", "{question}\n{control} →{description} {label}" + _RULE),
+    ("option_block", "{question} {question}\n" + _LINE + _RULE),
+    ("option_block", "{question} gold answer\n" + _LINE + _RULE),
+    ("option_block", "{question}\n" + _LINE),
+    ("context_template", "{context} only"),
+    ("context_template", "{context}{field_block}{field_block}"),
+    ("context_template", "{context} expected answer {field_block}"),
+    *(
+        ("option_block", f"{{question}} {marker}\n{_LINE}{_RULE}")
+        for marker in TURN_MARKERS
+    ),
+    *(
+        ("context_template", f"{{context}}\n{marker}\n{{field_block}}")
+        for marker in TURN_MARKERS
+    ),
+]
+
+
+@pytest.mark.parametrize(("keyword", "template"), _BAD_TEMPLATES)
 def test_bad_template_is_refused_before_any_scoring(
     keyword: str, template: str
 ) -> None:
@@ -231,8 +243,10 @@ def test_bad_template_is_refused_before_any_scoring(
             tokenize_content=_tokenize,
             text_parts=TextParts(**{keyword: template}),
         )
-    assert template not in str(caught.value)
-    assert keyword in str(caught.value)
+    message = str(caught.value)
+    assert template not in message
+    assert keyword in message
+    assert not any(marker in message for marker in TURN_MARKERS)
     assert fake.calls == []
 
 

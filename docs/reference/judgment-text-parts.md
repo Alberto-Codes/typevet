@@ -14,8 +14,8 @@ The parent plan is [#360](https://github.com/Alberto-Codes/typevet/issues/360).
 |---|---|---|---|---|---|
 | Question `instructions` | `src/typevet/domain/judgment_questions.py:67` | Yes. The caller sets it on each `Noul`, `Choice` or `Score`. | Wording receipts store seed and evolved text verbatim and by digest. Identity receipts hash it in `prompt_digests`. | Yes, the DIFrauD `is_scam` Noul ([#309](https://github.com/Alberto-Codes/typevet/issues/309), [#252](https://github.com/Alberto-Codes/typevet/issues/252)). | Yes. |
 | `criteria` (true/false text, option labels, scale anchors) | `src/typevet/domain/judgment_questions.py:68` | Yes. The caller sets it on each question. | Wording receipts store the `Noul` criteria in `seed_parts` and `evolved_parts` when a run passes its parts. Identity receipts hash it in `prompt_digests`. | No live run yet. A run can evolve `Noul` criteria since [#363](https://github.com/Alberto-Codes/typevet/issues/363). | Yes. `Choice` and `Score` criteria are not named yet. |
-| Rendered option block | `src/typevet/domain/text_parts.py:67` | Yes, as a template ([#364](https://github.com/Alberto-Codes/typevet/issues/364)). The caller sets `TextParts(option_block=...)`. | `JudgmentResponse.text_parts` records its digest, or `"default"` when unset. | No. | Yes. |
-| Context / user-text template | `src/typevet/domain/text_parts.py:70` | Yes, as a template ([#364](https://github.com/Alberto-Codes/typevet/issues/364)). The caller sets `TextParts(context_template=...)`. A framing excludes it. | `JudgmentResponse.text_parts` records its digest, or `"default"` when unset. | No. | Yes. |
+| Rendered option block | `src/typevet/domain/text_parts.py:72` | Yes, as a template ([#364](https://github.com/Alberto-Codes/typevet/issues/364)). The caller sets `TextParts(option_block=...)`. | `JudgmentResponse.text_parts` records its digest, or `"default"` when unset. | No. | Yes. |
+| Context / user-text template | `src/typevet/domain/text_parts.py:75` | Yes, as a template ([#364](https://github.com/Alberto-Codes/typevet/issues/364)). The caller sets `TextParts(context_template=...)`. A framing excludes it. | `JudgmentResponse.text_parts` records its digest, or `"default"` when unset. | No. | Yes. |
 | Framing preamble | `src/typevet/adapters/outbound/gemma/scoring_prefix.py:104` | Yes, through `ScoringJudgmentAdapter(framing=...)` with a `ModelFramingPort`. | Identity receipts record the served-template family. They do not record a framing class. | No. | Yes. No child issue exists yet. |
 | No-thinking prefill | `src/typevet/adapters/outbound/gemma/served_template.py:27` | No. A Gemma 4 framing must end with it, and typevet refuses a framing without it. | Only through the commit and the served-template family. | No. | Never. |
 | Control-token rule | `src/typevet/domain/judgment_normalize.py:41` | No. | Only through the commit. | No. | Never. |
@@ -26,7 +26,7 @@ The parent plan is [#360](https://github.com/Alberto-Codes/typevet/issues/360).
 - **`criteria`.** `Choice` sets it at line 109 and `Score` at line 150. `_field_criteria` at `judgment_scoring.py:172` turns it into option descriptions.
 - **Rendered option block.** `render_field_instructions` at `field_instructions.py:109` renders the `option_block` template.
 - **Rendered option block.** `_answer_instruction` at `field_instructions.py:72` writes the answer rule for the `{answer_rule}` placeholder.
-- **Context / user-text template.** `render_context` at `text_parts.py:215` renders the `context_template` template.
+- **Context / user-text template.** `render_context` at `text_parts.py:239` renders the `context_template` template.
 - **Context / user-text template.** `_state_context` at `judgment_scoring.py:182` writes JSON for a non-string `state`.
 - **Context / user-text template.** `_media_context` puts one media marker per image before the context.
 - **Framing preamble.** The turn markers and the role headers come from `served_template.py`, lines 24 to 36.
@@ -49,7 +49,7 @@ An unset part uses its default, and the prefix does not change.
 
 | Template | Default (`DEFAULT_OPTION_BLOCK`, `DEFAULT_CONTEXT_TEMPLATE`) | Required placeholders | Optional placeholders |
 |---|---|---|---|
-| `option_block` | `{name}: {question}\n\nOptions:\n{control} → {label}{description}\n\n{answer_rule}` | `{question}`, `{control}`, `{label}`, `{description}` | `{name}`, `{answer_rule}` |
+| `option_block` | `{name}: {question}\n\nOptions:\n{control} → {label}{description}\n\n{answer_rule}` | `{question}`, `{control}`, `{label}`, `{description}`, `{answer_rule}` | `{name}` |
 | `context_template` | `{context}\n\n{field_block}` | `{context}`, `{field_block}` | None |
 
 Placeholder values:
@@ -59,6 +59,7 @@ Placeholder values:
 - `{label}` is the option label.
 - `{description}` is `": "` and the option criteria text, or empty when the option has no criteria.
 - `{answer_rule}` is the answer rule sentence that typevet writes.
+  It is required, because the control read is valid only when the model gets the rule ([#373](https://github.com/Alberto-Codes/typevet/issues/373)).
 - `{context}` is the state context. It starts with one media marker per image.
 - `{field_block}` is the rendered `option_block`.
 
@@ -75,6 +76,10 @@ The other placeholders must not be on it.
 - The option line does not render `<control> → <label>`. This rule is "drops a control line".
 - The template has a gold-reference marker from `gold_reference_markers()`.
 - The template has the media marker.
+- The template has a chat turn marker: `<|im_start|>`, `<|im_end|>`, `<start_of_turn>`, `<end_of_turn>`, `<|turn>` or `<turn|>`.
+  `TURN_MARKERS` lists them.
+  These are the ChatML, Gemma 3 and Gemma 4 markers from `served_template.py`.
+  A turn marker in a template can open or close a turn, so typevet refuses it ([#373](https://github.com/Alberto-Codes/typevet/issues/373)).
 
 The error names the part and the rule.
 It never holds the template text.

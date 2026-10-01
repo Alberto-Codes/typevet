@@ -12,8 +12,10 @@ template cannot change which control maps to which label: every
 
 A template is refused when it lacks a required placeholder, repeats a
 placeholder, names an unknown placeholder, uses a conversion or a format
-spec, drops a control line, holds a gold-reference marker or holds a media
-marker. The error names the part and the rule, never the template text.
+spec, drops a control line, holds a gold-reference marker, holds a media
+marker or holds a chat turn marker. An ``option_block`` also needs
+``{answer_rule}`` (#373). The error names the part and the rule, never the
+template text.
 
 Attributes:
     OPTION_BLOCK (str): Component name of the option block part.
@@ -23,6 +25,8 @@ Attributes:
     DEFAULT_CONTEXT_TEMPLATE (str): Context template typevet uses when the
         part is unset.
     DEFAULT_PART (str): Receipt value of a part that is unset.
+    TURN_MARKERS (tuple[str, ...]): ChatML, Gemma 3 and Gemma 4 turn markers
+        that no template may hold.
 
 Examples:
     ```python
@@ -53,6 +57,7 @@ __all__ = [
     "DEFAULT_OPTION_BLOCK",
     "DEFAULT_PART",
     "OPTION_BLOCK",
+    "TURN_MARKERS",
     "TextParts",
     "gold_reference_markers",
     "render_context",
@@ -68,6 +73,16 @@ DEFAULT_OPTION_BLOCK: Final[str] = (
     "{name}: {question}\n\nOptions:\n{control} → {label}{description}\n\n{answer_rule}"
 )
 DEFAULT_CONTEXT_TEMPLATE: Final[str] = "{context}\n\n{field_block}"
+# Copies of the served-template turn markers; the domain does not import
+# adapters. A unit test keeps them equal to the adapter constants.
+TURN_MARKERS: Final[tuple[str, ...]] = (
+    "<|im_start|>",
+    "<|" + "im_end|>",
+    "<start_of_turn>",
+    "<end_of_turn>",
+    "<|turn>",
+    "<turn|>",
+)
 
 _LINE_FIELDS: Final[frozenset[str]] = frozenset({"control", "label", "description"})
 _BLOCK_FIELDS: Final[frozenset[str]] = frozenset({"name", "question", "answer_rule"})
@@ -76,6 +91,7 @@ _OPTION_REQUIRED: Final[tuple[str, ...]] = (
     "control",
     "label",
     "description",
+    "answer_rule",
 )
 _CONTEXT_FIELDS: Final[tuple[str, ...]] = ("context", "field_block")
 _PROBE_CONTROL: Final[str] = "\x00control"
@@ -142,6 +158,8 @@ def _check_common(
         _refuse(part, "holds a gold-reference marker")
     if MEDIA_MARKER in template:
         _refuse(part, "holds a media marker")
+    if any(marker in template for marker in TURN_MARKERS):
+        _refuse(part, "holds a turn marker")
     return template
 
 
@@ -170,8 +188,8 @@ def split_option_block(template: str) -> tuple[str | None, str, str | None]:
 def validate_option_block(template: str) -> None:
     """Refuse an ``option_block`` template that breaks a rule.
 
-    Placeholders: ``{question}``, ``{control}``, ``{label}`` and
-    ``{description}`` are required; ``{name}`` and ``{answer_rule}`` are
+    Placeholders: ``{question}``, ``{control}``, ``{label}``,
+    ``{description}`` and ``{answer_rule}`` are required; ``{name}`` is
     optional. Each appears at most once. ``{control}``, ``{label}`` and
     ``{description}`` sit on one option line, which repeats once per
     option; the other placeholders sit off it.
