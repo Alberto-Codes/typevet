@@ -205,6 +205,29 @@ answered correctly. Two seeds on one backend do not calibrate the level. The
 receipt is
 `evals/fixtures/checks/receipts/check_match_llama_cpp_seed1_receipt.json`.
 
+## Option order of the verdict
+
+Issue [#105](https://github.com/Alberto-Codes/typevet/issues/105) asks if the
+order of the six verdict options moves the answer. The study scores 21 seed-1
+cases, rows r00 to r02, on llama.cpp. It lists the options in six orders from
+a balanced Latin square. Each option takes each position one time. Ordering 0
+is the order of the main run. Each order is one scoring request, so the study
+sends 126 requests. The mean verdict is the arithmetic mean of the
+probabilities, as in TypeLLM `permutations="auto"`. The rule was set before
+the run. A position spread of 0.05 or less means no position bias to fix. A
+larger spread with no loss of accuracy gives an opt-in option. A larger spread
+with a loss of accuracy is inconclusive. The receipt is
+`evals/fixtures/checks/receipts/check_match_orderings_llama_cpp_seed1.json`.
+
+The run on seed 1 was inconclusive. The position spread was 0.057, just
+above the limit, with mass drifting to early positions. The mean verdict
+kept 17 of 21 cases right against 18 for the single order. The four cases
+whose winner moved with the order all switched between `consistent` and
+`unsigned`, the near-tie the main runs show on clean renders. The answer
+digits follow position, so the spread also holds any bias toward a digit.
+typevet does not average orderings on this evidence. The result is on
+[#105](https://github.com/Alberto-Codes/typevet/issues/105).
+
 ## What this is not
 
 This is not a fraud-detection control and not a counterfeit-detection control.

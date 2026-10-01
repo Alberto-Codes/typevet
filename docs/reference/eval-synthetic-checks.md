@@ -19,6 +19,9 @@ register row. Parent epic:
 | Metric and runner unit tests | `evals/tests/unit/test_check_match_metrics.py` |
 | Contract test | `evals/tests/contract/test_check_match_contract.py` |
 | Live run | `evals/tests/live/test_check_match_live.py` |
+| Option-order study (#105) | `typevet_evals.check_match.orderings` |
+| Option-order unit tests | `evals/tests/unit/test_check_match_orderings.py` |
+| Option-order live run | `evals/tests/live/test_check_match_orderings_live.py` |
 
 ## Generator
 

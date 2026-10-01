@@ -1,0 +1,4266 @@
+{
+  "issue": 105,
+  "backend": "llama_cpp",
+  "model": "gemma-4-31b-kv9-q4km-mm",
+  "pins": {
+    "finished_utc": "2026-10-01T00:05:28.563873+00:00",
+    "dataset": "synthetic checks (#315 generator)",
+    "generator_seed": 1,
+    "register_rows": 3,
+    "variants_per_row": 7,
+    "slice_sha256": "bfccd0a2c49468214136d09de0265b2aad9a3f391a8141bd659a838bef532f1d",
+    "concurrency": 1,
+    "orderings": [
+      [
+        "consistent",
+        "payee_mismatch",
+        "amount_mismatch",
+        "date_mismatch",
+        "unsigned",
+        "cannot_tell"
+      ],
+      [
+        "payee_mismatch",
+        "date_mismatch",
+        "consistent",
+        "cannot_tell",
+        "amount_mismatch",
+        "unsigned"
+      ],
+      [
+        "date_mismatch",
+        "cannot_tell",
+        "payee_mismatch",
+        "unsigned",
+        "consistent",
+        "amount_mismatch"
+      ],
+      [
+        "cannot_tell",
+        "unsigned",
+        "date_mismatch",
+        "amount_mismatch",
+        "payee_mismatch",
+        "consistent"
+      ],
+      [
+        "unsigned",
+        "amount_mismatch",
+        "cannot_tell",
+        "consistent",
+        "date_mismatch",
+        "payee_mismatch"
+      ],
+      [
+        "amount_mismatch",
+        "consistent",
+        "unsigned",
+        "payee_mismatch",
+        "cannot_tell",
+        "date_mismatch"
+      ]
+    ],
+    "single_order_receipt": "check_match_llama_cpp_seed1_receipt.json",
+    "single_order_receipt_sha256": "6616ef18a2b7649db93953d361573f2be7ea1b50532bc0883486dc6ee2b2372d",
+    "pillow_version": "12.3.0",
+    "server": {
+      "served": [
+        {
+          "id": "gemma-4-31b-kv9-q4km-mm"
+        }
+      ],
+      "build_info": "b11277-eae11d221",
+      "model_alias": "gemma-4-31b-kv9-q4km-mm",
+      "n_ctx": 4096
+    },
+    "server_args": {
+      "cache_config": null,
+      "cache_config_source": "metrics",
+      "caller_stated": null
+    }
+  },
+  "identity": {
+    "run_id": "d43efdd98c3a4636818e26e7c12c2a3d",
+    "baseline_commit": "53034debcf4ef101410c621ffe55adb47c8fa8e7",
+    "working_tree": {
+      "dirty": true,
+      "dirty_paths": [
+        "docs/explanation/check-register-matching.md",
+        "docs/reference/eval-synthetic-checks.md",
+        "evals/src/typevet_evals/check_match/__init__.py",
+        "evals/src/typevet_evals/check_match/orderings.py",
+        "evals/tests/live/test_check_match_orderings_live.py",
+        "evals/tests/unit/test_check_match_orderings.py"
+      ],
+      "dirty_digest": "2598c8f6bc5bee11e7ca3b605cc3999b1d55312c944ca292d6ea0ca76e8b0848"
+    },
+    "prompt_digests": {
+      "verdict": "b7ef7c4a0c25b12827252fdacba3011e1bb064231d047cac8b1626b29fcb522a"
+    },
+    "code_path_digests": {
+      "cases": "b3af165c37cc74afd27cb555e9f5f2b6757a68c5d384f0bc646438150ec2b74c",
+      "orderings": "3fd2c8ae3649ca3bc617855b4ac371882b510c2191a525a08c9a383ceb237c95",
+      "render": "a2a248cfdb0d67cfd752cc2b6ff958a7336a725f5e1d3a5b32bf910eefcd6c3f",
+      "request": "cd22965bcc336dc2d0f345c326f139ce22a697cb551ca97e20230ef22345077e",
+      "words": "d706a3b0b702a59d49e92614f4b98ead48be10e414aa4c28569f9c5bd70a8b91"
+    },
+    "fixture_digests": {
+      "single_order_receipt": "6616ef18a2b7649db93953d361573f2be7ea1b50532bc0883486dc6ee2b2372d"
+    },
+    "runtime": {
+      "model": "gemma-4-31b-kv9-q4km-mm",
+      "served_template": "native_gemma4_turn",
+      "server_build": "b11277-eae11d221",
+      "template_identity": "unknown",
+      "projector_identity": "unknown",
+      "config_identity": "unknown"
+    },
+    "arm_call_counts": {
+      "verdict_requests": 126
+    },
+    "identity_digest": "0caef4b416872814dd8dc62e87901ed075ec83a0a9ba9dada6591979d264d153"
+  },
+  "stopped": null,
+  "requests": 126,
+  "wall_seconds": 186.474,
+  "statistics": {
+    "cases": 21,
+    "position_means": [
+      0.19066885639979328,
+      0.1901101271625892,
+      0.1756828516938004,
+      0.14577651673577982,
+      0.16384208540971232,
+      0.1339195625983249
+    ],
+    "position_spread": 0.05674929380146837,
+    "argmax_stability": 0.8095238095238095,
+    "averaged_accuracy": 0.8095238095238095,
+    "single_order_accuracy": 0.8571428571428571,
+    "ordering0_agreement": 1.0,
+    "ordering0_max_abs_difference": 0.0,
+    "spread_limit": 0.05,
+    "decision": "inconclusive"
+  },
+  "cases": [
+    {
+      "case_id": "r00:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "render_sha256": "3d72c98e2a99cf5d67d7a57ced9b59fdf14d403d2bf9b58703df40a0677604f3",
+      "single_order": {
+        "verdict": "consistent",
+        "verdict_probabilities": {
+          "consistent": 0.9017561310265003,
+          "payee_mismatch": 4.0086665859619555e-06,
+          "amount_mismatch": 5.519430829415381e-07,
+          "date_mismatch": 1.2969816294974379e-06,
+          "unsigned": 0.09823684944154931,
+          "cannot_tell": 1.1619406520152937e-06
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 0.9017561310265003,
+            "payee_mismatch": 4.0086665859619555e-06,
+            "amount_mismatch": 5.519430829415381e-07,
+            "date_mismatch": 1.2969816294974379e-06,
+            "unsigned": 0.09823684944154931,
+            "cannot_tell": 1.1619406520152937e-06
+          },
+          "argmax": "consistent"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 0.9991640317947359,
+            "payee_mismatch": 1.0526491114225746e-05,
+            "amount_mismatch": 1.966876537217112e-06,
+            "date_mismatch": 1.3571467142711822e-06,
+            "unsigned": 0.0008200737790585287,
+            "cannot_tell": 2.0439118398566356e-06
+          },
+          "argmax": "consistent"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 0.010314869478347453,
+            "payee_mismatch": 9.175091118352053e-07,
+            "amount_mismatch": 4.601064568642683e-07,
+            "date_mismatch": 2.6093183412266785e-05,
+            "unsigned": 0.9896573726426388,
+            "cannot_tell": 2.8708003286321335e-07
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 4.2787181177921683e-07,
+            "payee_mismatch": 1.6164777097452388e-07,
+            "amount_mismatch": 1.7959741401166932e-07,
+            "date_mismatch": 1.1047553061379753e-05,
+            "unsigned": 0.9999880986517502,
+            "cannot_tell": 8.467819176106738e-08
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 4.552433674330707e-06,
+            "payee_mismatch": 6.97354092388457e-08,
+            "amount_mismatch": 6.881178030272849e-06,
+            "date_mismatch": 1.4415007008469593e-07,
+            "unsigned": 0.9999882278730964,
+            "cannot_tell": 1.2462971957519235e-07
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 0.849628320831378,
+            "payee_mismatch": 1.1992885064897923e-07,
+            "amount_mismatch": 1.37393131845817e-06,
+            "date_mismatch": 1.2320444972611122e-08,
+            "unsigned": 0.15037014757839687,
+            "cannot_tell": 2.5409611087925427e-08
+          },
+          "argmax": "consistent"
+        }
+      ],
+      "position_probabilities": [
+        [
+          0.9017561310265003,
+          4.0086665859619555e-06,
+          5.519430829415381e-07,
+          1.2969816294974379e-06,
+          0.09823684944154931,
+          1.1619406520152937e-06
+        ],
+        [
+          1.0526491114225746e-05,
+          1.3571467142711822e-06,
+          0.9991640317947359,
+          2.0439118398566356e-06,
+          1.966876537217112e-06,
+          0.0008200737790585287
+        ],
+        [
+          2.6093183412266785e-05,
+          2.8708003286321335e-07,
+          9.175091118352053e-07,
+          0.9896573726426388,
+          0.010314869478347453,
+          4.601064568642683e-07
+        ],
+        [
+          8.467819176106738e-08,
+          0.9999880986517502,
+          1.1047553061379753e-05,
+          1.7959741401166932e-07,
+          1.6164777097452388e-07,
+          4.2787181177921683e-07
+        ],
+        [
+          0.9999882278730964,
+          6.881178030272849e-06,
+          1.2462971957519235e-07,
+          4.552433674330707e-06,
+          1.4415007008469593e-07,
+          6.97354092388457e-08
+        ],
+        [
+          1.37393131845817e-06,
+          0.849628320831378,
+          0.15037014757839687,
+          1.1992885064897923e-07,
+          2.5409611087925427e-08,
+          1.2320444972611122e-08
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 0.46014472223940794,
+        "payee_mismatch": 2.6339964738142095e-06,
+        "amount_mismatch": 1.9022721399609346e-06,
+        "date_mismatch": 6.658555888745411e-06,
+        "unsigned": 0.5398434616610817,
+        "cannot_tell": 6.21275007859888e-07
+      },
+      "mean_verdict": "unsigned",
+      "mean_correct": false,
+      "argmax_stable": false
+    },
+    {
+      "case_id": "r00:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "render_sha256": "246304352cdf3ca357364d9b89c5cd88a048fc5e9d6af9ab7c1214856f3be503",
+      "single_order": {
+        "verdict": "payee_mismatch",
+        "verdict_probabilities": {
+          "consistent": 3.1262941777510956e-08,
+          "payee_mismatch": 0.9999997072267224,
+          "amount_mismatch": 9.567217091614499e-08,
+          "date_mismatch": 1.5161981509262037e-08,
+          "unsigned": 1.2521908005403663e-07,
+          "cannot_tell": 2.5457103333909272e-08
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 3.1262941777510956e-08,
+            "payee_mismatch": 0.9999997072267224,
+            "amount_mismatch": 9.567217091614499e-08,
+            "date_mismatch": 1.5161981509262037e-08,
+            "unsigned": 1.2521908005403663e-07,
+            "cannot_tell": 2.5457103333909272e-08
+          },
+          "argmax": "payee_mismatch"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 4.5085369511082175e-08,
+            "payee_mismatch": 0.9999954498545645,
+            "amount_mismatch": 5.539178414780314e-08,
+            "date_mismatch": 4.264638162931254e-06,
+            "unsigned": 1.6479908640490127e-07,
+            "cannot_tell": 2.0231032534506286e-08
+          },
+          "argmax": "payee_mismatch"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 3.798383226101147e-08,
+            "payee_mismatch": 0.9999983682072984,
+            "amount_mismatch": 3.862668515962381e-08,
+            "date_mismatch": 6.292093498807911e-07,
+            "unsigned": 5.872073276526921e-07,
+            "cannot_tell": 3.387655066500925e-07
+          },
+          "argmax": "payee_mismatch"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 1.617132308877344e-07,
+            "payee_mismatch": 0.9999849215265911,
+            "amount_mismatch": 1.1677341940006187e-05,
+            "date_mismatch": 1.562751438838306e-07,
+            "unsigned": 1.5336092465168338e-06,
+            "cannot_tell": 1.5495338476000528e-06
+          },
+          "argmax": "payee_mismatch"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.2384884236624683e-08,
+            "payee_mismatch": 0.9999976918724771,
+            "amount_mismatch": 1.1546310514093019e-07,
+            "date_mismatch": 3.5176816772248004e-07,
+            "unsigned": 1.793262400047837e-06,
+            "cannot_tell": 3.5248965753122245e-08
+          },
+          "argmax": "payee_mismatch"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.792283044066633e-07,
+            "payee_mismatch": 0.9999986424727191,
+            "amount_mismatch": 5.361199051657156e-07,
+            "date_mismatch": 3.9741869803084935e-08,
+            "unsigned": 2.9345613644284264e-07,
+            "cannot_tell": 3.089810650941911e-07
+          },
+          "argmax": "payee_mismatch"
+        }
+      ],
+      "position_probabilities": [
+        [
+          3.1262941777510956e-08,
+          0.9999997072267224,
+          9.567217091614499e-08,
+          1.5161981509262037e-08,
+          1.2521908005403663e-07,
+          2.5457103333909272e-08
+        ],
+        [
+          0.9999954498545645,
+          4.264638162931254e-06,
+          4.5085369511082175e-08,
+          2.0231032534506286e-08,
+          5.539178414780314e-08,
+          1.6479908640490127e-07
+        ],
+        [
+          6.292093498807911e-07,
+          3.387655066500925e-07,
+          0.9999983682072984,
+          5.872073276526921e-07,
+          3.798383226101147e-08,
+          3.862668515962381e-08
+        ],
+        [
+          1.5495338476000528e-06,
+          1.5336092465168338e-06,
+          1.562751438838306e-07,
+          1.1677341940006187e-05,
+          0.9999849215265911,
+          1.617132308877344e-07
+        ],
+        [
+          1.793262400047837e-06,
+          1.1546310514093019e-07,
+          3.5248965753122245e-08,
+          1.2384884236624683e-08,
+          3.5176816772248004e-07,
+          0.9999976918724771
+        ],
+        [
+          5.361199051657156e-07,
+          1.792283044066633e-07,
+          2.9345613644284264e-07,
+          0.9999986424727191,
+          3.089810650941911e-07,
+          3.9741869803084935e-08
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 7.794309384677117e-08,
+        "payee_mismatch": 0.9999957968600621,
+        "amount_mismatch": 2.086435931756067e-06,
+        "date_mismatch": 9.094657792884504e-07,
+        "unsigned": 7.495922128531906e-07,
+        "cannot_tell": 3.7970292016097903e-07
+      },
+      "mean_verdict": "payee_mismatch",
+      "mean_correct": true,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r00:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "render_sha256": "40781b8aff63da030f149b2cb23e99dd1f6ab1024fbe12fddf7651367b53f7fe",
+      "single_order": {
+        "verdict": "amount_mismatch",
+        "verdict_probabilities": {
+          "consistent": 8.132098668011664e-06,
+          "payee_mismatch": 7.288749101534972e-07,
+          "amount_mismatch": 0.9999852991501225,
+          "date_mismatch": 3.197875188798213e-06,
+          "unsigned": 2.2946192271518374e-06,
+          "cannot_tell": 3.473818833443167e-07
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 8.132098668011664e-06,
+            "payee_mismatch": 7.288749101534972e-07,
+            "amount_mismatch": 0.9999852991501225,
+            "date_mismatch": 3.197875188798213e-06,
+            "unsigned": 2.2946192271518374e-06,
+            "cannot_tell": 3.473818833443167e-07
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 1.7273960881579281e-07,
+            "payee_mismatch": 4.4662011545893455e-06,
+            "amount_mismatch": 0.9999940943405277,
+            "date_mismatch": 6.193357010679627e-07,
+            "unsigned": 5.062000689771482e-07,
+            "cannot_tell": 1.411829389037282e-07
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.447202064042553e-06,
+            "payee_mismatch": 1.0149883398345695e-07,
+            "amount_mismatch": 0.9999847070701101,
+            "date_mismatch": 1.33688871680361e-05,
+            "unsigned": 1.2151643523939494e-07,
+            "cannot_tell": 2.538253886222355e-07
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 1.2959970125879757e-07,
+            "payee_mismatch": 4.9598486344583214e-06,
+            "amount_mismatch": 0.9999837679981884,
+            "date_mismatch": 1.8197449462953182e-06,
+            "unsigned": 3.709002610221743e-06,
+            "cannot_tell": 5.6138059192730465e-06
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 8.638804708722417e-08,
+            "payee_mismatch": 8.328816230458609e-08,
+            "amount_mismatch": 0.999997192357566,
+            "date_mismatch": 6.406234312169164e-07,
+            "unsigned": 1.0878131276436106e-06,
+            "cannot_tell": 9.095296658547137e-07
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 5.6801191937993675e-06,
+            "payee_mismatch": 5.2789896975978174e-08,
+            "amount_mismatch": 0.9999932822816614,
+            "date_mismatch": 3.3673640421866316e-07,
+            "unsigned": 2.5322964856432013e-07,
+            "cannot_tell": 3.948431950499647e-07
+          },
+          "argmax": "amount_mismatch"
+        }
+      ],
+      "position_probabilities": [
+        [
+          8.132098668011664e-06,
+          7.288749101534972e-07,
+          0.9999852991501225,
+          3.197875188798213e-06,
+          2.2946192271518374e-06,
+          3.473818833443167e-07
+        ],
+        [
+          4.4662011545893455e-06,
+          6.193357010679627e-07,
+          1.7273960881579281e-07,
+          1.411829389037282e-07,
+          0.9999940943405277,
+          5.062000689771482e-07
+        ],
+        [
+          1.33688871680361e-05,
+          2.538253886222355e-07,
+          1.0149883398345695e-07,
+          1.2151643523939494e-07,
+          1.447202064042553e-06,
+          0.9999847070701101
+        ],
+        [
+          5.6138059192730465e-06,
+          3.709002610221743e-06,
+          1.8197449462953182e-06,
+          0.9999837679981884,
+          4.9598486344583214e-06,
+          1.2959970125879757e-07
+        ],
+        [
+          1.0878131276436106e-06,
+          0.999997192357566,
+          9.095296658547137e-07,
+          8.638804708722417e-08,
+          6.406234312169164e-07,
+          8.328816230458609e-08
+        ],
+        [
+          0.9999932822816614,
+          5.6801191937993675e-06,
+          2.5322964856432013e-07,
+          5.2789896975978174e-08,
+          3.948431950499647e-07,
+          3.3673640421866316e-07
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 2.6080245471692334e-06,
+        "payee_mismatch": 1.7320835987441973e-06,
+        "amount_mismatch": 0.9999897238663626,
+        "date_mismatch": 3.3305338066055288e-06,
+        "unsigned": 1.3287301862996757e-06,
+        "cannot_tell": 1.2767614985080007e-06
+      },
+      "mean_verdict": "amount_mismatch",
+      "mean_correct": true,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r00:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "render_sha256": "ce2cf2e983fed49bac3d4d3332da84bf6148e14d409dddafe8f6bfecee302c9d",
+      "single_order": {
+        "verdict": "amount_mismatch",
+        "verdict_probabilities": {
+          "consistent": 9.117646291173231e-07,
+          "payee_mismatch": 5.432831428772704e-08,
+          "amount_mismatch": 0.9999983650424388,
+          "date_mismatch": 4.446019038634098e-07,
+          "unsigned": 1.7590191072432188e-07,
+          "cannot_tell": 4.836080331737004e-08
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 9.117646291173231e-07,
+            "payee_mismatch": 5.432831428772704e-08,
+            "amount_mismatch": 0.9999983650424388,
+            "date_mismatch": 4.446019038634098e-07,
+            "unsigned": 1.7590191072432188e-07,
+            "cannot_tell": 4.836080331737004e-08
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 9.502924030696463e-08,
+            "payee_mismatch": 1.7140887494116391e-06,
+            "amount_mismatch": 0.9999973975700626,
+            "date_mismatch": 2.543502425403464e-07,
+            "unsigned": 3.0708919492328414e-07,
+            "cannot_tell": 2.318725103651099e-07
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 3.3023945268116806e-07,
+            "payee_mismatch": 2.326982915991837e-08,
+            "amount_mismatch": 0.9999979079468608,
+            "date_mismatch": 1.6518808762499032e-06,
+            "unsigned": 2.700882124801453e-08,
+            "cannot_tell": 5.965415996295893e-08
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 4.945509550039976e-08,
+            "payee_mismatch": 9.784730334143822e-07,
+            "amount_mismatch": 0.9999961513044552,
+            "date_mismatch": 4.61816370394319e-07,
+            "unsigned": 7.944307970236737e-07,
+            "cannot_tell": 1.5645202483862917e-06
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.9703782823973626e-08,
+            "payee_mismatch": 6.545273592574048e-08,
+            "amount_mismatch": 0.9999993688782816,
+            "date_mismatch": 3.199070996504812e-07,
+            "unsigned": 1.1100022823529155e-07,
+            "cannot_tell": 1.1505787175930629e-07
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 2.4586399340957718e-06,
+            "payee_mismatch": 1.3116741364844553e-07,
+            "amount_mismatch": 0.9999968896663375,
+            "date_mismatch": 1.690582609692552e-07,
+            "unsigned": 1.4367231446817935e-07,
+            "cannot_tell": 2.0779573928701105e-07
+          },
+          "argmax": "amount_mismatch"
+        }
+      ],
+      "position_probabilities": [
+        [
+          9.117646291173231e-07,
+          5.432831428772704e-08,
+          0.9999983650424388,
+          4.446019038634098e-07,
+          1.7590191072432188e-07,
+          4.836080331737004e-08
+        ],
+        [
+          1.7140887494116391e-06,
+          2.543502425403464e-07,
+          9.502924030696463e-08,
+          2.318725103651099e-07,
+          0.9999973975700626,
+          3.0708919492328414e-07
+        ],
+        [
+          1.6518808762499032e-06,
+          5.965415996295893e-08,
+          2.326982915991837e-08,
+          2.700882124801453e-08,
+          3.3023945268116806e-07,
+          0.9999979079468608
+        ],
+        [
+          1.5645202483862917e-06,
+          7.944307970236737e-07,
+          4.61816370394319e-07,
+          0.9999961513044552,
+          9.784730334143822e-07,
+          4.945509550039976e-08
+        ],
+        [
+          1.1100022823529155e-07,
+          0.9999993688782816,
+          1.1505787175930629e-07,
+          1.9703782823973626e-08,
+          3.199070996504812e-07,
+          6.545273592574048e-08
+        ],
+        [
+          0.9999968896663375,
+          2.4586399340957718e-06,
+          1.4367231446817935e-07,
+          1.3116741364844553e-07,
+          2.0779573928701105e-07,
+          1.690582609692552e-07
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 6.441386890876001e-07,
+        "payee_mismatch": 4.944633459746422e-07,
+        "amount_mismatch": 0.9999976800680727,
+        "date_mismatch": 5.502691256112858e-07,
+        "unsigned": 2.598505444371275e-07,
+        "cannot_tell": 3.7121022217967465e-07
+      },
+      "mean_verdict": "amount_mismatch",
+      "mean_correct": true,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r00:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "render_sha256": "8d417325914d227c396c2a87f09644d194afcc45da28f03fabd5eadd35b80c1b",
+      "single_order": {
+        "verdict": "date_mismatch",
+        "verdict_probabilities": {
+          "consistent": 6.533436552466757e-07,
+          "payee_mismatch": 1.3551461119409334e-07,
+          "amount_mismatch": 3.8596973627643603e-07,
+          "date_mismatch": 0.9999964977169776,
+          "unsigned": 2.2373809615747523e-06,
+          "cannot_tell": 9.007405817513073e-08
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 6.533436552466757e-07,
+            "payee_mismatch": 1.3551461119409334e-07,
+            "amount_mismatch": 3.8596973627643603e-07,
+            "date_mismatch": 0.9999964977169776,
+            "unsigned": 2.2373809615747523e-06,
+            "cannot_tell": 9.007405817513073e-08
+          },
+          "argmax": "date_mismatch"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 1.0650658798180806e-07,
+            "payee_mismatch": 4.489509706873208e-08,
+            "amount_mismatch": 8.520957493469262e-08,
+            "date_mismatch": 0.9999997166570601,
+            "unsigned": 3.9845848158474984e-08,
+            "cannot_tell": 6.885831682625789e-09
+          },
+          "argmax": "date_mismatch"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 2.3301527207633855e-08,
+            "payee_mismatch": 1.0318520657311475e-07,
+            "amount_mismatch": 5.899220505053653e-08,
+            "date_mismatch": 0.9999988034205051,
+            "unsigned": 1.260904215609059e-07,
+            "cannot_tell": 8.850101345237064e-07
+          },
+          "argmax": "date_mismatch"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 3.97281750704868e-08,
+            "payee_mismatch": 1.0467798588364187e-07,
+            "amount_mismatch": 3.415285211566167e-06,
+            "date_mismatch": 0.9999911467224046,
+            "unsigned": 2.75213451576681e-06,
+            "cannot_tell": 2.5414517070902535e-06
+          },
+          "argmax": "date_mismatch"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 6.201441570417127e-07,
+            "payee_mismatch": 1.6392131232645282e-07,
+            "amount_mismatch": 3.497498145399409e-07,
+            "date_mismatch": 0.9999897637071512,
+            "unsigned": 8.983098241799414e-06,
+            "cannot_tell": 1.1937932303521884e-07
+          },
+          "argmax": "date_mismatch"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 3.560862735520881e-08,
+            "payee_mismatch": 2.2221173409778426e-08,
+            "amount_mismatch": 5.201369797641782e-07,
+            "date_mismatch": 0.9999988389578138,
+            "unsigned": 4.1072947340262734e-07,
+            "cannot_tell": 1.7234593223303435e-07
+          },
+          "argmax": "date_mismatch"
+        }
+      ],
+      "position_probabilities": [
+        [
+          6.533436552466757e-07,
+          1.3551461119409334e-07,
+          3.8596973627643603e-07,
+          0.9999964977169776,
+          2.2373809615747523e-06,
+          9.007405817513073e-08
+        ],
+        [
+          4.489509706873208e-08,
+          0.9999997166570601,
+          1.0650658798180806e-07,
+          6.885831682625789e-09,
+          8.520957493469262e-08,
+          3.9845848158474984e-08
+        ],
+        [
+          0.9999988034205051,
+          8.850101345237064e-07,
+          1.0318520657311475e-07,
+          1.260904215609059e-07,
+          2.3301527207633855e-08,
+          5.899220505053653e-08
+        ],
+        [
+          2.5414517070902535e-06,
+          2.75213451576681e-06,
+          0.9999911467224046,
+          3.415285211566167e-06,
+          1.0467798588364187e-07,
+          3.97281750704868e-08
+        ],
+        [
+          8.983098241799414e-06,
+          3.497498145399409e-07,
+          1.1937932303521884e-07,
+          6.201441570417127e-07,
+          0.9999897637071512,
+          1.6392131232645282e-07
+        ],
+        [
+          5.201369797641782e-07,
+          3.560862735520881e-08,
+          4.1072947340262734e-07,
+          2.2221173409778426e-08,
+          1.7234593223303435e-07,
+          0.9999988389578138
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 2.464387883172543e-07,
+        "payee_mismatch": 9.573589774263554e-08,
+        "amount_mismatch": 8.025572536886585e-07,
+        "date_mismatch": 0.9999957945303187,
+        "unsigned": 2.4248799103771643e-06,
+        "cannot_tell": 6.358578311233283e-07
+      },
+      "mean_verdict": "date_mismatch",
+      "mean_correct": true,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r00:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "render_sha256": "79a97c14a41170f18f0ea6154513d582d2b7c41b71e17e25a06dae8a574447c3",
+      "single_order": {
+        "verdict": "unsigned",
+        "verdict_probabilities": {
+          "consistent": 1.2428423266328577e-06,
+          "payee_mismatch": 1.2668808505251312e-07,
+          "amount_mismatch": 2.500431304753603e-08,
+          "date_mismatch": 4.634075279833131e-07,
+          "unsigned": 0.9999980820354626,
+          "cannot_tell": 6.002228463868163e-08
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 1.2428423266328577e-06,
+            "payee_mismatch": 1.2668808505251312e-07,
+            "amount_mismatch": 2.500431304753603e-08,
+            "date_mismatch": 4.634075279833131e-07,
+            "unsigned": 0.9999980820354626,
+            "cannot_tell": 6.002228463868163e-08
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 1.7271425261671067e-07,
+            "payee_mismatch": 4.766615498414899e-07,
+            "amount_mismatch": 1.5846974325840234e-07,
+            "date_mismatch": 7.53784698617937e-08,
+            "unsigned": 0.9999990971743093,
+            "cannot_tell": 1.9601675095703776e-08
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.215276069562433e-07,
+            "payee_mismatch": 1.0917689344026636e-07,
+            "amount_mismatch": 1.647080026611024e-08,
+            "date_mismatch": 5.370355364119054e-07,
+            "unsigned": 0.9999990088692596,
+            "cannot_tell": 2.0691990325624877e-07
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 3.67828398211078e-09,
+            "payee_mismatch": 2.4588809904244912e-08,
+            "amount_mismatch": 9.278901042702942e-09,
+            "date_mismatch": 2.0643421139475063e-07,
+            "unsigned": 0.9999997385319923,
+            "cannot_tell": 1.748780131120714e-08
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 5.081511988298443e-09,
+            "payee_mismatch": 2.011418319894734e-08,
+            "amount_mismatch": 4.4551086642372536e-07,
+            "date_mismatch": 1.7049925079994698e-08,
+            "unsigned": 0.9999995031457098,
+            "cannot_tell": 9.09780355326568e-09
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 3.1307528896546457e-07,
+            "payee_mismatch": 2.3748402446429062e-07,
+            "amount_mismatch": 3.620680960068267e-07,
+            "date_mismatch": 2.8972394162790428e-08,
+            "unsigned": 0.999999040635122,
+            "cannot_tell": 1.7765074300794827e-08
+          },
+          "argmax": "unsigned"
+        }
+      ],
+      "position_probabilities": [
+        [
+          1.2428423266328577e-06,
+          1.2668808505251312e-07,
+          2.500431304753603e-08,
+          4.634075279833131e-07,
+          0.9999980820354626,
+          6.002228463868163e-08
+        ],
+        [
+          4.766615498414899e-07,
+          7.53784698617937e-08,
+          1.7271425261671067e-07,
+          1.9601675095703776e-08,
+          1.5846974325840234e-07,
+          0.9999990971743093
+        ],
+        [
+          5.370355364119054e-07,
+          2.0691990325624877e-07,
+          1.0917689344026636e-07,
+          0.9999990088692596,
+          1.215276069562433e-07,
+          1.647080026611024e-08
+        ],
+        [
+          1.748780131120714e-08,
+          0.9999997385319923,
+          2.0643421139475063e-07,
+          9.278901042702942e-09,
+          2.4588809904244912e-08,
+          3.67828398211078e-09
+        ],
+        [
+          0.9999995031457098,
+          4.4551086642372536e-07,
+          9.09780355326568e-09,
+          5.081511988298443e-09,
+          1.7049925079994698e-08,
+          2.011418319894734e-08
+        ],
+        [
+          3.620680960068267e-07,
+          3.1307528896546457e-07,
+          0.999999040635122,
+          2.3748402446429062e-07,
+          1.7765074300794827e-08,
+          2.8972394162790428e-08
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 3.098198785236142e-07,
+        "payee_mismatch": 1.6578559098362537e-07,
+        "amount_mismatch": 1.6946712000755061e-07,
+        "date_mismatch": 2.2137967748242466e-07,
+        "unsigned": 0.9999990783986427,
+        "cannot_tell": 5.5149090359316977e-08
+      },
+      "mean_verdict": "unsigned",
+      "mean_correct": true,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r00:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "render_sha256": "4d07b4a3a8d43aae119e730f00f63ec1581eac25e5ae9d205131cf7b81b974e6",
+      "single_order": {
+        "verdict": "unsigned",
+        "verdict_probabilities": {
+          "consistent": 0.18833363782053075,
+          "payee_mismatch": 4.228566025202511e-06,
+          "amount_mismatch": 1.1889876767793797e-06,
+          "date_mismatch": 4.969939834271313e-06,
+          "unsigned": 0.8116557000096609,
+          "cannot_tell": 2.746762721106206e-07
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 0.18833363782053075,
+            "payee_mismatch": 4.228566025202511e-06,
+            "amount_mismatch": 1.1889876767793797e-06,
+            "date_mismatch": 4.969939834271313e-06,
+            "unsigned": 0.8116557000096609,
+            "cannot_tell": 2.746762721106206e-07
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 0.9863279031049611,
+            "payee_mismatch": 3.0374073796246374e-05,
+            "amount_mismatch": 2.6294278862327777e-06,
+            "date_mismatch": 6.137685883430055e-07,
+            "unsigned": 0.013636734898562784,
+            "cannot_tell": 1.7447262054235661e-06
+          },
+          "argmax": "consistent"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 0.7363595799745729,
+            "payee_mismatch": 6.0261628138996105e-06,
+            "amount_mismatch": 7.613879463962009e-07,
+            "date_mismatch": 0.00025170977799354326,
+            "unsigned": 0.2633811869231801,
+            "cannot_tell": 7.357734931455193e-07
+          },
+          "argmax": "consistent"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 0.00023158468495045257,
+            "payee_mismatch": 1.0213542515261625e-05,
+            "amount_mismatch": 1.117795540914849e-05,
+            "date_mismatch": 7.039706875304464e-05,
+            "unsigned": 0.9996742351660679,
+            "cannot_tell": 2.391582304259096e-06
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 8.111432242785795e-05,
+            "payee_mismatch": 6.384645111724401e-08,
+            "amount_mismatch": 2.8628954014719394e-05,
+            "date_mismatch": 3.5347351211692325e-07,
+            "unsigned": 0.9998894839030489,
+            "cannot_tell": 3.5550054538177526e-07
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 0.17808730985638782,
+            "payee_mismatch": 1.1400062585680408e-06,
+            "amount_mismatch": 1.48615173892203e-05,
+            "date_mismatch": 7.550460754880763e-09,
+            "unsigned": 0.8218966555379246,
+            "cannot_tell": 2.5531579140587208e-08
+          },
+          "argmax": "unsigned"
+        }
+      ],
+      "position_probabilities": [
+        [
+          0.18833363782053075,
+          4.228566025202511e-06,
+          1.1889876767793797e-06,
+          4.969939834271313e-06,
+          0.8116557000096609,
+          2.746762721106206e-07
+        ],
+        [
+          3.0374073796246374e-05,
+          6.137685883430055e-07,
+          0.9863279031049611,
+          1.7447262054235661e-06,
+          2.6294278862327777e-06,
+          0.013636734898562784
+        ],
+        [
+          0.00025170977799354326,
+          7.357734931455193e-07,
+          6.0261628138996105e-06,
+          0.2633811869231801,
+          0.7363595799745729,
+          7.613879463962009e-07
+        ],
+        [
+          2.391582304259096e-06,
+          0.9996742351660679,
+          7.039706875304464e-05,
+          1.117795540914849e-05,
+          1.0213542515261625e-05,
+          0.00023158468495045257
+        ],
+        [
+          0.9998894839030489,
+          2.8628954014719394e-05,
+          3.5550054538177526e-07,
+          8.111432242785795e-05,
+          3.5347351211692325e-07,
+          6.384645111724401e-08
+        ],
+        [
+          1.48615173892203e-05,
+          0.17808730985638782,
+          0.8218966555379246,
+          1.1400062585680408e-06,
+          2.5531579140587208e-08,
+          7.550460754880763e-09
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 0.3482368549606385,
+        "payee_mismatch": 8.674366310049234e-06,
+        "amount_mismatch": 9.874705053749424e-06,
+        "date_mismatch": 5.467526319034567e-05,
+        "unsigned": 0.6516889994064076,
+        "cannot_tell": 9.21298399910194e-07
+      },
+      "mean_verdict": "unsigned",
+      "mean_correct": false,
+      "argmax_stable": false
+    },
+    {
+      "case_id": "r01:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "render_sha256": "25bfad499161e6b63752719cb4684a5579792f94a8e226fd088d87e14bda9248",
+      "single_order": {
+        "verdict": "consistent",
+        "verdict_probabilities": {
+          "consistent": 0.9999008294648595,
+          "payee_mismatch": 5.010430159382031e-06,
+          "amount_mismatch": 2.2288474281881896e-07,
+          "date_mismatch": 1.4002053703983437e-07,
+          "unsigned": 9.34634125769461e-05,
+          "cannot_tell": 3.337871243624341e-07
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 0.9999008294648595,
+            "payee_mismatch": 5.010430159382031e-06,
+            "amount_mismatch": 2.2288474281881896e-07,
+            "date_mismatch": 1.4002053703983437e-07,
+            "unsigned": 9.34634125769461e-05,
+            "cannot_tell": 3.337871243624341e-07
+          },
+          "argmax": "consistent"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 0.9999960997064506,
+            "payee_mismatch": 6.845702966501172e-07,
+            "amount_mismatch": 8.270209761076334e-08,
+            "date_mismatch": 2.178536058533858e-07,
+            "unsigned": 2.7087109055721306e-06,
+            "cannot_tell": 2.0645664368563988e-07
+          },
+          "argmax": "consistent"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 0.9896376608336491,
+            "payee_mismatch": 6.838051523951395e-07,
+            "amount_mismatch": 5.692819642222672e-07,
+            "date_mismatch": 1.8879611035630127e-05,
+            "unsigned": 0.010342047219329487,
+            "cannot_tell": 1.592488691607813e-07
+          },
+          "argmax": "consistent"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 0.014933574746457772,
+            "payee_mismatch": 1.3556684967024866e-05,
+            "amount_mismatch": 5.363294191705132e-06,
+            "date_mismatch": 0.00024572028909599985,
+            "unsigned": 0.9847991112557598,
+            "cannot_tell": 2.673729527731945e-06
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 0.016191017339521007,
+            "payee_mismatch": 2.1326329493473847e-07,
+            "amount_mismatch": 8.23613559307056e-06,
+            "date_mismatch": 1.467848759220303e-06,
+            "unsigned": 0.9837982879016333,
+            "cannot_tell": 7.775111985908648e-07
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 0.9998066132461132,
+            "payee_mismatch": 6.167479362428892e-08,
+            "amount_mismatch": 9.445895329303968e-07,
+            "date_mismatch": 1.5236144196406255e-08,
+            "unsigned": 0.0001923002830879928,
+            "cannot_tell": 6.497032811382562e-08
+          },
+          "argmax": "consistent"
+        }
+      ],
+      "position_probabilities": [
+        [
+          0.9999008294648595,
+          5.010430159382031e-06,
+          2.2288474281881896e-07,
+          1.4002053703983437e-07,
+          9.34634125769461e-05,
+          3.337871243624341e-07
+        ],
+        [
+          6.845702966501172e-07,
+          2.178536058533858e-07,
+          0.9999960997064506,
+          2.0645664368563988e-07,
+          8.270209761076334e-08,
+          2.7087109055721306e-06
+        ],
+        [
+          1.8879611035630127e-05,
+          1.592488691607813e-07,
+          6.838051523951395e-07,
+          0.010342047219329487,
+          0.9896376608336491,
+          5.692819642222672e-07
+        ],
+        [
+          2.673729527731945e-06,
+          0.9847991112557598,
+          0.00024572028909599985,
+          5.363294191705132e-06,
+          1.3556684967024866e-05,
+          0.014933574746457772
+        ],
+        [
+          0.9837982879016333,
+          8.23613559307056e-06,
+          7.775111985908648e-07,
+          0.016191017339521007,
+          1.467848759220303e-06,
+          2.1326329493473847e-07
+        ],
+        [
+          9.445895329303968e-07,
+          0.9998066132461132,
+          0.0001923002830879928,
+          6.167479362428892e-08,
+          6.497032811382562e-08,
+          1.5236144196406255e-08
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 0.6700776325561751,
+        "payee_mismatch": 3.3684047773351964e-06,
+        "amount_mismatch": 2.569814687059656e-06,
+        "date_mismatch": 4.4406809862989985e-05,
+        "unsigned": 0.3298713197972155,
+        "cannot_tell": 7.026172819409152e-07
+      },
+      "mean_verdict": "consistent",
+      "mean_correct": true,
+      "argmax_stable": false
+    },
+    {
+      "case_id": "r01:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "render_sha256": "e0edcf05cf3e606e22673c5a6578ef4fe0db1313658dae7933d1153bdd083d9d",
+      "single_order": {
+        "verdict": "payee_mismatch",
+        "verdict_probabilities": {
+          "consistent": 4.102017016349398e-08,
+          "payee_mismatch": 0.9999997379020392,
+          "amount_mismatch": 4.1955627700006635e-08,
+          "date_mismatch": 1.4009350338137257e-08,
+          "unsigned": 1.3229633313292697e-07,
+          "cannot_tell": 3.281647952575986e-08
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 4.102017016349398e-08,
+            "payee_mismatch": 0.9999997379020392,
+            "amount_mismatch": 4.1955627700006635e-08,
+            "date_mismatch": 1.4009350338137257e-08,
+            "unsigned": 1.3229633313292697e-07,
+            "cannot_tell": 3.281647952575986e-08
+          },
+          "argmax": "payee_mismatch"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 3.0380222398452255e-08,
+            "payee_mismatch": 0.9999970010540398,
+            "amount_mismatch": 5.188828417198326e-08,
+            "date_mismatch": 2.726566035676034e-06,
+            "unsigned": 1.7154655831097002e-07,
+            "cannot_tell": 1.856485972442517e-08
+          },
+          "argmax": "payee_mismatch"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 4.589535693921866e-08,
+            "payee_mismatch": 0.999998708690269,
+            "amount_mismatch": 7.310844907616264e-08,
+            "date_mismatch": 6.102992466521737e-07,
+            "unsigned": 4.0942968459995185e-07,
+            "cannot_tell": 1.5257699369762997e-07
+          },
+          "argmax": "payee_mismatch"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 1.3736332352026737e-07,
+            "payee_mismatch": 0.9999931163437797,
+            "amount_mismatch": 4.993046309552098e-06,
+            "date_mismatch": 5.93275432763498e-08,
+            "unsigned": 7.030470325304825e-07,
+            "cannot_tell": 9.908720114918751e-07
+          },
+          "argmax": "payee_mismatch"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.1544341506623249e-08,
+            "payee_mismatch": 0.9999982850589504,
+            "amount_mismatch": 3.767036182310936e-08,
+            "date_mismatch": 2.3863662775133873e-07,
+            "unsigned": 1.399747254177254e-06,
+            "cannot_tell": 2.734246433282465e-08
+          },
+          "argmax": "payee_mismatch"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.0590216941104556e-07,
+            "payee_mismatch": 0.9999988856948716,
+            "amount_mismatch": 5.419086521034016e-07,
+            "date_mismatch": 3.767346267128746e-08,
+            "unsigned": 1.597189732651881e-07,
+            "cannot_tell": 2.6910187086728233e-07
+          },
+          "argmax": "payee_mismatch"
+        }
+      ],
+      "position_probabilities": [
+        [
+          4.102017016349398e-08,
+          0.9999997379020392,
+          4.1955627700006635e-08,
+          1.4009350338137257e-08,
+          1.3229633313292697e-07,
+          3.281647952575986e-08
+        ],
+        [
+          0.9999970010540398,
+          2.726566035676034e-06,
+          3.0380222398452255e-08,
+          1.856485972442517e-08,
+          5.188828417198326e-08,
+          1.7154655831097002e-07
+        ],
+        [
+          6.102992466521737e-07,
+          1.5257699369762997e-07,
+          0.999998708690269,
+          4.0942968459995185e-07,
+          4.589535693921866e-08,
+          7.310844907616264e-08
+        ],
+        [
+          9.908720114918751e-07,
+          7.030470325304825e-07,
+          5.93275432763498e-08,
+          4.993046309552098e-06,
+          0.9999931163437797,
+          1.3736332352026737e-07
+        ],
+        [
+          1.399747254177254e-06,
+          3.767036182310936e-08,
+          2.734246433282465e-08,
+          1.1544341506623249e-08,
+          2.3863662775133873e-07,
+          0.9999982850589504
+        ],
+        [
+          5.419086521034016e-07,
+          1.0590216941104556e-07,
+          1.597189732651881e-07,
+          0.9999988856948716,
+          2.6910187086728233e-07,
+          3.767346267128746e-08
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 6.201759732318352e-08,
+        "payee_mismatch": 0.9999976224573249,
+        "amount_mismatch": 9.565962807377936e-07,
+        "date_mismatch": 6.144187110608867e-07,
+        "unsigned": 4.959643060027955e-07,
+        "cannot_tell": 2.485457799399662e-07
+      },
+      "mean_verdict": "payee_mismatch",
+      "mean_correct": true,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r01:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "render_sha256": "f590d72314af456552e8f5adeb455b0400fcf23266ab42b7e6c5137b2c615afa",
+      "single_order": {
+        "verdict": "amount_mismatch",
+        "verdict_probabilities": {
+          "consistent": 2.0082799638727185e-06,
+          "payee_mismatch": 1.0856357964172451e-07,
+          "amount_mismatch": 0.9999974790119428,
+          "date_mismatch": 2.6431681971772964e-07,
+          "unsigned": 6.646175596964986e-08,
+          "cannot_tell": 7.336593801241897e-08
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 2.0082799638727185e-06,
+            "payee_mismatch": 1.0856357964172451e-07,
+            "amount_mismatch": 0.9999974790119428,
+            "date_mismatch": 2.6431681971772964e-07,
+            "unsigned": 6.646175596964986e-08,
+            "cannot_tell": 7.336593801241897e-08
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 5.211094514712534e-08,
+            "payee_mismatch": 1.7108509564705454e-06,
+            "amount_mismatch": 0.9999977964610928,
+            "date_mismatch": 1.8520553494493823e-07,
+            "unsigned": 1.575931600374296e-07,
+            "cannot_tell": 9.777831068834382e-08
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 2.453796687061538e-07,
+            "payee_mismatch": 3.821104447116467e-08,
+            "amount_mismatch": 0.9999956971899675,
+            "date_mismatch": 3.879024790562013e-06,
+            "unsigned": 2.84019412614497e-08,
+            "cannot_tell": 1.1179258743461144e-07
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 2.736423394316867e-08,
+            "payee_mismatch": 5.584856893297399e-07,
+            "amount_mismatch": 0.999995623791354,
+            "date_mismatch": 4.272016066875076e-07,
+            "unsigned": 4.482708062838518e-07,
+            "cannot_tell": 2.9148863097383146e-06
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.8621813746149788e-09,
+            "payee_mismatch": 1.2424272574877139e-08,
+            "amount_mismatch": 0.9999997952538435,
+            "date_mismatch": 3.0902535737810434e-08,
+            "unsigned": 1.1133398558386392e-07,
+            "cannot_tell": 4.82231813070318e-08
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.4284175670409172e-06,
+            "payee_mismatch": 2.0836916204216162e-08,
+            "amount_mismatch": 0.9999984128968726,
+            "date_mismatch": 6.833360780797833e-08,
+            "unsigned": 3.0745197384888755e-08,
+            "cannot_tell": 3.876983894915146e-08
+          },
+          "argmax": "amount_mismatch"
+        }
+      ],
+      "position_probabilities": [
+        [
+          2.0082799638727185e-06,
+          1.0856357964172451e-07,
+          0.9999974790119428,
+          2.6431681971772964e-07,
+          6.646175596964986e-08,
+          7.336593801241897e-08
+        ],
+        [
+          1.7108509564705454e-06,
+          1.8520553494493823e-07,
+          5.211094514712534e-08,
+          9.777831068834382e-08,
+          0.9999977964610928,
+          1.575931600374296e-07
+        ],
+        [
+          3.879024790562013e-06,
+          1.1179258743461144e-07,
+          3.821104447116467e-08,
+          2.84019412614497e-08,
+          2.453796687061538e-07,
+          0.9999956971899675
+        ],
+        [
+          2.9148863097383146e-06,
+          4.482708062838518e-07,
+          4.272016066875076e-07,
+          0.999995623791354,
+          5.584856893297399e-07,
+          2.736423394316867e-08
+        ],
+        [
+          1.1133398558386392e-07,
+          0.9999997952538435,
+          4.82231813070318e-08,
+          1.8621813746149788e-09,
+          3.0902535737810434e-08,
+          1.2424272574877139e-08
+        ],
+        [
+          0.9999984128968726,
+          1.4284175670409172e-06,
+          3.0745197384888755e-08,
+          2.0836916204216162e-08,
+          3.876983894915146e-08,
+          6.833360780797833e-08
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 6.272357600141165e-07,
+        "payee_mismatch": 4.0822874311537795e-07,
+        "amount_mismatch": 0.9999974674341789,
+        "date_mismatch": 8.091641492429962e-07,
+        "unsigned": 1.4046780775352226e-07,
+        "cannot_tell": 5.474693610216454e-07
+      },
+      "mean_verdict": "amount_mismatch",
+      "mean_correct": true,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r01:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "render_sha256": "93451c3f85c6006d82170bd29707e7dc344b5e8122d5b9a7e9f4edd787a72308",
+      "single_order": {
+        "verdict": "amount_mismatch",
+        "verdict_probabilities": {
+          "consistent": 7.607887267389414e-07,
+          "payee_mismatch": 4.6027719296735176e-08,
+          "amount_mismatch": 0.9999989160649801,
+          "date_mismatch": 2.0985595991222058e-07,
+          "unsigned": 3.520012415756847e-08,
+          "cannot_tell": 3.206248969649134e-08
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 7.607887267389414e-07,
+            "payee_mismatch": 4.6027719296735176e-08,
+            "amount_mismatch": 0.9999989160649801,
+            "date_mismatch": 2.0985595991222058e-07,
+            "unsigned": 3.520012415756847e-08,
+            "cannot_tell": 3.206248969649134e-08
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 6.712687977025422e-08,
+            "payee_mismatch": 1.6127591665898135e-06,
+            "amount_mismatch": 0.9999976446573865,
+            "date_mismatch": 1.2457641798278651e-07,
+            "unsigned": 2.0952269155160345e-07,
+            "cannot_tell": 3.413574575751264e-07
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.5565058466004174e-07,
+            "payee_mismatch": 2.3159566305280164e-08,
+            "amount_mismatch": 0.9999986163833153,
+            "date_mismatch": 1.1539364163869459e-06,
+            "unsigned": 1.9308070340756182e-08,
+            "cannot_tell": 3.1562046885251785e-08
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 2.583551166207443e-08,
+            "payee_mismatch": 2.945038918533496e-07,
+            "amount_mismatch": 0.9999976309639969,
+            "date_mismatch": 4.583744721018991e-07,
+            "unsigned": 3.7564234430509235e-07,
+            "cannot_tell": 1.2146797833448536e-06
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 8.018278479344055e-09,
+            "payee_mismatch": 2.8100633484626943e-08,
+            "amount_mismatch": 0.9999997878336112,
+            "date_mismatch": 5.785683128645182e-08,
+            "unsigned": 8.93118048894818e-08,
+            "cannot_tell": 2.8878840581292826e-08
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 8.645375822103007e-07,
+            "payee_mismatch": 7.699728570330399e-08,
+            "amount_mismatch": 0.9999988393235661,
+            "date_mismatch": 1.1688979477289085e-07,
+            "unsigned": 5.0069462129184666e-08,
+            "cannot_tell": 5.21823089676426e-08
+          },
+          "argmax": "amount_mismatch"
+        }
+      ],
+      "position_probabilities": [
+        [
+          7.607887267389414e-07,
+          4.6027719296735176e-08,
+          0.9999989160649801,
+          2.0985595991222058e-07,
+          3.520012415756847e-08,
+          3.206248969649134e-08
+        ],
+        [
+          1.6127591665898135e-06,
+          1.2457641798278651e-07,
+          6.712687977025422e-08,
+          3.413574575751264e-07,
+          0.9999976446573865,
+          2.0952269155160345e-07
+        ],
+        [
+          1.1539364163869459e-06,
+          3.1562046885251785e-08,
+          2.3159566305280164e-08,
+          1.9308070340756182e-08,
+          1.5565058466004174e-07,
+          0.9999986163833153
+        ],
+        [
+          1.2146797833448536e-06,
+          3.7564234430509235e-07,
+          4.583744721018991e-07,
+          0.9999976309639969,
+          2.945038918533496e-07,
+          2.583551166207443e-08
+        ],
+        [
+          8.93118048894818e-08,
+          0.9999997878336112,
+          2.8878840581292826e-08,
+          8.018278479344055e-09,
+          5.785683128645182e-08,
+          2.8100633484626943e-08
+        ],
+        [
+          0.9999988393235661,
+          8.645375822103007e-07,
+          5.0069462129184666e-08,
+          7.699728570330399e-08,
+          5.21823089676426e-08,
+          1.1688979477289085e-07
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 3.1365959392015944e-07,
+        "payee_mismatch": 3.469247105388516e-07,
+        "amount_mismatch": 0.9999985725378093,
+        "date_mismatch": 3.535816487405325e-07,
+        "unsigned": 1.2984241622894782e-07,
+        "cannot_tell": 2.8345382117510977e-07
+      },
+      "mean_verdict": "amount_mismatch",
+      "mean_correct": true,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r01:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "render_sha256": "a65febfe9399b848d85fe4e6852e40fe94fcdab30f63d80a686b9b28e86f7f5b",
+      "single_order": {
+        "verdict": "date_mismatch",
+        "verdict_probabilities": {
+          "consistent": 4.435276288125017e-07,
+          "payee_mismatch": 3.466292476777382e-08,
+          "amount_mismatch": 2.502200999791112e-07,
+          "date_mismatch": 0.9999988488075532,
+          "unsigned": 3.863742034218836e-07,
+          "cannot_tell": 3.6407589773070304e-08
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 4.435276288125017e-07,
+            "payee_mismatch": 3.466292476777382e-08,
+            "amount_mismatch": 2.502200999791112e-07,
+            "date_mismatch": 0.9999988488075532,
+            "unsigned": 3.863742034218836e-07,
+            "cannot_tell": 3.6407589773070304e-08
+          },
+          "argmax": "date_mismatch"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 8.628758798652045e-08,
+            "payee_mismatch": 3.062866478929059e-08,
+            "amount_mismatch": 9.121959373376753e-08,
+            "date_mismatch": 0.9999997457464145,
+            "unsigned": 3.960386684260498e-08,
+            "cannot_tell": 6.5138721861415445e-09
+          },
+          "argmax": "date_mismatch"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 2.5360250521097154e-08,
+            "payee_mismatch": 7.736272853566261e-08,
+            "amount_mismatch": 6.436045449394454e-08,
+            "date_mismatch": 0.9999993127238666,
+            "unsigned": 6.143988759523438e-08,
+            "cannot_tell": 4.587528123627088e-07
+          },
+          "argmax": "date_mismatch"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 3.517237932871222e-08,
+            "payee_mismatch": 3.6772910536446273e-08,
+            "amount_mismatch": 7.07520743248693e-07,
+            "date_mismatch": 0.9999973211944082,
+            "unsigned": 4.301664018141808e-07,
+            "cannot_tell": 1.4691731569537655e-06
+          },
+          "argmax": "date_mismatch"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 5.152224946342086e-07,
+            "payee_mismatch": 1.0413166198925335e-07,
+            "amount_mismatch": 1.4418159734572344e-07,
+            "date_mismatch": 0.9999962866376689,
+            "unsigned": 2.8263746706523627e-06,
+            "cannot_tell": 1.2345190643665866e-07
+          },
+          "argmax": "date_mismatch"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 3.982781559882458e-08,
+            "payee_mismatch": 1.630099901946807e-08,
+            "amount_mismatch": 5.05357202732917e-07,
+            "date_mismatch": 0.9999991018576462,
+            "unsigned": 1.939012970720254e-07,
+            "cannot_tell": 1.4275503946720624e-07
+          },
+          "argmax": "date_mismatch"
+        }
+      ],
+      "position_probabilities": [
+        [
+          4.435276288125017e-07,
+          3.466292476777382e-08,
+          2.502200999791112e-07,
+          0.9999988488075532,
+          3.863742034218836e-07,
+          3.6407589773070304e-08
+        ],
+        [
+          3.062866478929059e-08,
+          0.9999997457464145,
+          8.628758798652045e-08,
+          6.5138721861415445e-09,
+          9.121959373376753e-08,
+          3.960386684260498e-08
+        ],
+        [
+          0.9999993127238666,
+          4.587528123627088e-07,
+          7.736272853566261e-08,
+          6.143988759523438e-08,
+          2.5360250521097154e-08,
+          6.436045449394454e-08
+        ],
+        [
+          1.4691731569537655e-06,
+          4.301664018141808e-07,
+          0.9999973211944082,
+          7.07520743248693e-07,
+          3.6772910536446273e-08,
+          3.517237932871222e-08
+        ],
+        [
+          2.8263746706523627e-06,
+          1.4418159734572344e-07,
+          1.2345190643665866e-07,
+          5.152224946342086e-07,
+          0.9999962866376689,
+          1.0413166198925335e-07
+        ],
+        [
+          5.05357202732917e-07,
+          3.982781559882458e-08,
+          1.939012970720254e-07,
+          1.630099901946807e-08,
+          1.4275503946720624e-07,
+          0.9999991018576462
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 1.9089969281364414e-07,
+        "payee_mismatch": 4.997664827298245e-08,
+        "amount_mismatch": 2.938099485890261e-07,
+        "date_mismatch": 0.9999984361612596,
+        "unsigned": 6.563100545663819e-07,
+        "cannot_tell": 3.7284239619659185e-07
+      },
+      "mean_verdict": "date_mismatch",
+      "mean_correct": true,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r01:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "render_sha256": "403afe6cdece343c0ac05670ac6cb63c683ee38e63a24601f9fd7a950edba036",
+      "single_order": {
+        "verdict": "unsigned",
+        "verdict_probabilities": {
+          "consistent": 1.221137302927301e-06,
+          "payee_mismatch": 9.810050445807083e-08,
+          "amount_mismatch": 2.6368264360813744e-08,
+          "date_mismatch": 5.22556175744899e-07,
+          "unsigned": 0.9999980721040225,
+          "cannot_tell": 5.973372994133537e-08
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 1.221137302927301e-06,
+            "payee_mismatch": 9.810050445807083e-08,
+            "amount_mismatch": 2.6368264360813744e-08,
+            "date_mismatch": 5.22556175744899e-07,
+            "unsigned": 0.9999980721040225,
+            "cannot_tell": 5.973372994133537e-08
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 1.6668155629133496e-07,
+            "payee_mismatch": 4.655431460896554e-07,
+            "amount_mismatch": 2.0633051164820226e-07,
+            "date_mismatch": 6.951144454806505e-08,
+            "unsigned": 0.9999990671948878,
+            "cannot_tell": 2.4738453518912678e-08
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 9.245824545066452e-08,
+            "payee_mismatch": 8.295747996847269e-08,
+            "amount_mismatch": 1.268530549413546e-08,
+            "date_mismatch": 4.562953224595353e-07,
+            "unsigned": 0.999999230331077,
+            "cannot_tell": 1.252725697618904e-07
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 2.6462999285935185e-09,
+            "payee_mismatch": 1.78616311960416e-08,
+            "amount_mismatch": 2.7238318825794786e-09,
+            "date_mismatch": 3.9763590700928776e-08,
+            "unsigned": 0.999999925295215,
+            "cannot_tell": 1.1709431395052669e-08
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 4.49816012083833e-09,
+            "payee_mismatch": 2.1230152288028982e-08,
+            "amount_mismatch": 2.407221100442081e-07,
+            "date_mismatch": 1.2356234777428007e-08,
+            "unsigned": 0.9999997153122506,
+            "cannot_tell": 5.881092163638564e-09
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.5467510047534257e-07,
+            "payee_mismatch": 2.2670012787239835e-07,
+            "amount_mismatch": 3.2989298424413805e-07,
+            "date_mismatch": 3.114284724390636e-08,
+            "unsigned": 0.9999992442238651,
+            "cannot_tell": 1.3365074978610845e-08
+          },
+          "argmax": "unsigned"
+        }
+      ],
+      "position_probabilities": [
+        [
+          1.221137302927301e-06,
+          9.810050445807083e-08,
+          2.6368264360813744e-08,
+          5.22556175744899e-07,
+          0.9999980721040225,
+          5.973372994133537e-08
+        ],
+        [
+          4.655431460896554e-07,
+          6.951144454806505e-08,
+          1.6668155629133496e-07,
+          2.4738453518912678e-08,
+          2.0633051164820226e-07,
+          0.9999990671948878
+        ],
+        [
+          4.562953224595353e-07,
+          1.252725697618904e-07,
+          8.295747996847269e-08,
+          0.999999230331077,
+          9.245824545066452e-08,
+          1.268530549413546e-08
+        ],
+        [
+          1.1709431395052669e-08,
+          0.999999925295215,
+          3.9763590700928776e-08,
+          2.7238318825794786e-09,
+          1.78616311960416e-08,
+          2.6462999285935185e-09
+        ],
+        [
+          0.9999997153122506,
+          2.407221100442081e-07,
+          5.881092163638564e-09,
+          4.49816012083833e-09,
+          1.2356234777428007e-08,
+          2.1230152288028982e-08
+        ],
+        [
+          3.2989298424413805e-07,
+          1.5467510047534257e-07,
+          0.9999992442238651,
+          2.2670012787239835e-07,
+          1.3365074978610845e-08,
+          3.114284724390636e-08
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 2.736827775323458e-07,
+        "payee_mismatch": 1.5206550697877798e-07,
+        "amount_mismatch": 1.3645383461234618e-07,
+        "date_mismatch": 1.8860426924579375e-07,
+        "unsigned": 0.9999992090768863,
+        "cannot_tell": 4.011672529324008e-08
+      },
+      "mean_verdict": "unsigned",
+      "mean_correct": true,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r01:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "render_sha256": "e4039dd603d913e104eabcc21f1cf86eeb6f5adb4f6adbc048079ceb2a9d22b9",
+      "single_order": {
+        "verdict": "unsigned",
+        "verdict_probabilities": {
+          "consistent": 0.008336676745309307,
+          "payee_mismatch": 7.980115419710541e-07,
+          "amount_mismatch": 5.354658942066797e-07,
+          "date_mismatch": 1.7426916823488405e-06,
+          "unsigned": 0.9916596414742289,
+          "cannot_tell": 6.056113433266765e-07
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 0.008336676745309307,
+            "payee_mismatch": 7.980115419710541e-07,
+            "amount_mismatch": 5.354658942066797e-07,
+            "date_mismatch": 1.7426916823488405e-06,
+            "unsigned": 0.9916596414742289,
+            "cannot_tell": 6.056113433266765e-07
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 0.18690746415949483,
+            "payee_mismatch": 9.244226800095973e-06,
+            "amount_mismatch": 7.540756393188904e-07,
+            "date_mismatch": 5.6235288048794034e-08,
+            "unsigned": 0.8130822670062499,
+            "cannot_tell": 2.1429652772523793e-07
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 0.0003705268160125887,
+            "payee_mismatch": 4.898824080014225e-07,
+            "amount_mismatch": 1.3833537259656385e-07,
+            "date_mismatch": 1.8902092845085447e-05,
+            "unsigned": 0.9996093514030897,
+            "cannot_tell": 5.914702720380149e-07
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 9.671339336184637e-05,
+            "payee_mismatch": 1.5774684888739108e-06,
+            "amount_mismatch": 5.967321106041609e-06,
+            "date_mismatch": 2.3136205598473725e-05,
+            "unsigned": 0.9998686310493136,
+            "cannot_tell": 3.974562131083375e-06
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.0361991580590001e-05,
+            "payee_mismatch": 4.755362152981706e-08,
+            "amount_mismatch": 3.9319053142020977e-05,
+            "date_mismatch": 9.291476326655534e-08,
+            "unsigned": 0.9999497001285388,
+            "cannot_tell": 4.783583538790442e-07
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 0.0206289783801244,
+            "payee_mismatch": 3.9729891354346276e-07,
+            "amount_mismatch": 1.780562614057287e-05,
+            "date_mismatch": 2.314264621890996e-08,
+            "unsigned": 0.9793527459864063,
+            "cannot_tell": 4.95657690179104e-08
+          },
+          "argmax": "unsigned"
+        }
+      ],
+      "position_probabilities": [
+        [
+          0.008336676745309307,
+          7.980115419710541e-07,
+          5.354658942066797e-07,
+          1.7426916823488405e-06,
+          0.9916596414742289,
+          6.056113433266765e-07
+        ],
+        [
+          9.244226800095973e-06,
+          5.6235288048794034e-08,
+          0.18690746415949483,
+          2.1429652772523793e-07,
+          7.540756393188904e-07,
+          0.8130822670062499
+        ],
+        [
+          1.8902092845085447e-05,
+          5.914702720380149e-07,
+          4.898824080014225e-07,
+          0.9996093514030897,
+          0.0003705268160125887,
+          1.3833537259656385e-07
+        ],
+        [
+          3.974562131083375e-06,
+          0.9998686310493136,
+          2.3136205598473725e-05,
+          5.967321106041609e-06,
+          1.5774684888739108e-06,
+          9.671339336184637e-05
+        ],
+        [
+          0.9999497001285388,
+          3.9319053142020977e-05,
+          4.783583538790442e-07,
+          1.0361991580590001e-05,
+          9.291476326655534e-08,
+          4.755362152981706e-08
+        ],
+        [
+          1.780562614057287e-05,
+          0.0206289783801244,
+          0.9793527459864063,
+          3.9729891354346276e-07,
+          4.95657690179104e-08,
+          2.314264621890996e-08
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 0.036058453580980594,
+        "payee_mismatch": 2.09240696233594e-06,
+        "amount_mismatch": 1.0753312882459597e-05,
+        "date_mismatch": 7.325547137240378e-06,
+        "unsigned": 0.9639203895079712,
+        "cannot_tell": 9.856440661783766e-07
+      },
+      "mean_verdict": "unsigned",
+      "mean_correct": false,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r02:clean",
+      "variant": "clean",
+      "expected_verdicts": [
+        "consistent"
+      ],
+      "render_sha256": "f77815590d86940d6406ba4d9ebeab075457ecc20f7415385875be7e67a172dd",
+      "single_order": {
+        "verdict": "consistent",
+        "verdict_probabilities": {
+          "consistent": 0.9999296455627863,
+          "payee_mismatch": 5.59661967893731e-06,
+          "amount_mismatch": 2.9121914157051554e-07,
+          "date_mismatch": 1.7464227186053803e-07,
+          "unsigned": 6.395531213191985e-05,
+          "cannot_tell": 3.366439893736111e-07
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 0.9999296455627863,
+            "payee_mismatch": 5.59661967893731e-06,
+            "amount_mismatch": 2.9121914157051554e-07,
+            "date_mismatch": 1.7464227186053803e-07,
+            "unsigned": 6.395531213191985e-05,
+            "cannot_tell": 3.366439893736111e-07
+          },
+          "argmax": "consistent"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 0.999992079640109,
+            "payee_mismatch": 1.1867461951287695e-06,
+            "amount_mismatch": 1.2843606076206435e-07,
+            "date_mismatch": 5.123947530632931e-07,
+            "unsigned": 5.700713053594925e-06,
+            "cannot_tell": 3.9206982833224767e-07
+          },
+          "argmax": "consistent"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 0.9999075296168194,
+            "payee_mismatch": 1.1841465311015014e-07,
+            "amount_mismatch": 1.7163696740149118e-07,
+            "date_mismatch": 2.90676194110759e-06,
+            "unsigned": 8.91949106621362e-05,
+            "cannot_tell": 7.865895686023882e-08
+          },
+          "argmax": "consistent"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 0.0418163153688141,
+            "payee_mismatch": 6.899484224841426e-06,
+            "amount_mismatch": 4.521643240390822e-06,
+            "date_mismatch": 0.0002417566966981341,
+            "unsigned": 0.9579287998529916,
+            "cannot_tell": 1.7069540310312645e-06
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 0.02522159614935387,
+            "payee_mismatch": 2.435876690692052e-07,
+            "amount_mismatch": 1.2898039354978668e-05,
+            "date_mismatch": 1.5370524703205186e-06,
+            "unsigned": 0.9747625663717683,
+            "cannot_tell": 1.158799383499421e-06
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 0.999955842929794,
+            "payee_mismatch": 7.666365611393408e-08,
+            "amount_mismatch": 6.057054478367475e-07,
+            "date_mismatch": 2.4867454684806523e-08,
+            "unsigned": 4.3351730138506044e-05,
+            "cannot_tell": 9.810350885686207e-08
+          },
+          "argmax": "consistent"
+        }
+      ],
+      "position_probabilities": [
+        [
+          0.9999296455627863,
+          5.59661967893731e-06,
+          2.9121914157051554e-07,
+          1.7464227186053803e-07,
+          6.395531213191985e-05,
+          3.366439893736111e-07
+        ],
+        [
+          1.1867461951287695e-06,
+          5.123947530632931e-07,
+          0.999992079640109,
+          3.9206982833224767e-07,
+          1.2843606076206435e-07,
+          5.700713053594925e-06
+        ],
+        [
+          2.90676194110759e-06,
+          7.865895686023882e-08,
+          1.1841465311015014e-07,
+          8.91949106621362e-05,
+          0.9999075296168194,
+          1.7163696740149118e-07
+        ],
+        [
+          1.7069540310312645e-06,
+          0.9579287998529916,
+          0.0002417566966981341,
+          4.521643240390822e-06,
+          6.899484224841426e-06,
+          0.0418163153688141
+        ],
+        [
+          0.9747625663717683,
+          1.2898039354978668e-05,
+          1.158799383499421e-06,
+          0.02522159614935387,
+          1.5370524703205186e-06,
+          2.435876690692052e-07
+        ],
+        [
+          6.057054478367475e-07,
+          0.999955842929794,
+          4.3351730138506044e-05,
+          7.666365611393408e-08,
+          9.810350885686207e-08,
+          2.4867454684806523e-08
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 0.6778038348779462,
+        "payee_mismatch": 2.353586012866799e-06,
+        "amount_mismatch": 3.102780035490051e-06,
+        "date_mismatch": 4.1152069264861806e-05,
+        "unsigned": 0.3221489281484577,
+        "cannot_tell": 6.285382829922742e-07
+      },
+      "mean_verdict": "consistent",
+      "mean_correct": true,
+      "argmax_stable": false
+    },
+    {
+      "case_id": "r02:payee_changed",
+      "variant": "payee_changed",
+      "expected_verdicts": [
+        "payee_mismatch"
+      ],
+      "render_sha256": "bfa72e0045e1fd4d408d169fad0c4b62fe205eb87e7fc8291efef84e1ad25fe6",
+      "single_order": {
+        "verdict": "payee_mismatch",
+        "verdict_probabilities": {
+          "consistent": 2.852256365398128e-08,
+          "payee_mismatch": 0.9999997137428895,
+          "amount_mismatch": 7.134174750283232e-08,
+          "date_mismatch": 1.5417556346143022e-08,
+          "unsigned": 1.383299252875375e-07,
+          "cannot_tell": 3.264531755533101e-08
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 2.852256365398128e-08,
+            "payee_mismatch": 0.9999997137428895,
+            "amount_mismatch": 7.134174750283232e-08,
+            "date_mismatch": 1.5417556346143022e-08,
+            "unsigned": 1.383299252875375e-07,
+            "cannot_tell": 3.264531755533101e-08
+          },
+          "argmax": "payee_mismatch"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 3.4915662528685154e-08,
+            "payee_mismatch": 0.9999954884710291,
+            "amount_mismatch": 4.494784433664251e-08,
+            "date_mismatch": 4.225653982304686e-06,
+            "unsigned": 1.8471477042364976e-07,
+            "cannot_tell": 2.129671112073097e-08
+          },
+          "argmax": "payee_mismatch"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 3.788823266893133e-08,
+            "payee_mismatch": 0.9999985974788181,
+            "amount_mismatch": 5.02754832925829e-08,
+            "date_mismatch": 5.440559685940743e-07,
+            "unsigned": 4.097935501959068e-07,
+            "cannot_tell": 3.6050794702144635e-07
+          },
+          "argmax": "payee_mismatch"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 1.943052138081026e-07,
+            "payee_mismatch": 0.9999865615396386,
+            "amount_mismatch": 9.872579745334677e-06,
+            "date_mismatch": 8.53302837384292e-08,
+            "unsigned": 1.9726939431437922e-06,
+            "cannot_tell": 1.3135511753238106e-06
+          },
+          "argmax": "payee_mismatch"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.3268540238145826e-08,
+            "payee_mismatch": 0.999997814385018,
+            "amount_mismatch": 1.1883089149100495e-07,
+            "date_mismatch": 3.9342285939384886e-07,
+            "unsigned": 1.6153781515823132e-06,
+            "cannot_tell": 4.4714539421838543e-08
+          },
+          "argmax": "payee_mismatch"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.7570318706597731e-07,
+            "payee_mismatch": 0.9999986762218984,
+            "amount_mismatch": 4.883372510759061e-07,
+            "date_mismatch": 3.8486525921745856e-08,
+            "unsigned": 3.3874394535213324e-07,
+            "cannot_tell": 2.8250719218889765e-07
+          },
+          "argmax": "payee_mismatch"
+        }
+      ],
+      "position_probabilities": [
+        [
+          2.852256365398128e-08,
+          0.9999997137428895,
+          7.134174750283232e-08,
+          1.5417556346143022e-08,
+          1.383299252875375e-07,
+          3.264531755533101e-08
+        ],
+        [
+          0.9999954884710291,
+          4.225653982304686e-06,
+          3.4915662528685154e-08,
+          2.129671112073097e-08,
+          4.494784433664251e-08,
+          1.8471477042364976e-07
+        ],
+        [
+          5.440559685940743e-07,
+          3.6050794702144635e-07,
+          0.9999985974788181,
+          4.097935501959068e-07,
+          3.788823266893133e-08,
+          5.02754832925829e-08
+        ],
+        [
+          1.3135511753238106e-06,
+          1.9726939431437922e-06,
+          8.53302837384292e-08,
+          9.872579745334677e-06,
+          0.9999865615396386,
+          1.943052138081026e-07
+        ],
+        [
+          1.6153781515823132e-06,
+          1.1883089149100495e-07,
+          4.4714539421838543e-08,
+          1.3268540238145826e-08,
+          3.9342285939384886e-07,
+          0.999997814385018
+        ],
+        [
+          4.883372510759061e-07,
+          1.7570318706597731e-07,
+          3.3874394535213324e-07,
+          0.9999986762218984,
+          2.8250719218889765e-07,
+          3.8486525921745856e-08
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 8.076723332730392e-08,
+        "payee_mismatch": 0.9999961419732153,
+        "amount_mismatch": 1.7743854938389411e-06,
+        "date_mismatch": 8.83727862716488e-07,
+        "unsigned": 7.766090476642222e-07,
+        "cannot_tell": 3.4253714710534255e-07
+      },
+      "mean_verdict": "payee_mismatch",
+      "mean_correct": true,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r02:written_amount_changed",
+      "variant": "written_amount_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "render_sha256": "7bb52a035fd8ee924fb414bc775ba882452cda74f2b69d8300952162576f627e",
+      "single_order": {
+        "verdict": "amount_mismatch",
+        "verdict_probabilities": {
+          "consistent": 2.830092693979159e-06,
+          "payee_mismatch": 4.517933672909878e-07,
+          "amount_mismatch": 0.9999949533262361,
+          "date_mismatch": 1.1816408325441826e-06,
+          "unsigned": 3.284829822744033e-07,
+          "cannot_tell": 2.5466388784173327e-07
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 2.830092693979159e-06,
+            "payee_mismatch": 4.517933672909878e-07,
+            "amount_mismatch": 0.9999949533262361,
+            "date_mismatch": 1.1816408325441826e-06,
+            "unsigned": 3.284829822744033e-07,
+            "cannot_tell": 2.5466388784173327e-07
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 1.0719355164657482e-07,
+            "payee_mismatch": 2.433189377523211e-06,
+            "amount_mismatch": 0.9999964539074271,
+            "date_mismatch": 5.120760482092465e-07,
+            "unsigned": 3.8470276092161897e-07,
+            "cannot_tell": 1.0893083460399489e-07
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 2.7934914787553137e-07,
+            "payee_mismatch": 4.653555111781512e-08,
+            "amount_mismatch": 0.9999959598255844,
+            "date_mismatch": 3.5010861026575818e-06,
+            "unsigned": 2.4361117585480466e-08,
+            "cannot_tell": 1.8884249637307642e-07
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 4.9393261423627784e-08,
+            "payee_mismatch": 8.214196924843663e-07,
+            "amount_mismatch": 0.9999933332038276,
+            "date_mismatch": 7.555468265549763e-07,
+            "unsigned": 1.5258637838484107e-06,
+            "cannot_tell": 3.514572608101591e-06
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.3838432320648195e-08,
+            "payee_mismatch": 2.5610650404953337e-08,
+            "amount_mismatch": 0.9999995789833714,
+            "date_mismatch": 4.8676175108415676e-08,
+            "unsigned": 1.3899254081061996e-07,
+            "cannot_tell": 1.9389883000605094e-07
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 2.63691822011406e-06,
+            "payee_mismatch": 1.967022471969009e-08,
+            "amount_mismatch": 0.9999971271945619,
+            "date_mismatch": 9.251294917429482e-08,
+            "unsigned": 7.481402817563957e-08,
+            "cannot_tell": 4.889001603889851e-08
+          },
+          "argmax": "amount_mismatch"
+        }
+      ],
+      "position_probabilities": [
+        [
+          2.830092693979159e-06,
+          4.517933672909878e-07,
+          0.9999949533262361,
+          1.1816408325441826e-06,
+          3.284829822744033e-07,
+          2.5466388784173327e-07
+        ],
+        [
+          2.433189377523211e-06,
+          5.120760482092465e-07,
+          1.0719355164657482e-07,
+          1.0893083460399489e-07,
+          0.9999964539074271,
+          3.8470276092161897e-07
+        ],
+        [
+          3.5010861026575818e-06,
+          1.8884249637307642e-07,
+          4.653555111781512e-08,
+          2.4361117585480466e-08,
+          2.7934914787553137e-07,
+          0.9999959598255844
+        ],
+        [
+          3.514572608101591e-06,
+          1.5258637838484107e-06,
+          7.555468265549763e-07,
+          0.9999933332038276,
+          8.214196924843663e-07,
+          4.9393261423627784e-08
+        ],
+        [
+          1.3899254081061996e-07,
+          0.9999995789833714,
+          1.9389883000605094e-07,
+          1.3838432320648195e-08,
+          4.8676175108415676e-08,
+          2.5610650404953337e-08
+        ],
+        [
+          0.9999971271945619,
+          2.63691822011406e-06,
+          7.481402817563957e-08,
+          1.967022471969009e-08,
+          4.889001603889851e-08,
+          9.251294917429482e-08
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 9.861308845599334e-07,
+        "payee_mismatch": 6.330364772568373e-07,
+        "amount_mismatch": 0.9999962344068347,
+        "date_mismatch": 1.0152564890414496e-06,
+        "unsigned": 4.128695356026955e-07,
+        "cannot_tell": 7.182997788275574e-07
+      },
+      "mean_verdict": "amount_mismatch",
+      "mean_correct": true,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r02:both_amounts_changed",
+      "variant": "both_amounts_changed",
+      "expected_verdicts": [
+        "amount_mismatch"
+      ],
+      "render_sha256": "e888bed6e815d4f3a4a8ad16ee724b1658d1a01f5668fc46f0269a8ac4c1874d",
+      "single_order": {
+        "verdict": "amount_mismatch",
+        "verdict_probabilities": {
+          "consistent": 5.207882606702844e-07,
+          "payee_mismatch": 8.895305400183627e-08,
+          "amount_mismatch": 0.9999991154514315,
+          "date_mismatch": 1.8737598552833145e-07,
+          "unsigned": 5.4143468223280883e-08,
+          "cannot_tell": 3.328779994349496e-08
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 5.207882606702844e-07,
+            "payee_mismatch": 8.895305400183627e-08,
+            "amount_mismatch": 0.9999991154514315,
+            "date_mismatch": 1.8737598552833145e-07,
+            "unsigned": 5.4143468223280883e-08,
+            "cannot_tell": 3.328779994349496e-08
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 7.049598798248204e-08,
+            "payee_mismatch": 1.1900022882600163e-06,
+            "amount_mismatch": 0.9999980051542402,
+            "date_mismatch": 2.2477175972366246e-07,
+            "unsigned": 2.1888774861568515e-07,
+            "cannot_tell": 2.906879750645638e-07
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.8605661979714507e-07,
+            "payee_mismatch": 3.1223897533670156e-08,
+            "amount_mismatch": 0.9999987902290894,
+            "date_mismatch": 9.072956648095902e-07,
+            "unsigned": 1.7726213399500996e-08,
+            "cannot_tell": 6.746851490061375e-08
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 3.730222075947854e-08,
+            "payee_mismatch": 4.0552720608117216e-07,
+            "amount_mismatch": 0.9999965274866558,
+            "date_mismatch": 5.461817459769932e-07,
+            "unsigned": 1.2107314083137667e-06,
+            "cannot_tell": 1.272770763019045e-06
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.2012645456850513e-08,
+            "payee_mismatch": 6.601463320619441e-08,
+            "amount_mismatch": 0.9999996531322619,
+            "date_mismatch": 1.2908124829694772e-07,
+            "unsigned": 8.678866775545239e-08,
+            "cannot_tell": 5.2970543474291316e-08
+          },
+          "argmax": "amount_mismatch"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.2054891116536936e-06,
+            "payee_mismatch": 7.696694879006379e-08,
+            "amount_mismatch": 0.9999984211947395,
+            "date_mismatch": 1.6275049663301043e-07,
+            "unsigned": 6.216197693917826e-08,
+            "cannot_tell": 7.143672644715452e-08
+          },
+          "argmax": "amount_mismatch"
+        }
+      ],
+      "position_probabilities": [
+        [
+          5.207882606702844e-07,
+          8.895305400183627e-08,
+          0.9999991154514315,
+          1.8737598552833145e-07,
+          5.4143468223280883e-08,
+          3.328779994349496e-08
+        ],
+        [
+          1.1900022882600163e-06,
+          2.2477175972366246e-07,
+          7.049598798248204e-08,
+          2.906879750645638e-07,
+          0.9999980051542402,
+          2.1888774861568515e-07
+        ],
+        [
+          9.072956648095902e-07,
+          6.746851490061375e-08,
+          3.1223897533670156e-08,
+          1.7726213399500996e-08,
+          1.8605661979714507e-07,
+          0.9999987902290894
+        ],
+        [
+          1.272770763019045e-06,
+          1.2107314083137667e-06,
+          5.461817459769932e-07,
+          0.9999965274866558,
+          4.0552720608117216e-07,
+          3.730222075947854e-08
+        ],
+        [
+          8.678866775545239e-08,
+          0.9999996531322619,
+          5.2970543474291316e-08,
+          1.2012645456850513e-08,
+          1.2908124829694772e-07,
+          6.601463320619441e-08
+        ],
+        [
+          0.9999984211947395,
+          1.2054891116536936e-06,
+          6.216197693917826e-08,
+          7.696694879006379e-08,
+          7.143672644715452e-08,
+          1.6275049663301043e-07
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 3.3869080771998906e-07,
+        "payee_mismatch": 3.0978133797882555e-07,
+        "amount_mismatch": 0.9999984187747364,
+        "date_mismatch": 3.595761501614226e-07,
+        "unsigned": 2.7507324720781076e-07,
+        "cannot_tell": 2.9810372047486054e-07
+      },
+      "mean_verdict": "amount_mismatch",
+      "mean_correct": true,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r02:wrong_date",
+      "variant": "wrong_date",
+      "expected_verdicts": [
+        "date_mismatch"
+      ],
+      "render_sha256": "5da75051f2984654a1beae558095bf86e4a0f9b664cbaaf13244df7fc1a32bb9",
+      "single_order": {
+        "verdict": "date_mismatch",
+        "verdict_probabilities": {
+          "consistent": 4.725547775927581e-07,
+          "payee_mismatch": 6.971486132999489e-08,
+          "amount_mismatch": 4.4418287871848893e-07,
+          "date_mismatch": 0.9999984234196446,
+          "unsigned": 5.372670906830071e-07,
+          "cannot_tell": 5.286074704640021e-08
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 4.725547775927581e-07,
+            "payee_mismatch": 6.971486132999489e-08,
+            "amount_mismatch": 4.4418287871848893e-07,
+            "date_mismatch": 0.9999984234196446,
+            "unsigned": 5.372670906830071e-07,
+            "cannot_tell": 5.286074704640021e-08
+          },
+          "argmax": "date_mismatch"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 5.2588602844079304e-08,
+            "payee_mismatch": 4.4132098642349056e-08,
+            "amount_mismatch": 7.506922405015168e-08,
+            "date_mismatch": 0.9999997802602362,
+            "unsigned": 4.140745565451927e-08,
+            "cannot_tell": 6.542382673280247e-09
+          },
+          "argmax": "date_mismatch"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 2.4604911783011576e-08,
+            "payee_mismatch": 6.359124075040086e-08,
+            "amount_mismatch": 7.72903331669453e-08,
+            "date_mismatch": 0.999998980181956,
+            "unsigned": 6.895907813631834e-08,
+            "cannot_tell": 7.853724801325308e-07
+          },
+          "argmax": "date_mismatch"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 3.270195030012463e-08,
+            "payee_mismatch": 5.285027262636598e-08,
+            "amount_mismatch": 1.4281289401586646e-06,
+            "date_mismatch": 0.9999958070001058,
+            "unsigned": 8.763844379518376e-07,
+            "cannot_tell": 1.8029342930677454e-06
+          },
+          "argmax": "date_mismatch"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 5.218837900433958e-07,
+            "payee_mismatch": 1.2067844443766085e-07,
+            "amount_mismatch": 1.9844569838511414e-07,
+            "date_mismatch": 0.9999961341031546,
+            "unsigned": 2.945946644940405e-06,
+            "cannot_tell": 7.894226771359901e-08
+          },
+          "argmax": "date_mismatch"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 5.991262323665149e-08,
+            "payee_mismatch": 2.0240585516811666e-08,
+            "amount_mismatch": 4.060648754522179e-07,
+            "date_mismatch": 0.99999915351514,
+            "unsigned": 1.875451424496321e-07,
+            "cannot_tell": 1.7272163339095684e-07
+          },
+          "argmax": "date_mismatch"
+        }
+      ],
+      "position_probabilities": [
+        [
+          4.725547775927581e-07,
+          6.971486132999489e-08,
+          4.4418287871848893e-07,
+          0.9999984234196446,
+          5.372670906830071e-07,
+          5.286074704640021e-08
+        ],
+        [
+          4.4132098642349056e-08,
+          0.9999997802602362,
+          5.2588602844079304e-08,
+          6.542382673280247e-09,
+          7.506922405015168e-08,
+          4.140745565451927e-08
+        ],
+        [
+          0.999998980181956,
+          7.853724801325308e-07,
+          6.359124075040086e-08,
+          6.895907813631834e-08,
+          2.4604911783011576e-08,
+          7.72903331669453e-08
+        ],
+        [
+          1.8029342930677454e-06,
+          8.763844379518376e-07,
+          0.9999958070001058,
+          1.4281289401586646e-06,
+          5.285027262636598e-08,
+          3.270195030012463e-08
+        ],
+        [
+          2.945946644940405e-06,
+          1.9844569838511414e-07,
+          7.894226771359901e-08,
+          5.218837900433958e-07,
+          0.9999961341031546,
+          1.2067844443766085e-07
+        ],
+        [
+          4.060648754522179e-07,
+          5.991262323665149e-08,
+          1.875451424496321e-07,
+          2.0240585516811666e-08,
+          1.7272163339095684e-07,
+          0.99999915351514
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 1.940411093000035e-07,
+        "payee_mismatch": 6.186791721726388e-08,
+        "amount_mismatch": 4.3819699165526377e-07,
+        "date_mismatch": 0.9999980464133729,
+        "unsigned": 7.762516416359532e-07,
+        "cannot_tell": 4.832289673374188e-07
+      },
+      "mean_verdict": "date_mismatch",
+      "mean_correct": true,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r02:unsigned",
+      "variant": "unsigned",
+      "expected_verdicts": [
+        "unsigned"
+      ],
+      "render_sha256": "dc90ca33d2dac8e3d96a182f2c82a453e1f0cde508cdf4cec45c0b1178583006",
+      "single_order": {
+        "verdict": "unsigned",
+        "verdict_probabilities": {
+          "consistent": 1.4800115934014803e-06,
+          "payee_mismatch": 1.499252920333999e-07,
+          "amount_mismatch": 3.298963577575972e-08,
+          "date_mismatch": 5.837183895382307e-07,
+          "unsigned": 0.9999976896255397,
+          "cannot_tell": 6.372954945783868e-08
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 1.4800115934014803e-06,
+            "payee_mismatch": 1.499252920333999e-07,
+            "amount_mismatch": 3.298963577575972e-08,
+            "date_mismatch": 5.837183895382307e-07,
+            "unsigned": 0.9999976896255397,
+            "cannot_tell": 6.372954945783868e-08
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 2.2067297827614127e-07,
+            "payee_mismatch": 5.513660875547669e-07,
+            "amount_mismatch": 1.7053782290757535e-07,
+            "date_mismatch": 9.719686338850789e-08,
+            "unsigned": 0.999998936987907,
+            "cannot_tell": 2.323834079970474e-08
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 1.2457091352669931e-07,
+            "payee_mismatch": 1.085998489277897e-07,
+            "amount_mismatch": 1.6397626014599353e-08,
+            "date_mismatch": 4.458533799363052e-07,
+            "unsigned": 0.9999991091434246,
+            "cannot_tell": 1.9543480692529118e-07
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 3.158040334144532e-09,
+            "payee_mismatch": 1.804615503861967e-08,
+            "amount_mismatch": 7.681642343863784e-09,
+            "date_mismatch": 1.8545166568805443e-07,
+            "unsigned": 0.9999997679213489,
+            "cannot_tell": 1.774114769491077e-08
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 4.5876106801951275e-09,
+            "payee_mismatch": 2.491949924782537e-08,
+            "amount_mismatch": 5.743068067379173e-07,
+            "date_mismatch": 1.2613084995556651e-08,
+            "unsigned": 0.9999993738482363,
+            "cannot_tell": 9.724761940893031e-09
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 2.7444604423089236e-07,
+            "payee_mismatch": 3.0557628249194273e-07,
+            "amount_mismatch": 3.553045660005265e-07,
+            "date_mismatch": 6.17633467431717e-08,
+            "unsigned": 0.9999989803119035,
+            "cannot_tell": 2.2597856952079772e-08
+          },
+          "argmax": "unsigned"
+        }
+      ],
+      "position_probabilities": [
+        [
+          1.4800115934014803e-06,
+          1.499252920333999e-07,
+          3.298963577575972e-08,
+          5.837183895382307e-07,
+          0.9999976896255397,
+          6.372954945783868e-08
+        ],
+        [
+          5.513660875547669e-07,
+          9.719686338850789e-08,
+          2.2067297827614127e-07,
+          2.323834079970474e-08,
+          1.7053782290757535e-07,
+          0.999998936987907
+        ],
+        [
+          4.458533799363052e-07,
+          1.9543480692529118e-07,
+          1.085998489277897e-07,
+          0.9999991091434246,
+          1.2457091352669931e-07,
+          1.6397626014599353e-08
+        ],
+        [
+          1.774114769491077e-08,
+          0.9999997679213489,
+          1.8545166568805443e-07,
+          7.681642343863784e-09,
+          1.804615503861967e-08,
+          3.158040334144532e-09
+        ],
+        [
+          0.9999993738482363,
+          5.743068067379173e-07,
+          9.724761940893031e-09,
+          4.5876106801951275e-09,
+          1.2613084995556651e-08,
+          2.491949924782537e-08
+        ],
+        [
+          3.553045660005265e-07,
+          2.7444604423089236e-07,
+          0.9999989803119035,
+          3.0557628249194273e-07,
+          2.2597856952079772e-08,
+          6.17633467431717e-08
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 3.512411967415922e-07,
+        "payee_mismatch": 1.9307219421572406e-07,
+        "amount_mismatch": 1.9286968329670698e-07,
+        "date_mismatch": 2.3109945504830442e-07,
+        "unsigned": 0.9999989763063933,
+        "cannot_tell": 5.54110772951197e-08
+      },
+      "mean_verdict": "unsigned",
+      "mean_correct": true,
+      "argmax_stable": true
+    },
+    {
+      "case_id": "r02:low_legibility",
+      "variant": "low_legibility",
+      "expected_verdicts": [
+        "cannot_tell",
+        "consistent"
+      ],
+      "render_sha256": "43d8226027a72962ba1f2f19930a867a2df5e9fff0982cbb1835946b32318751",
+      "single_order": {
+        "verdict": "unsigned",
+        "verdict_probabilities": {
+          "consistent": 0.0019691956329483716,
+          "payee_mismatch": 1.8024957625232222e-06,
+          "amount_mismatch": 0.00012959028911831518,
+          "date_mismatch": 5.3419582460328964e-06,
+          "unsigned": 0.9978938295921471,
+          "cannot_tell": 2.4003177770316355e-07
+        }
+      },
+      "orderings": [
+        {
+          "order": [
+            "consistent",
+            "payee_mismatch",
+            "amount_mismatch",
+            "date_mismatch",
+            "unsigned",
+            "cannot_tell"
+          ],
+          "probabilities": {
+            "consistent": 0.0019691956329483716,
+            "payee_mismatch": 1.8024957625232222e-06,
+            "amount_mismatch": 0.00012959028911831518,
+            "date_mismatch": 5.3419582460328964e-06,
+            "unsigned": 0.9978938295921471,
+            "cannot_tell": 2.4003177770316355e-07
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "payee_mismatch",
+            "date_mismatch",
+            "consistent",
+            "cannot_tell",
+            "amount_mismatch",
+            "unsigned"
+          ],
+          "probabilities": {
+            "consistent": 0.010722737939465857,
+            "payee_mismatch": 2.6336280095304098e-05,
+            "amount_mismatch": 0.000781941837274674,
+            "date_mismatch": 1.1735767276041575e-06,
+            "unsigned": 0.9884669054853504,
+            "cannot_tell": 9.048810860477524e-07
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "date_mismatch",
+            "cannot_tell",
+            "payee_mismatch",
+            "unsigned",
+            "consistent",
+            "amount_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 0.007107550328758622,
+            "payee_mismatch": 2.5366747541378744e-06,
+            "amount_mismatch": 7.236703707923642e-05,
+            "date_mismatch": 0.00015731192658583864,
+            "unsigned": 0.9926593899163867,
+            "cannot_tell": 8.441164354025788e-07
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "cannot_tell",
+            "unsigned",
+            "date_mismatch",
+            "amount_mismatch",
+            "payee_mismatch",
+            "consistent"
+          ],
+          "probabilities": {
+            "consistent": 0.0007269748679170183,
+            "payee_mismatch": 3.1185173111828624e-05,
+            "amount_mismatch": 0.06951259973578965,
+            "date_mismatch": 0.0005703066305036733,
+            "unsigned": 0.9291391059101672,
+            "cannot_tell": 1.9827682510496912e-05
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "unsigned",
+            "amount_mismatch",
+            "cannot_tell",
+            "consistent",
+            "date_mismatch",
+            "payee_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 0.0010335701581139062,
+            "payee_mismatch": 1.3257051940944697e-07,
+            "amount_mismatch": 0.03406082346533903,
+            "date_mismatch": 1.209547595989888e-06,
+            "unsigned": 0.9649010260938358,
+            "cannot_tell": 3.2381645957771533e-06
+          },
+          "argmax": "unsigned"
+        },
+        {
+          "order": [
+            "amount_mismatch",
+            "consistent",
+            "unsigned",
+            "payee_mismatch",
+            "cannot_tell",
+            "date_mismatch"
+          ],
+          "probabilities": {
+            "consistent": 0.00013904316899032433,
+            "payee_mismatch": 3.6865950317653865e-06,
+            "amount_mismatch": 5.9243836068743095e-05,
+            "date_mismatch": 3.970687004098083e-08,
+            "unsigned": 0.9997979372165875,
+            "cannot_tell": 4.947645164738802e-08
+          },
+          "argmax": "unsigned"
+        }
+      ],
+      "position_probabilities": [
+        [
+          0.0019691956329483716,
+          1.8024957625232222e-06,
+          0.00012959028911831518,
+          5.3419582460328964e-06,
+          0.9978938295921471,
+          2.4003177770316355e-07
+        ],
+        [
+          2.6336280095304098e-05,
+          1.1735767276041575e-06,
+          0.010722737939465857,
+          9.048810860477524e-07,
+          0.000781941837274674,
+          0.9884669054853504
+        ],
+        [
+          0.00015731192658583864,
+          8.441164354025788e-07,
+          2.5366747541378744e-06,
+          0.9926593899163867,
+          0.007107550328758622,
+          7.236703707923642e-05
+        ],
+        [
+          1.9827682510496912e-05,
+          0.9291391059101672,
+          0.0005703066305036733,
+          0.06951259973578965,
+          3.1185173111828624e-05,
+          0.0007269748679170183
+        ],
+        [
+          0.9649010260938358,
+          0.03406082346533903,
+          3.2381645957771533e-06,
+          0.0010335701581139062,
+          1.209547595989888e-06,
+          1.3257051940944697e-07
+        ],
+        [
+          5.9243836068743095e-05,
+          0.00013904316899032433,
+          0.9997979372165875,
+          3.6865950317653865e-06,
+          4.947645164738802e-08,
+          3.970687004098083e-08
+        ]
+      ],
+      "mean_probabilities": {
+        "consistent": 0.0036165120160323496,
+        "payee_mismatch": 1.094663154582811e-05,
+        "amount_mismatch": 0.017436094366778274,
+        "date_mismatch": 0.00012256389108819665,
+        "unsigned": 0.9788096990357458,
+        "cannot_tell": 4.184058809512492e-06
+      },
+      "mean_verdict": "unsigned",
+      "mean_correct": false,
+      "argmax_stable": true
+    }
+  ]
+}
