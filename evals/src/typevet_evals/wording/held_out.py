@@ -9,9 +9,9 @@ scored pairs into the metrics of both wordings, the paired bootstrap intervals (
 only), the pre-registered verdict, the #133 re-measurement and each call's
 latency and input tokens with their totals (#327).
 The receipt pins both wordings by digest in ``wording_digests`` (#362).
-It records the evolved selection and both full part mappings (#363); a run
-that evolved a criteria part passes its ``WordingParts`` so the evolved arm
-sends the evolved criteria.
+It records the evolved selection and both full part mappings (#363).
+``score_held_out`` takes the run's ``WordingParts``, so the evolved arm
+sends each evolved part, criteria included (#372).
 
 ``stratified_subset`` picks the fixed validation rows the evolution selects
 on, and ``evolution_artifact`` records what one evolution run produced.
@@ -33,7 +33,7 @@ Examples:
         port,
         seed_noul,
         "is_scam",
-        evolved_text=evolved,
+        evolved=WordingParts.instructions_only(seed_noul, evolved),
         rows=HeldOutRows(splits.held_out, splits.prior_measured_ids),
         judge_model=model,
         failures=(ProviderError,),
@@ -71,7 +71,6 @@ from typevet_evals.wording.metrics import (
     wording_metrics,
 )
 from typevet_evals.wording.parts import (
-    INSTRUCTIONS,
     SeedNoul,
     WordingParts,
     noul_from_parts,
@@ -208,12 +207,12 @@ class HeldOutRun:
             ``test`` for ``HeldOutRows``, ``validation`` for
             ``ValidationRows`` (#339).
         parts (WordingParts | None): The parts the caller scored (#363),
-            keyword only; None for an ``instructions``-only text. A receipt
-            records them.
+            keyword only; ``score_held_out`` always sets them. A receipt
+            records them; None records the ``instructions`` part only.
 
     Examples:
         ```python
-        run = score_held_out(port, seed, "is_scam", evolved_text=text, ...)
+        run = score_held_out(port, seed, "is_scam", evolved=parts, ...)
         # records, judge_model and failures are required too
         assert run.stopped is None
         ```
@@ -323,9 +322,9 @@ class ValidationRows:
 def score_held_out(
     port: JudgePort,
     seed: SeedNoul,
-    key: str,
+    question_name: str,
     *,
-    evolved_text: str | WordingParts,
+    evolved: WordingParts,
     rows: HeldOutRows | ValidationRows,
     judge_model: str,
     failures: tuple[type[Exception], ...],
@@ -335,10 +334,11 @@ def score_held_out(
     Args:
         port: The judgevet ``SystemOnePort``.
         seed: The seed ``Noul``; its parts make the seed question.
-        key: The question name.
-        evolved_text: The evolved ``instructions`` text, so both arms send the
-            seed criteria; or the run's ``WordingParts`` (#363), so the
-            evolved arm sends every evolved part.
+        question_name: The question name sent to the port.
+        evolved: The run's ``WordingParts`` (#363); the evolved arm sends
+            every evolved part. ``WordingParts.instructions_only`` gives the
+            parts of an evolved ``instructions`` text, so both arms send the
+            seed criteria.
         rows: The checked held-out records, or checked validation records
             for a smoke run.
         judge_model: The model name sent to the port.
@@ -348,22 +348,17 @@ def score_held_out(
     Returns:
         The pairs both wordings answered before any failure, the call counts
         of each wording, counted as each call starts, the first failure, the
-        ``split`` of the row type and the given ``WordingParts``, if any.
+        ``split`` of the row type and the given ``WordingParts``.
 
     Raises:
         ValueError: Before any call, when the given parts do not hold the
             seed's parts.
     """
-    seed_parts = seed_mapping(seed)
-    given = evolved_text if isinstance(evolved_text, WordingParts) else None
-    parts = given or WordingParts(
-        (INSTRUCTIONS,), seed_parts, seed_parts | {INSTRUCTIONS: str(evolved_text)}
-    )
-    if dict(parts.seed) != seed_parts:
+    if dict(evolved.seed) != seed_mapping(seed):
         raise ValueError("the parts do not hold the seed's parts")
     arms = (
-        ("seed", noul_from_parts(seed, parts.seed)),
-        ("evolved", noul_from_parts(seed, parts.evolved)),
+        ("seed", noul_from_parts(seed, evolved.seed)),
+        ("evolved", noul_from_parts(seed, evolved.evolved)),
     )
     pairs: list[ScoredPair] = []
     calls = {"seed": 0, "evolved": 0}
@@ -373,7 +368,7 @@ def score_held_out(
             calls[arm] += 1
             try:
                 response = port.system_one(
-                    record.example.text, {key: noul}, judge_model
+                    record.example.text, {question_name: noul}, judge_model
                 )
             except failures as exc:
                 stopped = f"{type(exc).__name__}: {exc}"
@@ -383,9 +378,9 @@ def score_held_out(
                     calls["evolved"],
                     stopped,
                     split=rows.split,
-                    parts=given,
+                    parts=evolved,
                 )
-            answers.append(float(response.nouls[key].noul))
+            answers.append(float(response.nouls[question_name].noul))
         label = int(record.example.label == POSITIVE_LABEL)
         pairs.append(ScoredPair(record.record_id, label, answers[0], answers[1]))
     return HeldOutRun(
@@ -394,7 +389,7 @@ def score_held_out(
         calls["evolved"],
         None,
         split=rows.split,
-        parts=given,
+        parts=evolved,
     )
 
 

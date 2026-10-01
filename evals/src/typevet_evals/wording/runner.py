@@ -37,7 +37,7 @@ Examples:
     run = await evolve_wording(
         port=port,
         seed=seed_noul,
-        key="is_scam",
+        question_name="is_scam",
         train=splits.train,
         validation=splits.validation,
         config=WordingRunConfig(reflector="<reflector-model>", judge_model="<judge>"),
@@ -399,7 +399,7 @@ class WordingRun:
 
     Examples:
         ```python
-        run = await evolve_wording(port=port, seed=seed, key="is_scam", ...)
+        run = await evolve_wording(port=port, seed=seed, question_name="is_scam", ...)
         mapping.update(run.evolved_parts)
         ```
     """
@@ -491,7 +491,7 @@ async def evolve_wording(
     *,
     port: JudgePort,
     seed: SeedNoul,
-    key: str,
+    question_name: str,
     train: Iterable[DIFrauDRecord],
     validation: Iterable[DIFrauDRecord],
     config: WordingRunConfig,
@@ -502,7 +502,7 @@ async def evolve_wording(
     Args:
         port: The judgevet ``SystemOnePort`` the transport calls.
         seed: The seed judgevet ``Noul``; ``seed_mapping(seed)`` gives its parts.
-        key: The question name sent to the port.
+        question_name: The question name sent to the port.
         train: Records gepa-adk reflects on; each ``split`` is ``train``.
         validation: Records gepa-adk scores and accepts candidates on; each
             ``split`` is ``validation``.
@@ -526,7 +526,11 @@ async def evolve_wording(
     registry = ComponentHandlerRegistry()
     register_mapping_components(mapping, registry=registry)
     transport = WordingTransport(
-        port=port, mapping=mapping, key=key, seed=seed, judge_model=config.judge_model
+        port=port,
+        mapping=mapping,
+        question_name=question_name,
+        seed=seed,
+        judge_model=config.judge_model,
     )
     agent = LlmAgent(name="wording", model=transport, instruction=AGENT_INSTRUCTION)
     result = await evolve(

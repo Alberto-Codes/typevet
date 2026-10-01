@@ -90,9 +90,11 @@ frozen, so it has the same text in both mappings. In `evolved_parts`, each
 selected part is the gepa-adk `evolved_components` text, unchanged.
 `seed_text` and `evolved_text` stay for the #252 comparison.
 
-A held-out or comparison receipt takes the parts from `run.parts`. A caller
-sets them when it passes a `WordingParts` as `evolved_text` to
-`score_held_out`. Without parts, the receipt records `instructions` only.
+A held-out or comparison receipt takes the parts from `run.parts`.
+`score_held_out` sets them from the `WordingParts` that it takes as
+`evolved`. `WordingParts.instructions_only` gives the parts of an evolved
+`instructions` text over the full seed mapping, with or without criteria.
+A run without parts records `instructions` only.
 `components` is then `["instructions"]`. The receipt refuses parts whose
 `instructions` texts differ from `seed_text` or `evolved_text`.
 

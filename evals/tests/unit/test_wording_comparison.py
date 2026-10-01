@@ -139,7 +139,7 @@ def _scored(rows: HeldOutRows | ValidationRows) -> HeldOutRun:
         _Port(),
         Noul(instructions=SEED_TEXT),
         "is_scam",
-        evolved_text="other",
+        evolved=WordingParts.instructions_only(Noul(instructions=SEED_TEXT), "evolved"),
         rows=rows,
         judge_model="m",
         failures=(RuntimeError,),

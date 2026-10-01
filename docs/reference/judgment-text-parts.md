@@ -99,12 +99,12 @@ A response from another adapter has an empty `text_parts`.
 
 ## Receipt evidence
 
-- The held-out wording receipt stores its wording keys at `evals/src/typevet_evals/wording/held_out.py:459`.
-- The comparison wording receipt stores the same keys at `evals/src/typevet_evals/wording/comparison.py:226`.
+- The held-out wording receipt stores its wording keys at `evals/src/typevet_evals/wording/held_out.py:454`.
+- The comparison wording receipt stores the same keys at `evals/src/typevet_evals/wording/comparison.py:277`.
 - `wording_fields` at `evals/src/typevet_evals/wording/digests.py:138` builds those keys. [Wording parts block](eval-receipt-blocks.md#wording-parts-block) lists them.
 - `prompt_digest` at `evals/src/typevet_evals/experiment_identity.py:227` hashes `instructions`, `criteria` and the label order.
 - `RuntimeBuild` records `served_template` at `experiment_identity.py:147`. Its `template_identity` defaults to `unknown`.
-- `WordingTransport` builds each question from every part of the mapping at `evals/src/typevet_evals/wording/transport.py:191`.
+- `WordingTransport` builds each question from every part of the mapping at `evals/src/typevet_evals/wording/transport.py:199`.
 - [Judgment live receipts](judgment-live-receipts.md) pin the commit, the model and the template family.
 
 ## Component names

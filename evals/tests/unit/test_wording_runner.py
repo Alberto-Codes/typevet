@@ -147,7 +147,9 @@ def _config(tmp_path: Path, *proposals: str, **kw: Any) -> WordingRunConfig:
 def _run(port: WordingPort, config: WordingRunConfig, **kw: Any) -> runner.WordingRun:
     """Run the runner over the fixture splits."""
     args: dict[str, Any] = {"train": TRAIN, "validation": VALIDATION, "seed": SEED}
-    return asyncio.run(evolve_wording(port=port, key=KEY, config=config, **args | kw))
+    return asyncio.run(
+        evolve_wording(port=port, question_name=KEY, config=config, **args | kw)
+    )
 
 
 def _engine(config: WordingRunConfig) -> Any:
@@ -335,7 +337,7 @@ def test_the_runner_cannot_reach_the_split_loaders(
     assert params == {
         "port",
         "seed",
-        "key",
+        "question_name",
         "train",
         "validation",
         "config",
@@ -667,6 +669,31 @@ def test_a_frozen_part_that_changed_fails_the_parts_check() -> None:
         WordingParts(ONLY_INSTRUCTIONS, seed, changed)
     assert "SENTINEL-TEXT" not in str(caught.value)
     assert WordingParts(("criteria_true",), seed, changed).evolved == changed
+
+
+def test_the_parts_copy_the_mappings_they_receive() -> None:
+    seed = seed_mapping(FULL_SEED)
+    evolved = seed | {"instructions": "Does it ask for money?"}
+    parts = WordingParts(ONLY_INSTRUCTIONS, seed, evolved)
+
+    seed["criteria_true"] = "changed later"
+    evolved["instructions"] = "changed later"
+
+    assert parts.seed["criteria_true"] == "It is a scam"
+    assert parts.evolved["instructions"] == "Does it ask for money?"
+    assert parts.seed is not seed
+    assert parts.evolved is not evolved
+
+
+@pytest.mark.parametrize("noul", [SEED, FULL_SEED], ids=["plain", "criteria"])
+def test_instructions_only_puts_the_evolved_text_on_the_seed_parts(noul: Any) -> None:
+    parts = WordingParts.instructions_only(noul, "Does it ask for money?")
+
+    assert parts.components == ONLY_INSTRUCTIONS
+    assert dict(parts.seed) == seed_mapping(noul)
+    assert dict(parts.evolved) == seed_mapping(noul) | {
+        "instructions": "Does it ask for money?"
+    }
 
 
 @dataclass

@@ -213,8 +213,10 @@ def noul_from_parts(seed: SeedNoul, parts: Mapping[str, str]) -> SeedNoul:
 class WordingParts:
     """The evolved selection and the seed and evolved mappings of one run.
 
-    Construction checks the selection and the evolved mapping against the
-    seed, and fails when a frozen part (one not in ``components``) changed.
+    Construction copies both mappings, so a later change to a caller's
+    mapping does not change the parts. It checks the selection and the
+    evolved mapping against the seed, and fails when a frozen part (one not
+    in ``components``) changed.
 
     Attributes:
         components (tuple[str, ...]): The part names the run evolved.
@@ -233,7 +235,7 @@ class WordingParts:
     evolved: Mapping[str, str]
 
     def __post_init__(self) -> None:
-        """Check the selection, the part names and the frozen parts.
+        """Copy both mappings, then check the selection, names and frozen parts.
 
         Raises:
             ValueError: If the selection or a mapping is not valid, or a
@@ -241,6 +243,8 @@ class WordingParts:
             TypeError: If a part is not text.
         """
         object.__setattr__(self, "components", tuple(self.components))
+        object.__setattr__(self, "seed", dict(self.seed))
+        object.__setattr__(self, "evolved", dict(self.evolved))
         check_parts(self.seed, self.seed)
         check_selection(self.components, self.seed)
         check_parts(self.evolved, self.seed)
@@ -263,6 +267,22 @@ class WordingParts:
         return cls(
             (INSTRUCTIONS,), {INSTRUCTIONS: seed_text}, {INSTRUCTIONS: evolved_text}
         )
+
+    @classmethod
+    def instructions_only(cls, seed: SeedNoul, evolved_text: str) -> Self:
+        """Return the parts of an ``instructions``-only run of any seed.
+
+        Args:
+            seed: The seed ``Noul``, with or without criteria.
+            evolved_text: The evolved instructions.
+
+        Returns:
+            Parts that select ``instructions`` and hold the seed's full
+            mapping, with ``evolved_text`` as the evolved instructions.
+        """
+        seed_parts = seed_mapping(seed)
+        evolved = seed_parts | {INSTRUCTIONS: evolved_text}
+        return cls((INSTRUCTIONS,), seed_parts, evolved)
 
     @property
     def seed_text(self) -> str:
@@ -330,7 +350,7 @@ def artifact_parts(
 
     An artifact written before #363 has no ``evolved_parts``. Its evolved
     ``instructions`` text then goes onto the seed's parts, so both arms send
-    the seed's criteria, as ``score_held_out`` does for a text.
+    the seed's criteria, as ``WordingParts.instructions_only`` gives.
 
     Args:
         artifact: The evolution artifact.

@@ -136,7 +136,7 @@ def _run(port: RecordingPort, tmp_path: Path) -> WordingRun:
         evolve_wording(
             port=port,
             seed=SEED,
-            key=KEY,
+            question_name=KEY,
             train=TRAIN,
             validation=VALIDATION,
             config=config,

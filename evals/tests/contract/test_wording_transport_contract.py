@@ -121,7 +121,7 @@ def _parts(instructions: str) -> dict[str, str]:
 def _transport(port: RecordingPort, mapping: dict[str, str]) -> WordingTransport:
     """Build the transport over the shared fixture."""
     return WordingTransport(
-        port=port, mapping=mapping, key=KEY, seed=SEED, judge_model=MODEL
+        port=port, mapping=mapping, question_name=KEY, seed=SEED, judge_model=MODEL
     )
 
 

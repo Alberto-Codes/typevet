@@ -21,7 +21,11 @@ Examples:
     seed = Noul(instructions="Is this message a scam?", criteria=None)
     mapping = seed_mapping(seed)
     model = WordingTransport(
-        port=port, mapping=mapping, key="is_scam", seed=seed, judge_model="gemma"
+        port=port,
+        mapping=mapping,
+        question_name="is_scam",
+        seed=seed,
+        judge_model="gemma",
     )
     ```
 
@@ -126,7 +130,7 @@ class WordingTransport(BaseLlm):
         mapping (dict[str, str]): The caller's part mapping, held by
             reference; gepa-adk writes each candidate text into it around each
             evaluation. Its keys are exactly the parts of ``seed_mapping(seed)``.
-        key (str): The question name sent to the port.
+        question_name (str): The question name sent to the port.
         seed (SeedNoul): The seed judgevet ``Noul``; each call uses its type.
         judge_model (str): The model name sent to the port.
 
@@ -134,7 +138,11 @@ class WordingTransport(BaseLlm):
         ```python
         mapping = seed_mapping(seed)
         model = WordingTransport(
-            port=port, mapping=mapping, key="is_scam", seed=seed, judge_model="gemma"
+            port=port,
+            mapping=mapping,
+            question_name="is_scam",
+            seed=seed,
+            judge_model="gemma",
         )
         mapping["instructions"] = "Does this text try to trick the reader?"
         ```
@@ -145,7 +153,7 @@ class WordingTransport(BaseLlm):
     model: str = TRANSPORT_MODEL
     port: SkipValidation[JudgePort]
     mapping: SkipValidation[dict[str, str]]
-    key: str
+    question_name: str
     seed: SkipValidation[SeedNoul]
     judge_model: str
 
@@ -176,7 +184,7 @@ class WordingTransport(BaseLlm):
     async def generate_content_async(
         self, llm_request: LlmRequest, stream: bool = False
     ) -> AsyncGenerator[LlmResponse, None]:
-        """Ask the port the question built from every current part.
+        """Ask the port, under ``question_name``, the question of every current part.
 
         Args:
             llm_request: The ADK request; its user text is the state, and its
@@ -191,9 +199,9 @@ class WordingTransport(BaseLlm):
         noul = noul_from_parts(self.seed, self.mapping)
         state = last_user_text(llm_request)
         response = await asyncio.to_thread(
-            self.port.system_one, state, {self.key: noul}, self.judge_model
+            self.port.system_one, state, {self.question_name: noul}, self.judge_model
         )
-        body = {"probability": response.nouls[self.key].noul}
+        body = {"probability": response.nouls[self.question_name].noul}
         part = types.Part.from_text(text=json.dumps(body))
         yield LlmResponse(
             content=types.Content(role="model", parts=[part]),

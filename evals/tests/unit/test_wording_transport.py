@@ -102,7 +102,11 @@ def test_no_counts_give_no_usage_metadata(usage: Usage | None) -> None:
 def _transport(mapping: dict[str, str], seed: Any = FULL_SEED) -> WordingTransport:
     """Return a transport over the recording port."""
     return WordingTransport(
-        port=RecordingPort(), mapping=mapping, key=KEY, seed=seed, judge_model="m"
+        port=RecordingPort(),
+        mapping=mapping,
+        question_name=KEY,
+        seed=seed,
+        judge_model="m",
     )
 
 
@@ -230,7 +234,7 @@ def test_a_construction_error_does_not_echo_the_input() -> None:
     # pydantic shortens a long input in its message; this input is short.
     with pytest.raises(ValueError, match="'b'") as caught:
         WordingTransport(
-            mapping={"b": "LEAK"}, port=0, key=KEY, seed=seed, judge_model="m"
+            mapping={"b": "LEAK"}, port=0, question_name=KEY, seed=seed, judge_model="m"
         )
     assert "LEAK" not in str(caught.value)
 
@@ -241,3 +245,19 @@ def test_the_mapping_is_held_by_reference() -> None:
 
     assert transport.mapping is mapping
     assert transport.capabilities.output_schema_and_tools is False
+
+
+def test_the_transport_asks_under_the_question_name() -> None:
+    port = RecordingPort()
+    transport = WordingTransport(
+        port=port,
+        mapping=seed_mapping(SEED),
+        question_name=KEY,
+        seed=SEED,
+        judge_model="m",
+    )
+
+    asyncio.run(_turn(transport))
+
+    assert transport.question_name == KEY
+    assert list(port.calls[0][1]) == [KEY]

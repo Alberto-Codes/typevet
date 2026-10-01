@@ -65,7 +65,11 @@ Examples:
 
     mapping = seed_mapping(seed)
     model = WordingTransport(
-        port=port, mapping=mapping, key="is_scam", seed=seed, judge_model="gemma"
+        port=port,
+        mapping=mapping,
+        question_name="is_scam",
+        seed=seed,
+        judge_model="gemma",
     )
     ```
 

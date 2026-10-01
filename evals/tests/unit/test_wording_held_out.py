@@ -51,6 +51,7 @@ SEED_TEXT = "Is this message a scam?"
 EVOLVED_TEXT = "Does it ask for money?"
 CRITERIA = {"true": "It is a scam", "false": "It is legitimate"}
 SEED = Noul(instructions=SEED_TEXT, criteria=CRITERIA)
+TEXT_PARTS = WordingParts.instructions_only(SEED, EVOLVED_TEXT)
 
 
 def _record(text: str, scam: bool, split: str = "test") -> DIFrauDRecord:
@@ -145,7 +146,7 @@ def test_score_held_out_asks_both_wordings_per_row() -> None:
         port,
         SEED,
         KEY,
-        evolved_text=EVOLVED_TEXT,
+        evolved=TEXT_PARTS,
         rows=HeldOutRows(HELD_OUT, frozenset()),
         judge_model="judge",
         failures=(RuntimeError,),
@@ -173,7 +174,7 @@ def test_score_held_out_refuses_a_non_held_out_row_before_any_call() -> None:
             port,
             SEED,
             KEY,
-            evolved_text=EVOLVED_TEXT,
+            evolved=TEXT_PARTS,
             rows=HeldOutRows((*HELD_OUT, _record("Hi", False, "train")), frozenset()),
             judge_model="judge",
             failures=(RuntimeError,),
@@ -188,7 +189,7 @@ def test_score_held_out_stops_at_the_first_failure() -> None:
         port,
         SEED,
         KEY,
-        evolved_text=EVOLVED_TEXT,
+        evolved=TEXT_PARTS,
         rows=HeldOutRows(HELD_OUT, frozenset()),
         judge_model="judge",
         failures=(RuntimeError,),
@@ -204,7 +205,7 @@ def _run() -> Any:
         AnsweringPort(),
         SEED,
         KEY,
-        evolved_text=EVOLVED_TEXT,
+        evolved=TEXT_PARTS,
         rows=HeldOutRows(HELD_OUT, frozenset()),
         judge_model="judge",
         failures=(RuntimeError,),
@@ -282,7 +283,7 @@ def test_receipt_of_a_stopped_run_has_no_verdict() -> None:
         AnsweringPort(fail_at=1),
         SEED,
         KEY,
-        evolved_text=EVOLVED_TEXT,
+        evolved=TEXT_PARTS,
         rows=HeldOutRows(HELD_OUT, frozenset()),
         judge_model="judge",
         failures=(RuntimeError,),
@@ -319,8 +320,18 @@ def _digests(text: str) -> dict[str, Any]:
 
 
 def test_receipt_pins_the_seed_and_evolved_wording_by_digest() -> None:
+    plain = Noul(instructions=SEED_TEXT)
+    run = score_held_out(
+        AnsweringPort(),
+        plain,
+        KEY,
+        evolved=WordingParts.instructions_only(plain, EVOLVED_TEXT),
+        rows=HeldOutRows(HELD_OUT, frozenset()),
+        judge_model="judge",
+        failures=(RuntimeError,),
+    )
     receipt = held_out_receipt(
-        _run(),
+        run,
         seed_text=SEED_TEXT,
         evolved_text=EVOLVED_TEXT,
         backend="vllm",
@@ -412,7 +423,7 @@ def test_score_held_out_lets_an_unexpected_error_propagate() -> None:
             AnsweringPort(fail_at=1),
             SEED,
             KEY,
-            evolved_text=EVOLVED_TEXT,
+            evolved=TEXT_PARTS,
             rows=HeldOutRows(HELD_OUT, frozenset()),
             judge_model="judge",
             failures=(OSError,),
@@ -449,7 +460,7 @@ def test_calls_are_counted_per_arm_as_they_happen(
         AnsweringPort(fail_at=fail_at),
         SEED,
         KEY,
-        evolved_text=EVOLVED_TEXT,
+        evolved=TEXT_PARTS,
         rows=HeldOutRows(HELD_OUT, frozenset()),
         judge_model="judge",
         failures=(RuntimeError,),
@@ -481,7 +492,7 @@ def test_score_held_out_refuses_a_prior_measured_row_before_any_call() -> None:
             port,
             SEED,
             KEY,
-            evolved_text=EVOLVED_TEXT,
+            evolved=TEXT_PARTS,
             rows=HeldOutRows(HELD_OUT, frozenset({HELD_OUT[2].record_id})),
             judge_model="judge",
             failures=(RuntimeError,),
@@ -494,7 +505,7 @@ def test_the_309_receipt_refuses_a_validation_run() -> None:
         AnsweringPort(),
         SEED,
         KEY,
-        evolved_text=EVOLVED_TEXT,
+        evolved=TEXT_PARTS,
         rows=ValidationRows((_record("Win cash now", True, "validation"),)),
         judge_model="judge",
         failures=(RuntimeError,),
@@ -525,7 +536,7 @@ def _multi_run() -> Any:
         AnsweringPort(),
         SEED,
         KEY,
-        evolved_text=MULTI,
+        evolved=MULTI,
         rows=HeldOutRows(HELD_OUT, frozenset()),
         judge_model="judge",
         failures=(RuntimeError,),
@@ -557,7 +568,7 @@ def test_receipt_records_the_selection_and_both_full_mappings() -> None:
 
 def test_receipt_without_parts_records_the_instructions_only() -> None:
     receipt = held_out_receipt(
-        _run(),
+        replace(_run(), parts=None),
         seed_text=SEED_TEXT,
         evolved_text=EVOLVED_TEXT,
         backend="vllm",
@@ -592,7 +603,7 @@ def test_score_held_out_sends_the_evolved_criteria_with_the_evolved_arm() -> Non
         port,
         SEED,
         KEY,
-        evolved_text=MULTI,
+        evolved=MULTI,
         rows=HeldOutRows(HELD_OUT[:1], frozenset()),
         judge_model="judge",
         failures=(RuntimeError,),
@@ -613,10 +624,43 @@ def test_score_held_out_refuses_parts_of_another_seed() -> None:
             port,
             other,
             KEY,
-            evolved_text=MULTI,
+            evolved=MULTI,
             rows=HeldOutRows(HELD_OUT[:1], frozenset()),
             judge_model="judge",
             failures=(RuntimeError,),
         )
     assert "Another seed" not in str(caught.value)
     assert port.calls == []
+
+
+def test_score_held_out_takes_the_parts_under_the_question_name() -> None:
+    port = AnsweringPort()
+
+    run = score_held_out(
+        port,
+        SEED,
+        question_name=KEY,
+        evolved=MULTI,
+        rows=HeldOutRows(HELD_OUT[:1], frozenset()),
+        judge_model="judge",
+        failures=(RuntimeError,),
+    )
+
+    assert run.parts is MULTI
+    assert [w for _, w, _, _ in port.calls] == [SEED_TEXT, EVOLVED_TEXT]
+
+
+def test_receipt_of_an_instructions_only_run_records_the_seed_criteria() -> None:
+    receipt = held_out_receipt(
+        _run(),
+        seed_text=SEED_TEXT,
+        evolved_text=EVOLVED_TEXT,
+        backend="vllm",
+        model="judge",
+        pins={},
+        identity={},
+    )
+
+    assert receipt["components"] == ["instructions"]
+    assert receipt["seed_parts"] == FULL_PARTS
+    assert receipt["evolved_parts"] == FULL_PARTS | {"instructions": EVOLVED_TEXT}

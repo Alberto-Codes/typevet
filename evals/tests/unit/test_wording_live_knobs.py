@@ -310,7 +310,7 @@ def test_the_held_out_run_sends_each_arm_its_own_criteria() -> None:
         port,
         seed,
         KEY,
-        evolved_text=parts,
+        evolved=parts,
         rows=HeldOutRows(HELD_OUT, frozenset()),
         judge_model="fake-judge",
         failures=(),
