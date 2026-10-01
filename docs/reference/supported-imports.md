@@ -95,6 +95,8 @@ compiler types, judgment types, and scoring types, import from
 | `apply_off_option_threshold`, `check_off_option_threshold` | Flag an execute result whose off-option mass is above a caller threshold; reject an invalid threshold |
 | `bind_control_candidates`, `judgment_original_labels` | Control-token binding for native questions |
 | `normalize_noul`, `normalize_choice`, `normalize_score`, `normalize_question` | Native question → ``Decision`` |
+| `TextParts`, `DEFAULT_OPTION_BLOCK`, `DEFAULT_CONTEXT_TEMPLATE` | Caller option block and context templates and their defaults; `TextParts.receipt()` pins both by digest (see [judgment text parts](judgment-text-parts.md)) |
+| `validate_option_block`, `validate_context_template` | Refuse a bad template; each message names the part and the rule, never the template text |
 | `question_record_to_property`, `question_records_to_json_schema`, `compile_question_records` | Question records → JSON Schema or ``Decision`` values; defined in `typevet.domain.question_schema` (see [question-schema-map.md](question-schema-map.md)) |
 
 ## `typevet.ports`

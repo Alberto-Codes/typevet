@@ -3,6 +3,8 @@
 A native Choice lists controls as ``<i> → <label>`` (#207). Noul and Score
 keep the ``Control <i> → <label>`` form. A native Choice also keeps the
 ``Control`` word when a label collides with the active controls (#237, #287).
+A caller ``option_block`` template sets the words around the control lines
+(#364); ``typevet.domain.text_parts`` holds its rules.
 
 Examples:
     ```python
@@ -15,6 +17,7 @@ Examples:
 
 See Also:
     - [typevet.runtime.scoring_prefix][]: ChatML prefix composition
+    - [typevet.domain.text_parts][]: Option block template rules
 """
 
 from __future__ import annotations
@@ -23,24 +26,18 @@ from collections.abc import Mapping, Sequence
 
 from typevet.domain.decisions import Decision
 from typevet.domain.judgment_normalize import control_binding_pairs
-
-_GOLD_REFERENCE_MARKERS: frozenset[str] = frozenset(
-    {
-        "gold answer",
-        "reference answer",
-        "correct answer",
-        "expected answer",
-    }
+from typevet.domain.text_parts import (
+    DEFAULT_OPTION_BLOCK,
+    gold_reference_markers,
+    split_option_block,
+    validate_option_block,
 )
 
-
-def gold_reference_markers() -> frozenset[str]:
-    """Return lowercase substrings that must not appear in rendered field blocks.
-
-    Returns:
-        Forbidden reference-answer marker phrases for regression tests.
-    """
-    return _GOLD_REFERENCE_MARKERS
+__all__ = [
+    "choice_criteria_from_schema",
+    "gold_reference_markers",
+    "render_field_instructions",
+]
 
 
 def _choice_label(value: object) -> str:
@@ -81,11 +78,40 @@ def _answer_instruction(pairs: Sequence[tuple[str, str]]) -> str:
     )
 
 
+def _render_option_block(
+    template: str,
+    decision: Decision,
+    pairs: Sequence[tuple[str, str]],
+    criteria: Mapping[str, str],
+) -> str:
+    head, line, tail = split_option_block(template)
+    prefix = _control_prefix(decision, pairs)
+    values = {
+        "name": decision.name,
+        "question": decision.question,
+        "answer_rule": _answer_instruction(pairs),
+    }
+    lines = [] if head is None else [head.format(**values)]
+    for control, label in pairs:
+        description = criteria.get(label) or criteria.get(label.lower())
+        lines.append(
+            line.format(
+                control=f"{prefix}{control}",
+                label=label,
+                description=f": {description}" if description else "",
+            )
+        )
+    if tail is not None:
+        lines.append(tail.format(**values))
+    return "\n".join(lines)
+
+
 def render_field_instructions(
     decision: Decision,
     *,
     choice_criteria: Mapping[str, str] | None = None,
     original_labels: Sequence[str] | None = None,
+    option_block: str | None = None,
 ) -> str:
     """Render model-facing instructions for one categorical ``Decision``.
 
@@ -96,23 +122,25 @@ def render_field_instructions(
             ``bind_control_candidates``. A native Choice writes
             ``<i> → <label>`` unless a label collides with the active
             controls. Noul and Score write ``Control <i> → <label>``.
+        option_block: Option block template used with ``original_labels``,
+            or ``None`` for ``DEFAULT_OPTION_BLOCK`` (#364).
 
     Returns:
         Plain-text field block without user context or template wrappers.
+
+    Raises:
+        JudgmentValidationError: ``option_block`` breaks an option block
+            rule; the message never holds the template text.
     """
-    lines: list[str] = [f"{decision.name}: {decision.question}", "", "Options:"]
     criteria = choice_criteria or {}
     if original_labels is not None:
+        if option_block is None:
+            option_block = DEFAULT_OPTION_BLOCK
+        else:
+            validate_option_block(option_block)
         pairs = control_binding_pairs(original_labels)
-        prefix = _control_prefix(decision, pairs)
-        for control, label in pairs:
-            description = criteria.get(label) or criteria.get(label.lower())
-            if description:
-                lines.append(f"{prefix}{control} → {label}: {description}")
-            else:
-                lines.append(f"{prefix}{control} → {label}")
-        lines.extend(["", _answer_instruction(pairs)])
-        return "\n".join(lines)
+        return _render_option_block(option_block, decision, pairs, criteria)
+    lines: list[str] = [f"{decision.name}: {decision.question}", "", "Options:"]
     for choice in decision.choices:
         if choice is None:
             continue

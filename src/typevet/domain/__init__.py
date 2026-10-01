@@ -76,6 +76,12 @@ Attributes:
         JSON Schema property.
     question_records_to_json_schema (callable): Question records to an
         object schema.
+    TextParts (type): Validated option block and context templates; its
+        ``receipt()`` pins both by digest.
+    DEFAULT_OPTION_BLOCK (str): Option block template used when unset.
+    DEFAULT_CONTEXT_TEMPLATE (str): Context template used when unset.
+    validate_option_block (callable): Refuse a bad option block template.
+    validate_context_template (callable): Refuse a bad context template.
 """
 
 from typevet.domain.calibration import (
@@ -167,10 +173,19 @@ from typevet.domain.question_schema import (
     question_records_to_json_schema,
 )
 from typevet.domain.scoring_stage import ScoreStage
+from typevet.domain.text_parts import (
+    DEFAULT_CONTEXT_TEMPLATE,
+    DEFAULT_OPTION_BLOCK,
+    TextParts,
+    validate_context_template,
+    validate_option_block,
+)
 
 __all__ = [
     "CALIBRATION_CLIP",
     "CALIBRATION_MAP_SCHEMA",
+    "DEFAULT_CONTEXT_TEMPLATE",
+    "DEFAULT_OPTION_BLOCK",
     "MAX_ENUM_CHOICES",
     "MAX_PERMUTATIONS",
     "MEDIA_MARKER",
@@ -215,6 +230,7 @@ __all__ = [
     "ScoringTermination",
     "ScoringUnsupportedCapabilityError",
     "ScoringValidationError",
+    "TextParts",
     "TokenUsage",
     "TransportError",
     "apply_off_option_threshold",
@@ -235,4 +251,6 @@ __all__ = [
     "question_record_to_property",
     "question_records_to_json_schema",
     "question_types",
+    "validate_context_template",
+    "validate_option_block",
 ]

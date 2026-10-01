@@ -3,7 +3,9 @@
 Text-only scoring uses degraded ChatML. Media scoring uses the served native
 turn family: Gemma 3 ``<start_of_turn>`` or Gemma 4 ``<|turn>`` with
 no-thinking prefill after the model header. A caller framing whose last turn
-is a Gemma 4 model turn must end with that prefill (#354).
+is a Gemma 4 model turn must end with that prefill (#354). A caller
+``context_template`` places the context and the field block in the user
+text; the turn markers and the prefill stay the same (#364).
 
 Examples:
     ```python
@@ -14,11 +16,12 @@ See Also:
     - [typevet.domain.field_instructions][]: Model-agnostic field blocks
     - [typevet.runtime.scoring_prefix][]: Runtime re-export
     - [typevet.adapters.outbound.gemma.served_template][]: Family classifier
+    - [typevet.domain.text_parts][]: Context template rules
 """
 
 from __future__ import annotations
 
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 from typevet.adapters.outbound.gemma.served_template import (
     CHATML_ASSISTANT_HEADER,
@@ -33,7 +36,11 @@ from typevet.adapters.outbound.gemma.served_template import (
     GEMMA4_TURN_OPEN,
     ServedTemplateClass,
 )
-from typevet.domain.errors import GemmaTemplateError
+from typevet.domain.errors import GemmaTemplateError, JudgmentValidationError
+from typevet.domain.text_parts import render_context
+
+if TYPE_CHECKING:
+    from typevet.domain.media import ImageInput
 
 _NATIVE_TURN_WRAPPERS: Final[dict[ServedTemplateClass, tuple[str, str, str]]] = {
     ServedTemplateClass.NATIVE_GEMMA3_TURN: (
@@ -94,20 +101,24 @@ def require_no_thinking_prefill(
     raise GemmaTemplateError(msg)
 
 
-def compose_scoring_prefix(*, context: str, field_block: str) -> str:
+def compose_scoring_prefix(
+    *, context: str, field_block: str, context_template: str | None = None
+) -> str:
     """Compose degraded ChatML text ending at the assistant answer boundary.
 
     Args:
         context: Caller-owned user or task text for the judgment.
         field_block: Rendered field instructions from ``render_field_instructions``.
+        context_template: Context template, or ``None`` for the default.
 
     Returns:
         Prefix string ending with ``CHATML_ASSISTANT_HEADER``.
+
+    Raises:
+        JudgmentValidationError: ``context_template`` breaks a rule.
     """
-    return (
-        f"{CHATML_IM_START}user\n{context}\n\n{field_block}{CHATML_IM_END}\n"
-        f"{CHATML_ASSISTANT_HEADER}"
-    )
+    user = render_context(context_template, context=context, field_block=field_block)
+    return f"{CHATML_IM_START}user\n{user}{CHATML_IM_END}\n{CHATML_ASSISTANT_HEADER}"
 
 
 def compose_media_scoring_prefix(
@@ -115,6 +126,7 @@ def compose_media_scoring_prefix(
     context: str,
     field_block: str,
     template_class: ServedTemplateClass,
+    context_template: str | None = None,
 ) -> str:
     """Compose a native-turn prefix for image-conditioned scoring.
 
@@ -125,6 +137,7 @@ def compose_media_scoring_prefix(
         context: User text, including one media marker per image.
         field_block: Rendered field instructions from ``render_field_instructions``.
         template_class: Classified served-template family of the scoring model.
+        context_template: Context template, or ``None`` for the default.
 
     Returns:
         Prefix string ending at the answer boundary for ``template_class``.
@@ -133,6 +146,7 @@ def compose_media_scoring_prefix(
 
     Raises:
         GemmaTemplateError: ``template_class`` is not a native turn family.
+        JudgmentValidationError: ``context_template`` breaks a rule.
     """
     wrappers = _NATIVE_TURN_WRAPPERS.get(template_class)
     if wrappers is None:
@@ -142,7 +156,58 @@ def compose_media_scoring_prefix(
         )
         raise GemmaTemplateError(msg)
     turn_open, turn_close, model_header = wrappers
-    prefix = f"{turn_open}user\n{context}\n\n{field_block}{turn_close}\n{model_header}"
+    user = render_context(context_template, context=context, field_block=field_block)
+    prefix = f"{turn_open}user\n{user}{turn_close}\n{model_header}"
     if template_class is ServedTemplateClass.NATIVE_GEMMA4_TURN:
         return f"{prefix}{GEMMA4_NO_THINKING_PREFILL}"
     return prefix
+
+
+def compose_served_prefix(
+    *,
+    context: str,
+    field_block: str,
+    media: tuple[ImageInput, ...],
+    served_template: ServedTemplateClass | None,
+    context_template: str | None = None,
+) -> str:
+    """Pick the served native turn family when set, else ChatML for text.
+
+    A native family — Gemma 3 or Gemma 4 turns — keeps one wrapper whether or
+    not ``media`` is empty, so image-present and image-omitted prefixes differ
+    only in media markers.
+
+    Args:
+        context: Rendered state context, media markers included.
+        field_block: Rendered field instructions.
+        media: Images the prefix marks.
+        served_template: Served-template family, or ``None`` when unknown.
+        context_template: Context template, or ``None`` for the default.
+
+    Returns:
+        Scoring prefix ending at the answer boundary.
+
+    Raises:
+        JudgmentValidationError: An unsupported served family, or media with
+            an unknown or ChatML family.
+    """
+    text_default = served_template in {None, ServedTemplateClass.DEGRADED_CHATML}
+    if text_default and not media:
+        return compose_scoring_prefix(
+            context=context, field_block=field_block, context_template=context_template
+        )
+    if served_template is None or served_template not in _NATIVE_TURN_WRAPPERS:
+        family = "unknown" if served_template is None else served_template.value
+        reason = (
+            "media scoring needs a native Gemma 3 or Gemma 4 served template"
+            if text_default
+            else "scoring does not support this served template"
+        )
+        msg = f"{reason} (served template={family})"
+        raise JudgmentValidationError(msg)
+    return compose_media_scoring_prefix(
+        context=context,
+        field_block=field_block,
+        template_class=served_template,
+        context_template=context_template,
+    )

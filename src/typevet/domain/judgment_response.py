@@ -3,6 +3,8 @@
 ``OffOptionReceipt`` records the off-option mass, the caller threshold and
 the guard flag for each answer (#353). ``JudgmentResponse.request_ids``
 records the request id that each question sent to a gateway (#356).
+``JudgmentResponse.text_parts`` pins the option block and context templates
+by digest (#364).
 
 Examples:
     ```python
@@ -133,6 +135,11 @@ class JudgmentResponse:
             scoring request for each question, keyed by question name
             (#356). When one question sends more than one request, the last
             one is kept. Empty when no request id was sent.
+        text_parts (dict[str, str]): The ``text_parts`` receipt block (#364):
+            ``option_block`` and ``context_template``, each the SHA-256 hex
+            digest of the UTF-8 template text or ``"default"`` when unset.
+            The scoring adapter sets it on every response. Empty when the
+            adapter does not render the prompt.
 
     Examples:
         ```python
@@ -152,6 +159,7 @@ class JudgmentResponse:
     off_option: dict[str, OffOptionReceipt] = field(default_factory=dict)
     calibration: dict[str, CalibrationRecord] = field(default_factory=dict)
     request_ids: dict[str, str | None] = field(default_factory=dict)
+    text_parts: dict[str, str] = field(default_factory=dict)
 
     @property
     def nouls(self) -> dict[str, NoulAnswer]:

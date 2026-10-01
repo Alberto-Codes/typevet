@@ -7,7 +7,10 @@ replaces that served-template choice for every prefix (#174). A framing prefix
 that ends in a Gemma 4 model turn without the no-thinking prefill is refused
 before scoring (#354). An optional ``off_option_threshold`` flags each answer
 whose off-option mass is above it and keeps one ``OffOptionReceipt`` per
-answer on the response (#353).
+answer on the response (#353). Optional ``option_block`` and
+``context_template`` templates change the words around the control lines and
+the context; the control mapping and the prefill stay the same, and
+``text_parts`` pins both (#364).
 
 Examples:
     ```python
@@ -25,20 +28,20 @@ See Also:
     - [typevet.domain.judgment_normalize][]: Normalize and control bind
     - [typevet.domain.media][]: Images the keyword-only ``media`` argument takes
     - [typevet.ports.framing][]: ModelFramingPort protocol
+    - [typevet.domain.text_parts][]: Option block and context template rules
 """
 
 from __future__ import annotations
 
 import json
 from collections.abc import Callable, Mapping, Sequence
-from typing import Any, Final, TypedDict, Unpack
+from typing import Any, TypedDict, Unpack
 
 from typevet.adapters.outbound.gemma import (
     ServedTemplateClass,
-    compose_media_scoring_prefix,
     require_no_thinking_prefill,
 )
-from typevet.adapters.outbound.gemma.scoring_prefix import compose_scoring_prefix
+from typevet.adapters.outbound.gemma.scoring_prefix import compose_served_prefix
 from typevet.domain.candidate_scoring_request import CandidateTokenSpec
 from typevet.domain.decision_execute import (
     CategoricalExecutionResult,
@@ -67,15 +70,9 @@ from typevet.domain.judgment_response import (
     TokenUsage,
 )
 from typevet.domain.media import MEDIA_MARKER, ImageInput, count_media_markers
+from typevet.domain.text_parts import TextParts
 from typevet.ports.framing import ModelFramingPort
 from typevet.ports.scoring import CandidateScoringPort
-
-_NATIVE_TURN_FAMILIES: Final[frozenset[ServedTemplateClass]] = frozenset(
-    {
-        ServedTemplateClass.NATIVE_GEMMA3_TURN,
-        ServedTemplateClass.NATIVE_GEMMA4_TURN,
-    }
-)
 
 
 def _execute_label(choice: object) -> str:
@@ -207,51 +204,6 @@ def _media_context(
     return "\n".join([MEDIA_MARKER] * len(media) + [context])
 
 
-def _compose_prefix(
-    *,
-    context: str,
-    field_block: str,
-    media: tuple[ImageInput, ...],
-    served_template: ServedTemplateClass | None,
-) -> str:
-    """Pick the served native turn family when set, else ChatML for text.
-
-    A native family — Gemma 3 or Gemma 4 turns — keeps one wrapper whether or
-    not ``media`` is empty, so image-present and image-omitted prefixes differ
-    only in media markers.
-
-    Args:
-        context: Rendered state context, media markers included.
-        field_block: Rendered field instructions.
-        media: Images the prefix marks.
-        served_template: Served-template family, or ``None`` when unknown.
-
-    Returns:
-        Scoring prefix ending at the answer boundary.
-
-    Raises:
-        JudgmentValidationError: An unsupported served family, or media with
-            an unknown or ChatML family.
-    """
-    text_default = served_template in {None, ServedTemplateClass.DEGRADED_CHATML}
-    if text_default and not media:
-        return compose_scoring_prefix(context=context, field_block=field_block)
-    if served_template is None or served_template not in _NATIVE_TURN_FAMILIES:
-        family = "unknown" if served_template is None else served_template.value
-        reason = (
-            "media scoring needs a native Gemma 3 or Gemma 4 served template"
-            if text_default
-            else "scoring does not support this served template"
-        )
-        msg = f"{reason} (served template={family})"
-        raise JudgmentValidationError(msg)
-    return compose_media_scoring_prefix(
-        context=context,
-        field_block=field_block,
-        template_class=served_template,
-    )
-
-
 class ScoringJudgmentAdapter:
     """JudgmentPort implementation using injected candidate scoring.
 
@@ -271,6 +223,7 @@ class ScoringJudgmentAdapter:
             before tokenization or scoring IO.
         _framing (ModelFramingPort | None): When set, composes every prefix in
             place of the served-template choice.
+        _text_parts (TextParts): Validated option block and context templates.
     """
 
     def __init__(
@@ -282,24 +235,60 @@ class ScoringJudgmentAdapter:
         served_template: ServedTemplateClass | None = None,
         pinned_model: str | None = None,
         framing: ModelFramingPort | None = None,
+        text_parts: TextParts | None = None,
     ) -> None:
-        """Wire scoring port, tokenizer, temperature, family, pin and framing.
+        """Wire scoring port, tokenizer, family, pin, framing and text parts.
 
-        ``framing`` and ``served_template`` are mutually exclusive: a framing
-        composes every prefix, so a served family would not be read.
+        ``framing`` is exclusive with ``served_template`` and with a set
+        ``text_parts.context_template``: a framing composes every prefix, so
+        neither would be read. ``text_parts.option_block`` works with every
+        path. ``TextParts`` validates both templates when it is built.
 
         Raises:
-            ValueError: Both ``framing`` and ``served_template`` are set.
+            ValueError: ``framing`` is set with ``served_template`` or with a
+                ``context_template``.
         """
-        if framing is not None and served_template is not None:
-            msg = "pass framing or served_template, not both"
-            raise ValueError(msg)
+        parts = text_parts or TextParts()
+        for name, value in (
+            ("served_template", served_template),
+            ("context_template", parts.context_template),
+        ):
+            if framing is not None and value is not None:
+                msg = f"pass framing or {name}, not both"
+                raise ValueError(msg)
+        self._text_parts = parts
         self._port = scoring_port
         self._tokenize = tokenize_content
         self._temperature = temperature
         self._served_template = served_template
         self._pinned_model = pinned_model
         self._framing = framing
+
+    @property
+    def text_parts(self) -> TextParts:
+        """Return the text parts; ``text_parts.receipt()`` pins them by digest.
+
+        Returns:
+            Validated option block and context templates.
+        """
+        return self._text_parts
+
+    def _field_block(self, decision: Decision, question: Question) -> str:
+        """Render one field block with the ``option_block`` text part.
+
+        Args:
+            decision: Normalized categorical field.
+            question: Native question supplying criteria and label order.
+
+        Returns:
+            Field instructions that map each control to its label.
+        """
+        return render_field_instructions(
+            decision,
+            choice_criteria=_field_criteria(question),
+            original_labels=judgment_original_labels(question),
+            option_block=self._text_parts.option_block,
+        )
 
     def _field_prefix(
         self, context: str, field_block: str, media: tuple[ImageInput, ...]
@@ -321,16 +310,17 @@ class ScoringJudgmentAdapter:
 
         Raises:
             JudgmentValidationError: Framing prefix media-marker count differs
-                from ``len(media)``, or a ``_compose_prefix`` rejection.
+                from ``len(media)``, or a ``compose_served_prefix`` rejection.
             GemmaTemplateError: Framing prefix is a Gemma 4 model turn without
                 the no-thinking prefill; the message names the framing class.
         """
         if self._framing is None:
-            return _compose_prefix(
+            return compose_served_prefix(
                 context=context,
                 field_block=field_block,
                 media=media,
                 served_template=self._served_template,
+                context_template=self._text_parts.context_template,
             )
         prefix = self._framing.compose_prefix(
             context=context, field_block=field_block, media=media
@@ -366,8 +356,9 @@ class ScoringJudgmentAdapter:
         empty. When ``media`` is non-empty, every prefix carries one
         ``MEDIA_MARKER`` per image and every scoring request carries the same
         image tuple. Without a native family, text-only prefixes use ChatML.
-        An injected framing composes every prefix instead. A set
-        ``off_option_threshold`` flags, and does not raise for, each answer
+        An injected framing composes every prefix instead. The
+        ``text_parts`` templates render the field block and the user text.
+        A set ``off_option_threshold`` flags, and does not raise for, each answer
         whose off-option mass is above it; a ``None`` mass never flags.
 
         Args:
@@ -407,13 +398,7 @@ class ScoringJudgmentAdapter:
                 raise JudgmentValidationError(msg)
             decision = normalize_question(raw, field_name=name)
             candidates = bind_candidates_for_execute(decision, raw, self._tokenize)
-            criteria = _field_criteria(raw)
-            originals = judgment_original_labels(raw)
-            field_block = render_field_instructions(
-                decision,
-                choice_criteria=criteria,
-                original_labels=originals,
-            )
+            field_block = self._field_block(decision, raw)
             prefix = self._field_prefix(context, field_block, images)
             prepared.append((name, raw, decision, candidates, prefix))
 
@@ -437,7 +422,11 @@ class ScoringJudgmentAdapter:
             result_model = executed.model
             usage = _merge_usage(usage, executed.usage)
         return JudgmentResponse(
-            model=result_model, usage=usage, answers=answers, off_option=receipts
+            model=result_model,
+            usage=usage,
+            answers=answers,
+            off_option=receipts,
+            text_parts=self._text_parts.receipt(),
         )
 
 

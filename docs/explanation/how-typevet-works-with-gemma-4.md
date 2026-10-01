@@ -66,7 +66,7 @@ The steps in the code:
    field block. A Choice line reads `0 → billing: Money`. A Noul or Score line
    reads `Control 0 → false`. The last line asks for exactly one control
    string.
-5. `_field_prefix` and `_compose_prefix` make one prefix that ends at the
+5. `_field_prefix` and `compose_served_prefix` make one prefix that ends at the
    answer. An injected framing, such as `ChatContentFraming` for vLLM, composes
    it. Otherwise `adapters/outbound/gemma/scoring_prefix.py` uses the served
    template family.
