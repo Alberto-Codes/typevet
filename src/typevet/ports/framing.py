@@ -6,8 +6,9 @@ and sends the composed prefix to any ``CandidateScoringPort``.
 
 A framing for a thinking model on llama.cpp must end the prefix with the
 no-thinking prefill. For Gemma 4 that prefill is ``GEMMA4_NO_THINKING_PREFILL``
-in ``typevet.adapters.outbound.gemma.served_template``. typevet does not check
-this requirement. Without the prefill, the #207 receipt put at least 0.99999 of
+in ``typevet.adapters.outbound.gemma.served_template``. The scoring adapter
+checks the rendered prefix before the scoring call and refuses a Gemma 4 model
+turn without it (#354). Without the prefill, the #207 receipt put at least 0.99999 of
 the mass off the menu, and the answers changed ([#235][i235]). On vLLM the
 scoring adapter sends ``chat_template_kwargs: {"enable_thinking": False}``, so
 a vLLM framing needs no prefill text.

@@ -2,7 +2,8 @@
 
 Text-only scoring uses degraded ChatML. Media scoring uses the served native
 turn family: Gemma 3 ``<start_of_turn>`` or Gemma 4 ``<|turn>`` with
-no-thinking prefill after the model header.
+no-thinking prefill after the model header. A caller framing whose last turn
+is a Gemma 4 model turn must end with that prefill (#354).
 
 Examples:
     ```python
@@ -46,6 +47,51 @@ _NATIVE_TURN_WRAPPERS: Final[dict[ServedTemplateClass, tuple[str, str, str]]] = 
         GEMMA4_MODEL_TURN_HEADER,
     ),
 }
+_TURN_OPENERS: Final[tuple[str, ...]] = (
+    CHATML_IM_START,
+    GEMMA3_START_OF_TURN,
+    GEMMA4_TURN_OPEN,
+)
+
+
+def require_no_thinking_prefill(
+    prefix: str, *, field_block: str, framing_class: str
+) -> None:
+    """Refuse a rendered Gemma 4 prefix that lacks the no-thinking prefill.
+
+    The check reads the rendered text, not the framing object. It reads only
+    the tail after the last copy of ``field_block``. typevet renders that
+    block; the state text before it is caller data, so the check never reads
+    it. The tail is on the Gemma 4 path when its last turn opener starts the
+    Gemma 4 model header. That family declares ``GEMMA4_NO_THINKING_PREFILL``;
+    the tail must end with it. Other families declare no prefill, so this
+    check allows them. A prefix that does not hold ``field_block`` has no
+    framing-owned tail, so the check allows it.
+
+    Args:
+        prefix: Rendered scoring prefix from one framing.
+        field_block: Field instructions typevet gave the framing.
+        framing_class: Framing class name; the error names it.
+
+    Raises:
+        GemmaTemplateError: The tail's last turn is a Gemma 4 model turn and
+            the prefix does not end with the no-thinking prefill. The message
+            holds no prompt text.
+    """
+    block_at = prefix.rfind(field_block)
+    if block_at < 0:
+        return
+    tail = prefix[block_at + len(field_block) :]
+    last_turn = max(tail.rfind(opener) for opener in _TURN_OPENERS)
+    if last_turn < 0 or not tail.startswith(GEMMA4_MODEL_TURN_HEADER, last_turn):
+        return
+    if tail.endswith(GEMMA4_NO_THINKING_PREFILL):
+        return
+    msg = (
+        f"framing {framing_class} renders a Gemma 4 model turn without the "
+        "no-thinking prefill"
+    )
+    raise GemmaTemplateError(msg)
 
 
 def compose_scoring_prefix(*, context: str, field_block: str) -> str:

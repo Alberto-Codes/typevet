@@ -18,6 +18,7 @@ from typevet.adapters.outbound.gemma.served_template import (
     CHATML_IM_START,
     GEMMA3_END_OF_TURN,
     GEMMA3_START_OF_TURN,
+    GEMMA4_NO_THINKING_PREFILL,
     GEMMA4_TURN_CLOSE,
     GEMMA4_TURN_OPEN,
     ServedTemplateClass,
@@ -74,15 +75,16 @@ class Gemma4Framing:
     def compose_prefix(
         self, *, context: str, field_block: str, media: tuple[ImageInput, ...]
     ) -> str:
-        """Return a Gemma 4 turn prefix ending at the model header.
+        """Return a Gemma 4 turn prefix ending with the no-thinking prefill.
 
         Returns:
-            Prefix wrapped in ``<|turn>`` / ``<turn|>`` markers.
+            Prefix wrapped in ``<|turn>`` / ``<turn|>`` markers (#354).
         """
         del media
         return (
             f"{GEMMA4_TURN_OPEN}user\n{context}\n\n{field_block}"
             f"{GEMMA4_TURN_CLOSE}\n{GEMMA4_TURN_OPEN}model\n"
+            f"{GEMMA4_NO_THINKING_PREFILL}"
         )
 
 

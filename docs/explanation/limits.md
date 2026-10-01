@@ -179,9 +179,16 @@ None of them has a promised fix date.
   `JudgmentResponse.off_option` keeps one receipt per answer with the mass, the threshold and the flag.
   A `None` mass never sets the flag, and the receipt records `off_option_mass: null`.
   So on vLLM the guard never flags.
-  On llama.cpp, a caller framing that omits the Gemma 4 no-thinking prefill gives a confident, wrong answer with no error.
-  The `ModelFramingPort` docstring states the requirement ([#235](https://github.com/Alberto-Codes/typevet/issues/235)), and typevet does not check it.
-  On vLLM the scoring adapter sends `enable_thinking: false`, so a vLLM framing needs no prefill.
+  The `ModelFramingPort` docstring states the Gemma 4 no-thinking prefill requirement ([#235](https://github.com/Alberto-Codes/typevet/issues/235)).
+  typevet checks the rendered framing prefix before the scoring call ([#354](https://github.com/Alberto-Codes/typevet/issues/354)).
+  The check reads only the text after the field instructions, so state text cannot trigger it.
+  When that text ends in a Gemma 4 model turn, the prefix must end with the prefill.
+  Otherwise `GemmaTemplateError` names the framing class and holds no prompt text.
+  A framing whose last turn is not a Gemma 4 model turn needs no prefill, so the check allows it.
+  The check runs on every backend, vLLM included.
+  On vLLM the scoring adapter sends `enable_thinking: false`.
+  Thus a vLLM framing that sends plain chat content needs no prefill.
+  A vLLM framing that renders its own Gemma 4 model turn still needs the prefill.
 
 ## Related pages
 

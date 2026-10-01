@@ -3,9 +3,11 @@
 A native served family wraps every prefix, with or without media; Gemma 3 and
 Gemma 4 turns both qualify (#171, #179). Without one, text-only prefixes use
 degraded ChatML and media fails closed (#157). An injected ``ModelFramingPort``
-replaces that served-template choice for every prefix (#174). An optional
-``off_option_threshold`` flags each answer whose off-option mass is above it
-and keeps one ``OffOptionReceipt`` per answer on the response (#353).
+replaces that served-template choice for every prefix (#174). A framing prefix
+that ends in a Gemma 4 model turn without the no-thinking prefill is refused
+before scoring (#354). An optional ``off_option_threshold`` flags each answer
+whose off-option mass is above it and keeps one ``OffOptionReceipt`` per
+answer on the response (#353).
 
 Examples:
     ```python
@@ -34,6 +36,7 @@ from typing import Any, Final, TypedDict, Unpack
 from typevet.adapters.outbound.gemma import (
     ServedTemplateClass,
     compose_media_scoring_prefix,
+    require_no_thinking_prefill,
 )
 from typevet.adapters.outbound.gemma.scoring_prefix import compose_scoring_prefix
 from typevet.domain.candidate_scoring_request import CandidateTokenSpec
@@ -304,8 +307,9 @@ class ScoringJudgmentAdapter:
         """Compose one field prefix with the framing, else the served family.
 
         With a framing, ``served_template`` is not read. The framing prefix
-        must keep one media marker per image; a mismatch fails closed here,
-        before any scoring IO.
+        must keep one media marker per image. A prefix whose last turn is a
+        Gemma 4 model turn must end with the no-thinking prefill (#354).
+        Either failure is raised here, before any scoring IO.
 
         Args:
             context: Rendered state context, media markers included.
@@ -318,6 +322,8 @@ class ScoringJudgmentAdapter:
         Raises:
             JudgmentValidationError: Framing prefix media-marker count differs
                 from ``len(media)``, or a ``_compose_prefix`` rejection.
+            GemmaTemplateError: Framing prefix is a Gemma 4 model turn without
+                the no-thinking prefill; the message names the framing class.
         """
         if self._framing is None:
             return _compose_prefix(
@@ -336,6 +342,11 @@ class ScoringJudgmentAdapter:
                 f"but {len(media)} image(s) were supplied"
             )
             raise JudgmentValidationError(msg)
+        require_no_thinking_prefill(
+            prefix,
+            field_block=field_block,
+            framing_class=type(self._framing).__qualname__,
+        )
         return prefix
 
     def judge(
@@ -376,6 +387,8 @@ class ScoringJudgmentAdapter:
                 question payload, unsupported served template, media without
                 a native Gemma 3 or Gemma 4 served template, or a framing prefix
                 with the wrong media-marker count, before any scoring IO.
+            GemmaTemplateError: A framing prefix ends in a Gemma 4 model turn
+                without the no-thinking prefill, before any scoring IO.
         """
         if not model.strip():
             raise JudgmentValidationError("model must be non-empty")

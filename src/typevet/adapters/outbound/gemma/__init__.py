@@ -20,6 +20,8 @@ Attributes:
     ThinkingDisposition (type): Thinking-channel disposition enum.
     classify_served_template (callable): Classify ``/apply-template`` output.
     compose_media_scoring_prefix (callable): Native-turn prefix for media scoring.
+    require_no_thinking_prefill (callable): Refuse a Gemma 4 prefix without
+        the no-thinking prefill.
     resolve_answer_anchor (callable): Locate pre-candidate answer boundary.
 """
 
@@ -34,6 +36,7 @@ from typevet.adapters.outbound.gemma.answer_binding import (
 from typevet.adapters.outbound.gemma.scoring_prefix import (
     compose_media_scoring_prefix,
     compose_scoring_prefix,
+    require_no_thinking_prefill,
 )
 from typevet.adapters.outbound.gemma.served_template import (
     CHATML_ASSISTANT_HEADER,
@@ -78,6 +81,7 @@ __all__ = [
     "compose_media_scoring_prefix",
     "compose_scoring_prefix",
     "label_embeds_control_fragment",
+    "require_no_thinking_prefill",
     "resolve_answer_anchor",
     "stop_markers_for",
     "termination_kind",

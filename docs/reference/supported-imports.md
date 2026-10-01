@@ -244,6 +244,7 @@ classification and answer-binding helpers. It imports no serving backend.
 | `bind_enum_label`, `bind_enum_labels` | Bind enum labels to exact token ids and `CandidateTokenSpec` rows |
 | `termination_kind` | Classify how an assistant completion ends |
 | `compose_scoring_prefix`, `compose_media_scoring_prefix` | Scoring prefix text: degraded ChatML, or native turns with media |
+| `require_no_thinking_prefill` | Refuse a rendered Gemma 4 prefix that does not end with the no-thinking prefill |
 
 ## `typevet.adapters.diagnostics`
 
