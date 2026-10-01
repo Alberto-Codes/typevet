@@ -1,26 +1,35 @@
-"""The named text parts of a Noul that a wording run may evolve (#363).
+"""The named text parts of a seed question that a wording run may evolve.
 
-A wording candidate is a mapping of part name to text. The part names are
-the identifiers ``instructions``, ``criteria_true`` and ``criteria_false``,
-because gepa-adk refuses a component name that is not an identifier.
-``seed_mapping`` builds the full mapping from a seed ``Noul``. A seed
-without ``criteria`` has the ``instructions`` part only. ``noul_from_parts``
-builds the question that a call sends. ``WordingParts`` holds the evolved
-selection and the seed and evolved mappings of one run. Its construction
-fails when a frozen part changed. ``artifact_parts`` reads them back from an
-evolution artifact.
+A wording candidate is a mapping of part name to text. Every name is an
+identifier, because gepa-adk refuses a component name that is not one. A
+``Noul`` has the ``instructions``, ``criteria_true`` and ``criteria_false``
+parts (#363). A ``Choice`` names each described option ``criteria_<label>``
+when every label is an identifier, else ``option_<i>`` in label order. A
+``Score`` names each described level ``level_<i>`` (#369). A ``None``
+description has no part.
+
+``question_mapping`` builds the full mapping of a ``Noul``, ``Choice`` or
+``Score`` seed, and ``part_table`` gives the label or level of each name.
+``part_roles`` gives the role of each part for the reflection prompt.
+``question_from_parts`` builds the question that a call sends.
+``seed_mapping`` is the mapping a wording run accepts: it refuses a
+``Choice`` or ``Score`` seed until a scorer for that answer exists.
+``WordingParts`` holds the evolved selection and the seed and evolved
+mappings of one run. Its construction fails when a frozen part changed.
+``artifact_parts`` reads them back from an evolution artifact.
 
 Every refusal names the part or the question type, never a text, so an
 error message cannot leak a wording into a log.
 
-This module does not import judgevet: the caller gives the seed ``Noul``.
+This module does not import judgevet: the caller gives the seed question.
 
 Attributes:
     INSTRUCTIONS (str): The part name of the question text.
     CRITERIA_TRUE (str): The part name of the ``true`` criterion.
     CRITERIA_FALSE (str): The part name of the ``false`` criterion.
-    PART_NAMES (tuple[str, ...]): Every part name, in render order.
-    PART_ROLES (Mapping[str, str]): The role of each part, for the reflector.
+    PART_NAMES (tuple[str, ...]): Every ``Noul`` part name, in render order.
+    PART_ROLES (Mapping[str, str]): The role of each ``Noul`` part, for the
+        reflector; ``part_roles`` gives the roles of any seed.
 
 Examples:
     ```python
@@ -29,6 +38,16 @@ Examples:
     seed = Noul(instructions="Is it a scam?", criteria={"true": "Yes", "false": "No"})
     parts = seed_mapping(seed)
     # {"instructions": "Is it a scam?", "criteria_true": "Yes", "criteria_false": "No"}
+    ```
+
+    ```python
+    from judgevet.domain.questions import Choice
+
+    seed = Choice(
+        instructions="Which?", criteria={"food": "A meal", "air travel": None}
+    )
+    question_mapping(seed)  # {"instructions": "Which?", "option_0": "A meal"}
+    part_table(seed)  # {"option_0": "food"}
     ```
 
 See Also:
@@ -55,6 +74,10 @@ __all__ = [
     "check_parts",
     "check_selection",
     "noul_from_parts",
+    "part_roles",
+    "part_table",
+    "question_from_parts",
+    "question_mapping",
     "receipt_parts",
     "seed_mapping",
 ]
@@ -102,8 +125,106 @@ class SeedNoul(Protocol):
         ...
 
 
+def _option_names(labels: list[object]) -> list[str]:
+    """Return the component name of each ``Choice`` label, in label order.
+
+    Args:
+        labels: The labels, in seed order.
+
+    Returns:
+        ``criteria_<label>`` when every label is a text identifier, else
+        ``option_<i>`` for each label.
+    """
+    if all(isinstance(label, str) and label.isidentifier() for label in labels):
+        return [f"criteria_{label}" for label in labels]
+    return [f"option_{i}" for i in range(len(labels))]
+
+
+def _criteria_slots(seed: SeedNoul) -> list[tuple[str, str | int, object]]:
+    """Return the name, label or level and description of each criterion.
+
+    Args:
+        seed: A ``Noul``, ``Choice`` or ``Score`` seed.
+
+    Returns:
+        One triple per criterion, in seed order, with or without a text.
+
+    Raises:
+        ValueError: If the seed is of another type, or a ``Noul`` seed's
+            criteria do not hold exactly a ``true`` and a ``false`` key.
+    """
+    kind, criteria = type(seed).__name__, seed.criteria
+    if kind == "Score":
+        return [(f"level_{i}", i, text) for i, text in enumerate(criteria)]
+    if kind == "Choice":
+        labels = list(criteria)
+        names = _option_names(labels)
+        return [(n, k, criteria[k]) for n, k in zip(names, labels, strict=True)]
+    if kind != "Noul":
+        msg = f"a {kind} seed has no wording parts"
+        raise ValueError(msg)
+    if criteria is None:
+        return []
+    if not isinstance(criteria, Mapping) or set(criteria) != set(_CRITERIA_KEYS):
+        raise ValueError("the seed criteria must hold only 'true' and 'false' texts")
+    return [(name, label, criteria[label]) for label, name in _CRITERIA_KEYS.items()]
+
+
+def _text_slots(seed: SeedNoul) -> list[tuple[str, str | int, str]]:
+    """Return the criteria slots that hold a text, refusing any other value.
+
+    Args:
+        seed: A ``Noul``, ``Choice`` or ``Score`` seed.
+
+    Returns:
+        The slots whose description is text; a ``None`` has no part.
+
+    Raises:
+        ValueError: As ``_criteria_slots`` raises.
+        TypeError: If a description is a mapping, a sequence or another
+            non-text value; the message names the label or level only. A
+            ``Noul`` criterion must be text.
+    """
+    slots: list[tuple[str, str | int, str]] = []
+    noul = type(seed).__name__ == "Noul"
+    for name, key, text in _criteria_slots(seed):
+        if isinstance(text, str):
+            slots.append((name, key, text))
+        elif text is not None or noul:
+            where = f"level {key}" if isinstance(key, int) else repr(key)
+            msg = f"the seed criteria {where} must be text"
+            raise TypeError(msg)
+    return slots
+
+
+def question_mapping(seed: SeedNoul) -> dict[str, str]:
+    """Return the full part mapping of a ``Noul``, ``Choice`` or ``Score`` seed.
+
+    Args:
+        seed: The seed question.
+
+    Returns:
+        ``instructions``, then one part per described criterion, in seed
+        order, under the names that ``part_table`` lists.
+
+    Raises:
+        ValueError: If the seed is of another type, or a ``Noul`` seed's
+            criteria do not hold exactly a ``true`` and a ``false`` key.
+        TypeError: If the instructions or a criterion is not text; a
+            ``Choice`` or ``Score`` criterion may also be ``None``.
+    """
+    slots = _text_slots(seed)
+    if not isinstance(seed.instructions, str):
+        raise TypeError("the seed instructions must be text")
+    return {INSTRUCTIONS: seed.instructions} | {name: text for name, _, text in slots}
+
+
 def seed_mapping(seed: SeedNoul) -> dict[str, str]:
-    """Return the full part mapping of a seed ``Noul``.
+    """Return the full part mapping of a seed that a wording run accepts.
+
+    A run accepts a ``Noul`` seed only, until a scorer for a label or level
+    answer exists (#369). The transport, ``evolve_wording`` and
+    ``score_held_out`` call this function, so each refuses another seed.
 
     Args:
         seed: The seed question.
@@ -119,22 +240,51 @@ def seed_mapping(seed: SeedNoul) -> dict[str, str]:
     """
     kind = type(seed).__name__
     if kind != "Noul":
-        msg = f"a {kind} seed has no wording parts yet; only a Noul seed does"
+        msg = f"the wording run refuses a {kind} seed; only a Noul seed runs"
         raise ValueError(msg)
-    if not isinstance(seed.instructions, str):
-        raise TypeError("the seed instructions must be text")
-    parts = {INSTRUCTIONS: seed.instructions}
-    criteria = seed.criteria
-    if criteria is None:
-        return parts
-    if not isinstance(criteria, Mapping) or set(criteria) != set(_CRITERIA_KEYS):
-        raise ValueError("the seed criteria must hold only 'true' and 'false' texts")
-    for label, name in _CRITERIA_KEYS.items():
-        if not isinstance(criteria[label], str):
-            msg = f"the seed criteria {label!r} must be text"
-            raise TypeError(msg)
-        parts[name] = criteria[label]
-    return parts
+    return question_mapping(seed)
+
+
+def part_table(seed: SeedNoul) -> dict[str, str | int]:
+    """Return the label or level index of each criterion part of a seed.
+
+    Args:
+        seed: A ``Noul``, ``Choice`` or ``Score`` seed.
+
+    Returns:
+        Component name to ``Choice`` label (or ``Noul`` key), or to ``Score``
+        level index, for each criterion that has a part.
+
+    Raises:
+        ValueError: As ``question_mapping`` raises.
+        TypeError: As ``question_mapping`` raises.
+    """
+    return {name: key for name, key, _ in _text_slots(seed)}
+
+
+def part_roles(seed: SeedNoul) -> dict[str, str]:
+    """Return the role of each part of a seed, for the reflection prompt.
+
+    Args:
+        seed: A ``Noul``, ``Choice`` or ``Score`` seed.
+
+    Returns:
+        Part name to role, for every part of ``question_mapping(seed)``. A
+        role names a label or a level, never a text.
+
+    Raises:
+        ValueError: As ``question_mapping`` raises.
+        TypeError: As ``question_mapping`` raises.
+    """
+    kind = type(seed).__name__
+    table = part_table(seed)
+    if kind == "Noul":
+        return {name: PART_ROLES[name] for name in (INSTRUCTIONS, *table)}
+    if kind == "Choice":
+        roles = {INSTRUCTIONS: "the question the judge answers by picking one option"}
+        return roles | {n: f"what the option {k!r} means" for n, k in table.items()}
+    roles = {INSTRUCTIONS: "what the judge rates on the ordered levels"}
+    return roles | {n: f"what score level {k} means" for n, k in table.items()}
 
 
 def check_parts(mapping: Mapping[str, object], seed_parts: Mapping[str, str]) -> None:
@@ -192,21 +342,48 @@ def check_selection(
     return selection
 
 
-def noul_from_parts(seed: SeedNoul, parts: Mapping[str, str]) -> SeedNoul:
+def question_from_parts(seed: SeedNoul, parts: Mapping[str, str]) -> SeedNoul:
     """Return a question of the seed's type built from a full part mapping.
 
     Args:
-        seed: The seed question; only its type is used.
-        parts: A full mapping, as ``seed_mapping`` gives.
+        seed: The seed question; its type and its options without a part
+            are kept.
+        parts: A full mapping, as ``question_mapping`` gives.
 
     Returns:
-        The question with ``parts["instructions"]``, and with ``true`` and
-        ``false`` criteria when the mapping has them.
+        The question with ``parts["instructions"]``. A ``Noul`` has ``true``
+        and ``false`` criteria when the mapping has them. A ``Choice`` keeps
+        its label order, and a ``Score`` keeps its level order; a criterion
+        without a part keeps the seed value.
     """
-    criteria = None
-    if CRITERIA_TRUE in parts:
-        criteria = {"true": parts[CRITERIA_TRUE], "false": parts[CRITERIA_FALSE]}
-    return type(seed)(instructions=parts[INSTRUCTIONS], criteria=criteria)
+    kind = type(seed).__name__
+    if kind == "Noul":
+        criteria = None
+        if CRITERIA_TRUE in parts:
+            criteria = {"true": parts[CRITERIA_TRUE], "false": parts[CRITERIA_FALSE]}
+        return type(seed)(instructions=parts[INSTRUCTIONS], criteria=criteria)
+    slots = _criteria_slots(seed)
+    texts = [parts.get(name, text) for name, _, text in slots]
+    if kind == "Choice":
+        rebuilt: Any = {
+            key: text for (_, key, _), text in zip(slots, texts, strict=True)
+        }
+    else:
+        rebuilt = texts
+    return type(seed)(instructions=parts[INSTRUCTIONS], criteria=rebuilt)
+
+
+def noul_from_parts(seed: SeedNoul, parts: Mapping[str, str]) -> SeedNoul:
+    """Return ``question_from_parts(seed, parts)``, for the existing callers.
+
+    Args:
+        seed: The seed question.
+        parts: A full mapping, as ``question_mapping`` gives.
+
+    Returns:
+        The question of the seed's type.
+    """
+    return question_from_parts(seed, parts)
 
 
 @dataclass(frozen=True, slots=True)

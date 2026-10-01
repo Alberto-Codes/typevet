@@ -10,7 +10,7 @@ changed. The reward is ``BrierScorer``: one minus the squared error between
 the transport's ``{"probability": p}`` and the DIFrauD label (``scam`` is
 1). gepa-adk reflects on the train rows and scores and accepts candidates
 on the validation rows. The reflection prompt names each evolvable part,
-its role and its length limit, and a proposal longer than 1.5 times its
+its role from ``part_roles(seed)`` and its length limit, and a proposal longer than 1.5 times its
 seed part is rejected before any evaluation.
 Caller stoppers, such as a judge spend-cap check (#328), reach gepa-adk
 through ``WordingRunConfig.stop_callbacks``.
@@ -78,6 +78,7 @@ from typevet_evals.wording.parts import (
     SeedNoul,
     WordingParts,
     check_selection,
+    part_roles,
     seed_mapping,
 )
 from typevet_evals.wording.transport import JudgePort, WordingTransport
@@ -225,6 +226,8 @@ def reflection_prompt(
     seed_parts: Mapping[str, str],
     components: Iterable[str] | None = None,
     ratio: float = LENGTH_RATIO,
+    *,
+    roles: Mapping[str, str] = PART_ROLES,
 ) -> str:
     """Return gepa-adk's default reflection prompt with the parts added.
 
@@ -238,6 +241,8 @@ def reflection_prompt(
         components: The evolvable part names; None selects every part.
         ratio: The largest allowed proposal length, as a multiple of the
             seed part.
+        roles: The role of each part, as ``part_roles(seed)`` gives; the
+            ``Noul`` roles by default.
 
     Returns:
         The default prompt, with its ``{component_text}`` and ``{trials}``
@@ -245,7 +250,7 @@ def reflection_prompt(
     """
     caps = part_caps(seed_parts, components, ratio)
     lines = [
-        f"- {name} ({PART_ROLES[name]}): at most {cap} characters."
+        f"- {name} ({roles[name]}): at most {cap} characters."
         for name, cap in caps.items()
     ]
     return "\n".join([REFLECTION_INSTRUCTION, _PARTS_INTRO, *lines, _PARTS_RULE])
@@ -457,6 +462,8 @@ def evolution_config(
     config: WordingRunConfig,
     seed_parts: Mapping[str, str],
     components: Iterable[str],
+    *,
+    roles: Mapping[str, str] = PART_ROLES,
 ) -> EvolutionConfig:
     """Return the gepa-adk configuration for one run.
 
@@ -464,6 +471,8 @@ def evolution_config(
         config: The run settings.
         seed_parts: The seed's full part mapping, which sets the length caps.
         components: The evolvable part names.
+        roles: The role of each part, as ``part_roles(seed)`` gives; the
+            ``Noul`` roles by default.
 
     Returns:
         An ``EvolutionConfig`` with the reflector, the reflection minibatch
@@ -478,7 +487,9 @@ def evolution_config(
         reflection_model=config.reflector,
         reflection_max_trials=config.reflection_max_trials,
         reflection_minibatch_size=config.reflection_minibatch_size,
-        reflection_prompt=reflection_prompt(seed_parts, selection, config.length_ratio),
+        reflection_prompt=reflection_prompt(
+            seed_parts, selection, config.length_ratio, roles=roles
+        ),
         proposal_validator=length_cap(seed_parts, selection, config.length_ratio),
         checkpoint_path=config.checkpoint_path,
         resume=config.resume,
@@ -501,7 +512,8 @@ async def evolve_wording(
 
     Args:
         port: The judgevet ``SystemOnePort`` the transport calls.
-        seed: The seed judgevet ``Noul``; ``seed_mapping(seed)`` gives its parts.
+        seed: The seed judgevet ``Noul``; ``seed_mapping(seed)`` gives its parts,
+            and ``part_roles(seed)`` gives their roles in the reflection prompt.
         question_name: The question name sent to the port.
         train: Records gepa-adk reflects on; each ``split`` is ``train``.
         validation: Records gepa-adk scores and accepts candidates on; each
@@ -538,7 +550,7 @@ async def evolve_wording(
         trainset,
         valset=valset,
         scorer=BrierScorer(),
-        config=evolution_config(config, seed_parts, selection),
+        config=evolution_config(config, seed_parts, selection, roles=part_roles(seed)),
         components=list(selection),
         registry=registry,
     )

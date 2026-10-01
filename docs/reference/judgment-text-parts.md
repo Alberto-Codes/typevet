@@ -127,7 +127,9 @@ A wording run uses the `instructions`, `criteria_true` and `criteria_false` keys
 |---|---|---|
 | Question `instructions` | `instructions` | Yes |
 | `criteria` of a `Noul` | `criteria_true`, `criteria_false` | Yes |
-| `criteria` of a `Choice` or `Score` | Not named yet. A follow-up issue under #360 names them. | Yes |
+| `criteria` of a `Choice`, every label an identifier | `criteria_<label>` | Yes |
+| `criteria` of a `Choice`, one label not an identifier | `option_<i>`, the 0-based label position | Yes |
+| `criteria` of a `Score` | `level_<i>`, the 0-based level index | Yes |
 | Rendered option block | `option_block` | Yes |
 | Context / user-text template | `context_template` | Yes |
 | Framing preamble | `framing_preamble` | Yes |
@@ -135,6 +137,17 @@ A wording run uses the `instructions`, `criteria_true` and `criteria_false` keys
 | Control-token rule | `control_token_rule` | Never |
 
 A mapping that names `no_thinking_prefill` or `control_token_rule` is out of scope for evolution.
+
+A `Choice` uses one name rule for all its options, never a mix.
+When every label is an identifier, a `true` or `false` label gives the `Noul` name, such as `criteria_true`.
+A `None` description has no part.
+A description that is not text and not `None` refuses the seed.
+That error names the label or the level, never the text.
+`part_table` in `typevet_evals.wording.parts` maps each criterion name to its label or level index.
+For a `Noul`, it maps `criteria_true` to `true` and `criteria_false` to `false`.
+`question_mapping` builds the full mapping of a `Noul`, a `Choice` or a `Score` ([#369](https://github.com/Alberto-Codes/typevet/issues/369)).
+`question_from_parts` builds the question again and keeps the label order.
+`part_roles` gives the role of each part for the reflection prompt.
 
 ## Wording run parts
 
