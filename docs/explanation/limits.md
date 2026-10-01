@@ -84,6 +84,12 @@ The file behind each of those runs is not proven.
 Source: [#233](https://github.com/Alberto-Codes/typevet/issues/233).
 The pin itself is in the [tested serving pins](../reference/typed-judgment-release-support-matrix.md#tested-serving-pins).
 
+A documented quantization exists beside it since 2026-10-01: Google's QAT `Q4_0` pair under the alias `gemma-4-31b-qat-q4_0-mm` (#358).
+One seed-0 checks run on it gave accuracy 0.807 against 0.821 on the pin, with a false-clear rate of 0.02 against 0.03.
+The difference is real, because the run-to-run spread is 0, but it sits inside the pin's pooled bootstrap interval.
+So one run shows that the quantization changes the numbers a little and cannot rank the two.
+See the [checks page](check-register-matching.md#limits-of-the-data).
+
 ## What live receipts prove and do not prove
 
 A live pass shows that one exercised call completed for the prompt, schema and model that the test used.

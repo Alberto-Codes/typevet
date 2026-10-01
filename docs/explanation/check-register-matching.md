@@ -270,6 +270,17 @@ synthetic strokes.
 - **Different weights.** `Q2_K` on llama.cpp and BF16 on vLLM. The receipts
   cannot separate a weights effect from a backend effect. They also pin only
   the llama.cpp alias, not the weights file.
+- **A documented quantization, one run.** Issue
+  [#358](https://github.com/Alberto-Codes/typevet/issues/358) ran the seed-0
+  slice once on Google's QAT `Q4_0` pair (`google/gemma-4-31B-it-qat-q4_0-gguf`,
+  revision `59dde245`, alias `gemma-4-31b-qat-q4_0-mm`), with the same server
+  flags and build as the pin. Accuracy was 0.807 (113 of 140) against 0.821,
+  and the false-clear rate 0.02 against 0.03. The `payee_matches` ECE stayed
+  near 0, and the `amounts_match` ECE moved from 0.027 to 0.018. The
+  run-to-run spread is 0, so the differences come from the weights. The
+  accuracy sits inside the pooled interval above, so one run cannot rank the
+  two quantizations. The receipt is
+  [`check_match_llama_cpp_qat_receipt.json`](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/checks/receipts/check_match_llama_cpp_qat_receipt.json).
 - **Labels.** The owner checked the labels on a contact sheet once, for seed 0.
 
 ## Latency and cost
