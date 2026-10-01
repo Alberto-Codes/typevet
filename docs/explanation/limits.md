@@ -59,7 +59,7 @@ The multimodal evidence covers one model pin per backend.
   More than 36 options raise `JudgmentValidationError` before that question's scoring call.
   No calibration receipt exists for more than 10 options.
   One live 24-option run on the local Q2_K Gemma 4 pin gave a valid distribution (#288). One run is not calibration.
-  The eval code can compute top-label ECE and class-wise ECE for any label set, and the public workloads accept 24 options (#296).
+  The eval code can compute top-label ECE and class-wise ECE for any label set. The public workloads accept 24 options (#296).
   A class with fewer than 30 gold instances gets the status "insufficient N" and is not in the class-wise mean.
   No live run has used these metrics yet.
 - `TYPEVET_LLAMA__MULTIMODAL_MODEL` defaults to a Gemma 3 id.
@@ -156,7 +156,7 @@ One live run on the llama.cpp vision alias answered synthetic images up to 4096 
 That run is one receipt, not a pixel limit.
 Offline tests run 200 calls on one session and restart the router in the middle.
 A call while the router is down raises `TransportError` ([#298](https://github.com/Alberto-Codes/typevet/issues/298)).
-A router that closes a connection (new or reused) before a response head gets one retry on a new connection; a second close raises `TransportError` ([#305](https://github.com/Alberto-Codes/typevet/issues/305)).
+A router that closes a connection (new or reused) before a response head gets one retry on a new connection. A second close raises `TransportError` ([#305](https://github.com/Alberto-Codes/typevet/issues/305)).
 
 Sources: [runtime limits and ownership](../reference/typed-judgment-release-support-matrix.md#runtime-limits-and-ownership),
 [Gemma 4 multimodal judgments, limits](gemma-4-multimodal-judgments.md#limits).
@@ -171,9 +171,13 @@ None of them has a promised fix date.
   [#207](https://github.com/Alberto-Codes/typevet/issues/207) calls the same quantity off-menu mass.
   On llama.cpp the value is 1 minus the sum of the raw candidate probabilities.
   The adapter reports it only when the response holds exactly `n_vocab` entries and their total is within 0.01 of 1; otherwise the value is `None`.
-  `n_vocab` is the model vocabulary size that the adapter reads from `meta.n_vocab` in `/v1/models` and keeps once known, with at most 3 reads per model ([#321](https://github.com/Alberto-Codes/typevet/issues/321)), unless the caller sets it.
+  `n_vocab` is the model vocabulary size.
+  The adapter reads it from `meta.n_vocab` in `/v1/models` and keeps it once known.
+  It makes at most 3 reads per model ([#321](https://github.com/Alberto-Codes/typevet/issues/321)).
+  If the caller sets `n_vocab`, the adapter does not read it.
   When the server does not report the size, the value is `None`.
-  A caller-set `n_vocab` that is smaller than the model vocabulary still passes the count; the Gemma native vision factory sets 262144 by default.
+  A caller-set `n_vocab` that is smaller than the model vocabulary still passes the count.
+  The Gemma native vision factory sets 262144 by default.
   On vLLM the value is always `None` (unavailable), because the response holds at most 128 token ids.
   By default typevet reports the value and does not act on it.
   A caller can pass `off_option_threshold` to `judge` ([#353](https://github.com/Alberto-Codes/typevet/issues/353)).

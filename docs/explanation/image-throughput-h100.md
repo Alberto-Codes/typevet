@@ -199,11 +199,11 @@ That is an open possibility only. No receipt measures it.
 
 The [#342 design](https://github.com/Alberto-Codes/typevet/issues/342#issuecomment-5919250989)
 looked at that possibility and closed it for now. One prompt with several
-scoring positions changes what the model conditions on, so its probabilities
-would need new calibration evidence, and llama.cpp gives no prompt-side
+scoring positions changes what the model conditions on. So its probabilities
+would need new calibration evidence. Also, llama.cpp gives no prompt-side
 logprobs. One shared prefix with batched continuations works on llama.cpp
-only. The one small change left is to send the questions of one judgment at
-the same time instead of one after the other. That change belongs to
+only. The one small change left is about the questions of one judgment. It
+sends them at the same time instead of one after the other. That change belongs to
 [#121](https://github.com/Alberto-Codes/typevet/issues/121). It needs a new
 concurrency 32 receipt before any claim.
 

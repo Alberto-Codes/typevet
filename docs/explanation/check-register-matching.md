@@ -190,8 +190,9 @@ tested it once on new renders.
 The rule was fixed before the run: level 3 or lower holds, level 4 passes.
 The owner signed off the seed-1 contact sheets. Then the same 20 rows times 7
 variants ran once on local llama.cpp, from seed 1, with no rendering change.
-The verdict rule was also fixed first: the hypothesis holds when the gate holds
-15 or more of the 20 blurred renders and 2 or fewer of the 120 sharp ones.
+The verdict rule was also fixed first. The hypothesis holds when the gate holds
+15 or more of the 20 blurred renders. It must also hold 2 or fewer of the 120
+sharp ones.
 
 | Measure | Seed 0 (#316) | Seed 1 (#344) |
 |---|---|---|
@@ -221,7 +222,7 @@ with a loss of accuracy is inconclusive. The receipt is
 `evals/fixtures/checks/receipts/check_match_orderings_llama_cpp_seed1.json`.
 
 The first run, on 21 cases (rows r00 to r02), was inconclusive. The
-position spread was 0.057, just above the limit, and the mean verdict kept
+position spread was 0.057, just above the limit. The mean verdict kept
 17 of 21 cases right against 18 for the single order.
 
 The full run on all 140 seed-1 cases (840 requests) settled it. The spread
@@ -229,8 +230,8 @@ was 0.033, with a 95% bootstrap interval of 0.020 to 0.049, all below the
 limit. The mean verdict kept 118 cases right against 121 for the single
 order; the interval of that difference is −0.050 to 0.000. Averaging never
 helped a case. The 20 cases whose winner moved with the order (12 clean,
-8 blurred) switched between `consistent` and `unsigned`, the near-tie the
-main runs show on clean renders. The answer digits follow position, so the
+8 blurred) switched between `consistent` and `unsigned`. This is the near-tie
+the main runs show on clean renders. The answer digits follow position, so the
 spread also holds any bias toward a digit. typevet does not average
 orderings. The receipt is
 `evals/fixtures/checks/receipts/check_match_orderings_llama_cpp_seed1_full.json`;
