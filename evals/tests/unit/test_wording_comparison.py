@@ -91,9 +91,9 @@ def test_a_backend_refuses_another_judges_artifact(backend: str, provider: str) 
 
 
 def test_an_unknown_backend_is_refused() -> None:
-    assert COMPARISON_BACKENDS == ("jev", "llama_cpp", "vllm")
+    assert COMPARISON_BACKENDS == ("jev", "llama_cpp", "vllm", "ollama")
     with pytest.raises(ValueError, match="backend"):
-        evolved_text_for(_artifact("gemma"), backend="ollama", seed_text=SEED_TEXT)
+        evolved_text_for(_artifact("gemma"), backend="sglang", seed_text=SEED_TEXT)
 
 
 @pytest.mark.parametrize(
@@ -276,7 +276,7 @@ def test_subject_refuses_an_unknown_split_or_backend() -> None:
     with pytest.raises(ValueError, match="split"):
         ComparisonSubject("gemma_llama_cpp", "llama_cpp", "gemma", "train")
     with pytest.raises(ValueError, match="backend"):
-        ComparisonSubject("gemma", "ollama", "gemma", "test")
+        ComparisonSubject("gemma", "sglang", "gemma", "test")
 
 
 @pytest.mark.parametrize(

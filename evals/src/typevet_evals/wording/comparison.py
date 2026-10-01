@@ -3,7 +3,8 @@
 Each judge scores its seed wording and its own evolved wording once each on
 the #307 held-out rows. ``evolved_text_for`` takes the evolved wording from
 the evolution artifact of the backend's judge: Jev's artifact for ``jev``,
-Gemma's artifact for ``llama_cpp`` and ``vllm``. ``evolved_parts_for``
+Gemma's artifact for ``llama_cpp`` and ``vllm``, the Ollama judge's artifact
+for ``ollama`` (#333). ``evolved_parts_for``
 applies the same checks and returns every evolved part (#365).
 ``comparison_receipt`` gives
 per arm Cohen's kappa against the DIFrauD labels, the Brier score, the ECE
@@ -82,9 +83,9 @@ __all__ = [
     "evolved_text_for",
 ]
 
-COMPARISON_BACKENDS: Final[tuple[str, ...]] = ("jev", "llama_cpp", "vllm")
+COMPARISON_BACKENDS: Final[tuple[str, ...]] = ("jev", "llama_cpp", "vllm", "ollama")
 EVOLUTION_PROVIDER: Final[Mapping[str, str]] = MappingProxyType(
-    {"jev": "jev", "llama_cpp": "gemma", "vllm": "gemma"}
+    {"jev": "jev", "llama_cpp": "gemma", "vllm": "gemma", "ollama": "ollama"}
 )
 COMPARISON_SPLITS: Final[tuple[str, ...]] = (HELD_OUT_SPLIT, VALIDATION_SPLIT)
 
@@ -125,7 +126,7 @@ def evolved_text_for(
 
     Args:
         artifact: A #328 evolution artifact.
-        backend: ``jev``, ``llama_cpp`` or ``vllm``.
+        backend: ``jev``, ``llama_cpp``, ``vllm`` or ``ollama``.
         seed_text: The seed wording the artifact must start from.
 
     Returns:
@@ -156,7 +157,7 @@ def evolved_parts_for(
 
     Args:
         artifact: An evolution artifact, with or without the #363 parts fields.
-        backend: ``jev``, ``llama_cpp`` or ``vllm``.
+        backend: ``jev``, ``llama_cpp``, ``vllm`` or ``ollama``.
         seed_parts: The full mapping of the seed the caller scores.
 
     Returns:
@@ -188,7 +189,7 @@ class ComparisonSubject:
 
     Attributes:
         judge (str): The judge label, for example ``gemma_llama_cpp``.
-        backend (str): ``jev``, ``llama_cpp`` or ``vllm``.
+        backend (str): ``jev``, ``llama_cpp``, ``vllm`` or ``ollama``.
         model (str): The requested or served model id.
         split (str): ``test`` for the held-out rows, ``validation`` for a smoke.
 

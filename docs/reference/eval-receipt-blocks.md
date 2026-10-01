@@ -1,7 +1,7 @@
 # Receipt blocks shared by the eval runs
 
-Kind: reference. The serving-metrics, `server_args`, wording parts and
-`wording_digests` receipt blocks. The face, signature and check runs write
+Kind: reference. The serving-metrics, `server_args`, wording parts,
+`wording_digests` and wording judge identity receipt blocks. The face, signature and check runs write
 the first two. The throughput sweeps write the `server_args` block. The
 wording receipts write the wording parts and the `wording_digests` block.
 Issue
@@ -184,6 +184,43 @@ Receipts written before #362 have no `wording_digests` key. Receipts written
 before #363 have no `components`, `seed_parts` or `evolved_parts` key. Their
 `gepa_candidate_id` does not match the engine log, because those runs named
 the gepa-adk component by the question key, for example `is_scam`.
+
+## Wording judge identity block
+
+The wording evolution artifact records `judge_provider` and a
+`judge_identity` block. The live test
+`evals/tests/live/test_wording_evolution_live.py` writes them.
+`TYPEVET_WORDING_JUDGE_PROVIDER` selects the judge.
+
+| `judge_provider` | `judge_identity` keys |
+|---|---|
+| `gemma` (default) | `requested_model`, `reported_models` |
+| `jev` | `requested_model`, `reported_models`, `base_url` |
+| `ollama` | `requested_model`, `reported_models`, `base_url`, `ollama_version`, `model_digest` |
+
+Issue [#333](https://github.com/Alberto-Codes/typevet/issues/333) adds the
+`ollama` judge. It uses the judgevet `HTTPSystemOneAdapter` with a
+placeholder key. It has no spend cap and no key check.
+
+| Variable | Default | Use |
+|---|---|---|
+| `TYPEVET_OLLAMA_BASE` | `http://localhost:11434` | Ollama server URL |
+| `TYPEVET_WORDING_JUDGE` | `nimble` | Judge model name |
+| `TYPEVET_OLLAMA_TIMEOUT` | `600` | Read timeout, in seconds |
+| `TYPEVET_WORDING_CONCURRENCY` | `1` | gepa-adk `max_concurrent_evals` |
+
+The test reads `ollama_version` from `GET /api/version` before the first
+judge call. It reads `model_digest` from the `GET /api/tags` entry of the
+model. A model name without a tag also matches the `:latest` tag. The test
+fails when `/api/tags` does not list the model. The failure message does not
+show the listed names.
+
+With `ollama`, the held-out and comparison tests use the same judge. They
+need an evolution artifact whose `judge_provider` is `ollama`. Their receipts
+record `backend` `ollama` and the `server` facts. Their `pins` add a
+`judge_identity` key with the keys of the table above. The `served_template`
+pin is `null`. The run identity takes `ollama_version` as the server build.
+Receipts of the other backends have no `judge_identity` pin.
 
 ## Related pages
 

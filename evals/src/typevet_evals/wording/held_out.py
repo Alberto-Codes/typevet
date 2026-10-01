@@ -518,7 +518,7 @@ def held_out_receipt(
         run: The scored held-out run.
         seed_text: The seed wording.
         evolved_text: The evolved wording.
-        backend: ``llama_cpp`` or ``vllm``.
+        backend: ``llama_cpp``, ``vllm`` or ``ollama``.
         model: The served model id.
         pins: Dataset, server and weights pins.
         identity: The experiment identity mapping.

@@ -26,9 +26,10 @@ repository. Settings:
 - ``TYPEVET_WORDING_JUDGE``, ``TYPEVET_WORDING_REFLECTOR``,
   ``TYPEVET_WORDING_REFLECTOR_BASE`` (router ``/v1``) and
   ``TYPEVET_WORDING_REFLECTOR_TIMEOUT`` (1800 seconds).
-- ``TYPEVET_WORDING_JUDGE_PROVIDER``: ``gemma`` (default, the session above)
-  or ``jev`` (#328). ``TYPEVET_WORDING_CONCURRENCY`` sets gepa-adk's
-  ``max_concurrent_evals`` (default 5 for Gemma, 1 for Jev).
+- ``TYPEVET_WORDING_JUDGE_PROVIDER``: ``gemma`` (default, the session above),
+  ``jev`` (#328) or ``ollama`` (#333). ``TYPEVET_WORDING_CONCURRENCY`` sets
+  gepa-adk's ``max_concurrent_evals`` (default 5 for Gemma, 1 for Jev and
+  Ollama).
 
 **Wording parts (#365).** ``TYPEVET_WORDING_COMPONENTS`` names the parts that
 evolve, comma-separated, from ``instructions``, ``criteria_true`` and
@@ -74,6 +75,20 @@ the artifact counts ``budget_refusals`` and sets ``valid`` false when any
 occur, and the test then fails after it writes the artifact. The key is
 resolved at each use and is not bound to a local of the test.
 
+**Ollama judge** (``TYPEVET_WORDING_JUDGE_PROVIDER=ollama``, #333). The judge
+is judgevet's ``HTTPSystemOneAdapter`` at ``TYPEVET_OLLAMA_BASE`` (default
+``http://localhost:11434``) with a placeholder key (judgevet #267, #268).
+The model is ``TYPEVET_WORDING_JUDGE`` (default ``nimble``).
+``TYPEVET_OLLAMA_TIMEOUT`` sets the read timeout (600 seconds). There is no
+spend cap and no key check. Before the first judge call, the test reads the
+Ollama version from ``/api/version`` and the model digest from ``/api/tags``.
+It fails when ``/api/tags`` does not list the model. The artifact records
+``judge_provider`` ``ollama`` and adds ``base_url``, ``ollama_version`` and
+``model_digest`` to ``judge_identity``. With ``ollama``, the held-out and
+comparison tests score with the same judge and need an artifact whose
+``judge_provider`` is ``ollama``. Their receipts add the same block as the
+``judge_identity`` pin and record ``backend`` ``ollama``.
+
 **Held-out check** (``TYPEVET_WORDING_HELD_OUT_RECEIPT`` names a new receipt;
 ``TYPEVET_WORDING_EVOLVED_ARTIFACT`` names the evolution artifact). Scores
 the seed and evolved wording once each on all 158 held-out rows (316 calls)
@@ -83,6 +98,7 @@ verdict, the #133 comparison, pins and call counts. ``TYPEVET_BACKEND``
 selects the backend as in ``open_judgment``: ``llama_cpp`` (default; the
 same text-only session as the evolution) or ``vllm``
 (``TYPEVET_VLLM__*`` and ``TYPEVET_VLLM_MODEL_REVISION``).
+``TYPEVET_WORDING_JUDGE_PROVIDER=ollama`` uses the Ollama judge instead.
 ``TYPEVET_GIT_STATUS_PORCELAIN`` carries the porcelain status text.
 
 **Jev vs Gemma comparison (#329, parent #252)**
@@ -90,10 +106,11 @@ same text-only session as the evolution) or ``vllm``
 ``TYPEVET_WORDING_EVOLVED_ARTIFACT`` names the judge's own evolution
 artifact). One judge scores the seed wording and its own evolved wording once
 each on the 158 held-out rows. ``TYPEVET_WORDING_JUDGE_PROVIDER=jev`` uses
-the Jev judge above (spend cap required before any call); ``gemma`` uses the
-``TYPEVET_BACKEND`` session (``llama_cpp`` or ``vllm``). The artifact's
-``judge_provider`` must be the judge's (``jev`` for Jev, ``gemma`` for both
-Gemma backends), valid and free of budget refusals. The receipt holds per arm
+the Jev judge above (spend cap required before any call); ``ollama`` uses
+the Ollama judge (#333); ``gemma`` uses the ``TYPEVET_BACKEND`` session
+(``llama_cpp`` or ``vllm``). The artifact's ``judge_provider`` must be the
+judge's (``jev`` for Jev, ``ollama`` for Ollama, ``gemma`` for both Gemma
+backends), valid and free of budget refusals. The receipt holds per arm
 Cohen's kappa against the DIFrauD labels (p >= 0.5 reads scam), Brier, ECE
 (10 bins) and accuracy, the paired bootstrap (context only), the model,
 backend, quant or revision, the probed served template, per-call latency and
@@ -224,7 +241,12 @@ from typevet_evals.wording import (
     stratified_subset,
     train_subset,
 )
-from typevet_evals.wording.calls import TimedJudgePort, call_summary, error_count
+from typevet_evals.wording.calls import (
+    CallRecord,
+    TimedJudgePort,
+    call_summary,
+    error_count,
+)
 from typevet_evals.wording.comparison import (
     ComparisonSubject,
     comparison_receipt,
@@ -510,7 +532,7 @@ def comparison_parts(
     Args:
         artifact: The judge's evolution artifact.
         seed: The seed ``Noul``.
-        backend: ``jev``, ``llama_cpp`` or ``vllm``.
+        backend: ``jev``, ``llama_cpp``, ``vllm`` or ``ollama``.
 
     Returns:
         ``evolved_parts_for`` over the seed's parts.
@@ -693,8 +715,13 @@ def _reflector(environ: Mapping[str, str]) -> LiteLlm:
     )
 
 
-_PROVIDERS = ("gemma", "jev")
-_DEFAULT_CONCURRENCY = {"gemma": 5, "jev": 1}
+_PROVIDERS = ("gemma", "jev", "ollama")
+_DEFAULT_CONCURRENCY = {"gemma": 5, "jev": 1, "ollama": 1}
+_OLLAMA_BASE = "http://localhost:11434"
+OLLAMA_PLACEHOLDER_KEY: Final = "ollama-no-key"
+_DEFAULT_JUDGE: Final[Mapping[str, str]] = MappingProxyType(
+    {"gemma": _JUDGE, "ollama": "nimble"}
+)
 _BUDGET_REFUSAL = "JevBudgetExceededError"
 
 
@@ -728,6 +755,146 @@ def _judge_provider(environ: Mapping[str, str]) -> str:
     if provider not in _PROVIDERS:
         pytest.fail(f"TYPEVET_WORDING_JUDGE_PROVIDER must be one of {_PROVIDERS}")
     return provider
+
+
+def judge_name(environ: Mapping[str, str], provider: str) -> str:
+    """Return the judge model of a Gemma or Ollama run.
+
+    Args:
+        environ: The process environment.
+        provider: ``gemma`` or ``ollama``.
+
+    Returns:
+        ``TYPEVET_WORDING_JUDGE``, or the provider's default when it is unset
+        or blank: the Gemma pin for ``gemma`` and ``nimble`` for ``ollama``.
+    """
+    return environ.get("TYPEVET_WORDING_JUDGE", "").strip() or _DEFAULT_JUDGE[provider]
+
+
+def ollama_identity(
+    get: Callable[[str], Mapping[str, Any]], base_url: str, model: str
+) -> dict[str, object]:
+    """Read the Ollama version and the judge model's digest.
+
+    Args:
+        get: Returns the JSON body of one GET request to a URL.
+        base_url: The Ollama server, for example ``http://localhost:11434``.
+        model: The judge model; a name without a tag also matches ``:latest``.
+
+    Returns:
+        ``ollama_version`` from ``/api/version`` and ``model_digest`` from
+        ``/api/tags``.
+
+    Raises:
+        ValueError: When ``/api/tags`` does not list the model. The message
+            does not hold the listed names.
+    """
+    base = base_url.rstrip("/")
+    version = get(f"{base}/api/version")["version"]
+    names = {model, f"{model}:latest"}
+    for entry in get(f"{base}/api/tags").get("models", ()):
+        if entry.get("name") in names:
+            return {"ollama_version": version, "model_digest": entry["digest"]}
+    msg = "the judge model is not listed by Ollama /api/tags"
+    raise ValueError(msg)
+
+
+def _http_json(url: str) -> Mapping[str, Any]:
+    return httpx.get(url, timeout=30.0).raise_for_status().json()
+
+
+@contextmanager
+def _ollama_judge(
+    environ: Mapping[str, str],
+    *,
+    adapter: Callable[..., Any] = HTTPSystemOneAdapter,
+    get: Callable[[str], Mapping[str, Any]] = _http_json,
+) -> Iterator[_EvolutionJudge]:
+    """Build judgevet's HTTP adapter against a local Ollama (judgevet #267).
+
+    Args:
+        environ: The process environment.
+        adapter: The adapter class; tests pass a recording stand-in.
+        get: The JSON GET used for the identity reads.
+
+    Yields:
+        The Ollama judge, with no spend cap and a placeholder key; the
+        adapter closes on exit.
+    """
+    base = environ.get("TYPEVET_OLLAMA_BASE", "").strip().rstrip("/") or _OLLAMA_BASE
+    model = judge_name(environ, "ollama")
+    identity = ollama_identity(get, base, model)
+    with adapter(
+        api_key=OLLAMA_PLACEHOLDER_KEY,
+        base_url=base,
+        default_model=model,
+        timeout_seconds=float(environ.get("TYPEVET_OLLAMA_TIMEOUT", "600")),
+    ) as port:
+        yield _EvolutionJudge(
+            port=port,
+            model=model,
+            facts={"base_url": base, "served_template": None, **identity},
+        )
+
+
+def judge_identity(
+    model: str, facts: Mapping[str, object], reported_models: Sequence[str]
+) -> dict[str, object]:
+    """Return the ``judge_identity`` block of a judge.
+
+    Args:
+        model: The requested model.
+        facts: The judge facts; ``served_template`` is left out.
+        reported_models: The model ids the calls reported.
+
+    Returns:
+        ``requested_model``, ``reported_models`` and the other facts, for
+        example ``base_url``, ``ollama_version`` and ``model_digest``.
+    """
+    return {
+        "requested_model": model,
+        "reported_models": list(reported_models),
+        **{k: v for k, v in facts.items() if k != "served_template"},
+    }
+
+
+def judge_pins(
+    backend: str,
+    model: str,
+    facts: Mapping[str, object],
+    records: Sequence[CallRecord],
+) -> dict[str, object]:
+    """Return the identity pins a held-out or comparison receipt adds.
+
+    Args:
+        backend: The receipt's backend.
+        model: The requested model.
+        facts: The judge facts.
+        records: The calls of the run.
+
+    Returns:
+        A ``judge_identity`` pin for ``ollama``; no pin for another backend,
+        so its receipts keep their keys.
+    """
+    if backend != "ollama":
+        return {}
+    reported = call_summary(records)["models"]
+    return {"judge_identity": judge_identity(model, facts, reported)}
+
+
+def runtime_build(facts: Mapping[str, object]) -> str:
+    """Return the server build for the run identity.
+
+    Args:
+        facts: The judge or server facts.
+
+    Returns:
+        ``build_info`` when the facts hold it, else ``ollama_version``, else
+        ``unknown``.
+    """
+    if "build_info" in facts:
+        return str(facts["build_info"])
+    return str(facts.get("ollama_version", "unknown"))
 
 
 def _jev_api() -> ApiSettings:
@@ -817,7 +984,7 @@ def _gemma_judge(environ: Mapping[str, str]) -> Iterator[_EvolutionJudge]:
     Yields:
         The Gemma judge.
     """
-    judge = environ.get("TYPEVET_WORDING_JUDGE", _JUDGE)
+    judge = judge_name(environ, "gemma")
     with _llama_text_session(judge, environ) as session:
         yield _EvolutionJudge(
             port=TypevetSystemOnePort(session.port),
@@ -844,7 +1011,13 @@ def test_wording_evolution_live_artifact() -> None:
     reflector = _reflector(environ)
     concurrency = _int_env("TYPEVET_WORDING_CONCURRENCY", None)
     started = time.monotonic()
-    session = _gemma_judge(environ) if jev_api is None else _jev_judge(jev_api, environ)
+    session = (
+        _jev_judge(jev_api, environ)
+        if jev_api is not None
+        else _ollama_judge(environ)
+        if provider == "ollama"
+        else _gemma_judge(environ)
+    )
     with session as judge:
         config = WordingRunConfig(
             reflector=reflector,
@@ -879,11 +1052,9 @@ def test_wording_evolution_live_artifact() -> None:
         artifact["dataset"] = _DATASET_PINS[wording_seed_name(environ)][0]
     artifact["served_template"] = judge.facts["served_template"]
     artifact["judge_provider"] = provider
-    artifact["judge_identity"] = {
-        "requested_model": judge.model,
-        "reported_models": summary["models"],
-        **{k: v for k, v in judge.facts.items() if k != "served_template"},
-    }
+    artifact["judge_identity"] = judge_identity(
+        judge.model, judge.facts, summary["models"]
+    )
     artifact["stop_reason"] = run.result.stop_reason.value
     refusals = error_count(timed.records, _BUDGET_REFUSAL)
     artifact["budget_refusals"] = refusals
@@ -911,8 +1082,8 @@ def test_wording_evolution_live_artifact() -> None:
         f"{refusals} judge calls were refused by the spend cap and scored 0; "
         "the run is not a valid comparison (the artifact is kept)"
     )
-    if provider == "jev":
-        assert summary["failed"] < summary["calls"], "every Jev call failed"
+    if provider != "gemma":
+        assert summary["failed"] < summary["calls"], f"every {provider} call failed"
     assert run.result.total_iterations >= 1
 
 
@@ -943,9 +1114,28 @@ def _held_out_session(
             require_native_template(served, environ)
             yield vllm.port, vllm.model, vllm.client, served.value
         return
-    judge = environ.get("TYPEVET_WORDING_JUDGE", _JUDGE)
+    judge = judge_name(environ, "gemma")
     with _llama_text_session(judge, environ) as llama:
         yield llama.port, llama.model, llama.client, llama.served_template
+
+
+@contextmanager
+def _held_out_judge(
+    environ: Mapping[str, str], backend: str
+) -> Iterator[tuple[JudgePort, str, str, dict[str, object]]]:
+    """Open the held-out judge for ``backend``.
+
+    Yields:
+        The ``SystemOnePort``, the model id, the served template
+        (``ollama_http`` for Ollama) and the server facts.
+    """
+    if backend == "ollama":
+        with _ollama_judge(environ) as ollama:
+            yield ollama.port, ollama.model, "ollama_http", dict(ollama.facts)
+        return
+    with _held_out_session(environ, backend) as (port, model, client, template):
+        facts = _server_facts(backend, client, model)
+        yield TypevetSystemOnePort(port), model, template, facts
 
 
 @pytest.mark.live
@@ -954,12 +1144,15 @@ def test_wording_held_out_live_receipt() -> None:
     path = _required_path("TYPEVET_WORDING_HELD_OUT_RECEIPT", new=True)
     evolved_path = _required_path("TYPEVET_WORDING_EVOLVED_ARTIFACT", new=False)
     environ = dict(os.environ)
-    backend = load_backend(environ)
+    ollama = _judge_provider(environ) == "ollama"
+    backend = "ollama" if ollama else load_backend(environ)
     secret = load_vllm_settings(environ).api_key if backend == "vllm" else None
-    weights = served_weights_pins(backend, environ)
+    weights = {} if ollama else served_weights_pins(backend, environ)
     evolved = json.loads(evolved_path.read_text(encoding="utf-8"))
     expected_seed = wording_seed(environ).instructions
     assert evolved["seed_text"] == expected_seed, "artifact seed is not the seed"
+    if ollama:
+        assert evolved.get("judge_provider") == "ollama", "not an Ollama artifact"
     seed, parts = held_out_parts(evolved, environ)
     _, _, held = _run_rows(environ)
     expected_rows = wording_split_sizes(environ)[2]
@@ -971,14 +1164,13 @@ def test_wording_held_out_live_receipt() -> None:
         fixture_paths={"evolution_artifact": evolved_path},
     )
     started = time.monotonic()
-    with _held_out_session(environ, backend) as (port, model, client, template):
-        facts = _server_facts(backend, client, model)
+    with _held_out_judge(environ, backend) as (port, model, template, facts):
         start = begin_run_identity(
             repo_root=_REPO_ROOT,
-            runtime=RuntimeBuild(model, template, str(facts["build_info"])),
+            runtime=RuntimeBuild(model, template, runtime_build(facts)),
             working_tree=tree,
         )
-        timed = TimedJudgePort(TypevetSystemOnePort(port))
+        timed = TimedJudgePort(port)
         run = score_held_out(
             timed,
             seed,
@@ -998,12 +1190,13 @@ def test_wording_held_out_live_receipt() -> None:
         "dataset": _DATASET_PINS[wording_seed_name(environ)][0],
         "dataset_revision": _DATASET_PINS[wording_seed_name(environ)][1],
         "split_seed": 0,
-        "served_template": template,
+        "served_template": None if ollama else template,
         "evolution_artifact_sha256": hashlib.sha256(
             evolved_path.read_bytes()
         ).hexdigest(),
         "server": facts,
         **weights,
+        **judge_pins(backend, model, facts, run.call_records),
     }
     receipt = held_out_receipt(
         run,
@@ -1070,7 +1263,13 @@ def test_wording_framing_smoke_live_receipt() -> None:
 
 
 _MAX_COMPARISON_SMOKE_ROWS = 6
-_COMPARISON_JUDGE = {"jev": "jev", "llama_cpp": "gemma_llama_cpp", "vllm": "gemma_vllm"}
+_COMPARISON_JUDGE = {
+    "jev": "jev",
+    "llama_cpp": "gemma_llama_cpp",
+    "vllm": "gemma_vllm",
+    "ollama": "ollama",
+}
+_HTTP_BACKENDS = ("jev", "ollama")
 
 
 @dataclass(frozen=True)
@@ -1135,20 +1334,25 @@ def _weights_facts(
 def _comparison_judge(
     backend: str, environ: Mapping[str, str]
 ) -> Iterator[_ComparisonJudge]:
-    """Open the Jev or Gemma judge of the comparison.
+    """Open the Jev, Ollama or Gemma judge of the comparison.
 
     Yields:
         The judge.
     """
-    if backend == "jev":
-        with _jev_judge(_jev_api(), environ) as jev:
+    if backend in _HTTP_BACKENDS:
+        session = (
+            _jev_judge(_jev_api(), environ)
+            if backend == "jev"
+            else _ollama_judge(environ)
+        )
+        with session as http:
             yield _ComparisonJudge(
-                jev.port,
-                jev.model,
-                "jev_http",
-                dict(jev.facts),
-                jev.spend,
-                jev.key_free,
+                http.port,
+                http.model,
+                f"{backend}_http",
+                dict(http.facts),
+                http.spend,
+                http.key_free,
             )
         return
     secret = load_vllm_settings(environ).api_key if backend == "vllm" else None
@@ -1175,7 +1379,7 @@ def test_wording_comparison_live_receipt() -> None:
     if wording_seed_name(environ) != DIFRAUD:
         pytest.fail("the comparison runs on the difraud seed only")
     provider = _judge_provider(environ)
-    backend = "jev" if provider == "jev" else load_backend(environ)
+    backend = provider if provider in _HTTP_BACKENDS else load_backend(environ)
     artifact = json.loads(evolved_path.read_text(encoding="utf-8"))
     seed = wording_seed(environ)
     parts = comparison_parts(artifact, seed, backend=backend)
@@ -1190,7 +1394,7 @@ def test_wording_comparison_live_receipt() -> None:
     )
     started = time.monotonic()
     with _comparison_judge(backend, environ) as judge:
-        build = str(judge.facts.get("build_info", "unknown"))
+        build = runtime_build(judge.facts)
         start = begin_run_identity(
             repo_root=_REPO_ROOT,
             runtime=RuntimeBuild(judge.model, judge.template, build),
@@ -1218,7 +1422,7 @@ def test_wording_comparison_live_receipt() -> None:
         "dataset": "difraud/difraud sms",
         "dataset_revision": PINNED_REVISION,
         "split_seed": 0,
-        "served_template": None if backend == "jev" else judge.template,
+        "served_template": None if backend in _HTTP_BACKENDS else judge.template,
         "evolution_artifact": evolved_path.name,
         "evolution_artifact_sha256": hashlib.sha256(
             evolved_path.read_bytes()
@@ -1227,6 +1431,7 @@ def test_wording_comparison_live_receipt() -> None:
         "reported_models": call_summary(run.call_records)["models"],
         "budget_refusals": refusals,
         "spend": spend,
+        **judge_pins(backend, judge.model, judge.facts, run.call_records),
     }
     subject = ComparisonSubject(_COMPARISON_JUDGE[backend], backend, judge.model, split)
     receipt = comparison_receipt(
