@@ -35,6 +35,10 @@ Attributes:
     count_media_markers (callable): Count media markers in a prefix.
     CandidateScoringResult (type): Fail-closed scored candidates.
     CategoricalExecutionResult (type): Greedy categorical execute outcome.
+    OffOptionReceipt (type): Off-option mass, threshold and guard flag.
+    apply_off_option_threshold (callable): Flag a result whose off-option
+        mass is above a caller threshold.
+    check_off_option_threshold (callable): Reject an invalid threshold.
     DecisionExecutionError (type): Categorical execute rejected inputs.
     GemmaTemplateError (type): Gemma served-template or answer-prefix violation.
     GenerationError (type): Base failure for a generation call.
@@ -77,6 +81,8 @@ from typevet.domain.candidate_scoring_validate import build_and_validate_result
 from typevet.domain.decision_compile import compile_json_schema
 from typevet.domain.decision_execute import (
     CategoricalExecutionResult,
+    apply_off_option_threshold,
+    check_off_option_threshold,
     execute_categorical_decision,
 )
 from typevet.domain.decisions import (
@@ -121,7 +127,11 @@ from typevet.domain.judgment_questions import (
     Score,
     question_types,
 )
-from typevet.domain.judgment_response import JudgmentResponse, TokenUsage
+from typevet.domain.judgment_response import (
+    JudgmentResponse,
+    OffOptionReceipt,
+    TokenUsage,
+)
 from typevet.domain.media import (
     MEDIA_MARKER,
     SUPPORTED_IMAGE_MIME_TYPES,
@@ -162,6 +172,7 @@ __all__ = [
     "JudgmentValidationError",
     "Noul",
     "NoulAnswer",
+    "OffOptionReceipt",
     "Question",
     "SchemaError",
     "SchemaValidationError",
@@ -175,8 +186,10 @@ __all__ = [
     "ScoringValidationError",
     "TokenUsage",
     "TransportError",
+    "apply_off_option_threshold",
     "bind_control_candidates",
     "build_and_validate_result",
+    "check_off_option_threshold",
     "compile_json_schema",
     "compile_question_records",
     "count_media_markers",

@@ -1,4 +1,7 @@
-"""Response container for judgment port calls.
+"""Response container for judgment port calls and the off-option receipt.
+
+``OffOptionReceipt`` records the off-option mass, the caller threshold and
+the guard flag for each answer (#353).
 
 Examples:
     ```python
@@ -50,6 +53,67 @@ class TokenUsage:
 
 
 @dataclass(frozen=True, slots=True)
+class OffOptionReceipt:
+    """Off-option mass, the caller threshold and the guard flag for one answer.
+
+    The flag is ``True`` only when both values are known and the mass is
+    above the threshold. A ``None`` mass never sets the flag.
+
+    Attributes:
+        off_option_mass (float | None): Probability mass outside the option
+            set, or ``None`` when the scorer does not report it.
+        off_option_threshold (float | None): Caller threshold, or ``None``
+            when the guard is off.
+        off_option_flag (bool): ``True`` when the mass is above the threshold.
+
+    Examples:
+        ```python
+        receipt = OffOptionReceipt.evaluate(mass=0.4, threshold=0.3)
+        assert receipt.off_option_flag is True
+        unknown = OffOptionReceipt.evaluate(mass=None, threshold=0.0)
+        assert unknown.off_option_flag is False
+        ```
+    """
+
+    off_option_mass: float | None = None
+    off_option_threshold: float | None = None
+    off_option_flag: bool = False
+
+    @classmethod
+    def evaluate(
+        cls, *, mass: float | None, threshold: float | None
+    ) -> OffOptionReceipt:
+        """Build a receipt and set the flag from the mass and the threshold.
+
+        Args:
+            mass: Off-option mass from the scoring result, or ``None``.
+            threshold: Caller threshold, or ``None`` when the guard is off.
+
+        Returns:
+            Receipt whose flag is ``True`` only when ``mass > threshold``.
+        """
+        flag = mass is not None and threshold is not None and mass > threshold
+        return cls(
+            off_option_mass=mass,
+            off_option_threshold=threshold,
+            off_option_flag=flag,
+        )
+
+    def as_dict(self) -> dict[str, float | bool | None]:
+        """Return the receipt as a JSON-ready mapping with explicit names.
+
+        Returns:
+            ``off_option_mass``, ``off_option_threshold`` and
+            ``off_option_flag``; an unknown value stays ``None`` (JSON null).
+        """
+        return {
+            "off_option_mass": self.off_option_mass,
+            "off_option_threshold": self.off_option_threshold,
+            "off_option_flag": self.off_option_flag,
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class JudgmentResponse:
     """Answers grouped by question type with model and optional usage metadata.
 
@@ -57,6 +121,8 @@ class JudgmentResponse:
         model (str): The model id that produced the answers.
         usage (TokenUsage): Token usage metadata for the call.
         answers (dict[str, Answer]): Answer objects keyed by question name.
+        off_option (dict[str, OffOptionReceipt]): Off-option receipt keyed by
+            question name; empty when the adapter does not report one.
 
     Examples:
         ```python
@@ -73,6 +139,7 @@ class JudgmentResponse:
     model: str
     usage: TokenUsage = field(default_factory=TokenUsage)
     answers: dict[str, Answer] = field(default_factory=dict)
+    off_option: dict[str, OffOptionReceipt] = field(default_factory=dict)
 
     @property
     def nouls(self) -> dict[str, NoulAnswer]:

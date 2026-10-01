@@ -163,7 +163,7 @@ Sources: [runtime limits and ownership](../reference/typed-judgment-release-supp
 Each item is an open gap at the time of writing.
 None of them has a promised fix date.
 
-- [#188](https://github.com/Alberto-Codes/typevet/issues/188) and [#193](https://github.com/Alberto-Codes/typevet/issues/193): no guard checks off-menu mass.
+- [#188](https://github.com/Alberto-Codes/typevet/issues/188) and [#193](https://github.com/Alberto-Codes/typevet/issues/193): the off-menu mass guard is opt-in and flags only.
   The scoring result reports this mass as `off_option_mass` ([#297](https://github.com/Alberto-Codes/typevet/issues/297)).
   [#207](https://github.com/Alberto-Codes/typevet/issues/207) calls the same quantity off-menu mass.
   On llama.cpp the value is 1 minus the sum of the raw candidate probabilities.
@@ -172,7 +172,13 @@ None of them has a promised fix date.
   When the server does not report the size, the value is `None`.
   A caller-set `n_vocab` that is smaller than the model vocabulary still passes the count; the Gemma native vision factory sets 262144 by default.
   On vLLM the value is always `None` (unavailable), because the response holds at most 128 token ids.
-  typevet reports the value and does not act on it. Judgment answers do not show it.
+  By default typevet reports the value and does not act on it.
+  A caller can pass `off_option_threshold` to `judge` ([#353](https://github.com/Alberto-Codes/typevet/issues/353)).
+  An answer whose mass is above the threshold has `off_option_flag` set to `True`.
+  The guard flags the answer and does not raise.
+  `JudgmentResponse.off_option` keeps one receipt per answer with the mass, the threshold and the flag.
+  A `None` mass never sets the flag, and the receipt records `off_option_mass: null`.
+  So on vLLM the guard never flags.
   On llama.cpp, a caller framing that omits the Gemma 4 no-thinking prefill gives a confident, wrong answer with no error.
   The `ModelFramingPort` docstring states the requirement ([#235](https://github.com/Alberto-Codes/typevet/issues/235)), and typevet does not check it.
   On vLLM the scoring adapter sends `enable_thinking: false`, so a vLLM framing needs no prefill.

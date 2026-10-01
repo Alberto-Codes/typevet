@@ -8,6 +8,10 @@ scoring IO (permutation averaging is out of scope). The port result is checked
 against the exact scoring request before softmax, so a reordered or partial
 result cannot assign one choice's score to another.
 
+Each result keeps an ``OffOptionReceipt`` with the scorer ``off_option_mass``.
+``apply_off_option_threshold`` adds a caller threshold. It flags, and does not
+raise for, a mass above that threshold (#353).
+
 Examples:
     ```python
     from typevet.domain.decision_execute import execute_categorical_decision
@@ -28,7 +32,7 @@ See Also:
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any
 
 from typevet.domain.candidate_scoring_request import (
@@ -38,7 +42,7 @@ from typevet.domain.candidate_scoring_request import (
 from typevet.domain.candidate_scoring_validate import validate_result_against_request
 from typevet.domain.decisions import MAX_ENUM_CHOICES, Decision
 from typevet.domain.errors import DecisionExecutionError
-from typevet.domain.judgment_response import TokenUsage
+from typevet.domain.judgment_response import OffOptionReceipt, TokenUsage
 from typevet.domain.media import ImageInput
 from typevet.domain.scoring_stage import ScoreStage
 
@@ -62,6 +66,8 @@ class CategoricalExecutionResult:
         logprobs (tuple[float, ...]): Raw pre-sampling logprobs in choice order.
         model (str): Model id from the scoring port result.
         usage (TokenUsage): Token usage metadata from the scoring port.
+        off_option (OffOptionReceipt): Off-option mass, caller threshold and
+            guard flag; execute sets no threshold, so the flag is ``False``.
 
     Examples:
         ```python
@@ -75,6 +81,7 @@ class CategoricalExecutionResult:
     logprobs: tuple[float, ...]
     model: str
     usage: TokenUsage
+    off_option: OffOptionReceipt = field(default_factory=OffOptionReceipt)
 
 
 def _choice_label(choice: Any) -> str:
@@ -91,6 +98,28 @@ def _reject_unsupported_permutations(decision: Decision) -> None:
         "permutations must be 1"
     )
     raise DecisionExecutionError(msg)
+
+
+def check_off_option_threshold(threshold: object) -> None:
+    """Reject a threshold that is not ``None`` or a number in ``[0, 1]``.
+
+    Args:
+        threshold: Caller threshold for the off-option mass.
+
+    Raises:
+        DecisionExecutionError: A bool, a non-number, NaN, or a value
+            outside ``[0, 1]``.
+    """
+    if threshold is None:
+        return
+    valid = (
+        isinstance(threshold, (int, float))
+        and not isinstance(threshold, bool)
+        and 0.0 <= threshold <= 1.0
+    )
+    if not valid:
+        msg = f"off_option_threshold must be None or in [0, 1], got {threshold!r}"
+        raise DecisionExecutionError(msg)
 
 
 def _validate_inputs(
@@ -192,7 +221,7 @@ def execute_categorical_decision(
 
     Returns:
         ``CategoricalExecutionResult`` with the input ``decision``, selected
-        value, full probability table, and raw logprobs.
+        value, full probability table, raw logprobs and off-option receipt.
 
     Raises:
         DecisionExecutionError: Unsupported syntax, nullable field, permutations
@@ -226,4 +255,32 @@ def execute_categorical_decision(
         logprobs=logprobs,
         model=scored.model,
         usage=scored.usage,
+        off_option=OffOptionReceipt(off_option_mass=scored.off_option_mass),
     )
+
+
+def apply_off_option_threshold(
+    result: CategoricalExecutionResult, threshold: float | None
+) -> CategoricalExecutionResult:
+    """Set the caller threshold on the receipt and flag a mass above it.
+
+    The guard flags and does not raise. A ``None`` mass never sets the flag.
+    A ``None`` threshold keeps the guard off and the flag ``False``.
+
+    Args:
+        result: Outcome from ``execute_categorical_decision``.
+        threshold: Caller threshold, or ``None`` to turn the guard off.
+
+    Returns:
+        A copy of ``result`` whose receipt holds the mass, the threshold and
+        the flag.
+
+    Raises:
+        DecisionExecutionError: ``threshold`` is not ``None`` or a number
+            in ``[0, 1]``.
+    """
+    check_off_option_threshold(threshold)
+    receipt = OffOptionReceipt.evaluate(
+        mass=result.off_option.off_option_mass, threshold=threshold
+    )
+    return replace(result, off_option=receipt)

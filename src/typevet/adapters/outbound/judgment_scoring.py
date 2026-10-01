@@ -3,7 +3,9 @@
 A native served family wraps every prefix, with or without media; Gemma 3 and
 Gemma 4 turns both qualify (#171, #179). Without one, text-only prefixes use
 degraded ChatML and media fails closed (#157). An injected ``ModelFramingPort``
-replaces that served-template choice for every prefix (#174).
+replaces that served-template choice for every prefix (#174). An optional
+``off_option_threshold`` flags each answer whose off-option mass is above it
+and keeps one ``OffOptionReceipt`` per answer on the response (#353).
 
 Examples:
     ```python
@@ -37,10 +39,12 @@ from typevet.adapters.outbound.gemma.scoring_prefix import compose_scoring_prefi
 from typevet.domain.candidate_scoring_request import CandidateTokenSpec
 from typevet.domain.decision_execute import (
     CategoricalExecutionResult,
+    apply_off_option_threshold,
+    check_off_option_threshold,
     execute_categorical_decision,
 )
 from typevet.domain.decisions import Decision
-from typevet.domain.errors import JudgmentValidationError
+from typevet.domain.errors import DecisionExecutionError, JudgmentValidationError
 from typevet.domain.field_instructions import render_field_instructions
 from typevet.domain.judgment_answers import (
     Answer,
@@ -54,7 +58,11 @@ from typevet.domain.judgment_normalize import (
     normalize_question,
 )
 from typevet.domain.judgment_questions import Choice, Noul, Question, Score
-from typevet.domain.judgment_response import JudgmentResponse, TokenUsage
+from typevet.domain.judgment_response import (
+    JudgmentResponse,
+    OffOptionReceipt,
+    TokenUsage,
+)
 from typevet.domain.media import MEDIA_MARKER, ImageInput, count_media_markers
 from typevet.ports.framing import ModelFramingPort
 from typevet.ports.scoring import CandidateScoringPort
@@ -109,14 +117,16 @@ def answer_from_execution(
         result: Softmax outcome from ``execute_categorical_decision``.
 
     Returns:
-        ``NoulAnswer``, ``ChoiceAnswer``, or ``ScoreAnswer`` per question type.
+        ``NoulAnswer``, ``ChoiceAnswer``, or ``ScoreAnswer`` per question type,
+        with ``off_option_flag`` copied from ``result.off_option``.
 
     Raises:
         JudgmentValidationError: Unsupported question type.
     """
+    flag = result.off_option.off_option_flag
     if isinstance(question, Noul):
         noul = next(p for choice, p in result.probabilities if choice is True)
-        return NoulAnswer(noul=noul)
+        return NoulAnswer(noul=noul, off_option_flag=flag)
     if isinstance(question, Choice):
         originals = judgment_original_labels(question)
         probs = {originals[i]: p for i, (_, p) in enumerate(result.probabilities)}
@@ -126,6 +136,7 @@ def answer_from_execution(
             choice=selected,
             confidence=probs[selected],
             probabilities=probs,
+            off_option_flag=flag,
         )
     if isinstance(question, Score):
         probs = {int(choice): p for choice, p in result.probabilities}
@@ -136,9 +147,23 @@ def answer_from_execution(
             confidence=max(probs.values()),
             legend=legend,
             probabilities=probs,
+            off_option_flag=flag,
         )
     msg = f"unsupported question type: {type(question)!r}"
     raise JudgmentValidationError(msg)
+
+
+def _check_threshold(threshold: float | None) -> None:
+    """Reject an invalid off-option threshold before any scoring IO.
+
+    Raises:
+        JudgmentValidationError: ``threshold`` is not ``None`` or a number
+            in ``[0, 1]``.
+    """
+    try:
+        check_off_option_threshold(threshold)
+    except DecisionExecutionError as exc:
+        raise JudgmentValidationError(str(exc)) from exc
 
 
 def _field_criteria(question: Question) -> Mapping[str, str] | None:
@@ -320,6 +345,7 @@ class ScoringJudgmentAdapter:
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         """Validate all questions, score sequentially, return typed answers.
 
@@ -329,25 +355,31 @@ class ScoringJudgmentAdapter:
         empty. When ``media`` is non-empty, every prefix carries one
         ``MEDIA_MARKER`` per image and every scoring request carries the same
         image tuple. Without a native family, text-only prefixes use ChatML.
-        An injected framing composes every prefix instead.
+        An injected framing composes every prefix instead. A set
+        ``off_option_threshold`` flags, and does not raise for, each answer
+        whose off-option mass is above it; a ``None`` mass never flags.
 
         Args:
             state: Content under evaluation (text or JSON-serializable value).
             questions: Named native questions.
             model: Backend model id forwarded to the scorer.
             media: Images to condition every scored field on, in order.
+            off_option_threshold: Off-option mass limit in ``[0, 1]``, or
+                ``None`` (the default) to turn the guard off.
 
         Returns:
-            ``JudgmentResponse`` with one typed answer per question id.
+            ``JudgmentResponse`` with one typed answer and one
+            ``OffOptionReceipt`` per question id.
 
         Raises:
-            JudgmentValidationError: Invalid or mismatched model, wire shape,
+            JudgmentValidationError: Invalid threshold, model, wire shape,
                 question payload, unsupported served template, media without
                 a native Gemma 3 or Gemma 4 served template, or a framing prefix
                 with the wrong media-marker count, before any scoring IO.
         """
         if not model.strip():
             raise JudgmentValidationError("model must be non-empty")
+        _check_threshold(off_option_threshold)
         if self._pinned_model is not None and model != self._pinned_model:
             msg = f"model {model!r} does not match pinned model {self._pinned_model!r}"
             raise JudgmentValidationError(msg)
@@ -373,6 +405,7 @@ class ScoringJudgmentAdapter:
             prepared.append((name, raw, decision, candidates, prefix))
 
         answers: dict[str, Answer] = {}
+        receipts: dict[str, OffOptionReceipt] = {}
         usage = TokenUsage()
         result_model = model
         for name, raw, decision, candidates, prefix in prepared:
@@ -385,10 +418,14 @@ class ScoringJudgmentAdapter:
                 temperature=self._temperature,
                 media=images,
             )
+            executed = apply_off_option_threshold(executed, off_option_threshold)
             answers[name] = answer_from_execution(raw, executed)
+            receipts[name] = executed.off_option
             result_model = executed.model
             usage = _merge_usage(usage, executed.usage)
-        return JudgmentResponse(model=result_model, usage=usage, answers=answers)
+        return JudgmentResponse(
+            model=result_model, usage=usage, answers=answers, off_option=receipts
+        )
 
 
 def _merge_usage(left: TokenUsage, right: TokenUsage) -> TokenUsage:
@@ -413,16 +450,19 @@ def _merge_usage(left: TokenUsage, right: TokenUsage) -> TokenUsage:
 
 
 class ScoringAdapterSettings(TypedDict, total=False):
-    """Optional ``ScoringJudgmentAdapter`` keywords ``judge_with_scoring`` forwards.
+    """Optional keywords that ``judge_with_scoring`` forwards to the adapter.
 
     Attributes:
         temperature (float): Softmax temperature for execute; default ``1.0``.
         served_template (ServedTemplateClass | None): Served family for media
             prefixes; default ``None`` (unknown).
+        off_option_threshold (float | None): Forwarded to ``judge``, not to
+            the adapter; default ``None`` (guard off).
     """
 
     temperature: float
     served_template: ServedTemplateClass | None
+    off_option_threshold: float | None
 
 
 def judge_with_scoring(
@@ -456,6 +496,8 @@ def judge_with_scoring(
         temperature (float): Softmax temperature for execute.
         served_template (ServedTemplateClass | None): Served family for media
             prefixes; ``None`` means unknown.
+        off_option_threshold (float | None): Off-option mass limit that
+            ``judge`` applies; ``None`` turns the guard off.
 
     Returns:
         ``JudgmentResponse`` from a fresh adapter instance.
@@ -463,9 +505,14 @@ def judge_with_scoring(
     Raises:
         ValueError: Both ``framing`` and ``served_template`` are set.
     """
-    return ScoringJudgmentAdapter(
+    adapter = ScoringJudgmentAdapter(
         scoring_port,
         tokenize_content=tokenize_content,
         framing=framing,
-        **settings,
-    ).judge(state, questions, model, media=media)
+        temperature=settings.get("temperature", 1.0),
+        served_template=settings.get("served_template"),
+    )
+    threshold = settings.get("off_option_threshold")
+    return adapter.judge(
+        state, questions, model, media=media, off_option_threshold=threshold
+    )

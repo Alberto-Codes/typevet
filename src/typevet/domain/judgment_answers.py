@@ -1,5 +1,8 @@
 """Answer types for System One-shaped judgment results.
 
+Each answer carries ``off_option_flag``, ``False`` unless a caller threshold
+on the off-option mass was exceeded (#353).
+
 The domain checks noul, confidence and probabilities against ``[0, 1]`` on
 construction. Logprob scoring that fills these fields lives in a future adapter
 ([issue #26](https://github.com/Alberto-Codes/typevet/issues/26)).
@@ -49,12 +52,24 @@ def _validate_finite_number(value: float, name: str) -> None:
         raise ValueError(f"{name} must be finite")
 
 
+def _validate_flag(value: object) -> None:
+    """Require a real bool for ``off_option_flag``.
+
+    Raises:
+        TypeError: When ``value`` is not a bool.
+    """
+    if not isinstance(value, bool):
+        raise TypeError(f"off_option_flag must be bool, got {type(value).__name__}")
+
+
 @dataclass(frozen=True, slots=True)
 class NoulAnswer:
     """A yes/no answer with probability of true.
 
     Attributes:
         noul (float): Probability of a yes answer, from 0 to 1.
+        off_option_flag (bool): ``True`` when the off-option mass is above
+            the caller threshold; ``False`` by default.
 
     Examples:
         ```python
@@ -64,14 +79,17 @@ class NoulAnswer:
     """
 
     noul: float
+    off_option_flag: bool = False
 
     def __post_init__(self) -> None:
         """Reject non-finite or out-of-range ``noul`` values.
 
         Raises:
-            TypeError: When ``noul`` is not a numeric type.
+            TypeError: When ``noul`` is not a numeric type, or the flag is
+                not a bool.
             ValueError: When ``noul`` is not finite or not in ``[0.0, 1.0]``.
         """
+        _validate_flag(self.off_option_flag)
         _validate_finite_number(self.noul, "noul")
         if self.noul < 0.0 or self.noul > 1.0:
             raise ValueError(f"noul must be in [0.0, 1.0], got {self.noul}")
@@ -85,6 +103,8 @@ class ChoiceAnswer:
         choice (str): The name of the selected option.
         confidence (float): Confidence in the selected choice, from 0 to 1.
         probabilities (dict[str, float]): Probability of each choice by name.
+        off_option_flag (bool): ``True`` when the off-option mass is above
+            the caller threshold; ``False`` by default.
 
     Examples:
         ```python
@@ -100,14 +120,17 @@ class ChoiceAnswer:
     choice: str
     confidence: float
     probabilities: dict[str, float]
+    off_option_flag: bool = False
 
     def __post_init__(self) -> None:
         """Reject invalid confidence, probabilities, or a missing ``choice`` key.
 
         Raises:
-            TypeError: When numeric fields are not numeric types.
+            TypeError: When numeric fields are not numeric types, or the flag
+                is not a bool.
             ValueError: When values are out of range or probabilities do not sum to one.
         """
+        _validate_flag(self.off_option_flag)
         _validate_finite_number(self.confidence, "confidence")
         if self.confidence < 0.0 or self.confidence > 1.0:
             raise ValueError(f"confidence must be in [0.0, 1.0], got {self.confidence}")
@@ -136,6 +159,8 @@ class ScoreAnswer:
         confidence (float): Confidence in the score, from 0 to 1.
         legend (dict[int, str]): Rubric descriptions keyed by integer level.
         probabilities (dict[int, float]): Probability of each level.
+        off_option_flag (bool): ``True`` when the off-option mass is above
+            the caller threshold; ``False`` by default.
 
     Examples:
         ```python
@@ -153,14 +178,17 @@ class ScoreAnswer:
     confidence: float
     legend: dict[int, str]
     probabilities: dict[int, float]
+    off_option_flag: bool = False
 
     def __post_init__(self) -> None:
         """Reject mismatched legend keys, bad probabilities, or out-of-range score.
 
         Raises:
-            TypeError: When numeric fields or dict keys have wrong types.
+            TypeError: When numeric fields or dict keys have wrong types, or
+                the flag is not a bool.
             ValueError: When values are out of range or probabilities do not sum to one.
         """
+        _validate_flag(self.off_option_flag)
         _validate_finite_number(self.confidence, "confidence")
         if self.confidence < 0.0 or self.confidence > 1.0:
             raise ValueError(f"confidence must be in [0.0, 1.0], got {self.confidence}")

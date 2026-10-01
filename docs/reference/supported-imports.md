@@ -74,8 +74,9 @@ compiler types, judgment types, and scoring types, import from
 | `compile_json_schema` | Compile object schema to decisions |
 | `dependency_layers` | Topological layers for decision dependencies |
 | `Noul`, `Choice`, `Score`, `Question` | System One-shaped judgment questions |
-| `NoulAnswer`, `ChoiceAnswer`, `ScoreAnswer`, `Answer` | Typed judgment answers; `ScoreAnswer.score` is the probability-weighted expected rubric level (float), not the modal level |
+| `NoulAnswer`, `ChoiceAnswer`, `ScoreAnswer`, `Answer` | Typed judgment answers; `ScoreAnswer.score` is the probability-weighted expected rubric level (float), not the modal level. `off_option_flag` marks an off-option mass above the caller threshold |
 | `JudgmentResponse`, `TokenUsage` | Judgment call result and token metadata |
+| `OffOptionReceipt` | Off-option mass, caller threshold and guard flag for one answer |
 | `JudgmentError`, `JudgmentValidationError` | Judgment failure types |
 | `question_types` | Map question ids to wire type names |
 | `CandidateScoringRequest`, `CandidateTokenSpec` | Candidate logprob scoring ask |
@@ -88,6 +89,7 @@ compiler types, judgment types, and scoring types, import from
 | `CategoricalExecutionResult` | Greedy categorical execute outcome |
 | `DecisionExecutionError` | Categorical execute rejected inputs |
 | `execute_categorical_decision` | Choice/Bool execution; calls the injected scoring port and performs no I/O itself |
+| `apply_off_option_threshold`, `check_off_option_threshold` | Flag an execute result whose off-option mass is above a caller threshold; reject an invalid threshold |
 | `bind_control_candidates`, `judgment_original_labels` | Control-token binding for native questions |
 | `normalize_noul`, `normalize_choice`, `normalize_score`, `normalize_question` | Native question → ``Decision`` |
 | `question_record_to_property`, `question_records_to_json_schema`, `compile_question_records` | Question records → JSON Schema or ``Decision`` values; defined in `typevet.domain.question_schema` (see [question-schema-map.md](question-schema-map.md)) |
