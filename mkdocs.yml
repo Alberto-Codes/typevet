@@ -146,6 +146,7 @@ nav:
           - Releases: reference/releases.md
           - Glossary: reference/glossary.md
           - Question schema map: reference/question-schema-map.md
+          - Judgment text parts: reference/judgment-text-parts.md
       - Evidence:
           - Typed-judgment release support matrix: reference/typed-judgment-release-support-matrix.md
           - Judgment live receipts: reference/judgment-live-receipts.md

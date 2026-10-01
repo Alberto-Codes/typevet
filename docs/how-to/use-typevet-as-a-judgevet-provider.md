@@ -173,4 +173,5 @@ One live run per backend (llama.cpp and vLLM) asked one Noul, one Choice and one
 
 - Read why the bridge exists in [TypeLLM, Jev and judgevet](../explanation/typellm-and-judgevet.md).
 - See the bridge import path in [supported imports](../reference/supported-imports.md#judgevet-bridge).
+- See which text parts of a judgment call a caller can change in [judgment text parts](../reference/judgment-text-parts.md).
 - See the judgevet side, with typevet as the example, in judgevet's [use a self-hosted provider](https://alberto-codes.github.io/judgevet/how-to/use-a-self-hosted-provider/).

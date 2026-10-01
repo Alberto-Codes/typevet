@@ -241,3 +241,4 @@ It is not the cost of this run alone. The local runs had no rental cost.
 - [Limits and known gaps](limits.md)
 - [Verified evidence and inferred claims](verification.md)
 - [Native typed judgments](native-typed-judgments.md)
+- [Judgment text parts](../reference/judgment-text-parts.md): each text part of a judgment call and its evolution status

@@ -131,6 +131,7 @@ answers a question, and a reference gives facts.
   ([#180](https://github.com/Alberto-Codes/typevet/issues/180)).
 - [Question records → JSON Schema](reference/question-schema-map.md) (reference): Noul/Choice/Score export records to `compile_json_schema` fixtures ([#102](https://github.com/Alberto-Codes/typevet/issues/102)).
 - [Glossary](reference/glossary.md) (reference): the one meaning of each term.
+- [Judgment text parts](reference/judgment-text-parts.md) (reference): each text part of a judgment call, where it is defined and its evolution status.
 - [Python API reference](reference/api/index.md) (reference): the index of
   the package pages generated from the public docstrings. The pages are
   [root package](reference/api/root.md), [domain](reference/api/domain.md),

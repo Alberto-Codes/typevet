@@ -37,6 +37,8 @@ judgment is the spine judgevet-shaped callers need later. See
    — TPJEP eight or read the frozen finvet-6 receipt.
 3. [Judgment live receipts](../reference/judgment-live-receipts.md) — measured
    numbers and pins, with links to issue comments.
+4. [Judgment text parts](../reference/judgment-text-parts.md) — each text part
+   of a judgment call and its evolution status.
 
 Structured JSON from `GenerationPort` is a sibling path. See
 [Call typevet from Python](../how-to/call-typevet-from-python.md).
