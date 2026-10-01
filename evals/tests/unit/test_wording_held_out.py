@@ -14,6 +14,7 @@ See Also:
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections import Counter
 from collections.abc import Mapping
@@ -300,6 +301,39 @@ def test_receipt_of_a_stopped_run_has_no_verdict() -> None:
     assert receipt["bootstrap"] is None
     assert receipt["verdict"] is None
     assert receipt["reference_133"] is None
+
+
+def _digests(text: str) -> dict[str, Any]:
+    """Return the expected digests of ``{"instructions": text}`` (#362)."""
+    canonical = json.dumps(
+        {"instructions": text}, sort_keys=True, separators=(",", ":")
+    )
+    loose = json.dumps({"instructions": text}, sort_keys=True, ensure_ascii=False)
+    return {
+        "components": {"instructions": hashlib.sha256(text.encode()).hexdigest()},
+        "mapping": hashlib.sha256(canonical.encode()).hexdigest(),
+        "gepa_candidate_id": hashlib.sha256(loose.encode()).hexdigest()[:12],
+    }
+
+
+def test_receipt_pins_the_seed_and_evolved_wording_by_digest() -> None:
+    receipt = held_out_receipt(
+        _run(),
+        seed_text=SEED_TEXT,
+        evolved_text=EVOLVED_TEXT,
+        backend="vllm",
+        model="judge",
+        pins={},
+        identity={},
+    )
+
+    assert receipt["wording_digests"] == {
+        "seed": _digests(SEED_TEXT),
+        "evolved": _digests(EVOLVED_TEXT),
+    }
+    assert receipt["seed_text"] == SEED_TEXT
+    assert receipt["evolved_text"] == EVOLVED_TEXT
+    json.dumps(receipt)
 
 
 def test_evolution_artifact_holds_both_texts_and_the_selection_rows() -> None:

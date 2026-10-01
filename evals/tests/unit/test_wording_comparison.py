@@ -11,6 +11,7 @@ See Also:
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import replace
 from pathlib import Path
@@ -202,6 +203,21 @@ def test_receipt_holds_kappa_per_arm_and_no_pass_verdict() -> None:
     assert receipt["identity"] == {"run_id": "x"}
     assert len(receipt["pairs"]) == 4
     json.dumps(receipt)
+
+
+def test_receipt_pins_the_seed_and_evolved_wording_by_digest() -> None:
+    receipt = _receipt(HeldOutRun(_PAIRS, 4, 4, None, split="test"))
+
+    for arm, text in (("seed", SEED_TEXT), ("evolved", "evolved")):
+        canonical = json.dumps({"instructions": text}, separators=(",", ":"))
+        loose = json.dumps({"instructions": text}, ensure_ascii=False)
+        assert receipt["wording_digests"][arm] == {
+            "components": {"instructions": hashlib.sha256(text.encode()).hexdigest()},
+            "mapping": hashlib.sha256(canonical.encode()).hexdigest(),
+            "gepa_candidate_id": hashlib.sha256(loose.encode()).hexdigest()[:12],
+        }
+    assert receipt["seed_text"] == SEED_TEXT
+    assert receipt["evolved_text"] == "evolved"
 
 
 def test_receipt_kappa_equals_the_metric_function() -> None:

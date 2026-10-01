@@ -7,6 +7,7 @@ Gemma's artifact for ``llama_cpp`` and ``vllm``. ``comparison_receipt`` gives
 per arm Cohen's kappa against the DIFrauD labels, the Brier score, the ECE
 and the accuracy, the paired bootstrap intervals (context only) and each
 call's latency and input tokens.
+It pins both wordings by digest in ``wording_digests`` (#362).
 
 The receipt has no pass rule. It does not apply the #309 verdict, and it
 makes no claim that one judge can replace the other. ``ValidationRows``
@@ -46,6 +47,7 @@ from types import MappingProxyType
 from typing import Any, Final
 
 from typevet_evals.wording.calls import call_summary
+from typevet_evals.wording.digests import wording_fields
 from typevet_evals.wording.held_out import (
     HELD_OUT_SPLIT,
     VALIDATION_SPLIT,
@@ -186,7 +188,8 @@ def comparison_receipt(
         identity: The experiment identity mapping.
 
     Returns:
-        A JSON-serializable receipt.
+        A JSON-serializable receipt. It keeps both texts verbatim and pins
+        them by digest in ``wording_digests`` (#362).
 
     Raises:
         ValueError: When ``subject.split`` is not ``run.split``.
@@ -215,8 +218,7 @@ def comparison_receipt(
         "split": run.split,
         "positive_threshold": POSITIVE_THRESHOLD,
         "ece_bins": ECE_BINS,
-        "seed_text": seed_text,
-        "evolved_text": evolved_text,
+        **wording_fields(seed_text, evolved_text),
         "rows": len(run.pairs),
         "calls": {
             "seed": run.seed_calls,

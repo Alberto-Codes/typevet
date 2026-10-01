@@ -8,6 +8,7 @@ first failure and records it. The run names the ``split`` of its row type.
 scored pairs into the metrics of both wordings, the paired bootstrap intervals (context
 only), the pre-registered verdict, the #133 re-measurement and each call's
 latency and input tokens with their totals (#327).
+The receipt pins both wordings by digest in ``wording_digests`` (#362).
 
 ``stratified_subset`` picks the fixed validation rows the evolution selects
 on, and ``evolution_artifact`` records what one evolution run produced.
@@ -60,6 +61,7 @@ from typing import Any, ClassVar, Final
 
 from typevet_evals.datasets.difraud import DIFrauDRecord
 from typevet_evals.wording.calls import CallRecord, call_summary
+from typevet_evals.wording.digests import wording_fields
 from typevet_evals.wording.metrics import (
     paired_bootstrap,
     pass_verdict,
@@ -381,7 +383,8 @@ def held_out_receipt(
         identity: The experiment identity mapping.
 
     Returns:
-        A JSON-serializable receipt.
+        A JSON-serializable receipt. It keeps both texts verbatim and pins
+        them by digest in ``wording_digests`` (#362).
 
     Raises:
         ValueError: When ``run.split`` is not ``test``, for example a run of
@@ -410,8 +413,7 @@ def held_out_receipt(
         "issue": 309,
         "backend": backend,
         "model": model,
-        "seed_text": seed_text,
-        "evolved_text": evolved_text,
+        **wording_fields(seed_text, evolved_text),
         "rows": len(run.pairs),
         "calls": {
             "seed": run.seed_calls,
