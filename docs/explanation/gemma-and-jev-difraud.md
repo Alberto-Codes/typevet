@@ -43,6 +43,7 @@ The #252 design asks that each quant be reported as its own judge.
 | Jev | Requested `jev-latest`, reported `jev-1.13.0` | Hosted, `https://api.typesafe.ai`, through judgevet | Not published | Not applicable (Jev HTTP) |
 | Gemma 4 31B, llama.cpp | Alias `gemma-4-31b-kv9-q4km-mm` | Local llama.cpp, build `b11277-eae11d221` | File `gemma-4-31b-24gib-kv9-decoder.gguf`, ftype `Q2_K - Medium` | `native_gemma4_turn`, probed |
 | Gemma 4 31B, vLLM | `google/gemma-4-31B-it`, revision `842da379` | vLLM v0.30.0 on one rented H100 | BF16 | `native_gemma4_turn`, probed |
+| nimble, Ollama (#333) | Requested `nimble`, digest `24e550a1…67e0c` | Local Ollama 0.35.0, through judgevet's HTTP adapter | 9.0B, Q8_0 GGUF | Not applicable (Ollama HTTP) |
 
 The `q4km` in the llama.cpp alias does not describe the decoder weights. The
 server reports the ftype `Q2_K - Medium` for that alias.
@@ -342,13 +343,36 @@ is.
   0.043). Those instructions were evolved without criteria. The column is
   context only and enters no verdict.
 
-## What comes next
+## A third judge: nimble on Ollama (#333)
 
-A third judge is planned:
-[#333](https://github.com/Alberto-Codes/typevet/issues/333) adds an Ollama
-`nimble` judge. It depends on judgevet
-[#267](https://github.com/Alberto-Codes/judgevet/issues/267). No run exists
-yet, so this page makes no claim about it.
+[#333](https://github.com/Alberto-Codes/typevet/issues/333) added a local
+decision model as a third judge. The judge is `nimble` (9.0B, Q8_0, digest
+`24e550a1…67e0c`) on Ollama 0.35.0, reached through judgevet's HTTP adapter
+at `localhost:11434`. The seed wording, the splits, the scorer and the 158
+held-out rows are those of #252. One setting differs: the reflector is
+`Llama-3.1-8B-Instruct-Q4_K_M`, not Qwen3.8-27B, because nimble and Qwen do
+not fit on one 24 GB card at the same time. The pre-registration records
+that change before the run.
+
+| Judge | Wording | Accuracy | Cohen's κ | Brier | ECE (10 bins) |
+|---|---|---|---|---|---|
+| nimble, Ollama | seed | 0.899 | 0.712 | 0.078 | 0.116 |
+| | evolved | 0.899 | 0.712 | 0.078 | 0.116 |
+
+The evolved row equals the seed row. The Llama reflector proposed five
+wordings and the run accepted none. Two were over the 94-character cap
+(432 and 681 characters). Three scored below the seed on the minibatch. So
+the within-judge pass rule is not met, because nothing changed.
+
+On the seed wording, nimble sits between the two other judges. Its accuracy
+(0.899) and Brier (0.078) beat the Gemma seed row and trail the Jev seed row.
+Its ECE (0.116) is the highest of the three seed rows. This is a descriptive
+comparison. An Ollama judge is compatible in shape with Jev, not equivalent
+in judgment. The evolution result says nothing about what the Qwen reflector
+would propose for nimble. A rerun with Qwen needs a second card or a pod.
+
+Calls: 1,216 judge calls in evolution, 0 failed, median latency 0.46 s, wall
+124.5 s. Held-out: 316 calls, wall 28 s.
 
 ## Receipts
 
@@ -377,6 +401,10 @@ yet, so this page makes no claim about it.
   and
   [`wording376_armC_held_out_gemma_llama_cpp.json`](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/difraud/receipts/wording376_armC_held_out_gemma_llama_cpp.json):
   the #376 arm C evolution artifact and held-out check, in the same shape.
+- [`wording333_ollama_evolution.json`](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/difraud/receipts/wording333_ollama_evolution.json)
+  and
+  [`wording333_ollama_held_out.json`](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/difraud/receipts/wording333_ollama_held_out.json):
+  the #333 nimble run, with the Ollama version and the model digest.
 
 ## Related pages
 

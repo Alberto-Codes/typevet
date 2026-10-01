@@ -1,0 +1,4587 @@
+{
+  "issue": 309,
+  "backend": "ollama",
+  "model": "nimble",
+  "seed_text": "Is this message a scam, phishing or social-engineering attempt?",
+  "evolved_text": "Is this message a scam, phishing or social-engineering attempt?",
+  "components": [
+    "instructions"
+  ],
+  "seed_parts": {
+    "instructions": "Is this message a scam, phishing or social-engineering attempt?"
+  },
+  "part_table": {},
+  "evolved_parts": {
+    "instructions": "Is this message a scam, phishing or social-engineering attempt?"
+  },
+  "wording_digests": {
+    "seed": {
+      "components": {
+        "instructions": "d66f4edafd8d4b0abeb7f5a877e80c669b35a9492e439c54a40e774b3b9f9fe6"
+      },
+      "mapping": "82e39624b0cc44dbc9c2feee4453dfcc043f9f60c5daec74758d7ab2e91b4435",
+      "gepa_candidate_id": "75113cb9d5d1"
+    },
+    "evolved": {
+      "components": {
+        "instructions": "d66f4edafd8d4b0abeb7f5a877e80c669b35a9492e439c54a40e774b3b9f9fe6"
+      },
+      "mapping": "82e39624b0cc44dbc9c2feee4453dfcc043f9f60c5daec74758d7ab2e91b4435",
+      "gepa_candidate_id": "75113cb9d5d1"
+    }
+  },
+  "rows": 158,
+  "calls": {
+    "seed": 158,
+    "evolved": 158,
+    "total": 316
+  },
+  "stopped": null,
+  "metrics": {
+    "seed": {
+      "rows": 158,
+      "positives": 36,
+      "accuracy": 0.8987341772151899,
+      "brier": 0.07785801301351478,
+      "ece": 0.11562811588093119
+    },
+    "evolved": {
+      "rows": 158,
+      "positives": 36,
+      "accuracy": 0.8987341772151899,
+      "brier": 0.07785801301351478,
+      "ece": 0.11562811588093119
+    }
+  },
+  "bootstrap": {
+    "resamples": 2000,
+    "seed": 0,
+    "level": 0.95,
+    "ece_difference": {
+      "low": 0.0,
+      "high": 0.0
+    },
+    "brier_difference": {
+      "low": 0.0,
+      "high": 0.0
+    }
+  },
+  "verdict": {
+    "ece_drop": 0.0,
+    "ece_drop_ok": false,
+    "evolved_ece_ok": false,
+    "brier_drops": false,
+    "accuracy_drop": 0.0,
+    "accuracy_ok": true,
+    "passed": false,
+    "rule": {
+      "min_ece_drop": 0.03,
+      "max_evolved_ece": 0.1,
+      "max_accuracy_drop": 0.01,
+      "ece_bins": 10
+    }
+  },
+  "reference_133": {
+    "prior_ece": 0.158,
+    "seed_ece": 0.11562811588093119,
+    "difference": -0.04237188411906881
+  },
+  "pairs": [
+    {
+      "record_id": "sha256:1b977908aa36f4b0",
+      "label": 0,
+      "seed": 0.029137335654388218,
+      "evolved": 0.029137335654388218
+    },
+    {
+      "record_id": "sha256:835f9b83b88a42ca",
+      "label": 0,
+      "seed": 0.3626940526766974,
+      "evolved": 0.3626940526766974
+    },
+    {
+      "record_id": "sha256:26226b68a9098d44",
+      "label": 0,
+      "seed": 0.17270313913267818,
+      "evolved": 0.17270313913267818
+    },
+    {
+      "record_id": "sha256:60b0203f958b23df",
+      "label": 0,
+      "seed": 0.21397966363480697,
+      "evolved": 0.21397966363480697
+    },
+    {
+      "record_id": "sha256:f0f439d932f0158c",
+      "label": 0,
+      "seed": 0.3794232937575894,
+      "evolved": 0.3794232937575894
+    },
+    {
+      "record_id": "sha256:b6bed3955d993f20",
+      "label": 0,
+      "seed": 0.05350215391150961,
+      "evolved": 0.05350215391150961
+    },
+    {
+      "record_id": "sha256:fceb9482f71d1b6f",
+      "label": 1,
+      "seed": 0.49868393248266973,
+      "evolved": 0.49868393248266973
+    },
+    {
+      "record_id": "sha256:0916d2192fd3bac1",
+      "label": 0,
+      "seed": 0.45730709208100323,
+      "evolved": 0.45730709208100323
+    },
+    {
+      "record_id": "sha256:41b1fb98928993c6",
+      "label": 0,
+      "seed": 0.48525474985133055,
+      "evolved": 0.48525474985133055
+    },
+    {
+      "record_id": "sha256:bf7d02fce9c43c50",
+      "label": 0,
+      "seed": 0.01815624963220871,
+      "evolved": 0.01815624963220871
+    },
+    {
+      "record_id": "sha256:8c1a535fe28d5ed5",
+      "label": 0,
+      "seed": 0.10438385106461602,
+      "evolved": 0.10438385106461602
+    },
+    {
+      "record_id": "sha256:c0178a437493b7eb",
+      "label": 0,
+      "seed": 0.1490149573640906,
+      "evolved": 0.1490149573640906
+    },
+    {
+      "record_id": "sha256:65c300da1da6c76e",
+      "label": 1,
+      "seed": 0.8541220065057628,
+      "evolved": 0.8541220065057628
+    },
+    {
+      "record_id": "sha256:0406268ffa5d3986",
+      "label": 0,
+      "seed": 0.03434628691832771,
+      "evolved": 0.03434628691832771
+    },
+    {
+      "record_id": "sha256:057c8ac488fd1ce7",
+      "label": 0,
+      "seed": 0.3163742038411892,
+      "evolved": 0.3163742038411892
+    },
+    {
+      "record_id": "sha256:f6ac1fffe6303ea4",
+      "label": 1,
+      "seed": 0.991711045188189,
+      "evolved": 0.991711045188189
+    },
+    {
+      "record_id": "sha256:bd4f65219c28babb",
+      "label": 0,
+      "seed": 0.026926295673300057,
+      "evolved": 0.026926295673300057
+    },
+    {
+      "record_id": "sha256:fb78bf3201acabf1",
+      "label": 1,
+      "seed": 0.7712921708251568,
+      "evolved": 0.7712921708251568
+    },
+    {
+      "record_id": "sha256:928b85e7d18320d9",
+      "label": 1,
+      "seed": 0.4550472604116818,
+      "evolved": 0.4550472604116818
+    },
+    {
+      "record_id": "sha256:18c28d5672158410",
+      "label": 0,
+      "seed": 0.017217456911787568,
+      "evolved": 0.017217456911787568
+    },
+    {
+      "record_id": "sha256:3fe04604fefa00cf",
+      "label": 1,
+      "seed": 0.9779642832856056,
+      "evolved": 0.9779642832856056
+    },
+    {
+      "record_id": "sha256:1cf80e28001ff11b",
+      "label": 0,
+      "seed": 0.016838074037404553,
+      "evolved": 0.016838074037404553
+    },
+    {
+      "record_id": "sha256:11118ed524ae2763",
+      "label": 1,
+      "seed": 0.9751565966470498,
+      "evolved": 0.9751565966470498
+    },
+    {
+      "record_id": "sha256:32b5c8c45d8d1e67",
+      "label": 0,
+      "seed": 0.02636044431236672,
+      "evolved": 0.02636044431236672
+    },
+    {
+      "record_id": "sha256:18c27570dc80ff5e",
+      "label": 0,
+      "seed": 0.30371404852555056,
+      "evolved": 0.30371404852555056
+    },
+    {
+      "record_id": "sha256:2d51e4ba5da41b25",
+      "label": 0,
+      "seed": 0.10781262921070858,
+      "evolved": 0.10781262921070858
+    },
+    {
+      "record_id": "sha256:5eefb3b4a6e303c4",
+      "label": 0,
+      "seed": 0.25653358038501367,
+      "evolved": 0.25653358038501367
+    },
+    {
+      "record_id": "sha256:c0fdb8bf4a7ac17e",
+      "label": 0,
+      "seed": 0.3795544347020064,
+      "evolved": 0.3795544347020064
+    },
+    {
+      "record_id": "sha256:d2eaf339d387a761",
+      "label": 0,
+      "seed": 0.043022427174891034,
+      "evolved": 0.043022427174891034
+    },
+    {
+      "record_id": "sha256:ec263425b0f4b391",
+      "label": 0,
+      "seed": 0.05661044638890727,
+      "evolved": 0.05661044638890727
+    },
+    {
+      "record_id": "sha256:9c93337c3ceda972",
+      "label": 0,
+      "seed": 0.024204817572471955,
+      "evolved": 0.024204817572471955
+    },
+    {
+      "record_id": "sha256:9520df86b2a38ed0",
+      "label": 0,
+      "seed": 0.3205237898562468,
+      "evolved": 0.3205237898562468
+    },
+    {
+      "record_id": "sha256:f4d82938de2178ad",
+      "label": 0,
+      "seed": 0.008469234864855563,
+      "evolved": 0.008469234864855563
+    },
+    {
+      "record_id": "sha256:517a281b81b02578",
+      "label": 0,
+      "seed": 0.08167870323308181,
+      "evolved": 0.08167870323308181
+    },
+    {
+      "record_id": "sha256:e31eb6b3579d6dfc",
+      "label": 0,
+      "seed": 0.10794922763982404,
+      "evolved": 0.10794922763982404
+    },
+    {
+      "record_id": "sha256:ee29bb920325a4b6",
+      "label": 1,
+      "seed": 0.401871179702264,
+      "evolved": 0.401871179702264
+    },
+    {
+      "record_id": "sha256:bca32fc0867f162f",
+      "label": 1,
+      "seed": 0.6306032001076031,
+      "evolved": 0.6306032001076031
+    },
+    {
+      "record_id": "sha256:31cdb5f8875e2c3b",
+      "label": 0,
+      "seed": 0.4110129637893765,
+      "evolved": 0.4110129637893765
+    },
+    {
+      "record_id": "sha256:5552cec9fd6de50b",
+      "label": 0,
+      "seed": 0.015505866770418457,
+      "evolved": 0.015505866770418457
+    },
+    {
+      "record_id": "sha256:69c44610d5a7c25d",
+      "label": 0,
+      "seed": 0.1672526697831151,
+      "evolved": 0.1672526697831151
+    },
+    {
+      "record_id": "sha256:cb86f694ad28d443",
+      "label": 1,
+      "seed": 0.913214472106599,
+      "evolved": 0.913214472106599
+    },
+    {
+      "record_id": "sha256:799d8b00a4bece73",
+      "label": 1,
+      "seed": 0.5873052942005466,
+      "evolved": 0.5873052942005466
+    },
+    {
+      "record_id": "sha256:a1107d403f3a0518",
+      "label": 0,
+      "seed": 0.5208200308872044,
+      "evolved": 0.5208200308872044
+    },
+    {
+      "record_id": "sha256:0e3366b4e948cae3",
+      "label": 0,
+      "seed": 0.1504193643703143,
+      "evolved": 0.1504193643703143
+    },
+    {
+      "record_id": "sha256:02612e96433e766a",
+      "label": 0,
+      "seed": 0.3411827985338209,
+      "evolved": 0.3411827985338209
+    },
+    {
+      "record_id": "sha256:d728c7e91d6119f4",
+      "label": 0,
+      "seed": 0.9952213100349395,
+      "evolved": 0.9952213100349395
+    },
+    {
+      "record_id": "sha256:ff5bfa1f988dd188",
+      "label": 1,
+      "seed": 0.9273345043055825,
+      "evolved": 0.9273345043055825
+    },
+    {
+      "record_id": "sha256:01a2bc378f1db625",
+      "label": 0,
+      "seed": 0.31018645083247426,
+      "evolved": 0.31018645083247426
+    },
+    {
+      "record_id": "sha256:d4e7a51868fd600b",
+      "label": 0,
+      "seed": 0.05893164729803648,
+      "evolved": 0.05893164729803648
+    },
+    {
+      "record_id": "sha256:46ea1be9afaf10b5",
+      "label": 0,
+      "seed": 0.4422092852122586,
+      "evolved": 0.4422092852122586
+    },
+    {
+      "record_id": "sha256:c1158daec8bcc3ee",
+      "label": 1,
+      "seed": 0.8675152738218087,
+      "evolved": 0.8675152738218087
+    },
+    {
+      "record_id": "sha256:b823749a7d35776c",
+      "label": 0,
+      "seed": 0.26274427934315614,
+      "evolved": 0.26274427934315614
+    },
+    {
+      "record_id": "sha256:fc526e4bfbb288ae",
+      "label": 0,
+      "seed": 0.6165246582280381,
+      "evolved": 0.6165246582280381
+    },
+    {
+      "record_id": "sha256:e2d962af4e983f12",
+      "label": 0,
+      "seed": 0.28810098682162516,
+      "evolved": 0.28810098682162516
+    },
+    {
+      "record_id": "sha256:df811707b1669625",
+      "label": 0,
+      "seed": 0.03255223941250781,
+      "evolved": 0.03255223941250781
+    },
+    {
+      "record_id": "sha256:b2c2f87287a9b4d6",
+      "label": 0,
+      "seed": 0.36137598878170907,
+      "evolved": 0.36137598878170907
+    },
+    {
+      "record_id": "sha256:86da1dd303e7596f",
+      "label": 0,
+      "seed": 0.0394039642434627,
+      "evolved": 0.0394039642434627
+    },
+    {
+      "record_id": "sha256:f0c0aacbccce5924",
+      "label": 0,
+      "seed": 0.34862432445249536,
+      "evolved": 0.34862432445249536
+    },
+    {
+      "record_id": "sha256:dfbbc0aa9ec9904e",
+      "label": 0,
+      "seed": 0.24092943812643156,
+      "evolved": 0.24092943812643156
+    },
+    {
+      "record_id": "sha256:9d121a3ff2c7cd8f",
+      "label": 0,
+      "seed": 0.1624817483391929,
+      "evolved": 0.1624817483391929
+    },
+    {
+      "record_id": "sha256:fae2ba55e074e33f",
+      "label": 0,
+      "seed": 0.025915338636657098,
+      "evolved": 0.025915338636657098
+    },
+    {
+      "record_id": "sha256:dbd6aede59d79fe8",
+      "label": 0,
+      "seed": 0.12404794109822721,
+      "evolved": 0.12404794109822721
+    },
+    {
+      "record_id": "sha256:47a99659676937d1",
+      "label": 0,
+      "seed": 0.3852355080673624,
+      "evolved": 0.3852355080673624
+    },
+    {
+      "record_id": "sha256:f482a3d230036af6",
+      "label": 0,
+      "seed": 0.22448282571209197,
+      "evolved": 0.22448282571209197
+    },
+    {
+      "record_id": "sha256:0770b1a84ec0b928",
+      "label": 1,
+      "seed": 0.563419232684448,
+      "evolved": 0.563419232684448
+    },
+    {
+      "record_id": "sha256:b1a74ad496bcee86",
+      "label": 0,
+      "seed": 0.01810585523469496,
+      "evolved": 0.01810585523469496
+    },
+    {
+      "record_id": "sha256:9aa29454294ab9fe",
+      "label": 0,
+      "seed": 0.023903746309442444,
+      "evolved": 0.023903746309442444
+    },
+    {
+      "record_id": "sha256:ad794d21aa86d897",
+      "label": 0,
+      "seed": 0.1335369960515747,
+      "evolved": 0.1335369960515747
+    },
+    {
+      "record_id": "sha256:0f21cdda496aac7f",
+      "label": 1,
+      "seed": 0.9924489908396431,
+      "evolved": 0.9924489908396431
+    },
+    {
+      "record_id": "sha256:dd3697c0c79db526",
+      "label": 1,
+      "seed": 0.7888247496591531,
+      "evolved": 0.7888247496591531
+    },
+    {
+      "record_id": "sha256:0bc388cfec027821",
+      "label": 0,
+      "seed": 0.013274088323243454,
+      "evolved": 0.013274088323243454
+    },
+    {
+      "record_id": "sha256:468b472080e73298",
+      "label": 1,
+      "seed": 0.9923013824098363,
+      "evolved": 0.9923013824098363
+    },
+    {
+      "record_id": "sha256:d2ac56def8caf4a2",
+      "label": 1,
+      "seed": 0.9937431062468975,
+      "evolved": 0.9937431062468975
+    },
+    {
+      "record_id": "sha256:92036d518333d644",
+      "label": 0,
+      "seed": 0.38318678177401777,
+      "evolved": 0.38318678177401777
+    },
+    {
+      "record_id": "sha256:6daa74be8d5437af",
+      "label": 0,
+      "seed": 0.18701434743065407,
+      "evolved": 0.18701434743065407
+    },
+    {
+      "record_id": "sha256:edb035d9027dd3a2",
+      "label": 0,
+      "seed": 0.06637508087040514,
+      "evolved": 0.06637508087040514
+    },
+    {
+      "record_id": "sha256:cafa11d825b32aa3",
+      "label": 1,
+      "seed": 0.9513972101916187,
+      "evolved": 0.9513972101916187
+    },
+    {
+      "record_id": "sha256:2a5981f89b648063",
+      "label": 1,
+      "seed": 0.8297443504367421,
+      "evolved": 0.8297443504367421
+    },
+    {
+      "record_id": "sha256:4322ee57fc274f73",
+      "label": 0,
+      "seed": 0.100495222115851,
+      "evolved": 0.100495222115851
+    },
+    {
+      "record_id": "sha256:59d7e3adee2cc472",
+      "label": 0,
+      "seed": 0.029112962134178674,
+      "evolved": 0.029112962134178674
+    },
+    {
+      "record_id": "sha256:15626d15a7ab3ff6",
+      "label": 1,
+      "seed": 0.986472130455268,
+      "evolved": 0.986472130455268
+    },
+    {
+      "record_id": "sha256:db4522c1c5a524fc",
+      "label": 0,
+      "seed": 0.296587400199903,
+      "evolved": 0.296587400199903
+    },
+    {
+      "record_id": "sha256:16656d7deafc53ac",
+      "label": 0,
+      "seed": 0.005045449808338391,
+      "evolved": 0.005045449808338391
+    },
+    {
+      "record_id": "sha256:3b1e27d61e1567c0",
+      "label": 0,
+      "seed": 0.18807104550394846,
+      "evolved": 0.18807104550394846
+    },
+    {
+      "record_id": "sha256:e1f8d0f247ea5b5e",
+      "label": 0,
+      "seed": 0.518378557103736,
+      "evolved": 0.518378557103736
+    },
+    {
+      "record_id": "sha256:8b704a4b7e013791",
+      "label": 0,
+      "seed": 0.026151732134379668,
+      "evolved": 0.026151732134379668
+    },
+    {
+      "record_id": "sha256:f9cf9b75a7700b9b",
+      "label": 1,
+      "seed": 0.28829818310696603,
+      "evolved": 0.28829818310696603
+    },
+    {
+      "record_id": "sha256:6cf27480e4774445",
+      "label": 1,
+      "seed": 0.5084335106510838,
+      "evolved": 0.5084335106510838
+    },
+    {
+      "record_id": "sha256:bd20299a030cb71f",
+      "label": 1,
+      "seed": 0.9586642799843796,
+      "evolved": 0.9586642799843796
+    },
+    {
+      "record_id": "sha256:788570289d0ee97b",
+      "label": 0,
+      "seed": 0.04853474913025854,
+      "evolved": 0.04853474913025854
+    },
+    {
+      "record_id": "sha256:7c6e24a07c764e9a",
+      "label": 0,
+      "seed": 0.007996727026970032,
+      "evolved": 0.007996727026970032
+    },
+    {
+      "record_id": "sha256:0ac215201f4d15e0",
+      "label": 1,
+      "seed": 0.5761768386231347,
+      "evolved": 0.5761768386231347
+    },
+    {
+      "record_id": "sha256:c2b12f8d95a05682",
+      "label": 0,
+      "seed": 0.03512544373777933,
+      "evolved": 0.03512544373777933
+    },
+    {
+      "record_id": "sha256:2facf52133f48a9f",
+      "label": 0,
+      "seed": 0.038355727943408566,
+      "evolved": 0.038355727943408566
+    },
+    {
+      "record_id": "sha256:688b971cf395da31",
+      "label": 0,
+      "seed": 0.026517743087530587,
+      "evolved": 0.026517743087530587
+    },
+    {
+      "record_id": "sha256:67019e39347bd96b",
+      "label": 0,
+      "seed": 0.1419324349053222,
+      "evolved": 0.1419324349053222
+    },
+    {
+      "record_id": "sha256:4e073e80c7007bf8",
+      "label": 0,
+      "seed": 0.1364312212987999,
+      "evolved": 0.1364312212987999
+    },
+    {
+      "record_id": "sha256:1bdf7a937e935d71",
+      "label": 0,
+      "seed": 0.13425542606620208,
+      "evolved": 0.13425542606620208
+    },
+    {
+      "record_id": "sha256:1a8dd9f24d8385ad",
+      "label": 0,
+      "seed": 0.020014757632192706,
+      "evolved": 0.020014757632192706
+    },
+    {
+      "record_id": "sha256:20bbcdb5ed17e4a6",
+      "label": 0,
+      "seed": 0.0398187152234279,
+      "evolved": 0.0398187152234279
+    },
+    {
+      "record_id": "sha256:0b161f8ef2aae7af",
+      "label": 0,
+      "seed": 0.030970261066541476,
+      "evolved": 0.030970261066541476
+    },
+    {
+      "record_id": "sha256:d14cb1bfe6a6f5a7",
+      "label": 0,
+      "seed": 0.013535205788492793,
+      "evolved": 0.013535205788492793
+    },
+    {
+      "record_id": "sha256:13eaeec5fb7872f8",
+      "label": 0,
+      "seed": 0.22401300711930017,
+      "evolved": 0.22401300711930017
+    },
+    {
+      "record_id": "sha256:0c50f96dfc7fd41e",
+      "label": 0,
+      "seed": 0.08105426471823549,
+      "evolved": 0.08105426471823549
+    },
+    {
+      "record_id": "sha256:b46a1135f17855ff",
+      "label": 0,
+      "seed": 0.5381053664717813,
+      "evolved": 0.5381053664717813
+    },
+    {
+      "record_id": "sha256:06be94e34256786d",
+      "label": 0,
+      "seed": 0.13312000166846108,
+      "evolved": 0.13312000166846108
+    },
+    {
+      "record_id": "sha256:d8e899581ce284c0",
+      "label": 1,
+      "seed": 0.9755541750412097,
+      "evolved": 0.9755541750412097
+    },
+    {
+      "record_id": "sha256:c188f80ae5f9099f",
+      "label": 0,
+      "seed": 0.10032292747570935,
+      "evolved": 0.10032292747570935
+    },
+    {
+      "record_id": "sha256:a42530d3b4183203",
+      "label": 0,
+      "seed": 0.3083757096561935,
+      "evolved": 0.3083757096561935
+    },
+    {
+      "record_id": "sha256:7126a8689afc002a",
+      "label": 0,
+      "seed": 0.1849065958265178,
+      "evolved": 0.1849065958265178
+    },
+    {
+      "record_id": "sha256:81d7a971b2804885",
+      "label": 1,
+      "seed": 0.6194856608480396,
+      "evolved": 0.6194856608480396
+    },
+    {
+      "record_id": "sha256:b27ec26c31b231e4",
+      "label": 0,
+      "seed": 0.125604001888818,
+      "evolved": 0.125604001888818
+    },
+    {
+      "record_id": "sha256:af2ca314a25cc144",
+      "label": 0,
+      "seed": 0.08163750772913297,
+      "evolved": 0.08163750772913297
+    },
+    {
+      "record_id": "sha256:55f441fe2095ffdf",
+      "label": 0,
+      "seed": 0.13861749125980463,
+      "evolved": 0.13861749125980463
+    },
+    {
+      "record_id": "sha256:1964e5a15073d08e",
+      "label": 1,
+      "seed": 0.417559068544822,
+      "evolved": 0.417559068544822
+    },
+    {
+      "record_id": "sha256:b0c7096ab544d1d1",
+      "label": 0,
+      "seed": 0.028813204305156225,
+      "evolved": 0.028813204305156225
+    },
+    {
+      "record_id": "sha256:a83fec342812aeaa",
+      "label": 0,
+      "seed": 0.031025488947191752,
+      "evolved": 0.031025488947191752
+    },
+    {
+      "record_id": "sha256:67aa05516b6769b9",
+      "label": 1,
+      "seed": 0.6343557744740514,
+      "evolved": 0.6343557744740514
+    },
+    {
+      "record_id": "sha256:caa2c01469c08ea4",
+      "label": 0,
+      "seed": 0.02133254317253214,
+      "evolved": 0.02133254317253214
+    },
+    {
+      "record_id": "sha256:112a54cd0f8c4113",
+      "label": 0,
+      "seed": 0.042363575681979286,
+      "evolved": 0.042363575681979286
+    },
+    {
+      "record_id": "sha256:dbe4f1e97187307d",
+      "label": 0,
+      "seed": 0.1326803963545375,
+      "evolved": 0.1326803963545375
+    },
+    {
+      "record_id": "sha256:8470a911737229d1",
+      "label": 0,
+      "seed": 0.22159666288514593,
+      "evolved": 0.22159666288514593
+    },
+    {
+      "record_id": "sha256:82a542e92687cbd5",
+      "label": 0,
+      "seed": 0.017239933800675223,
+      "evolved": 0.017239933800675223
+    },
+    {
+      "record_id": "sha256:8c32dbd454db5ee1",
+      "label": 0,
+      "seed": 0.05463645606007181,
+      "evolved": 0.05463645606007181
+    },
+    {
+      "record_id": "sha256:0b7ff1c824e00d19",
+      "label": 0,
+      "seed": 0.11369562673239827,
+      "evolved": 0.11369562673239827
+    },
+    {
+      "record_id": "sha256:2cf023e7d616aa2b",
+      "label": 0,
+      "seed": 0.050551343519038665,
+      "evolved": 0.050551343519038665
+    },
+    {
+      "record_id": "sha256:6578c1e5810b6c77",
+      "label": 0,
+      "seed": 0.015299224746952264,
+      "evolved": 0.015299224746952264
+    },
+    {
+      "record_id": "sha256:86dcec6c8d465b04",
+      "label": 1,
+      "seed": 0.5805229975066606,
+      "evolved": 0.5805229975066606
+    },
+    {
+      "record_id": "sha256:5b94e425c2a83ea3",
+      "label": 0,
+      "seed": 0.06088962450759503,
+      "evolved": 0.06088962450759503
+    },
+    {
+      "record_id": "sha256:b4bd635b391ce0ec",
+      "label": 0,
+      "seed": 0.03828571725896863,
+      "evolved": 0.03828571725896863
+    },
+    {
+      "record_id": "sha256:df4c1f05fae1c3db",
+      "label": 1,
+      "seed": 0.5268239532847296,
+      "evolved": 0.5268239532847296
+    },
+    {
+      "record_id": "sha256:b5805755e0d1fb9f",
+      "label": 0,
+      "seed": 0.5163325505761374,
+      "evolved": 0.5163325505761374
+    },
+    {
+      "record_id": "sha256:a5ddd576cd2df182",
+      "label": 0,
+      "seed": 0.08477231434110855,
+      "evolved": 0.08477231434110855
+    },
+    {
+      "record_id": "sha256:5b7882ce72191eb9",
+      "label": 0,
+      "seed": 0.96912575759135,
+      "evolved": 0.96912575759135
+    },
+    {
+      "record_id": "sha256:951f31617ed7e361",
+      "label": 0,
+      "seed": 0.07977026200016736,
+      "evolved": 0.07977026200016736
+    },
+    {
+      "record_id": "sha256:a4feae7a54ec4ae2",
+      "label": 0,
+      "seed": 0.015666472740089962,
+      "evolved": 0.015666472740089962
+    },
+    {
+      "record_id": "sha256:fb4d9929bfaa16cb",
+      "label": 0,
+      "seed": 0.3242655090385183,
+      "evolved": 0.3242655090385183
+    },
+    {
+      "record_id": "sha256:e288c92386623dc0",
+      "label": 0,
+      "seed": 0.12503448858774865,
+      "evolved": 0.12503448858774865
+    },
+    {
+      "record_id": "sha256:95731de91bf950ff",
+      "label": 0,
+      "seed": 0.009736021242750676,
+      "evolved": 0.009736021242750676
+    },
+    {
+      "record_id": "sha256:084e34c0102c08d1",
+      "label": 0,
+      "seed": 0.1857751652465088,
+      "evolved": 0.1857751652465088
+    },
+    {
+      "record_id": "sha256:5f7803a269a03402",
+      "label": 1,
+      "seed": 0.6554566210479067,
+      "evolved": 0.6554566210479067
+    },
+    {
+      "record_id": "sha256:4ded357d736bfffc",
+      "label": 0,
+      "seed": 0.29210757814134347,
+      "evolved": 0.29210757814134347
+    },
+    {
+      "record_id": "sha256:c6d15b625a760e46",
+      "label": 1,
+      "seed": 0.4201794437668203,
+      "evolved": 0.4201794437668203
+    },
+    {
+      "record_id": "sha256:d0d8282c501e354d",
+      "label": 1,
+      "seed": 0.9964481694390297,
+      "evolved": 0.9964481694390297
+    },
+    {
+      "record_id": "sha256:15d20489bb46553d",
+      "label": 0,
+      "seed": 0.023446308702130318,
+      "evolved": 0.023446308702130318
+    },
+    {
+      "record_id": "sha256:18215a6d26eb8898",
+      "label": 0,
+      "seed": 0.052931697523596395,
+      "evolved": 0.052931697523596395
+    },
+    {
+      "record_id": "sha256:a672411e7428be0f",
+      "label": 1,
+      "seed": 0.44327656965279083,
+      "evolved": 0.44327656965279083
+    },
+    {
+      "record_id": "sha256:eeeb1fccc6b77619",
+      "label": 0,
+      "seed": 0.024818279090597455,
+      "evolved": 0.024818279090597455
+    },
+    {
+      "record_id": "sha256:366a7c495046803d",
+      "label": 0,
+      "seed": 0.30860193616679427,
+      "evolved": 0.30860193616679427
+    },
+    {
+      "record_id": "sha256:3c5fe153d6ff6ed9",
+      "label": 1,
+      "seed": 0.424527529216697,
+      "evolved": 0.424527529216697
+    },
+    {
+      "record_id": "sha256:efcc7dbdff030d11",
+      "label": 0,
+      "seed": 0.0238349494359989,
+      "evolved": 0.0238349494359989
+    },
+    {
+      "record_id": "sha256:1678966213f55e34",
+      "label": 0,
+      "seed": 0.039432854613029276,
+      "evolved": 0.039432854613029276
+    },
+    {
+      "record_id": "sha256:5644f06304345547",
+      "label": 0,
+      "seed": 0.017807325970530655,
+      "evolved": 0.017807325970530655
+    },
+    {
+      "record_id": "sha256:51f4836be2f96f23",
+      "label": 0,
+      "seed": 0.052813254112663126,
+      "evolved": 0.052813254112663126
+    },
+    {
+      "record_id": "sha256:31d64172621c8d36",
+      "label": 0,
+      "seed": 0.5951047112920459,
+      "evolved": 0.5951047112920459
+    },
+    {
+      "record_id": "sha256:304c7307a378472a",
+      "label": 0,
+      "seed": 0.2884766796191488,
+      "evolved": 0.2884766796191488
+    },
+    {
+      "record_id": "sha256:e60e9d8dc6bf43bd",
+      "label": 0,
+      "seed": 0.00854536438724663,
+      "evolved": 0.00854536438724663
+    },
+    {
+      "record_id": "sha256:c6d556034c7a0c70",
+      "label": 0,
+      "seed": 0.018866143925868516,
+      "evolved": 0.018866143925868516
+    }
+  ],
+  "per_call": [
+    {
+      "index": 0,
+      "state_sha256": "1b977908aa36f4b0dbdb438657dded160d0ff794bcd8469f9afe8674270efe8f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.165758,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 1,
+      "state_sha256": "1b977908aa36f4b0dbdb438657dded160d0ff794bcd8469f9afe8674270efe8f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.107083,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 2,
+      "state_sha256": "835f9b83b88a42cae8b969197a22cd5371d584faf6908fcee4ac447a0b91b25c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.089312,
+      "input_tokens": 198,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 3,
+      "state_sha256": "835f9b83b88a42cae8b969197a22cd5371d584faf6908fcee4ac447a0b91b25c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.104862,
+      "input_tokens": 198,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 4,
+      "state_sha256": "26226b68a9098d4465211cd1e2be82629088f44d4405003e8f6c9e9cdabad613",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.363082,
+      "input_tokens": 168,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 5,
+      "state_sha256": "26226b68a9098d4465211cd1e2be82629088f44d4405003e8f6c9e9cdabad613",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.086902,
+      "input_tokens": 168,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 6,
+      "state_sha256": "60b0203f958b23dfe5ce5c4696c13b86759ecb895e3730bce2da0a63fc3d8dac",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.216015,
+      "input_tokens": 206,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 7,
+      "state_sha256": "60b0203f958b23dfe5ce5c4696c13b86759ecb895e3730bce2da0a63fc3d8dac",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.059144,
+      "input_tokens": 206,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 8,
+      "state_sha256": "f0f439d932f0158c28f5ee0082b4ae3b0dd545d54440a1ebbd98f620df2ded9f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.267868,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 9,
+      "state_sha256": "f0f439d932f0158c28f5ee0082b4ae3b0dd545d54440a1ebbd98f620df2ded9f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.090945,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 10,
+      "state_sha256": "b6bed3955d993f20074c3b9a25ff966e47ca5c7377d281a7a9f038c2cc5eb88a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.071277,
+      "input_tokens": 169,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 11,
+      "state_sha256": "b6bed3955d993f20074c3b9a25ff966e47ca5c7377d281a7a9f038c2cc5eb88a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.090658,
+      "input_tokens": 169,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 12,
+      "state_sha256": "fceb9482f71d1b6f7e02532b6a7f0505dac9f2894b594fc4ca599d15e8b7e935",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.332251,
+      "input_tokens": 201,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 13,
+      "state_sha256": "fceb9482f71d1b6f7e02532b6a7f0505dac9f2894b594fc4ca599d15e8b7e935",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.075252,
+      "input_tokens": 201,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 14,
+      "state_sha256": "0916d2192fd3bac1418f052eee01310c2f9086bf6643cf229868fef583de7f53",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.392948,
+      "input_tokens": 164,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 15,
+      "state_sha256": "0916d2192fd3bac1418f052eee01310c2f9086bf6643cf229868fef583de7f53",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.146644,
+      "input_tokens": 164,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 16,
+      "state_sha256": "41b1fb98928993c60b74cd03438779deddb7372937aa27ea9c43d6c2cc9ad93a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.134852,
+      "input_tokens": 162,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 17,
+      "state_sha256": "41b1fb98928993c60b74cd03438779deddb7372937aa27ea9c43d6c2cc9ad93a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.261886,
+      "input_tokens": 162,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 18,
+      "state_sha256": "bf7d02fce9c43c50c6b460327e466aac984d5025b04926acbde0d7ae9c3509b2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.233356,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 19,
+      "state_sha256": "bf7d02fce9c43c50c6b460327e466aac984d5025b04926acbde0d7ae9c3509b2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.163442,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 20,
+      "state_sha256": "8c1a535fe28d5ed5f517c2df218536e3d91ca8b2aabc0ce07bc38b31d834ffdf",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.179158,
+      "input_tokens": 168,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 21,
+      "state_sha256": "8c1a535fe28d5ed5f517c2df218536e3d91ca8b2aabc0ce07bc38b31d834ffdf",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.067591,
+      "input_tokens": 168,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 22,
+      "state_sha256": "c0178a437493b7eb5848ec8b282a16be56a744376926fbc25b0ce1171485d6e2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.269119,
+      "input_tokens": 177,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 23,
+      "state_sha256": "c0178a437493b7eb5848ec8b282a16be56a744376926fbc25b0ce1171485d6e2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.103345,
+      "input_tokens": 177,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 24,
+      "state_sha256": "65c300da1da6c76e38646c37d67652ae817e12399736119cc60d01a9a6bfa9e2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.167801,
+      "input_tokens": 211,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 25,
+      "state_sha256": "65c300da1da6c76e38646c37d67652ae817e12399736119cc60d01a9a6bfa9e2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.059506,
+      "input_tokens": 211,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 26,
+      "state_sha256": "0406268ffa5d39864b494bcbad137cf12f801f03e39b60ec60f578e208d0f680",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.139536,
+      "input_tokens": 181,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 27,
+      "state_sha256": "0406268ffa5d39864b494bcbad137cf12f801f03e39b60ec60f578e208d0f680",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.085579,
+      "input_tokens": 181,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 28,
+      "state_sha256": "057c8ac488fd1ce7e48831ea899cc522548e821618192c95a7ce32b4a17dbcfd",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.213517,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 29,
+      "state_sha256": "057c8ac488fd1ce7e48831ea899cc522548e821618192c95a7ce32b4a17dbcfd",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.068298,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 30,
+      "state_sha256": "f6ac1fffe6303ea4ef3417699335c931c04a1fbd145a90c85fa0e5943e19c428",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.215933,
+      "input_tokens": 203,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 31,
+      "state_sha256": "f6ac1fffe6303ea4ef3417699335c931c04a1fbd145a90c85fa0e5943e19c428",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.117472,
+      "input_tokens": 203,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 32,
+      "state_sha256": "bd4f65219c28babb46fd8e1ecd04e2e0cecd56fc568aa065cf3de13be6bb7218",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.244935,
+      "input_tokens": 174,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 33,
+      "state_sha256": "bd4f65219c28babb46fd8e1ecd04e2e0cecd56fc568aa065cf3de13be6bb7218",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.0749,
+      "input_tokens": 174,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 34,
+      "state_sha256": "fb78bf3201acabf17446209df836d67b4c132191f9569e70b9c8d7bc3795b785",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.254889,
+      "input_tokens": 221,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 35,
+      "state_sha256": "fb78bf3201acabf17446209df836d67b4c132191f9569e70b9c8d7bc3795b785",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.069112,
+      "input_tokens": 221,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 36,
+      "state_sha256": "928b85e7d18320d9321aa8d911955b296902275379529aa098ab8c34e12d3c61",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.148415,
+      "input_tokens": 198,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 37,
+      "state_sha256": "928b85e7d18320d9321aa8d911955b296902275379529aa098ab8c34e12d3c61",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.067412,
+      "input_tokens": 198,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 38,
+      "state_sha256": "18c28d5672158410a9e8aac2d52f88d5b009f2ecace3f46e0c593e5e02c9d077",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.187854,
+      "input_tokens": 197,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 39,
+      "state_sha256": "18c28d5672158410a9e8aac2d52f88d5b009f2ecace3f46e0c593e5e02c9d077",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.085953,
+      "input_tokens": 197,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 40,
+      "state_sha256": "3fe04604fefa00cf9c66c24a3545de4a4d738400676c010164b2caa3794b8ba0",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.219828,
+      "input_tokens": 207,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 41,
+      "state_sha256": "3fe04604fefa00cf9c66c24a3545de4a4d738400676c010164b2caa3794b8ba0",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.061356,
+      "input_tokens": 207,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 42,
+      "state_sha256": "1cf80e28001ff11b187acc8a66e6dba400547d4a4fd09b51d33aa863362a1dba",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.129053,
+      "input_tokens": 218,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 43,
+      "state_sha256": "1cf80e28001ff11b187acc8a66e6dba400547d4a4fd09b51d33aa863362a1dba",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.059752,
+      "input_tokens": 218,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 44,
+      "state_sha256": "11118ed524ae276379d7f55adf7887dab939e630dacd86facfdf8384288f97c2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.193422,
+      "input_tokens": 233,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 45,
+      "state_sha256": "11118ed524ae276379d7f55adf7887dab939e630dacd86facfdf8384288f97c2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.054779,
+      "input_tokens": 233,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 46,
+      "state_sha256": "32b5c8c45d8d1e67ea94aa32f8bb34913840ebd67b06fe8d5e75f839f0deb0b8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.126167,
+      "input_tokens": 209,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 47,
+      "state_sha256": "32b5c8c45d8d1e67ea94aa32f8bb34913840ebd67b06fe8d5e75f839f0deb0b8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.059889,
+      "input_tokens": 209,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 48,
+      "state_sha256": "18c27570dc80ff5ea41efb64216bdd429f19d62fcba2cd4db32457e25b734f93",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.195755,
+      "input_tokens": 181,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 49,
+      "state_sha256": "18c27570dc80ff5ea41efb64216bdd429f19d62fcba2cd4db32457e25b734f93",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.058995,
+      "input_tokens": 181,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 50,
+      "state_sha256": "2d51e4ba5da41b258cf43e10288157291fce1f3ff8c297454039cb6d20fae285",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.174574,
+      "input_tokens": 178,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 51,
+      "state_sha256": "2d51e4ba5da41b258cf43e10288157291fce1f3ff8c297454039cb6d20fae285",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.062533,
+      "input_tokens": 178,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 52,
+      "state_sha256": "5eefb3b4a6e303c481c0c22ff1f0403c10496d7cab4dd2f670b1d2069ff8cd4c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.163907,
+      "input_tokens": 168,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 53,
+      "state_sha256": "5eefb3b4a6e303c481c0c22ff1f0403c10496d7cab4dd2f670b1d2069ff8cd4c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.05893,
+      "input_tokens": 168,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 54,
+      "state_sha256": "c0fdb8bf4a7ac17ec12f2ecaa477dc6acfbdc46d2551a024ada39717b69eac3b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.134023,
+      "input_tokens": 187,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 55,
+      "state_sha256": "c0fdb8bf4a7ac17ec12f2ecaa477dc6acfbdc46d2551a024ada39717b69eac3b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.053852,
+      "input_tokens": 187,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 56,
+      "state_sha256": "d2eaf339d387a761163aa15e31d356498caf1d207d40d55e1307e39df543b02b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.109054,
+      "input_tokens": 163,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 57,
+      "state_sha256": "d2eaf339d387a761163aa15e31d356498caf1d207d40d55e1307e39df543b02b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.047986,
+      "input_tokens": 163,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 58,
+      "state_sha256": "ec263425b0f4b39139e07e4c766b78682f279ede415384bd4af5eed2c674caad",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.054497,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 59,
+      "state_sha256": "ec263425b0f4b39139e07e4c766b78682f279ede415384bd4af5eed2c674caad",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046086,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 60,
+      "state_sha256": "9c93337c3ceda97286d1a5bd05d5b35276c32b9e55e81a46a9262f6becfa9705",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.057734,
+      "input_tokens": 180,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 61,
+      "state_sha256": "9c93337c3ceda97286d1a5bd05d5b35276c32b9e55e81a46a9262f6becfa9705",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.0587,
+      "input_tokens": 180,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 62,
+      "state_sha256": "9520df86b2a38ed001c4a8399ed2e2d476e3c7c990cf357c80324a69f47d9075",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.149691,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 63,
+      "state_sha256": "9520df86b2a38ed001c4a8399ed2e2d476e3c7c990cf357c80324a69f47d9075",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.060219,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 64,
+      "state_sha256": "f4d82938de2178ad043905c9f249e397641bc6eca74275421ab74e1eff2edb2f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.063627,
+      "input_tokens": 215,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 65,
+      "state_sha256": "f4d82938de2178ad043905c9f249e397641bc6eca74275421ab74e1eff2edb2f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.057124,
+      "input_tokens": 215,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 66,
+      "state_sha256": "517a281b81b02578f403dd7ff928183f5080dcabe1c7ff5ade7d4abdd64174d3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.147359,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 67,
+      "state_sha256": "517a281b81b02578f403dd7ff928183f5080dcabe1c7ff5ade7d4abdd64174d3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.054517,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 68,
+      "state_sha256": "e31eb6b3579d6dfca172d9459bf4140b0fc0ba6bb55c0c770ef3e73d98f4ee89",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.14812,
+      "input_tokens": 172,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 69,
+      "state_sha256": "e31eb6b3579d6dfca172d9459bf4140b0fc0ba6bb55c0c770ef3e73d98f4ee89",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.05223,
+      "input_tokens": 172,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 70,
+      "state_sha256": "ee29bb920325a4b6ded7b282ff73274db6e931c48f61a8bb8cd6ed5114d24c9f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.134116,
+      "input_tokens": 204,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 71,
+      "state_sha256": "ee29bb920325a4b6ded7b282ff73274db6e931c48f61a8bb8cd6ed5114d24c9f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.058848,
+      "input_tokens": 204,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 72,
+      "state_sha256": "bca32fc0867f162f37bbb6685e81f34fef34bc7dfc63117f4fad501591905b90",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.119137,
+      "input_tokens": 214,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 73,
+      "state_sha256": "bca32fc0867f162f37bbb6685e81f34fef34bc7dfc63117f4fad501591905b90",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.058261,
+      "input_tokens": 214,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 74,
+      "state_sha256": "31cdb5f8875e2c3ba2e170e5ca076e8411d3cf631cede71812086482121f3316",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.153649,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 75,
+      "state_sha256": "31cdb5f8875e2c3ba2e170e5ca076e8411d3cf631cede71812086482121f3316",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.064454,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 76,
+      "state_sha256": "5552cec9fd6de50bce6a720e5cccc68974a1f22a3cb87c60f526a19b8a1766f1",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.076273,
+      "input_tokens": 161,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 77,
+      "state_sha256": "5552cec9fd6de50bce6a720e5cccc68974a1f22a3cb87c60f526a19b8a1766f1",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.071184,
+      "input_tokens": 161,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 78,
+      "state_sha256": "69c44610d5a7c25d244c81b36c862b2009173e293f943ab637d6d66adf5ebe45",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.06337,
+      "input_tokens": 172,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 79,
+      "state_sha256": "69c44610d5a7c25d244c81b36c862b2009173e293f943ab637d6d66adf5ebe45",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.054354,
+      "input_tokens": 172,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 80,
+      "state_sha256": "cb86f694ad28d44322643d931b9ceb69b1e5ac784213da4196ed170c6bc3d449",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.125105,
+      "input_tokens": 204,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 81,
+      "state_sha256": "cb86f694ad28d44322643d931b9ceb69b1e5ac784213da4196ed170c6bc3d449",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.061967,
+      "input_tokens": 204,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 82,
+      "state_sha256": "799d8b00a4bece738325e2d11496a0b51319f9f38a11204b47dabc8e562993fe",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.123983,
+      "input_tokens": 189,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 83,
+      "state_sha256": "799d8b00a4bece738325e2d11496a0b51319f9f38a11204b47dabc8e562993fe",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.064758,
+      "input_tokens": 189,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 84,
+      "state_sha256": "a1107d403f3a0518022c9dc0dcdfcb5d614e2dd37e7fb2c9ef2c9dbaef99de6e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.125029,
+      "input_tokens": 165,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 85,
+      "state_sha256": "a1107d403f3a0518022c9dc0dcdfcb5d614e2dd37e7fb2c9ef2c9dbaef99de6e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.061519,
+      "input_tokens": 165,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 86,
+      "state_sha256": "0e3366b4e948cae355071be602ea6a34bfb8a68872f5b7f44544f942ac355bbb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.066457,
+      "input_tokens": 159,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 87,
+      "state_sha256": "0e3366b4e948cae355071be602ea6a34bfb8a68872f5b7f44544f942ac355bbb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.055226,
+      "input_tokens": 159,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 88,
+      "state_sha256": "02612e96433e766a0375f8658772e7ed0c50722ef54eb802f7b3947d54c68a55",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.059433,
+      "input_tokens": 161,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 89,
+      "state_sha256": "02612e96433e766a0375f8658772e7ed0c50722ef54eb802f7b3947d54c68a55",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.06954,
+      "input_tokens": 161,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 90,
+      "state_sha256": "d728c7e91d6119f47a630ae2a877227d87c1351132df0bb90ec22baad634f889",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.062792,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 91,
+      "state_sha256": "d728c7e91d6119f47a630ae2a877227d87c1351132df0bb90ec22baad634f889",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.062194,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 92,
+      "state_sha256": "ff5bfa1f988dd188a519d2107b114167deaf90330d735edae01cff3976ae8613",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.064622,
+      "input_tokens": 211,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 93,
+      "state_sha256": "ff5bfa1f988dd188a519d2107b114167deaf90330d735edae01cff3976ae8613",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.085107,
+      "input_tokens": 211,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 94,
+      "state_sha256": "01a2bc378f1db625311a2eb86e640cc0543201513748c521c7e686cd283a11f8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.12504,
+      "input_tokens": 159,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 95,
+      "state_sha256": "01a2bc378f1db625311a2eb86e640cc0543201513748c521c7e686cd283a11f8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.064713,
+      "input_tokens": 159,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 96,
+      "state_sha256": "d4e7a51868fd600b4c51bfc443adad6334ee21be783ed890a57348d055072e1e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.069602,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 97,
+      "state_sha256": "d4e7a51868fd600b4c51bfc443adad6334ee21be783ed890a57348d055072e1e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.070161,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 98,
+      "state_sha256": "46ea1be9afaf10b565d66bbf283372b6aa94b385fdaa26dc5daab97d29687c7b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.061781,
+      "input_tokens": 159,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 99,
+      "state_sha256": "46ea1be9afaf10b565d66bbf283372b6aa94b385fdaa26dc5daab97d29687c7b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.064629,
+      "input_tokens": 159,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 100,
+      "state_sha256": "c1158daec8bcc3ee53337dddb81855741fb46f7ac5b228bf42304a0b181286ad",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.089324,
+      "input_tokens": 201,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 101,
+      "state_sha256": "c1158daec8bcc3ee53337dddb81855741fb46f7ac5b228bf42304a0b181286ad",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.20114,
+      "input_tokens": 201,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 102,
+      "state_sha256": "b823749a7d35776c1117334227d5ae5bdd3209e1200971fe3a34e4a82576e08b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.395315,
+      "input_tokens": 164,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 103,
+      "state_sha256": "b823749a7d35776c1117334227d5ae5bdd3209e1200971fe3a34e4a82576e08b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.061958,
+      "input_tokens": 164,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 104,
+      "state_sha256": "fc526e4bfbb288ae45739655b1dbea5a49e34a76f37f54010ac432db22772ce3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.077213,
+      "input_tokens": 170,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 105,
+      "state_sha256": "fc526e4bfbb288ae45739655b1dbea5a49e34a76f37f54010ac432db22772ce3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.066717,
+      "input_tokens": 170,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 106,
+      "state_sha256": "e2d962af4e983f12968a820961c7296452c9b0d8888f20d558c8b421d385f04e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.124416,
+      "input_tokens": 165,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 107,
+      "state_sha256": "e2d962af4e983f12968a820961c7296452c9b0d8888f20d558c8b421d385f04e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.050149,
+      "input_tokens": 165,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 108,
+      "state_sha256": "df811707b1669625c54e14d381fdeaeb6d0e5bcde01b1bc862052924af2d1fcb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.055704,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 109,
+      "state_sha256": "df811707b1669625c54e14d381fdeaeb6d0e5bcde01b1bc862052924af2d1fcb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.053815,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 110,
+      "state_sha256": "b2c2f87287a9b4d656f910110435ed05d30992b1eba31feec7c534e279f863e1",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.063622,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 111,
+      "state_sha256": "b2c2f87287a9b4d656f910110435ed05d30992b1eba31feec7c534e279f863e1",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.052948,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 112,
+      "state_sha256": "86da1dd303e7596f26c5c9da2cb251c05009b351e8d29835b1e4acd901eeedd8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.063775,
+      "input_tokens": 168,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 113,
+      "state_sha256": "86da1dd303e7596f26c5c9da2cb251c05009b351e8d29835b1e4acd901eeedd8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.054075,
+      "input_tokens": 168,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 114,
+      "state_sha256": "f0c0aacbccce59248abb451ecc92b1dd2a50481f6a76fb794cfba3d2dfd07bfa",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.105834,
+      "input_tokens": 164,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 115,
+      "state_sha256": "f0c0aacbccce59248abb451ecc92b1dd2a50481f6a76fb794cfba3d2dfd07bfa",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.05165,
+      "input_tokens": 164,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 116,
+      "state_sha256": "dfbbc0aa9ec9904ef6ea9da9fcb701befe9d435a52af31475eae751f993dea57",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.058688,
+      "input_tokens": 164,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 117,
+      "state_sha256": "dfbbc0aa9ec9904ef6ea9da9fcb701befe9d435a52af31475eae751f993dea57",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.05182,
+      "input_tokens": 164,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 118,
+      "state_sha256": "9d121a3ff2c7cd8f3a1943394a9ed9d790e118c52694b8c386ec7a0db763cdde",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.054909,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 119,
+      "state_sha256": "9d121a3ff2c7cd8f3a1943394a9ed9d790e118c52694b8c386ec7a0db763cdde",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.049872,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 120,
+      "state_sha256": "fae2ba55e074e33f3a0a06515f1f4e1cb35b395fc5e0fa7f01392377714f0fb3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.1268,
+      "input_tokens": 162,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 121,
+      "state_sha256": "fae2ba55e074e33f3a0a06515f1f4e1cb35b395fc5e0fa7f01392377714f0fb3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.050268,
+      "input_tokens": 162,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 122,
+      "state_sha256": "dbd6aede59d79fe8cbe2af92a5a67fa86198669f36d3b6160d3df755470e485c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.053751,
+      "input_tokens": 163,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 123,
+      "state_sha256": "dbd6aede59d79fe8cbe2af92a5a67fa86198669f36d3b6160d3df755470e485c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.051586,
+      "input_tokens": 163,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 124,
+      "state_sha256": "47a99659676937d17ec56fe0dff329d38b8f729dfb7522c537930ca2bdaebac8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.055693,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 125,
+      "state_sha256": "47a99659676937d17ec56fe0dff329d38b8f729dfb7522c537930ca2bdaebac8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.053492,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 126,
+      "state_sha256": "f482a3d230036af66a2e92665cad354544c6c7fbd28a4a98282b5f5a745c7556",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.118481,
+      "input_tokens": 162,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 127,
+      "state_sha256": "f482a3d230036af66a2e92665cad354544c6c7fbd28a4a98282b5f5a745c7556",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.063098,
+      "input_tokens": 162,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 128,
+      "state_sha256": "0770b1a84ec0b92831f9ca8e9bb856d8289969c957569dce35b055a4a0b412db",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.055864,
+      "input_tokens": 222,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 129,
+      "state_sha256": "0770b1a84ec0b92831f9ca8e9bb856d8289969c957569dce35b055a4a0b412db",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.051186,
+      "input_tokens": 222,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 130,
+      "state_sha256": "b1a74ad496bcee86efb17e10c0915f9242f26291ae8cb10bfc3104aca6268dda",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.134012,
+      "input_tokens": 171,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 131,
+      "state_sha256": "b1a74ad496bcee86efb17e10c0915f9242f26291ae8cb10bfc3104aca6268dda",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.053279,
+      "input_tokens": 171,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 132,
+      "state_sha256": "9aa29454294ab9fe447bddf67daf53e9f9fb63e4fbf404b3ce340e6aaa03f10d",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.106229,
+      "input_tokens": 169,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 133,
+      "state_sha256": "9aa29454294ab9fe447bddf67daf53e9f9fb63e4fbf404b3ce340e6aaa03f10d",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.050392,
+      "input_tokens": 169,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 134,
+      "state_sha256": "ad794d21aa86d89700f0223f94f91adbd1d1f1968cd2c143ebd28f182810482f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.145451,
+      "input_tokens": 163,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 135,
+      "state_sha256": "ad794d21aa86d89700f0223f94f91adbd1d1f1968cd2c143ebd28f182810482f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.055508,
+      "input_tokens": 163,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 136,
+      "state_sha256": "0f21cdda496aac7fd6237beaefec53fdd2b87a4c2f2fc47e4febf881797b874b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.054409,
+      "input_tokens": 203,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 137,
+      "state_sha256": "0f21cdda496aac7fd6237beaefec53fdd2b87a4c2f2fc47e4febf881797b874b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.048591,
+      "input_tokens": 203,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 138,
+      "state_sha256": "dd3697c0c79db52614261afa5dde4122b29ca532e5b098c4b648f1cc776653ed",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.106122,
+      "input_tokens": 207,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 139,
+      "state_sha256": "dd3697c0c79db52614261afa5dde4122b29ca532e5b098c4b648f1cc776653ed",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.0486,
+      "input_tokens": 207,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 140,
+      "state_sha256": "0bc388cfec0278219e5236fef66bd83ebbc71054af3fc2ebdf1e97a113f8589f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.109633,
+      "input_tokens": 195,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 141,
+      "state_sha256": "0bc388cfec0278219e5236fef66bd83ebbc71054af3fc2ebdf1e97a113f8589f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.059518,
+      "input_tokens": 195,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 142,
+      "state_sha256": "468b472080e732983fcec04542c689572b299c57b6456f1f786ea9ddb7096363",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.120792,
+      "input_tokens": 215,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 143,
+      "state_sha256": "468b472080e732983fcec04542c689572b299c57b6456f1f786ea9ddb7096363",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.058773,
+      "input_tokens": 215,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 144,
+      "state_sha256": "d2ac56def8caf4a2f82386726004f5cca27c133a68d74c6924e2bdb86fa630c4",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.159665,
+      "input_tokens": 209,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 145,
+      "state_sha256": "d2ac56def8caf4a2f82386726004f5cca27c133a68d74c6924e2bdb86fa630c4",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.053328,
+      "input_tokens": 209,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 146,
+      "state_sha256": "92036d518333d644ba7aafb6f16ae61eafe566456059718145bb8cff16b35a08",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.115543,
+      "input_tokens": 164,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 147,
+      "state_sha256": "92036d518333d644ba7aafb6f16ae61eafe566456059718145bb8cff16b35a08",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.069482,
+      "input_tokens": 164,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 148,
+      "state_sha256": "6daa74be8d5437af5618d273d231b5502a783c6096c2f0b4a23a6b194945c89a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.121204,
+      "input_tokens": 176,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 149,
+      "state_sha256": "6daa74be8d5437af5618d273d231b5502a783c6096c2f0b4a23a6b194945c89a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.058661,
+      "input_tokens": 176,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 150,
+      "state_sha256": "edb035d9027dd3a2b5bf0c77d3ff8577ec644bf37aea462461754f279bbdb672",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.142874,
+      "input_tokens": 175,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 151,
+      "state_sha256": "edb035d9027dd3a2b5bf0c77d3ff8577ec644bf37aea462461754f279bbdb672",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.05501,
+      "input_tokens": 175,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 152,
+      "state_sha256": "cafa11d825b32aa34b2fa2db01b8903f0d12aeac9d6b901af2a005fce50c5942",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.131732,
+      "input_tokens": 208,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 153,
+      "state_sha256": "cafa11d825b32aa34b2fa2db01b8903f0d12aeac9d6b901af2a005fce50c5942",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.054256,
+      "input_tokens": 208,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 154,
+      "state_sha256": "2a5981f89b648063194362874dc38a29c851cd850726bbb1ef8fca1963fbb08f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.150988,
+      "input_tokens": 195,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 155,
+      "state_sha256": "2a5981f89b648063194362874dc38a29c851cd850726bbb1ef8fca1963fbb08f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.058511,
+      "input_tokens": 195,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 156,
+      "state_sha256": "4322ee57fc274f7328f07266db6abe93a9955b1453c42573961eea5b14c5c437",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.137134,
+      "input_tokens": 164,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 157,
+      "state_sha256": "4322ee57fc274f7328f07266db6abe93a9955b1453c42573961eea5b14c5c437",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.08604,
+      "input_tokens": 164,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 158,
+      "state_sha256": "59d7e3adee2cc472825bf9be5a30b2e1344ef2ab9b4cce1ced1492c1be1ce126",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.0659,
+      "input_tokens": 191,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 159,
+      "state_sha256": "59d7e3adee2cc472825bf9be5a30b2e1344ef2ab9b4cce1ced1492c1be1ce126",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.051539,
+      "input_tokens": 191,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 160,
+      "state_sha256": "15626d15a7ab3ff6c5f81cf6c66db76c2b21a3f8b17ee018715e454fb0800019",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.138032,
+      "input_tokens": 197,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 161,
+      "state_sha256": "15626d15a7ab3ff6c5f81cf6c66db76c2b21a3f8b17ee018715e454fb0800019",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.055964,
+      "input_tokens": 197,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 162,
+      "state_sha256": "db4522c1c5a524fc9577d0809f070c8074dc969c5d95156678c6ccb80cde51f9",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.134997,
+      "input_tokens": 159,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 163,
+      "state_sha256": "db4522c1c5a524fc9577d0809f070c8074dc969c5d95156678c6ccb80cde51f9",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.055053,
+      "input_tokens": 159,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 164,
+      "state_sha256": "16656d7deafc53ac2c85a217361e43ef0a476fd39abcbff0924fefb70f521fe5",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.055758,
+      "input_tokens": 182,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 165,
+      "state_sha256": "16656d7deafc53ac2c85a217361e43ef0a476fd39abcbff0924fefb70f521fe5",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.049637,
+      "input_tokens": 182,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 166,
+      "state_sha256": "3b1e27d61e1567c0ab33d95194fd06a9d5e74e923cc7011cd4badb4306855075",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.104278,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 167,
+      "state_sha256": "3b1e27d61e1567c0ab33d95194fd06a9d5e74e923cc7011cd4badb4306855075",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.047456,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 168,
+      "state_sha256": "e1f8d0f247ea5b5e6602c006d14cdca0ac82ac591c1b61226e871706179c7308",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.054404,
+      "input_tokens": 193,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 169,
+      "state_sha256": "e1f8d0f247ea5b5e6602c006d14cdca0ac82ac591c1b61226e871706179c7308",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.049074,
+      "input_tokens": 193,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 170,
+      "state_sha256": "8b704a4b7e013791a500a287f3f4e26217ce420038fc598f99900809079e5a9c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.109376,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 171,
+      "state_sha256": "8b704a4b7e013791a500a287f3f4e26217ce420038fc598f99900809079e5a9c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.049443,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 172,
+      "state_sha256": "f9cf9b75a7700b9bfae5d3c3a3a1ce06730c4eeb146d25fc3d9caf2ae4098fff",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.062309,
+      "input_tokens": 194,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 173,
+      "state_sha256": "f9cf9b75a7700b9bfae5d3c3a3a1ce06730c4eeb146d25fc3d9caf2ae4098fff",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.06175,
+      "input_tokens": 194,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 174,
+      "state_sha256": "6cf27480e4774445186bbab0fedd246282ff511f09281469fc2e40cedc8d1d6e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.11241,
+      "input_tokens": 210,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 175,
+      "state_sha256": "6cf27480e4774445186bbab0fedd246282ff511f09281469fc2e40cedc8d1d6e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.057482,
+      "input_tokens": 210,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 176,
+      "state_sha256": "bd20299a030cb71f8dcecccaab9dbef489d59501fceeec7017ff6937b5e630e7",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.150253,
+      "input_tokens": 210,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 177,
+      "state_sha256": "bd20299a030cb71f8dcecccaab9dbef489d59501fceeec7017ff6937b5e630e7",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.056188,
+      "input_tokens": 210,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 178,
+      "state_sha256": "788570289d0ee97be5c37dcd2a33a4dcb93f5a7eb21b987450ec12ebc986b8b2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.152477,
+      "input_tokens": 170,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 179,
+      "state_sha256": "788570289d0ee97be5c37dcd2a33a4dcb93f5a7eb21b987450ec12ebc986b8b2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.053904,
+      "input_tokens": 170,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 180,
+      "state_sha256": "7c6e24a07c764e9ad97bc87b2822da8a532442f48f3ab96afc52d54914174443",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.128829,
+      "input_tokens": 202,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 181,
+      "state_sha256": "7c6e24a07c764e9ad97bc87b2822da8a532442f48f3ab96afc52d54914174443",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.05568,
+      "input_tokens": 202,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 182,
+      "state_sha256": "0ac215201f4d15e0516b660b0b8c8000256b15ce97508adec6cf11ba33b3ac3d",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.116089,
+      "input_tokens": 216,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 183,
+      "state_sha256": "0ac215201f4d15e0516b660b0b8c8000256b15ce97508adec6cf11ba33b3ac3d",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.052785,
+      "input_tokens": 216,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 184,
+      "state_sha256": "c2b12f8d95a05682ca8a3b3360a26411cf5289dade7a81d34d4fbbdf9eaee702",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.115588,
+      "input_tokens": 165,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 185,
+      "state_sha256": "c2b12f8d95a05682ca8a3b3360a26411cf5289dade7a81d34d4fbbdf9eaee702",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.050467,
+      "input_tokens": 165,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 186,
+      "state_sha256": "2facf52133f48a9f8a152a47b079316fc11c86efc01c2d97d9bab20d037294f9",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.065724,
+      "input_tokens": 193,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 187,
+      "state_sha256": "2facf52133f48a9f8a152a47b079316fc11c86efc01c2d97d9bab20d037294f9",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.056146,
+      "input_tokens": 193,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 188,
+      "state_sha256": "688b971cf395da3165b79729bdf867717c9614fd935b1fcbec32e337abf6b5d2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.135667,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 189,
+      "state_sha256": "688b971cf395da3165b79729bdf867717c9614fd935b1fcbec32e337abf6b5d2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.050061,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 190,
+      "state_sha256": "67019e39347bd96bb68a3dd37d102d024532633c1382db4639ec5603075c6423",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.054692,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 191,
+      "state_sha256": "67019e39347bd96bb68a3dd37d102d024532633c1382db4639ec5603075c6423",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.058632,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 192,
+      "state_sha256": "4e073e80c7007bf8f3044e3cad88609bd43bf813452d82b3718849ad4db37730",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.102063,
+      "input_tokens": 196,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 193,
+      "state_sha256": "4e073e80c7007bf8f3044e3cad88609bd43bf813452d82b3718849ad4db37730",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.050493,
+      "input_tokens": 196,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 194,
+      "state_sha256": "1bdf7a937e935d71127f01c30adcd618b677ba81a7d4f3b3c75d053b41483942",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.113323,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 195,
+      "state_sha256": "1bdf7a937e935d71127f01c30adcd618b677ba81a7d4f3b3c75d053b41483942",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.051008,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 196,
+      "state_sha256": "1a8dd9f24d8385adab9678cd48d2dce71f430fad0664a8779636540b0b980136",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.111318,
+      "input_tokens": 165,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 197,
+      "state_sha256": "1a8dd9f24d8385adab9678cd48d2dce71f430fad0664a8779636540b0b980136",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.050326,
+      "input_tokens": 165,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 198,
+      "state_sha256": "20bbcdb5ed17e4a6da1dd67418e718f4a398bcb3ff82d3d956416a66a1f1bc58",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.057816,
+      "input_tokens": 173,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 199,
+      "state_sha256": "20bbcdb5ed17e4a6da1dd67418e718f4a398bcb3ff82d3d956416a66a1f1bc58",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.052812,
+      "input_tokens": 173,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 200,
+      "state_sha256": "0b161f8ef2aae7af7a82cd69ce80e96a7724d8b7fd38b5e0551c90809fbea95b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.110756,
+      "input_tokens": 161,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 201,
+      "state_sha256": "0b161f8ef2aae7af7a82cd69ce80e96a7724d8b7fd38b5e0551c90809fbea95b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.047934,
+      "input_tokens": 161,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 202,
+      "state_sha256": "d14cb1bfe6a6f5a73d1c2859e52ac45e8fb18d5dc8a3fd782b00e451d2892e76",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.053657,
+      "input_tokens": 165,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 203,
+      "state_sha256": "d14cb1bfe6a6f5a73d1c2859e52ac45e8fb18d5dc8a3fd782b00e451d2892e76",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.050797,
+      "input_tokens": 165,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 204,
+      "state_sha256": "13eaeec5fb7872f892ee5edcad3eba005dca37c436f0be09d98a64851d99a2eb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.056317,
+      "input_tokens": 162,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 205,
+      "state_sha256": "13eaeec5fb7872f892ee5edcad3eba005dca37c436f0be09d98a64851d99a2eb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046975,
+      "input_tokens": 162,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 206,
+      "state_sha256": "0c50f96dfc7fd41e692f3ed5b31927b9bbb518370fee88a34c4fb42c8a1f00ad",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.051184,
+      "input_tokens": 164,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 207,
+      "state_sha256": "0c50f96dfc7fd41e692f3ed5b31927b9bbb518370fee88a34c4fb42c8a1f00ad",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.045539,
+      "input_tokens": 164,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 208,
+      "state_sha256": "b46a1135f17855fff112014794468aadc69a0ec3154ffc1093b5f2c5eb29c43a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.055385,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 209,
+      "state_sha256": "b46a1135f17855fff112014794468aadc69a0ec3154ffc1093b5f2c5eb29c43a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.052401,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 210,
+      "state_sha256": "06be94e34256786df775269f0213fd60eaf7378cb6b9f7b1144a212cb93c84dc",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.056876,
+      "input_tokens": 179,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 211,
+      "state_sha256": "06be94e34256786df775269f0213fd60eaf7378cb6b9f7b1144a212cb93c84dc",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.05134,
+      "input_tokens": 179,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 212,
+      "state_sha256": "d8e899581ce284c04597b697aa230fc1a27495059e61168a238f12bf97326bcd",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.110943,
+      "input_tokens": 194,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 213,
+      "state_sha256": "d8e899581ce284c04597b697aa230fc1a27495059e61168a238f12bf97326bcd",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.047108,
+      "input_tokens": 194,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 214,
+      "state_sha256": "c188f80ae5f9099fbce873c85e38d9f4fd5e7c5782920c65241eb2de2d953877",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.13335,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 215,
+      "state_sha256": "c188f80ae5f9099fbce873c85e38d9f4fd5e7c5782920c65241eb2de2d953877",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.054361,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 216,
+      "state_sha256": "a42530d3b4183203e53a8cc6279093cb4fe5d624218e35d85aed8670084d6e99",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.054761,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 217,
+      "state_sha256": "a42530d3b4183203e53a8cc6279093cb4fe5d624218e35d85aed8670084d6e99",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046963,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 218,
+      "state_sha256": "7126a8689afc002a8cfecffe5ead6ec75b36dacba68b588fff065085f4511f18",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.049683,
+      "input_tokens": 161,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 219,
+      "state_sha256": "7126a8689afc002a8cfecffe5ead6ec75b36dacba68b588fff065085f4511f18",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.048551,
+      "input_tokens": 161,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 220,
+      "state_sha256": "81d7a971b280488551ae6440b1dd258efb16fb7c84c4044aae3ad03608044b29",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.054118,
+      "input_tokens": 199,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 221,
+      "state_sha256": "81d7a971b280488551ae6440b1dd258efb16fb7c84c4044aae3ad03608044b29",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.051292,
+      "input_tokens": 199,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 222,
+      "state_sha256": "b27ec26c31b231e471581167bf28ac9a5aada79e355b96d193c448c13ba421f8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.112271,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 223,
+      "state_sha256": "b27ec26c31b231e471581167bf28ac9a5aada79e355b96d193c448c13ba421f8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046919,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 224,
+      "state_sha256": "af2ca314a25cc144a34df66a888466b28cefa2a8676914f85974502940229760",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.057187,
+      "input_tokens": 173,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 225,
+      "state_sha256": "af2ca314a25cc144a34df66a888466b28cefa2a8676914f85974502940229760",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.051068,
+      "input_tokens": 173,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 226,
+      "state_sha256": "55f441fe2095ffdf3f09a7380aabaa66f4ca4c19ae1d2f7e5505896d880fa524",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.119956,
+      "input_tokens": 183,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 227,
+      "state_sha256": "55f441fe2095ffdf3f09a7380aabaa66f4ca4c19ae1d2f7e5505896d880fa524",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.049659,
+      "input_tokens": 183,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 228,
+      "state_sha256": "1964e5a15073d08e541ec3abfd3573882273f6d6c06a6f1561be6b2c20ea8fa4",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.109622,
+      "input_tokens": 210,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 229,
+      "state_sha256": "1964e5a15073d08e541ec3abfd3573882273f6d6c06a6f1561be6b2c20ea8fa4",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.047756,
+      "input_tokens": 210,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 230,
+      "state_sha256": "b0c7096ab544d1d146b8d8761f51b5671ed7919d056af85f098ba6ffbc7aaa64",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.105437,
+      "input_tokens": 170,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 231,
+      "state_sha256": "b0c7096ab544d1d146b8d8761f51b5671ed7919d056af85f098ba6ffbc7aaa64",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.047801,
+      "input_tokens": 170,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 232,
+      "state_sha256": "a83fec342812aeaa7ce0f1e7a1c2d5580358cc27bcf2964e0f4e761ef90bb130",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.129339,
+      "input_tokens": 182,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 233,
+      "state_sha256": "a83fec342812aeaa7ce0f1e7a1c2d5580358cc27bcf2964e0f4e761ef90bb130",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.047169,
+      "input_tokens": 182,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 234,
+      "state_sha256": "67aa05516b6769b9fb2314ae70289020b2d799b6b75e6562c1898eaf8462d804",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.101277,
+      "input_tokens": 213,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 235,
+      "state_sha256": "67aa05516b6769b9fb2314ae70289020b2d799b6b75e6562c1898eaf8462d804",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.048298,
+      "input_tokens": 213,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 236,
+      "state_sha256": "caa2c01469c08ea48ab9f71eecfc46c04608f11fc7aa53fc599df7c5e69e7a9a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.106057,
+      "input_tokens": 171,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 237,
+      "state_sha256": "caa2c01469c08ea48ab9f71eecfc46c04608f11fc7aa53fc599df7c5e69e7a9a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.047697,
+      "input_tokens": 171,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 238,
+      "state_sha256": "112a54cd0f8c411336e342d6ca6e70a7076b289b99cad290df77b30029474854",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.103943,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 239,
+      "state_sha256": "112a54cd0f8c411336e342d6ca6e70a7076b289b99cad290df77b30029474854",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.049085,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 240,
+      "state_sha256": "dbe4f1e97187307dff35c2accf619d8f181e4b1520f7be125ea89672ffafe103",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.108168,
+      "input_tokens": 173,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 241,
+      "state_sha256": "dbe4f1e97187307dff35c2accf619d8f181e4b1520f7be125ea89672ffafe103",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046676,
+      "input_tokens": 173,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 242,
+      "state_sha256": "8470a911737229d12a8fcfb0fc6e8eaaad6a82bff2b0011ecc5356e832f1d1f6",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.103483,
+      "input_tokens": 195,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 243,
+      "state_sha256": "8470a911737229d12a8fcfb0fc6e8eaaad6a82bff2b0011ecc5356e832f1d1f6",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.045701,
+      "input_tokens": 195,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 244,
+      "state_sha256": "82a542e92687cbd517768ea167a981e92d8751f227bfdf1d1e057f456bcb8682",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.12497,
+      "input_tokens": 185,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 245,
+      "state_sha256": "82a542e92687cbd517768ea167a981e92d8751f227bfdf1d1e057f456bcb8682",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.045736,
+      "input_tokens": 185,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 246,
+      "state_sha256": "8c32dbd454db5ee1ba92da583753bd901a9d7c7529cdd9cc40e2bfff11e12bac",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.099321,
+      "input_tokens": 169,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 247,
+      "state_sha256": "8c32dbd454db5ee1ba92da583753bd901a9d7c7529cdd9cc40e2bfff11e12bac",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046303,
+      "input_tokens": 169,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 248,
+      "state_sha256": "0b7ff1c824e00d19040b729834681824224b182fc28de900aac21786574d734a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.104357,
+      "input_tokens": 159,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 249,
+      "state_sha256": "0b7ff1c824e00d19040b729834681824224b182fc28de900aac21786574d734a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046367,
+      "input_tokens": 159,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 250,
+      "state_sha256": "2cf023e7d616aa2ba536af75cd148d32cee4fcf32cafd0cb336fe91b3305d8d6",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.050524,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 251,
+      "state_sha256": "2cf023e7d616aa2ba536af75cd148d32cee4fcf32cafd0cb336fe91b3305d8d6",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.047406,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 252,
+      "state_sha256": "6578c1e5810b6c77bcc93e25d64c609ddd5419c5400a38660472757c5d6a7c69",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.108093,
+      "input_tokens": 181,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 253,
+      "state_sha256": "6578c1e5810b6c77bcc93e25d64c609ddd5419c5400a38660472757c5d6a7c69",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.04688,
+      "input_tokens": 181,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 254,
+      "state_sha256": "86dcec6c8d465b04bdce7d3337467235c8eb606106bc504461f3a9644554cae3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.112934,
+      "input_tokens": 204,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 255,
+      "state_sha256": "86dcec6c8d465b04bdce7d3337467235c8eb606106bc504461f3a9644554cae3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.048054,
+      "input_tokens": 204,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 256,
+      "state_sha256": "5b94e425c2a83ea327a722d0f75f7ebcbe62cd338135dda6d454d0aec090e495",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.120039,
+      "input_tokens": 159,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 257,
+      "state_sha256": "5b94e425c2a83ea327a722d0f75f7ebcbe62cd338135dda6d454d0aec090e495",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046214,
+      "input_tokens": 159,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 258,
+      "state_sha256": "b4bd635b391ce0ec4a48ef0e39fd46f8a4d5aa218e3ac3cadd3f1da22c54c072",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.049985,
+      "input_tokens": 170,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 259,
+      "state_sha256": "b4bd635b391ce0ec4a48ef0e39fd46f8a4d5aa218e3ac3cadd3f1da22c54c072",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.047238,
+      "input_tokens": 170,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 260,
+      "state_sha256": "df4c1f05fae1c3db75b20fb22ae0f59a1d866101d9cbbc284a1c629b63407c4b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.103191,
+      "input_tokens": 220,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 261,
+      "state_sha256": "df4c1f05fae1c3db75b20fb22ae0f59a1d866101d9cbbc284a1c629b63407c4b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046537,
+      "input_tokens": 220,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 262,
+      "state_sha256": "b5805755e0d1fb9f95dc6ebe93126c8d20c120c6b714da57e0c962a9d7fa47cf",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.116794,
+      "input_tokens": 195,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 263,
+      "state_sha256": "b5805755e0d1fb9f95dc6ebe93126c8d20c120c6b714da57e0c962a9d7fa47cf",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.04919,
+      "input_tokens": 195,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 264,
+      "state_sha256": "a5ddd576cd2df1829c3fa7dc16ca83603edc70cce96f57a474e0b063e1e86f92",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.125046,
+      "input_tokens": 181,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 265,
+      "state_sha256": "a5ddd576cd2df1829c3fa7dc16ca83603edc70cce96f57a474e0b063e1e86f92",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046975,
+      "input_tokens": 181,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 266,
+      "state_sha256": "5b7882ce72191eb92d4347de062b77e41bae2445235f51b7792b978f850b4025",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.099255,
+      "input_tokens": 159,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 267,
+      "state_sha256": "5b7882ce72191eb92d4347de062b77e41bae2445235f51b7792b978f850b4025",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.049009,
+      "input_tokens": 159,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 268,
+      "state_sha256": "951f31617ed7e3618b9f2f27a537b8e4a31c593e1dbad13120c04dfd606c5f68",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.051478,
+      "input_tokens": 172,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 269,
+      "state_sha256": "951f31617ed7e3618b9f2f27a537b8e4a31c593e1dbad13120c04dfd606c5f68",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046063,
+      "input_tokens": 172,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 270,
+      "state_sha256": "a4feae7a54ec4ae29e2e2f7968893be6be69cdcd4b778b43aa0747bbfb9e2537",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.107839,
+      "input_tokens": 163,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 271,
+      "state_sha256": "a4feae7a54ec4ae29e2e2f7968893be6be69cdcd4b778b43aa0747bbfb9e2537",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046539,
+      "input_tokens": 163,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 272,
+      "state_sha256": "fb4d9929bfaa16cbea8494ee04f1380673db026c2afd34292094202a88d2088e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.050543,
+      "input_tokens": 165,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 273,
+      "state_sha256": "fb4d9929bfaa16cbea8494ee04f1380673db026c2afd34292094202a88d2088e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.045873,
+      "input_tokens": 165,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 274,
+      "state_sha256": "e288c92386623dc01dfa201d3e14525ca3fba9fef044bc2ed4dcfa2c29db3d1c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.050016,
+      "input_tokens": 163,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 275,
+      "state_sha256": "e288c92386623dc01dfa201d3e14525ca3fba9fef044bc2ed4dcfa2c29db3d1c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.04665,
+      "input_tokens": 163,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 276,
+      "state_sha256": "95731de91bf950ff2b6a92014e0f55c1cab90af574c6fb8d865126526cb546d5",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.053641,
+      "input_tokens": 180,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 277,
+      "state_sha256": "95731de91bf950ff2b6a92014e0f55c1cab90af574c6fb8d865126526cb546d5",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.0465,
+      "input_tokens": 180,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 278,
+      "state_sha256": "084e34c0102c08d15eeeae83d675f206e9c8345706fb38402bc7b0ffc36fa4d2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.109142,
+      "input_tokens": 165,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 279,
+      "state_sha256": "084e34c0102c08d15eeeae83d675f206e9c8345706fb38402bc7b0ffc36fa4d2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.04694,
+      "input_tokens": 165,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 280,
+      "state_sha256": "5f7803a269a03402833de8dabcb61c9f4ebf968a6e3e316576d6b5687c0924ed",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.051581,
+      "input_tokens": 222,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 281,
+      "state_sha256": "5f7803a269a03402833de8dabcb61c9f4ebf968a6e3e316576d6b5687c0924ed",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.045959,
+      "input_tokens": 222,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 282,
+      "state_sha256": "4ded357d736bfffc20b29991d566ce0f0d525e3b75a1202673114dbe742fb4bb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.118346,
+      "input_tokens": 162,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 283,
+      "state_sha256": "4ded357d736bfffc20b29991d566ce0f0d525e3b75a1202673114dbe742fb4bb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.057885,
+      "input_tokens": 162,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 284,
+      "state_sha256": "c6d15b625a760e468cf4f00375b89d80d6eda96ef9a6be3cf5154c30da78e218",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.051151,
+      "input_tokens": 212,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 285,
+      "state_sha256": "c6d15b625a760e468cf4f00375b89d80d6eda96ef9a6be3cf5154c30da78e218",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.044939,
+      "input_tokens": 212,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 286,
+      "state_sha256": "d0d8282c501e354d8d8a5ea4b37ef18ea512b0768d6603bbc61c6cd414052956",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.105953,
+      "input_tokens": 218,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 287,
+      "state_sha256": "d0d8282c501e354d8d8a5ea4b37ef18ea512b0768d6603bbc61c6cd414052956",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046043,
+      "input_tokens": 218,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 288,
+      "state_sha256": "15d20489bb46553d4a259accbffb9c625de19b3ba3e634cad437caf7d0df448b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.126138,
+      "input_tokens": 172,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 289,
+      "state_sha256": "15d20489bb46553d4a259accbffb9c625de19b3ba3e634cad437caf7d0df448b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.048234,
+      "input_tokens": 172,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 290,
+      "state_sha256": "18215a6d26eb8898904a98b30779f1133de79d4b82a35961ce74bac2c340f853",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.103927,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 291,
+      "state_sha256": "18215a6d26eb8898904a98b30779f1133de79d4b82a35961ce74bac2c340f853",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.048862,
+      "input_tokens": 166,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 292,
+      "state_sha256": "a672411e7428be0f8eba378989834fe4bdd1e2ada34092c6f3235e775e6dab2a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.054409,
+      "input_tokens": 250,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 293,
+      "state_sha256": "a672411e7428be0f8eba378989834fe4bdd1e2ada34092c6f3235e775e6dab2a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.048999,
+      "input_tokens": 250,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 294,
+      "state_sha256": "eeeb1fccc6b77619f606d22320e4888fb5cf871c3aab2bd79a0195be441ca9e5",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.128926,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 295,
+      "state_sha256": "eeeb1fccc6b77619f606d22320e4888fb5cf871c3aab2bd79a0195be441ca9e5",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046232,
+      "input_tokens": 167,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 296,
+      "state_sha256": "366a7c495046803d93460875b49761287a7a3cdcb4791d529f8fb817ad8b5255",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.100946,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 297,
+      "state_sha256": "366a7c495046803d93460875b49761287a7a3cdcb4791d529f8fb817ad8b5255",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.047035,
+      "input_tokens": 160,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 298,
+      "state_sha256": "3c5fe153d6ff6ed992d43d5c1bcf1ac506f046f3c8c7effa5ec00f96098cbc80",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.052692,
+      "input_tokens": 219,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 299,
+      "state_sha256": "3c5fe153d6ff6ed992d43d5c1bcf1ac506f046f3c8c7effa5ec00f96098cbc80",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.047884,
+      "input_tokens": 219,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 300,
+      "state_sha256": "efcc7dbdff030d1133765e8a905f181fe16c1e1b8dbf36ef36ae9018f04d33bc",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.125601,
+      "input_tokens": 199,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 301,
+      "state_sha256": "efcc7dbdff030d1133765e8a905f181fe16c1e1b8dbf36ef36ae9018f04d33bc",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.051665,
+      "input_tokens": 199,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 302,
+      "state_sha256": "1678966213f55e3432b7cdc0fbc758d3565dd783949c92c27e78611ab941d552",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.112277,
+      "input_tokens": 182,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 303,
+      "state_sha256": "1678966213f55e3432b7cdc0fbc758d3565dd783949c92c27e78611ab941d552",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.0459,
+      "input_tokens": 182,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 304,
+      "state_sha256": "5644f06304345547abfd485e385ee894c516a23fdb99c163000ccab94b6ef4f7",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.098707,
+      "input_tokens": 168,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 305,
+      "state_sha256": "5644f06304345547abfd485e385ee894c516a23fdb99c163000ccab94b6ef4f7",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.048093,
+      "input_tokens": 168,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 306,
+      "state_sha256": "51f4836be2f96f2343cfd9602de6b66cd257d24febd0aeeef381429d983b5b1a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.114282,
+      "input_tokens": 175,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 307,
+      "state_sha256": "51f4836be2f96f2343cfd9602de6b66cd257d24febd0aeeef381429d983b5b1a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.050511,
+      "input_tokens": 175,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 308,
+      "state_sha256": "31d64172621c8d36d3f3e2329d1fa4b09d0ce58b508846532e7f5671d7f40b5c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.121276,
+      "input_tokens": 168,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 309,
+      "state_sha256": "31d64172621c8d36d3f3e2329d1fa4b09d0ce58b508846532e7f5671d7f40b5c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.048269,
+      "input_tokens": 168,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 310,
+      "state_sha256": "304c7307a378472af75fc0d5962bf142303c102fbd0b06cdd0c7b393ad3cfd51",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.097603,
+      "input_tokens": 163,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 311,
+      "state_sha256": "304c7307a378472af75fc0d5962bf142303c102fbd0b06cdd0c7b393ad3cfd51",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046806,
+      "input_tokens": 163,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 312,
+      "state_sha256": "e60e9d8dc6bf43bd697ac15a3557760f8b20ae8a28a64694aedc20a1151ff40d",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.050589,
+      "input_tokens": 171,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 313,
+      "state_sha256": "e60e9d8dc6bf43bd697ac15a3557760f8b20ae8a28a64694aedc20a1151ff40d",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.046441,
+      "input_tokens": 171,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 314,
+      "state_sha256": "c6d556034c7a0c7094a8cd52dc2acb0a4bfd623c814beb81f60bc137e6844a71",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.119948,
+      "input_tokens": 172,
+      "error": null,
+      "model": "nimble"
+    },
+    {
+      "index": 315,
+      "state_sha256": "c6d556034c7a0c7094a8cd52dc2acb0a4bfd623c814beb81f60bc137e6844a71",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 0.047999,
+      "input_tokens": 172,
+      "error": null,
+      "model": "nimble"
+    }
+  ],
+  "call_summary": {
+    "calls": 316,
+    "failed": 0,
+    "input_tokens_total": 57008,
+    "input_tokens_known": 316,
+    "latency_seconds_total": 27.94963718485087,
+    "latency_seconds_median": 0.06186984747182578,
+    "latency_seconds_max": 0.39531547809019685,
+    "models": [
+      "nimble"
+    ]
+  },
+  "pins": {
+    "finished_utc": "2026-10-01T15:05:00.384464+00:00",
+    "wall_seconds": 28.0,
+    "dataset": "difraud/difraud sms",
+    "dataset_revision": "aaaf94b336c563a14806bb4f3f58727bed9ed8d4",
+    "split_seed": 0,
+    "served_template": null,
+    "evolution_artifact_sha256": "84e2dba899c6c3869ca7dfb9c2663d023ad66a3036128544e957afb4728aee5d",
+    "server": {
+      "base_url": "http://localhost:11434",
+      "served_template": null,
+      "ollama_version": "0.35.0",
+      "model_digest": "24e550a16a7081881be2f1f0d91e8cc13a597472735c04119f035a0a85c67e0c"
+    },
+    "judge_identity": {
+      "requested_model": "nimble",
+      "reported_models": [
+        "nimble"
+      ],
+      "base_url": "http://localhost:11434",
+      "ollama_version": "0.35.0",
+      "model_digest": "24e550a16a7081881be2f1f0d91e8cc13a597472735c04119f035a0a85c67e0c"
+    }
+  },
+  "identity": {
+    "run_id": "3b46fbb2282d4a20b7baa9505105f8af",
+    "baseline_commit": "ce755ee8d97d22f9c3e2bd7d7f8f1ac238370efa",
+    "working_tree": {
+      "dirty": true,
+      "dirty_paths": [
+        "dirty-unknown-without-porcelain"
+      ],
+      "dirty_digest": "unknown"
+    },
+    "prompt_digests": {
+      "seed": "497f2a424c5784409757fe492f548ff4230144fc766a271d14f3db855372b01b",
+      "evolved": "085a1077556f26f9322b2a6fa133913343bd61a26b00f6479d193f1ebf3c9f59"
+    },
+    "code_path_digests": {
+      "held_out": "e4541adf693715203fd40474aad8f761f9ced551d6747483667cc02a3ee26e8b",
+      "metrics": "2f93215f9707892f31ffc641b860ce4c6f8dfc60022de27f993117e033048913"
+    },
+    "fixture_digests": {
+      "evolution_artifact": "84e2dba899c6c3869ca7dfb9c2663d023ad66a3036128544e957afb4728aee5d"
+    },
+    "runtime": {
+      "model": "nimble",
+      "served_template": "ollama_http",
+      "server_build": "0.35.0",
+      "template_identity": "unknown",
+      "projector_identity": "unknown",
+      "config_identity": "unknown"
+    },
+    "arm_call_counts": {
+      "judgments": 316
+    },
+    "identity_digest": "8bcc46e73866bc196a6f251ecbd77c0b96a841a759a1e588a6358813bf468346"
+  }
+}
