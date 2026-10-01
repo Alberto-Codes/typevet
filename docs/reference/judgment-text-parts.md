@@ -121,7 +121,7 @@ A response from another adapter has an empty `text_parts`.
 A candidate mapping names each part with one snake_case key.
 Use these keys only.
 gepa-adk accepts only keys that are Python identifiers, so a key never holds a dot.
-A wording run uses the `instructions`, `criteria_true` and `criteria_false` keys today ([#363](https://github.com/Alberto-Codes/typevet/issues/363)).
+A wording run uses the `Noul` keys ([#363](https://github.com/Alberto-Codes/typevet/issues/363)) and the `Choice` keys ([#369](https://github.com/Alberto-Codes/typevet/issues/369)).
 
 | Part | Component name | Evolvable |
 |---|---|---|
@@ -151,11 +151,28 @@ For a `Noul`, it maps `criteria_true` to `true` and `criteria_false` to `false`.
 
 ## Wording run parts
 
-`seed_mapping` in `typevet_evals.wording.parts` builds the full mapping from a seed `Noul`.
+`seed_mapping` in `typevet_evals.wording.parts` builds the full mapping from a seed `Noul` or `Choice`.
 A seed without `criteria` gives the `instructions` part only.
-A seed with `criteria` must hold exactly a `true` and a `false` text.
+A `Noul` seed with `criteria` must hold exactly a `true` and a `false` text.
 `criteria_true` holds the `true` text, and `criteria_false` holds the `false` text.
-The wording run refuses a `Choice` or a `Score` seed.
+A `Choice` seed gives one part per described label, as the table above names it.
+The wording run refuses a `Score` seed until a level scorer exists.
+
+The seed type sets the reward and the transport answer.
+
+| Seed | Transport answer | Reward per row | Gold label |
+|---|---|---|---|
+| `Noul` | `{"probability": p}` | `BrierScorer`: 1 − (p − gold)² | `"1"` or `"0"` |
+| `Choice` | `{"probabilities": {label: p}}` | `ChoiceScorer`: 1 − ½ Σ (p_k − 1[k = gold])² | The label name |
+
+A `WordingRow` holds the state, the gold label, the record id and the split.
+The state is a message text or a state mapping, such as a PubMedQA question.
+The gold label never reaches the port.
+`ChoiceScorer` refuses a distribution that lacks a seed label or holds another label.
+The held-out receipt of a `Choice` run adds Cohen's kappa to accuracy, Brier and ECE.
+Its ECE uses the probability of the chosen label.
+The #133 ECE reference applies to `Noul` runs only.
+The evolution artifact and the held-out receipt record `part_table` beside `seed_parts`.
 
 `evolve_wording(..., components=[...])` names the parts that evolve.
 The default is `["instructions"]`.

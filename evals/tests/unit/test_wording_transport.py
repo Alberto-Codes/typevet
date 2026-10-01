@@ -198,13 +198,10 @@ def test_a_part_that_is_not_text_is_refused_by_name() -> None:
 
 @pytest.mark.parametrize(
     "seed",
-    [
-        Choice(instructions=SENTINEL, criteria={"a": SENTINEL, "b": "B"}),
-        Score(instructions=SENTINEL, criteria=[SENTINEL, "high"]),
-    ],
-    ids=["choice", "score"],
+    [Score(instructions=SENTINEL, criteria=[SENTINEL, "high"])],
+    ids=["score"],
 )
-def test_a_choice_or_score_seed_is_refused_by_type_not_text(seed: Any) -> None:
+def test_a_score_seed_is_refused_by_type_not_text(seed: Any) -> None:
     name = type(seed).__name__
 
     with pytest.raises(ValueError, match=name) as caught:
@@ -212,6 +209,12 @@ def test_a_choice_or_score_seed_is_refused_by_type_not_text(seed: Any) -> None:
     assert SENTINEL not in str(caught.value)
     with pytest.raises(ValueError, match=name):
         _transport({"instructions": "x"}, seed=seed)
+
+
+def test_a_choice_seed_maps_to_its_parts() -> None:
+    seed = Choice(instructions="Which?", criteria={"a": "A", "b": None})
+
+    assert seed_mapping(seed) == {"instructions": "Which?", "criteria_a": "A"}
 
 
 @pytest.mark.parametrize(

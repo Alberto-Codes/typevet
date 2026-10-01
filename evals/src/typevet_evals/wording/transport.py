@@ -6,9 +6,13 @@ gepa-adk evolves agents. The question text lives in a caller-owned
 gepa-adk registers each part as a mapping component, so it writes each
 candidate text into the mapping around an evaluation. The agent is a
 tool-less ``LlmAgent`` whose model is ``WordingTransport``. That model never
-calls an LLM. At call time it builds a judgevet ``Noul`` from every part of
-the mapping, sends it to a judgevet ``SystemOnePort`` and answers
-``{"probability": p}``. The agent's own instruction is never sent.
+calls an LLM. At call time it builds a question of the seed's type from every
+part of the mapping and sends it to a judgevet ``SystemOnePort``. It answers
+``{"probability": p}`` for a ``Noul`` seed and
+``{"probabilities": {label: p}}`` for a ``Choice`` seed (#369). The agent's
+own instruction is never sent. A state mapping, such as a PubMedQA question
+and its contexts, reaches the port through ``states``: the user text is the
+mapping's key there.
 
 In production the port is typevet's ``TypevetSystemOnePort`` bridge. This
 module does not import judgevet at run time: the caller gives the seed
@@ -43,12 +47,12 @@ from typing import TYPE_CHECKING, Any, Protocol, Self
 
 from google.adk.models import BaseLlm, LlmCapabilities, LlmRequest, LlmResponse
 from google.genai import types
-from pydantic import ConfigDict, SkipValidation, model_validator
+from pydantic import ConfigDict, Field, SkipValidation, model_validator
 
 from typevet_evals.wording.parts import (
     SeedNoul,
     check_parts,
-    noul_from_parts,
+    question_from_parts,
     seed_mapping,
 )
 
@@ -74,9 +78,9 @@ class JudgePort(Protocol):
     """
 
     def system_one(
-        self, state: str, questions: Mapping[str, Any], model: str
+        self, state: Any, questions: Mapping[str, Any], model: str
     ) -> SystemOneResponse:
-        """Judge ``state`` against every question."""
+        """Judge ``state``, a text or a state mapping, against every question."""
         ...
 
 
@@ -121,6 +125,23 @@ def usage_metadata(
     )
 
 
+def answer_body(response: SystemOneResponse, name: str, kind: str) -> dict[str, Any]:
+    """Return the transport body of one answer.
+
+    Args:
+        response: The port's response.
+        name: The question name.
+        kind: The seed type name, ``Noul`` or ``Choice``.
+
+    Returns:
+        ``{"probability": p}`` for a ``Noul``, or
+        ``{"probabilities": {label: p}}`` for a ``Choice``.
+    """
+    if kind == "Choice":
+        return {"probabilities": dict(response.choices[name].probabilities)}
+    return {"probability": response.nouls[name].noul}
+
+
 class WordingTransport(BaseLlm):
     """A model that sends the mapping's current parts to a ``SystemOnePort``.
 
@@ -131,8 +152,11 @@ class WordingTransport(BaseLlm):
             reference; gepa-adk writes each candidate text into it around each
             evaluation. Its keys are exactly the parts of ``seed_mapping(seed)``.
         question_name (str): The question name sent to the port.
-        seed (SeedNoul): The seed judgevet ``Noul``; each call uses its type.
+        seed (SeedNoul): The seed judgevet ``Noul`` or ``Choice``; each call
+            uses its type.
         judge_model (str): The model name sent to the port.
+        states (Mapping[str, Any]): The state mapping of each user text that
+            stands for one; any other user text is the state itself.
 
     Examples:
         ```python
@@ -156,6 +180,7 @@ class WordingTransport(BaseLlm):
     question_name: str
     seed: SkipValidation[SeedNoul]
     judge_model: str
+    states: SkipValidation[Mapping[str, Any]] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def _parts_match_the_seed(self) -> Self:
@@ -165,7 +190,7 @@ class WordingTransport(BaseLlm):
             The transport.
 
         Raises:
-            ValueError: If the seed is not a ``Noul``, a mapping key is
+            ValueError: If the seed is not a ``Noul`` or ``Choice``, a mapping key is
                 unknown, or a part is missing; the message holds the key only.
             TypeError: If a part is not text.
         """
@@ -187,21 +212,26 @@ class WordingTransport(BaseLlm):
         """Ask the port, under ``question_name``, the question of every current part.
 
         Args:
-            llm_request: The ADK request; its user text is the state, and its
-                instruction is ignored.
+            llm_request: The ADK request; its user text is the state, or the
+                key of a state in ``states``. Its instruction is ignored.
             stream: Ignored.
 
         Yields:
-            One text response ``{"probability": p}`` with the port's token counts.
-            The port call runs in a worker thread, so concurrent evaluations
-            overlap.
+            One text response with the port's token counts:
+            ``{"probability": p}`` for a ``Noul`` seed, or
+            ``{"probabilities": {label: p}}`` for a ``Choice`` seed. The port
+            call runs in a worker thread, so concurrent evaluations overlap.
         """
-        noul = noul_from_parts(self.seed, self.mapping)
-        state = last_user_text(llm_request)
+        question = question_from_parts(self.seed, self.mapping)
+        text = last_user_text(llm_request)
+        state = self.states.get(text, text)
         response = await asyncio.to_thread(
-            self.port.system_one, state, {self.question_name: noul}, self.judge_model
+            self.port.system_one,
+            state,
+            {self.question_name: question},
+            self.judge_model,
         )
-        body = {"probability": response.nouls[self.question_name].noul}
+        body = answer_body(response, self.question_name, type(self.seed).__name__)
         part = types.Part.from_text(text=json.dumps(body))
         yield LlmResponse(
             content=types.Content(role="model", parts=[part]),

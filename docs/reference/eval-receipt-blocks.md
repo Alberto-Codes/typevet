@@ -102,6 +102,26 @@ The evolution artifact also records `length_cap`. It maps each evolved part
 to its cap: the floor of 1.5 times the length of the seed part. Before #363,
 `length_cap` was one number.
 
+Issue [#369](https://github.com/Alberto-Codes/typevet/issues/369) adds a
+`part_table` key to the evolution artifact and the held-out receipt. The key
+comes after `seed_parts`. The comparison receipt does not have it.
+
+| Key | Meaning |
+|---|---|
+| `part_table` | Each criterion part name to its `Choice` label, `Noul` key or `Score` level |
+| `dataset` | The dataset of the run, in a `pubmedqa` evolution artifact only |
+
+For a `Noul` seed with criteria, `part_table` maps `criteria_true` to `true`.
+It also maps `criteria_false` to `false`. A seed without criteria gives an
+empty `part_table`. For the PubMedQA `Choice` seed, each `criteria_<label>`
+maps to its label.
+
+The evolution artifact of a DIFrauD run has no `dataset` key. Its
+`dataset_revision` is the pinned DIFrauD revision. A `pubmedqa` artifact sets
+`dataset` to `qiaojin/PubMedQA pqa_labeled`, and its `dataset_revision` is
+null. The held-out receipt names its dataset in `pins.dataset`.
+Receipts written before #369 have no `part_table` key.
+
 ## Wording digests block
 
 Issue [#362](https://github.com/Alberto-Codes/typevet/issues/362) adds a

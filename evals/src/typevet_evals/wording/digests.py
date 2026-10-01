@@ -135,22 +135,28 @@ def wording_digests(parts: WordingParts) -> dict[str, Any]:
     }
 
 
-def wording_fields(parts: WordingParts) -> dict[str, Any]:
+def wording_fields(
+    parts: WordingParts, table: Mapping[str, str | int] | None = None
+) -> dict[str, Any]:
     """Return the wording keys of a held-out, comparison or evolution record.
 
     Args:
         parts: The selection and the seed and evolved full mappings.
+        table: The seed's ``part_table`` (#369), or None to leave it out.
 
     Returns:
         ``seed_text`` and ``evolved_text`` (the ``instructions`` parts,
-        verbatim), ``components``, ``seed_parts``, ``evolved_parts`` and
-        ``wording_digests``.
+        verbatim), ``components``, ``seed_parts``, ``part_table`` when
+        ``table`` is given, ``evolved_parts`` and ``wording_digests``.
     """
-    return {
+    fields: dict[str, Any] = {
         "seed_text": parts.seed_text,
         "evolved_text": parts.evolved_text,
         "components": list(parts.components),
         "seed_parts": dict(parts.seed),
-        "evolved_parts": dict(parts.evolved),
-        "wording_digests": wording_digests(parts),
     }
+    if table is not None:
+        fields["part_table"] = dict(table)
+    fields["evolved_parts"] = dict(parts.evolved)
+    fields["wording_digests"] = wording_digests(parts)
+    return fields

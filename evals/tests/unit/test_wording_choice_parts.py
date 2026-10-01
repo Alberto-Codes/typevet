@@ -214,8 +214,8 @@ def test_the_reflection_prompt_takes_the_seed_roles() -> None:
     assert "A flight" not in prompt
 
 
-@pytest.mark.parametrize("seed", [CHOICE, SCORE], ids=["choice", "score"])
-def test_a_run_still_refuses_a_choice_or_score_seed(seed: Any) -> None:
+@pytest.mark.parametrize("seed", [SCORE], ids=["score"])
+def test_a_run_still_refuses_a_score_seed(seed: Any) -> None:
     name = type(seed).__name__
     mapping = question_mapping(seed)
 

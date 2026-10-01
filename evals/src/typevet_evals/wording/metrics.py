@@ -11,6 +11,8 @@ drops by at least ``MIN_ECE_DROP`` from the seed wording and ends at most
 ``MAX_ACCURACY_DROP``. The paired bootstrap interval is context only and
 does not change the rule. Resampling hashes the seed, the resample number
 and the row position (no ``random``), so the intervals repeat exactly.
+``bootstrap_differences`` holds that loop; a ``Choice`` run (#369) reuses it
+and the pass rule, which reads any ``RuleMetrics``.
 
 Attributes:
     POSITIVE_THRESHOLD (float): The probability at or above which a row reads scam.
@@ -42,9 +44,9 @@ from __future__ import annotations
 
 import hashlib
 import math
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Final
+from typing import Final, Protocol
 
 from typevet_evals.face_match.metrics import expected_calibration_error
 
@@ -316,7 +318,7 @@ def paired_bootstrap(
     """Resample rows with replacement and measure both wordings on each resample.
 
     Each resample takes the same rows for both wordings, so the differences
-    are paired.
+    are paired. ``bootstrap_differences`` draws the resamples.
 
     Args:
         seed_probabilities: The seed wording's probability, one per row.
@@ -334,15 +336,69 @@ def paired_bootstrap(
     """
     _check_rows(seed_probabilities, labels)
     _check_rows(evolved_probabilities, labels)
+    arms = (seed_probabilities, evolved_probabilities)
+
+    def ece(rows: Sequence[int], arm: int) -> float:
+        """Return one arm's ECE over the rows at ``rows``.
+
+        Args:
+            rows: Row positions.
+            arm: 0 for the seed wording, 1 for the evolved wording.
+
+        Returns:
+            The ECE.
+        """
+        return _ece([arms[arm][i] for i in rows], [labels[i] for i in rows])
+
+    def brier(rows: Sequence[int], arm: int) -> float:
+        """Return one arm's Brier score over the rows at ``rows``.
+
+        Args:
+            rows: Row positions.
+            arm: 0 for the seed wording, 1 for the evolved wording.
+
+        Returns:
+            The Brier score.
+        """
+        return _brier([arms[arm][i] for i in rows], [labels[i] for i in rows])
+
+    return bootstrap_differences(
+        len(labels), ece, brier, resamples=resamples, seed=seed, level=level
+    )
+
+
+def bootstrap_differences(
+    n: int,
+    ece: Callable[[Sequence[int], int], float],
+    brier: Callable[[Sequence[int], int], float],
+    *,
+    resamples: int = BOOTSTRAP_RESAMPLES,
+    seed: int = BOOTSTRAP_SEED,
+    level: float = INTERVAL_LEVEL,
+) -> PairedBootstrap:
+    """Resample row positions and bound the evolved minus seed differences.
+
+    ``paired_bootstrap`` and the ``Choice`` bootstrap share this loop, so
+    both draw the same resamples for the same row count and seed.
+
+    Args:
+        n: Rows in the sample.
+        ece: The ECE of the rows at the given positions, for arm 0 (seed)
+            or arm 1 (evolved).
+        brier: The Brier score of the rows at the given positions, per arm.
+        resamples: Resamples to draw.
+        seed: The bootstrap seed.
+        level: The interval level.
+
+    Returns:
+        Percentile intervals of the ECE and Brier differences, evolved minus seed.
+    """
     ece_differences: list[float] = []
     brier_differences: list[float] = []
     for b in range(resamples):
-        rows = resample_indices(len(labels), seed=seed, resample=b)
-        y = [labels[i] for i in rows]
-        before = [seed_probabilities[i] for i in rows]
-        after = [evolved_probabilities[i] for i in rows]
-        ece_differences.append(_ece(after, y) - _ece(before, y))
-        brier_differences.append(_brier(after, y) - _brier(before, y))
+        rows = resample_indices(n, seed=seed, resample=b)
+        ece_differences.append(ece(rows, 1) - ece(rows, 0))
+        brier_differences.append(brier(rows, 1) - brier(rows, 0))
     return PairedBootstrap(
         resamples=resamples,
         seed=seed,
@@ -403,7 +459,39 @@ class PassVerdict:
         }
 
 
-def pass_verdict(seed: WordingMetrics, evolved: WordingMetrics) -> PassVerdict:
+class RuleMetrics(Protocol):
+    """The metrics the pass rule reads: accuracy, Brier score and ECE.
+
+    ``WordingMetrics`` and the ``Choice`` metrics both have this shape.
+
+    Attributes:
+        accuracy (float): Share of rows read right.
+        brier (float): Mean Brier score.
+        ece (float): Expected calibration error.
+
+    Examples:
+        ```python
+        metrics: RuleMetrics = wording_metrics([0.9], [1])
+        ```
+    """
+
+    @property
+    def accuracy(self) -> float:
+        """Return the accuracy."""
+        ...
+
+    @property
+    def brier(self) -> float:
+        """Return the Brier score."""
+        ...
+
+    @property
+    def ece(self) -> float:
+        """Return the ECE."""
+        ...
+
+
+def pass_verdict(seed: RuleMetrics, evolved: RuleMetrics) -> PassVerdict:
     """Apply the pre-registered pass rule.
 
     The ECE and accuracy limits allow ``TOLERANCE`` of float slack, so a value
@@ -411,8 +499,9 @@ def pass_verdict(seed: WordingMetrics, evolved: WordingMetrics) -> PassVerdict:
     does not drop.
 
     Args:
-        seed: The seed wording's held-out metrics.
-        evolved: The evolved wording's held-out metrics.
+        seed: The seed wording's held-out metrics: ``WordingMetrics`` or the
+            ``Choice`` metrics.
+        evolved: The evolved wording's held-out metrics, of the same kind.
 
     Returns:
         Each clause and the overall verdict.

@@ -44,6 +44,19 @@ the artifact's ``seed_parts``. An artifact without ``evolved_parts`` (#252)
 gives its evolved ``instructions`` with the seed criteria in both arms. The
 identity prompts hash each arm's criteria.
 
+**Seed (#369).** ``TYPEVET_WORDING_SEED`` selects ``difraud`` (default,
+the DIFrauD ``is_scam`` ``Noul`` above) or ``pubmedqa``. ``pubmedqa`` uses the
+``PUBMEDQA_SEED`` ``Choice`` under the question name ``answer``, with the
+parts ``instructions``, ``criteria_yes``, ``criteria_no`` and
+``criteria_maybe``. Its rows are a balanced PubMedQA ``pqa_labeled`` pool,
+cut into 180 train, 45 validation and 105 held-out rows (60, 15 and 35
+per label, seed 0). ``TYPEVET_WORDING_TRAIN_ROWS`` and
+``TYPEVET_WORDING_VALIDATION_ROWS`` override the first two. The PubMedQA card
+gives about 110 ``maybe`` rows, so the DIFrauD sizes do not fit. The cut
+fails before any judge call when the pool is too small.
+``TYPEVET_WORDING_SEED_CRITERIA`` applies to ``difraud`` only. The
+comparison test refuses ``pubmedqa``. No live run has used ``pubmedqa``.
+
 **Jev judge** (``TYPEVET_WORDING_JUDGE_PROVIDER=jev``). The judge is
 judgevet's ``HTTPSystemOneAdapter``, built from judgevet's ``Settings``
 (``JEV_API__*``; key ``JEV_API__KEY`` or ``TYPESAFE_API_KEY``). The test
@@ -160,7 +173,7 @@ from gepa_adk.ports.stopper import StopperProtocol
 from google.adk.models.lite_llm import LiteLlm
 from judgevet.adapters.inbound.settings import ApiSettings, Settings
 from judgevet.adapters.outbound.http import HTTPSystemOneAdapter
-from judgevet.domain.questions import Noul
+from judgevet.domain.questions import Choice, Noul
 from judgevet.domain.spend import SpendCap
 from judgevet.providers import ProviderError
 
@@ -178,9 +191,15 @@ from typevet_evals.datasets.difraud import (
     IS_SCAM_NOUL_SCHEMA,
     PINNED_REVISION,
     PRIMARY_NOUL_NAME,
-    DIFrauDRecord,
     DIFrauDSplits,
     load_splits,
+)
+from typevet_evals.datasets.pubmedqa import (
+    CHOICE_LABELS,
+    PRIMARY_CHOICE_NAME,
+    download_labeled_jsonl,
+    iter_labeled_rows,
+    map_examples,
 )
 from typevet_evals.experiment_identity import (
     PromptSpec,
@@ -224,7 +243,15 @@ from typevet_evals.wording.parts import (
     WordingParts,
     artifact_parts,
     check_selection,
+    part_table,
+    question_mapping,
     seed_mapping,
+)
+from typevet_evals.wording.rows import (
+    AnyRow,
+    WordingSplits,
+    as_row,
+    pubmedqa_splits,
 )
 from typevet_evals.wording.served import (
     TEXT_JUDGE,
@@ -253,6 +280,61 @@ SEED_CRITERIA: Final[Mapping[str, str]] = MappingProxyType(
     }
 )
 _LABELS = ("true", "false")
+DIFRAUD: Final[str] = "difraud"
+PUBMEDQA: Final[str] = "pubmedqa"
+HELD_OUT_ROWS: Final[int] = 158
+PUBMEDQA_SIZES: Final[tuple[int, int, int]] = (180, 45, 105)
+PUBMEDQA_SEED: Final[Choice] = Choice(
+    instructions=(
+        "Given the biomedical question and the abstract contexts, "
+        "is the answer yes, no or maybe?"
+    ),
+    criteria={
+        "yes": "The contexts support a yes answer.",
+        "no": "The contexts support a no answer.",
+        "maybe": "The contexts do not settle the answer.",
+    },
+)
+
+
+_DATASET_PINS: Final[Mapping[str, tuple[str, str | None]]] = MappingProxyType(
+    {
+        DIFRAUD: ("difraud/difraud sms", PINNED_REVISION),
+        PUBMEDQA: ("qiaojin/PubMedQA pqa_labeled", None),
+    }
+)
+
+
+def wording_seed_name(environ: Mapping[str, str]) -> str:
+    """Read ``TYPEVET_WORDING_SEED``: ``difraud`` (default) or ``pubmedqa`` (#369).
+
+    Args:
+        environ: The environment.
+
+    Returns:
+        The seed name.
+
+    Raises:
+        ValueError: If the value is another name; the message does not repeat it.
+    """
+    name = environ.get("TYPEVET_WORDING_SEED", "").strip() or DIFRAUD
+    if name not in (DIFRAUD, PUBMEDQA):
+        raise ValueError("TYPEVET_WORDING_SEED must be difraud or pubmedqa")
+    return name
+
+
+def wording_question_name(environ: Mapping[str, str]) -> str:
+    """Return the question name of the selected seed.
+
+    Args:
+        environ: The environment.
+
+    Returns:
+        ``is_scam`` for ``difraud``, ``answer`` for ``pubmedqa``.
+    """
+    if wording_seed_name(environ) == PUBMEDQA:
+        return PRIMARY_CHOICE_NAME
+    return PRIMARY_NOUL_NAME
 
 
 def wording_components(environ: Mapping[str, str]) -> tuple[str, ...]:
@@ -265,39 +347,99 @@ def wording_components(environ: Mapping[str, str]) -> tuple[str, ...]:
         The comma-separated names, in order; ``("instructions",)`` when unset.
 
     Raises:
-        ValueError: If a name is empty or not a ``Noul`` part. The message
-            does not repeat the value.
+        ValueError: If a name is empty or not a part name of the selected
+            seed type: a ``Noul`` part for ``difraud``, a part of
+            ``PUBMEDQA_SEED`` for ``pubmedqa``. The message does not repeat
+            the value.
     """
     raw = environ.get("TYPEVET_WORDING_COMPONENTS", "").strip()
     if not raw:
         return (INSTRUCTIONS,)
+    known = tuple(question_mapping(PUBMEDQA_SEED))
+    if wording_seed_name(environ) == DIFRAUD:
+        known = PART_NAMES
     names = tuple(name.strip() for name in raw.split(","))
-    if not all(name in PART_NAMES for name in names):
-        msg = f"TYPEVET_WORDING_COMPONENTS names a part outside {', '.join(PART_NAMES)}"
+    if not all(name in known for name in names):
+        msg = f"TYPEVET_WORDING_COMPONENTS names a part outside {', '.join(known)}"
         raise ValueError(msg)
     return names
 
 
-def wording_seed(environ: Mapping[str, str]) -> Noul:
+def wording_seed(environ: Mapping[str, str]) -> Noul | Choice:
     """Build the seed; ``TYPEVET_WORDING_SEED_CRITERIA=1`` adds the criteria.
 
     Args:
         environ: The environment.
 
     Returns:
-        The #252 seed ``Noul``, with ``SEED_CRITERIA`` when the knob is ``1``.
+        The #252 seed ``Noul``, with ``SEED_CRITERIA`` when the knob is ``1``;
+        ``PUBMEDQA_SEED`` when ``TYPEVET_WORDING_SEED`` is ``pubmedqa``.
 
     Raises:
-        ValueError: If the knob is set to a value other than ``0`` or ``1``.
+        ValueError: If the criteria knob is set to a value other than ``0``
+            or ``1``, or to ``1`` with the ``pubmedqa`` seed.
     """
     raw = environ.get("TYPEVET_WORDING_SEED_CRITERIA", "").strip()
     if raw not in {"", "0", "1"}:
         raise ValueError("TYPEVET_WORDING_SEED_CRITERIA must be 0 or 1")
+    if wording_seed_name(environ) == PUBMEDQA:
+        if raw == "1":
+            raise ValueError("TYPEVET_WORDING_SEED_CRITERIA applies to difraud only")
+        return PUBMEDQA_SEED
     criteria = dict(SEED_CRITERIA) if raw == "1" else None
     return Noul(instructions=SEED_TEXT, criteria=criteria)
 
 
-def evolution_inputs(environ: Mapping[str, str]) -> tuple[Noul, tuple[str, ...]]:
+def wording_split_sizes(environ: Mapping[str, str]) -> tuple[int, int, int]:
+    """Return the train, validation and held-out row counts of a run.
+
+    Args:
+        environ: The environment.
+
+    Returns:
+        ``TYPEVET_WORDING_TRAIN_ROWS``, ``TYPEVET_WORDING_VALIDATION_ROWS`` and
+        the held-out count. The defaults are the DIFrauD sizes (1000, 200,
+        ``HELD_OUT_ROWS``), or ``PUBMEDQA_SIZES`` for the ``pubmedqa`` seed.
+    """
+    defaults = (DEFAULT_TRAIN_ROWS, 200, HELD_OUT_ROWS)
+    if wording_seed_name(environ) == PUBMEDQA:
+        defaults = PUBMEDQA_SIZES
+    train = environ.get("TYPEVET_WORDING_TRAIN_ROWS", "").strip()
+    validation = environ.get("TYPEVET_WORDING_VALIDATION_ROWS", "").strip()
+    return (
+        int(train) if train else defaults[0],
+        int(validation) if validation else defaults[1],
+        defaults[2],
+    )
+
+
+def pubmedqa_wording_splits(
+    environ: Mapping[str, str], jsonl_text: str, *, held_out: int | None = None
+) -> WordingSplits:
+    """Cut the PubMedQA ``pqa_labeled`` JSONL into balanced run splits.
+
+    Args:
+        environ: The environment; it sets the train and validation sizes.
+        jsonl_text: The ``pqa_labeled`` JSONL text.
+        held_out: Held-out rows; None takes the count of
+            ``wording_split_sizes``.
+
+    Returns:
+        ``pubmedqa_splits`` of the mapped rows, seed 0.
+    """
+    train, validation, default_held_out = wording_split_sizes(environ)
+    examples = map_examples(iter_labeled_rows(jsonl_text))
+    return pubmedqa_splits(
+        examples,
+        train=train,
+        validation=validation,
+        held_out=default_held_out if held_out is None else held_out,
+    )
+
+
+def evolution_inputs(
+    environ: Mapping[str, str],
+) -> tuple[Noul | Choice, tuple[str, ...]]:
     """Return the seed and the checked selection, before any call.
 
     Args:
@@ -314,8 +456,8 @@ async def evolve_from_env(
     port: JudgePort,
     environ: Mapping[str, str],
     *,
-    train: Sequence[DIFrauDRecord],
-    validation: Sequence[DIFrauDRecord],
+    train: Sequence[AnyRow],
+    validation: Sequence[AnyRow],
     config: WordingRunConfig,
 ) -> WordingRun:
     """Evolve the parts the knobs select from the seed the knobs build.
@@ -323,19 +465,19 @@ async def evolve_from_env(
     Args:
         port: The judge port.
         environ: The environment.
-        train: The train records.
-        validation: The validation records.
+        train: The train records or rows.
+        validation: The validation records or rows.
         config: The run settings.
 
     Returns:
-        The run; its ``components``, ``seed_parts`` and ``evolved_parts``
-        reach the artifact.
+        The run; its ``components``, ``seed_parts``, ``part_table`` and
+        ``evolved_parts`` reach the artifact.
     """
     seed, components = evolution_inputs(environ)
     return await evolve_wording(
         port=port,
         seed=seed,
-        question_name=PRIMARY_NOUL_NAME,
+        question_name=wording_question_name(environ),
         train=train,
         validation=validation,
         config=config,
@@ -345,7 +487,7 @@ async def evolve_from_env(
 
 def held_out_parts(
     artifact: Mapping[str, Any], environ: Mapping[str, str]
-) -> tuple[Noul, WordingParts]:
+) -> tuple[Noul | Choice, WordingParts]:
     """Return the seed and the parts the held-out arms send.
 
     Args:
@@ -361,7 +503,7 @@ def held_out_parts(
 
 
 def comparison_parts(
-    artifact: Mapping[str, Any], seed: Noul, *, backend: str
+    artifact: Mapping[str, Any], seed: Noul | Choice, *, backend: str
 ) -> WordingParts:
     """Return the parts of the comparison judge's own evolution.
 
@@ -376,25 +518,61 @@ def comparison_parts(
     return evolved_parts_for(artifact, backend=backend, seed_parts=seed_mapping(seed))
 
 
-def _criteria(mapping: Mapping[str, str]) -> dict[str, str]:
+def _criteria(
+    mapping: Mapping[str, str], table: Mapping[str, str | int] | None
+) -> dict[str, str]:
+    if table is not None:
+        return {str(label): mapping[name] for name, label in table.items()}
     if CRITERIA_TRUE not in mapping:
         return {}
     return {"true": mapping[CRITERIA_TRUE], "false": mapping[CRITERIA_FALSE]}
 
 
-def prompt_specs(parts: WordingParts) -> tuple[PromptSpec, PromptSpec]:
+def prompt_specs(
+    parts: WordingParts, seed: Choice | None = None
+) -> tuple[PromptSpec, PromptSpec]:
     """Return the identity prompts of both arms, with their criteria.
 
     Args:
         parts: The run's parts.
+        seed: The ``Choice`` seed, whose labels and ``part_table`` name the
+            criteria; None for the DIFrauD ``Noul``.
 
     Returns:
         The ``seed`` and ``evolved`` prompts; no criteria for a seed without.
     """
+    labels = _LABELS if seed is None else CHOICE_LABELS
+    table = None if seed is None else part_table(seed)
     return (
-        PromptSpec("seed", _LABELS, parts.seed_text, _criteria(parts.seed)),
-        PromptSpec("evolved", _LABELS, parts.evolved_text, _criteria(parts.evolved)),
+        PromptSpec("seed", labels, parts.seed_text, _criteria(parts.seed, table)),
+        PromptSpec(
+            "evolved", labels, parts.evolved_text, _criteria(parts.evolved, table)
+        ),
     )
+
+
+def _choice_or_none(seed: Noul | Choice) -> Choice | None:
+    return seed if isinstance(seed, Choice) else None
+
+
+def _run_rows(
+    environ: Mapping[str, str],
+) -> tuple[Sequence[AnyRow], Sequence[AnyRow], HeldOutRows]:
+    """Load the train, validation and held-out rows of the selected seed.
+
+    Returns:
+        The train and validation rows and the checked held-out rows.
+    """
+    if wording_seed_name(environ) == PUBMEDQA:
+        splits = pubmedqa_wording_splits(environ, download_labeled_jsonl())
+        held = HeldOutRows(splits.held_out, frozenset())
+        return splits.train, splits.validation, held
+    difraud = load_splits(seed=0)
+    train_rows, validation_rows, _ = wording_split_sizes(environ)
+    validation = stratified_subset(difraud.validation, validation_rows or 200)
+    train = train_subset(difraud.train, train_rows)
+    held = HeldOutRows(difraud.held_out, difraud.prior_measured_ids)
+    return train, validation, held
 
 
 @dataclass(frozen=True)
@@ -662,13 +840,7 @@ def test_wording_evolution_live_artifact() -> None:
             or artifact_path.with_suffix(".checkpoint.json")
         ).expanduser()
     )
-    splits = load_splits(seed=0)
-    validation = stratified_subset(
-        splits.validation, _int_env("TYPEVET_WORDING_VALIDATION_ROWS", 200) or 200
-    )
-    train = train_subset(
-        splits.train, _int_env("TYPEVET_WORDING_TRAIN_ROWS", DEFAULT_TRAIN_ROWS)
-    )
+    train, validation, _ = _run_rows(environ)
     reflector = _reflector(environ)
     concurrency = _int_env("TYPEVET_WORDING_CONCURRENCY", None)
     started = time.monotonic()
@@ -702,7 +874,9 @@ def test_wording_evolution_live_artifact() -> None:
     artifact["reflector_base"] = environ.get(
         "TYPEVET_WORDING_REFLECTOR_BASE", _router_v1(environ)
     )
-    artifact["dataset_revision"] = PINNED_REVISION
+    artifact["dataset_revision"] = _DATASET_PINS[wording_seed_name(environ)][1]
+    if wording_seed_name(environ) != DIFRAUD:
+        artifact["dataset"] = _DATASET_PINS[wording_seed_name(environ)][0]
     artifact["served_template"] = judge.facts["served_template"]
     artifact["judge_provider"] = provider
     artifact["judge_identity"] = {
@@ -784,13 +958,15 @@ def test_wording_held_out_live_receipt() -> None:
     secret = load_vllm_settings(environ).api_key if backend == "vllm" else None
     weights = served_weights_pins(backend, environ)
     evolved = json.loads(evolved_path.read_text(encoding="utf-8"))
-    assert evolved["seed_text"] == SEED_TEXT, "artifact seed is not the is_scam seed"
+    expected_seed = wording_seed(environ).instructions
+    assert evolved["seed_text"] == expected_seed, "artifact seed is not the seed"
     seed, parts = held_out_parts(evolved, environ)
-    splits = load_splits(seed=0)
-    assert len(splits.held_out) == 158, "held-out row count drifted"
+    _, _, held = _run_rows(environ)
+    expected_rows = wording_split_sizes(environ)[2]
+    assert len(held.records) == expected_rows, "held-out row count drifted"
     tree = _working_tree()
     snapshot = snapshot_evaluated_inputs(
-        prompts=prompt_specs(parts),
+        prompts=prompt_specs(parts, _choice_or_none(seed)),
         code_paths={n: _WORDING_SRC / f"{n}.py" for n in ("held_out", "metrics")},
         fixture_paths={"evolution_artifact": evolved_path},
     )
@@ -806,9 +982,9 @@ def test_wording_held_out_live_receipt() -> None:
         run = score_held_out(
             timed,
             seed,
-            PRIMARY_NOUL_NAME,
+            wording_question_name(environ),
             evolved=parts,
-            rows=HeldOutRows(splits.held_out, splits.prior_measured_ids),
+            rows=held,
             judge_model=model,
             failures=(ProviderError,),
         )
@@ -819,8 +995,8 @@ def test_wording_held_out_live_receipt() -> None:
     pins = {
         "finished_utc": datetime.now(UTC).isoformat(),
         "wall_seconds": round(time.monotonic() - started, 1),
-        "dataset": "difraud/difraud sms",
-        "dataset_revision": PINNED_REVISION,
+        "dataset": _DATASET_PINS[wording_seed_name(environ)][0],
+        "dataset_revision": _DATASET_PINS[wording_seed_name(environ)][1],
         "split_seed": 0,
         "served_template": template,
         "evolution_artifact_sha256": hashlib.sha256(
@@ -849,7 +1025,7 @@ def test_wording_held_out_live_receipt() -> None:
         f"reference_133 {json.dumps(receipt['reference_133'])}"
     )
     assert run.stopped is None, run.stopped
-    assert len(run.pairs) == len(splits.held_out)
+    assert run.rows == len(held.records)
 
 
 @pytest.mark.live
@@ -996,6 +1172,8 @@ def test_wording_comparison_live_receipt() -> None:
     path = _required_path("TYPEVET_WORDING_COMPARISON_RECEIPT", new=True)
     evolved_path = _required_path("TYPEVET_WORDING_EVOLVED_ARTIFACT", new=False)
     environ = dict(os.environ)
+    if wording_seed_name(environ) != DIFRAUD:
+        pytest.fail("the comparison runs on the difraud seed only")
     provider = _judge_provider(environ)
     backend = "jev" if provider == "jev" else load_backend(environ)
     artifact = json.loads(evolved_path.read_text(encoding="utf-8"))
@@ -1071,4 +1249,4 @@ def test_wording_comparison_live_receipt() -> None:
     assert refusals == 0, f"{refusals} calls were refused by the spend cap"
     assert run.stopped is None, run.stopped
     assert len(run.pairs) == len(rows.records)
-    assert all(r.example.split == split for r in rows.records)
+    assert all(as_row(r).split == split for r in rows.records)

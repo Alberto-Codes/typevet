@@ -12,8 +12,8 @@ description has no part.
 ``Score`` seed, and ``part_table`` gives the label or level of each name.
 ``part_roles`` gives the role of each part for the reflection prompt.
 ``question_from_parts`` builds the question that a call sends.
-``seed_mapping`` is the mapping a wording run accepts: it refuses a
-``Choice`` or ``Score`` seed until a scorer for that answer exists.
+``seed_mapping`` is the mapping a wording run accepts: a ``Noul`` or a
+``Choice`` seed. It refuses a ``Score`` seed until a level scorer exists.
 ``WordingParts`` holds the evolved selection and the seed and evolved
 mappings of one run. Its construction fails when a frozen part changed.
 ``artifact_parts`` reads them back from an evolution artifact.
@@ -94,6 +94,7 @@ PART_ROLES: Final[Mapping[str, str]] = MappingProxyType(
     }
 )
 _CRITERIA_KEYS: Final[dict[str, str]] = {"true": CRITERIA_TRUE, "false": CRITERIA_FALSE}
+_RUN_KINDS: Final[frozenset[str]] = frozenset({"Noul", "Choice"})
 
 
 class SeedNoul(Protocol):
@@ -222,25 +223,27 @@ def question_mapping(seed: SeedNoul) -> dict[str, str]:
 def seed_mapping(seed: SeedNoul) -> dict[str, str]:
     """Return the full part mapping of a seed that a wording run accepts.
 
-    A run accepts a ``Noul`` seed only, until a scorer for a label or level
-    answer exists (#369). The transport, ``evolve_wording`` and
-    ``score_held_out`` call this function, so each refuses another seed.
+    A run accepts a ``Noul`` or a ``Choice`` seed. It refuses a ``Score``
+    seed until a scorer for a level answer exists (#369). The transport,
+    ``evolve_wording`` and ``score_held_out`` call this function, so each
+    refuses another seed.
 
     Args:
         seed: The seed question.
 
     Returns:
-        ``instructions``, plus ``criteria_true`` and ``criteria_false`` when
-        the seed has criteria.
+        ``question_mapping(seed)``: ``instructions``, plus one part per
+        described criterion.
 
     Raises:
-        ValueError: If the seed is not a ``Noul``, or its criteria do not
-            hold exactly a ``true`` and a ``false`` key.
+        ValueError: If the seed is not a ``Noul`` or a ``Choice``, or a
+            ``Noul`` seed's criteria do not hold exactly a ``true`` and a
+            ``false`` key.
         TypeError: If the instructions or a criterion is not text.
     """
     kind = type(seed).__name__
-    if kind != "Noul":
-        msg = f"the wording run refuses a {kind} seed; only a Noul seed runs"
+    if kind not in _RUN_KINDS:
+        msg = f"the wording run refuses a {kind} seed; only a Noul or Choice seed runs"
         raise ValueError(msg)
     return question_mapping(seed)
 
@@ -539,7 +542,7 @@ def artifact_parts(
     Raises:
         ValueError: If the artifact's seed or evolved ``instructions`` text,
             its ``seed_parts`` or its ``components`` do not agree with the
-            seed and the part names, or a frozen part changed. The message
+            seed's parts, or a frozen part changed. The message
             names the field only, never a value.
         TypeError: If ``evolved_parts`` is not a mapping.
     """
@@ -548,13 +551,13 @@ def artifact_parts(
     if "evolved_parts" not in artifact:
         evolved = dict(seed_parts) | {INSTRUCTIONS: str(artifact["evolved_text"])}
         return WordingParts((INSTRUCTIONS,), dict(seed_parts), evolved)
-    components = artifact.get("components")
-    if not isinstance(components, list) or not all(
-        name in PART_NAMES for name in components
-    ):
-        raise ValueError("the artifact components name a part outside the Noul parts")
     if artifact.get("seed_parts") != dict(seed_parts):
         raise ValueError("the artifact seed_parts are not the seed's parts")
+    components = artifact.get("components")
+    if not isinstance(components, list) or not all(
+        isinstance(name, str) and name in seed_parts for name in components
+    ):
+        raise ValueError("the artifact components name a part outside the seed parts")
     evolved = artifact["evolved_parts"]
     if not isinstance(evolved, Mapping):
         raise TypeError("the artifact evolved_parts must be a mapping")

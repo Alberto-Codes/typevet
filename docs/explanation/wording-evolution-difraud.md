@@ -36,6 +36,13 @@ evolve the `Noul` criteria texts. This run evolved the `instructions` only.
 The #365 runs evolved the criteria texts. See
 [evolving the criteria](gemma-and-jev-difraud.md#evolving-the-criteria-365).
 
+Since [#369](https://github.com/Alberto-Codes/typevet/issues/369), a run can
+also evolve the parts of a `Choice` seed, such as PubMedQA yes, no or maybe.
+The transport then returns one probability per label. The reward is one minus
+the multi-class Brier score, scaled to 0..1. The held-out check adds Cohen's
+kappa and uses the same pass rule and bootstrap. No live `Choice` run exists
+yet. The run is a separate pre-registered issue.
+
 | Wording | Text | Length |
 |---|---|---|
 | Seed | `Is this message a scam, phishing or social-engineering attempt?` | 63 characters |

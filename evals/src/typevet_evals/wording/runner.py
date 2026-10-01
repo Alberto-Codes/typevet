@@ -6,9 +6,14 @@ seed has criteria), registers the mapping in a private gepa-adk component
 registry, and runs ``gepa_adk.evolve`` on a tool-less agent whose model is
 the #306 ``WordingTransport``. ``components`` selects the parts that evolve
 (#363); the other parts stay frozen, and the run fails when a frozen part
-changed. The reward is ``BrierScorer``: one minus the squared error between
-the transport's ``{"probability": p}`` and the DIFrauD label (``scam`` is
-1). gepa-adk reflects on the train rows and scores and accepts candidates
+changed. For a ``Noul`` seed the reward is ``BrierScorer``: one minus the
+squared error between the transport's ``{"probability": p}`` and the gold
+``"1"`` or ``"0"`` (DIFrauD ``scam`` is 1). For a ``Choice`` seed it is
+``ChoiceScorer``: one minus the scaled multi-class Brier of
+``{"probabilities": {label: p}}`` against the gold label name (#369). The
+rows are seed-agnostic ``WordingRow`` values; a DIFrauD record becomes one
+through ``as_row``. A ``Score`` seed is refused. gepa-adk reflects on the
+train rows and scores and accepts candidates
 on the validation rows. The reflection prompt names each evolvable part,
 its role from ``part_roles(seed)`` and its length limit, and a proposal longer than 1.5 times its
 seed part is rejected before any evaluation.
@@ -17,7 +22,8 @@ through ``WordingRunConfig.stop_callbacks``.
 
 The runner takes train and validation records only. It never imports a split
 loader, and it refuses a record whose ``split`` is not the one it expects, so
-a held-out (``test``) record cannot reach the port.
+a held-out (``test``) record cannot reach the port. It also refuses a gold
+label that the seed's scorer cannot score, before any call.
 
 The transport reads the shared mapping at call time, so the runner depends
 on one gepa-adk 2.6.0 property: two different candidates are never
@@ -59,7 +65,7 @@ from __future__ import annotations
 import json
 import math
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -79,15 +85,24 @@ from typevet_evals.wording.parts import (
     WordingParts,
     check_selection,
     part_roles,
+    part_table,
     seed_mapping,
 )
+from typevet_evals.wording.rows import (
+    AnyRow,
+    WordingRow,
+    as_row,
+    difraud_rows,
+    gepa_rows,
+)
+from typevet_evals.wording.scorers import ChoiceScorer, seed_labels
 from typevet_evals.wording.transport import JudgePort, WordingTransport
 
 LENGTH_RATIO = 1.5
 """A proposal may be at most this many times the length of its seed part."""
 
-POSITIVE_LABEL = "scam"
-"""The DIFrauD label whose target probability is 1."""
+NOUL_GOLDS = ("1", "0")
+"""The gold labels of a ``Noul`` row: ``"1"`` for the positive label."""
 
 AGENT_INSTRUCTION = "Answer with the probability."
 """The agent's own instruction; the transport never sends it."""
@@ -304,37 +319,56 @@ def to_rows(records: Sequence[DIFrauDRecord]) -> list[dict[str, Any]]:
         records: DIFrauD records.
 
     Returns:
-        One ``{"input": text, "expected": label}`` row per record.
+        One ``{"input": text, "expected": label}`` row per record, through
+        ``difraud_rows`` (DIFrauD ``scam`` is ``"1"``).
     """
-    return [
-        {
-            "input": r.example.text,
-            "expected": "1" if r.example.label == POSITIVE_LABEL else "0",
-        }
-        for r in records
-    ]
+    return gepa_rows(difraud_rows(records))[0]
 
 
-def _checked(records: Iterable[DIFrauDRecord], split: str) -> list[dict[str, Any]]:
-    """Return the rows of ``records`` after checking each came from ``split``.
+def checked_rows(
+    records: Iterable[AnyRow], split: str, golds: Sequence[str]
+) -> list[WordingRow]:
+    """Return the rows of ``records`` after checking each split and gold label.
 
     Args:
         records: The records given for ``split``.
-        split: ``train`` or ``validation``.
+        split: ``train``, ``validation`` or ``test``.
+        golds: The gold labels the seed's scorer accepts.
 
     Returns:
-        The gepa-adk rows.
+        The rows, in order.
 
     Raises:
-        ValueError: If ``records`` is empty or holds a record of another split.
+        ValueError: If ``records`` is empty, holds a record of another split,
+            or a gold label is not in ``golds``. The message names the split
+            or the record id, never a state.
     """
-    records = list(records)
-    if not records:
+    rows = [as_row(record) for record in records]
+    if not rows:
         raise ValueError(f"{split} is empty")
-    for record in records:
-        if record.example.split != split:
-            raise ValueError(f"{split} holds a {record.example.split!r} record")
-    return to_rows(records)
+    for row in rows:
+        if row.split != split:
+            raise ValueError(f"{split} holds a {row.split!r} record")
+        if row.gold not in golds:
+            msg = f"record {row.record_id!r} has a gold label outside the seed"
+            raise ValueError(msg)
+    return rows
+
+
+def scorer_for(seed: SeedNoul) -> tuple[BrierScorer | ChoiceScorer, tuple[str, ...]]:
+    """Return the reward of a seed's type and the gold labels it accepts.
+
+    Args:
+        seed: A ``Noul`` or ``Choice`` seed.
+
+    Returns:
+        ``ChoiceScorer`` and the labels for a ``Choice``; ``BrierScorer``
+        and ``NOUL_GOLDS`` otherwise.
+    """
+    labels = seed_labels(seed)
+    if labels:
+        return ChoiceScorer(labels), labels
+    return BrierScorer(), NOUL_GOLDS
 
 
 @dataclass(frozen=True, slots=True)
@@ -401,6 +435,8 @@ class WordingRun:
         result (EvolutionResult): gepa-adk's result. Its ``valset_score`` is
             the mean of ``1 - brier`` over the validation rows; its
             ``original_score`` and ``final_score`` are sums over them.
+        part_table (Mapping[str, str | int]): The label of each criterion
+            part, as ``part_table(seed)`` gives (#369); empty by default.
 
     Examples:
         ```python
@@ -411,6 +447,7 @@ class WordingRun:
 
     parts: WordingParts
     result: EvolutionResult
+    part_table: Mapping[str, str | int] = field(default_factory=dict)
 
     @property
     def components(self) -> tuple[str, ...]:
@@ -503,8 +540,8 @@ async def evolve_wording(
     port: JudgePort,
     seed: SeedNoul,
     question_name: str,
-    train: Iterable[DIFrauDRecord],
-    validation: Iterable[DIFrauDRecord],
+    train: Iterable[AnyRow],
+    validation: Iterable[AnyRow],
     config: WordingRunConfig,
     components: Sequence[str] = (INSTRUCTIONS,),
 ) -> WordingRun:
@@ -512,27 +549,32 @@ async def evolve_wording(
 
     Args:
         port: The judgevet ``SystemOnePort`` the transport calls.
-        seed: The seed judgevet ``Noul``; ``seed_mapping(seed)`` gives its parts,
-            and ``part_roles(seed)`` gives their roles in the reflection prompt.
+        seed: The seed judgevet ``Noul`` or ``Choice``; ``seed_mapping(seed)``
+            gives its parts, ``part_roles(seed)`` gives their roles in the
+            reflection prompt, and its type picks the scorer.
         question_name: The question name sent to the port.
-        train: Records gepa-adk reflects on; each ``split`` is ``train``.
-        validation: Records gepa-adk scores and accepts candidates on; each
-            ``split`` is ``validation``.
+        train: DIFrauD records or ``WordingRow`` values gepa-adk reflects
+            on; each ``split`` is ``train``.
+        validation: Records or rows gepa-adk scores and accepts candidates
+            on; each ``split`` is ``validation``.
         config: The run settings.
         components: The part names gepa-adk evolves; ``instructions`` by
             default. Every other part is frozen.
 
     Returns:
-        The selection, the seed and evolved full mappings and gepa-adk's
-        result.
+        The selection, the seed and evolved full mappings, gepa-adk's
+        result and the seed's ``part_table``.
 
     Raises:
-        ValueError: If a split is empty or holds a record of another split,
-            the seed is not a ``Noul``, the selection is not valid, or a
-            frozen part changed during the run.
+        ValueError: If a split is empty or holds a record of another split or
+            a gold label the scorer cannot score, the seed is not a ``Noul``
+            or ``Choice``, the selection is not valid, or a frozen part
+            changed during the run.
     """
-    trainset, valset = _checked(train, "train"), _checked(validation, "validation")
     seed_parts = seed_mapping(seed)
+    scorer, golds = scorer_for(seed)
+    trainset, states = gepa_rows(checked_rows(train, "train", golds))
+    valset, val_states = gepa_rows(checked_rows(validation, "validation", golds))
     selection = check_selection(components, seed_parts)
     mapping = dict(seed_parts)
     registry = ComponentHandlerRegistry()
@@ -543,16 +585,18 @@ async def evolve_wording(
         question_name=question_name,
         seed=seed,
         judge_model=config.judge_model,
+        states=states | val_states,
     )
     agent = LlmAgent(name="wording", model=transport, instruction=AGENT_INSTRUCTION)
     result = await evolve(
         agent,
         trainset,
         valset=valset,
-        scorer=BrierScorer(),
+        scorer=scorer,
         config=evolution_config(config, seed_parts, selection, roles=part_roles(seed)),
         components=list(selection),
         registry=registry,
     )
     evolved = mapping | result.evolved_components
-    return WordingRun(WordingParts(selection, seed_parts, evolved), result)
+    parts = WordingParts(selection, seed_parts, evolved)
+    return WordingRun(parts, result, part_table(seed))
