@@ -58,9 +58,16 @@ class RecordingJudgment:
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         self.calls.append(questions)
-        return self.inner.judge(state, questions, model, media=media)
+        return self.inner.judge(
+            state,
+            questions,
+            model,
+            media=media,
+            off_option_threshold=off_option_threshold,
+        )
 
 
 def _bridge() -> tuple[TypevetSystemOnePort, RecordingJudgment, ScriptedScoringFake]:

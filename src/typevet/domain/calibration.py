@@ -1,4 +1,4 @@
-"""Caller-supplied calibration maps for Noul probabilities (#352).
+"""Caller-supplied calibration maps for Noul and Score probabilities (#352).
 
 A calibration map is a small fitted function. It changes the probability that
 the caller reads. It does not change the model. The ``typevet_evals`` study in
@@ -12,6 +12,11 @@ Each map clips its input and its output to
 ``[CALIBRATION_CLIP, 1 - CALIBRATION_CLIP]``. The isotonic map returns the
 first knot value below the first knot, the nearest lower knot value between
 knots and the last knot value above the last knot.
+
+A map with a top-level ``levels`` field is a Score map. It is one pooled map
+that applies to each level probability of a Score answer. A map without the
+field is a Noul map. No Score map has a held-out result yet: #343 fitted no
+Score series.
 
 Every error message names fields and rules only, never a value.
 
@@ -51,6 +56,7 @@ CALIBRATION_METHODS: Final = frozenset({"temperature", "platt", "isotonic"})
 
 _HEX: Final = frozenset("0123456789abcdef")
 _SHA256_HEX_LENGTH: Final = 64
+_MIN_LEVELS: Final = 2
 _METRICS: Final = ("ece", "brier", "accuracy")
 _PARAMETER_KEYS: Final = {
     "temperature": frozenset({"temperature"}),
@@ -192,13 +198,19 @@ class CalibrationEvaluation:
 
 @dataclass(frozen=True, slots=True)
 class CalibrationRecord:
-    """The raw and calibrated value of one Noul answer.
+    """The raw and calibrated value of one Noul or Score answer.
 
     Attributes:
-        raw (float): The probability that the inner judgment returned.
-        calibrated (float): The probability after the map.
+        raw (float): The Noul probability or the Score score that the inner
+            judgment returned.
+        calibrated (float): The Noul probability or the Score score after
+            the map.
         method (str): The map method.
         map_sha256 (str): The sha256 of the map file bytes.
+        raw_levels (dict[int, float] | None): The level probabilities that
+            the inner judgment returned; ``None`` for a Noul answer.
+        calibrated_levels (dict[int, float] | None): The level probabilities
+            after the map and the rescale; ``None`` for a Noul answer.
 
     Examples:
         ```python
@@ -213,6 +225,8 @@ class CalibrationRecord:
     calibrated: float
     method: str
     map_sha256: str
+    raw_levels: dict[int, float] | None = None
+    calibrated_levels: dict[int, float] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -316,6 +330,8 @@ class CalibrationMap:
         evaluation (CalibrationEvaluation): Held-out metrics, recorded only.
         producer (str): The ``typevet_evals`` version that wrote the map.
         sha256 (str): The sha256 of the map file bytes.
+        levels (int | None): The level count of a Score map; ``None`` for a
+            Noul map.
 
     Examples:
         ```python
@@ -330,6 +346,7 @@ class CalibrationMap:
     evaluation: CalibrationEvaluation
     producer: str
     sha256: str
+    levels: int | None = None
 
     def apply(self, p: float) -> float:
         """Map one probability through the fitted function.
@@ -348,6 +365,23 @@ class CalibrationMap:
         if x is None:
             raise CalibrationMapError("calibration input is not a probability")
         return _clip(self.parameters.map(_clip(x)))
+
+    def apply_levels(self, probabilities: Mapping[int, float]) -> dict[int, float]:
+        """Map each level probability, then rescale the levels to sum to 1.
+
+        Args:
+            probabilities: The level probabilities of one Score answer.
+
+        Returns:
+            The calibrated level probabilities, keyed as the input.
+
+        Raises:
+            CalibrationMapError: A level probability is not a finite number
+                in ``[0, 1]``.
+        """
+        mapped = {level: self.apply(p) for level, p in probabilities.items()}
+        total = math.fsum(mapped.values())
+        return {level: p / total for level, p in mapped.items()}
 
 
 def _sequence(parameters: Mapping[str, object], key: str) -> tuple[float, ...]:
@@ -388,7 +422,7 @@ def _fitted_on(data: Mapping[str, object]) -> FittedOn:
     section = _section(data, "fitted_on")
     receipt_sha256 = _text(section, "receipt_sha256", "fitted_on.receipt_sha256")
     try:
-        normalize_sha256(receipt_sha256)
+        receipt_sha256 = normalize_sha256(receipt_sha256)
     except CalibrationDigestError:
         raise _bad("fitted_on.receipt_sha256") from None
     return FittedOn(
@@ -419,10 +453,23 @@ def _evaluation(data: Mapping[str, object]) -> CalibrationEvaluation:
     )
 
 
+def _levels(data: Mapping[str, object]) -> int | None:
+    value = data.get("levels")
+    if value is None:
+        return None
+    if not isinstance(value, int) or isinstance(value, bool) or value < _MIN_LEVELS:
+        raise _bad("levels")
+    return value
+
+
 def calibration_map_from_mapping(
     data: Mapping[str, object], *, sha256: str
 ) -> CalibrationMap:
     """Validate a parsed map document and build a ``CalibrationMap``.
+
+    An absent or null ``levels`` field gives a Noul map. An integer of 2 or
+    more gives a Score map with that level count. The receipt digest is
+    stored in lower case.
 
     Args:
         data: The parsed JSON document.
@@ -433,7 +480,8 @@ def calibration_map_from_mapping(
 
     Raises:
         CalibrationDigestError: ``sha256`` is missing or malformed.
-        CalibrationMapError: A required field is missing or invalid.
+        CalibrationMapError: A required field is missing or invalid, or
+            ``levels`` is present and is not an integer of 2 or more.
     """
     digest = normalize_sha256(sha256)
     if not isinstance(data, Mapping):
@@ -450,4 +498,5 @@ def calibration_map_from_mapping(
         evaluation=_evaluation(data),
         producer=_text(_section(data, "producer"), "typevet_evals", "producer"),
         sha256=digest,
+        levels=_levels(data),
     )

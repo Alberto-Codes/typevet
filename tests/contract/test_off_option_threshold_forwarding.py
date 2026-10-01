@@ -17,6 +17,7 @@ See Also:
 from __future__ import annotations
 
 import asyncio
+import dataclasses
 import hashlib
 from collections.abc import Mapping
 from pathlib import Path
@@ -120,10 +121,13 @@ class _RecordingPort:
 
     Attributes:
         thresholds (list[float | None]): Threshold of each ``judge`` call.
+        model (str | None): Model id to report on each response, or None to
+            keep the offline port's model id.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, model: str | None = None) -> None:
         self.thresholds: list[float | None] = []
+        self.model = model
         self._inner = judgment_port(media=True)
 
     def judge(
@@ -145,16 +149,20 @@ class _RecordingPort:
             off_option_threshold: Threshold to record and forward.
 
         Returns:
-            The offline port response.
+            The offline port response, with ``self.model`` as its model id
+            when set.
         """
         self.thresholds.append(off_option_threshold)
-        return self._inner.judge(
+        response = self._inner.judge(
             state,
             questions,
             model,
             media=media,
             off_option_threshold=off_option_threshold,
         )
+        if self.model is None:
+            return response
+        return dataclasses.replace(response, model=self.model)
 
 
 def test_key_masking_wrapper_forwards_threshold() -> None:
@@ -196,11 +204,11 @@ def test_media_judgevet_bridge_forwards_threshold_to_every_group() -> None:
 
 
 def test_calibrated_judgment_forwards_threshold() -> None:
-    inner = _RecordingPort()
     platt = Path(__file__).resolve().parents[1] / "fixtures" / "calibration"
     path = platt / "platt_noul_map.json"
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     maps = {"fraud": load_calibration_map(path, sha256=digest)}
+    inner = _RecordingPort(model=maps["fraud"].fitted_on.model)
     port: JudgmentPort = CalibratedJudgment(
         inner, maps, task_id="fraud-message", backend="llama_cpp"
     )

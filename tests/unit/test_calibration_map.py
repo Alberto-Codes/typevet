@@ -1,4 +1,4 @@
-"""Unit tests for caller-supplied Noul calibration maps (#352 slice 1)."""
+"""Unit tests for caller-supplied Noul and Score calibration maps (#352)."""
 
 from __future__ import annotations
 
@@ -394,3 +394,149 @@ def test_wrapper_refuses_empty_or_malformed_maps(maps: dict[str, Any]) -> None:
     inner = _StubJudgment(JudgmentResponse(model="m"))
     with pytest.raises(CalibrationMapError):
         CalibratedJudgment(inner, maps, task_id="fraud-message", backend="llama_cpp")
+
+
+# --- slice 2: Score maps ----------------------------------------------------
+
+LEVELS = {0: 0.2, 1: 0.3, 2: 0.5}
+
+
+def _score_answer(probabilities: dict[int, float] | None = None) -> ScoreAnswer:
+    probs = probabilities or LEVELS
+    return ScoreAnswer(
+        score=sum(k * p for k, p in probs.items()),
+        confidence=max(probs.values()),
+        legend={k: str(k) for k in probs},
+        probabilities=probs,
+    )
+
+
+def _score_wrapper(answer: Any = None) -> tuple[CalibratedJudgment, _StubJudgment]:
+    response = JudgmentResponse(
+        model="fake-judgment", answers={"fraud": answer or _score_answer()}
+    )
+    inner = _StubJudgment(response)
+    maps = {"fraud": _map(levels=3)}
+    wrapper = CalibratedJudgment(
+        inner, maps, task_id="fraud-message", backend="llama_cpp"
+    )
+    return wrapper, inner
+
+
+def test_levels_field_marks_a_score_map() -> None:
+    assert _map(levels=3).levels == 3
+    assert _map().levels is None
+    assert _map(levels=None).levels is None
+
+
+@pytest.mark.parametrize("levels", [1, 0, -2, True, 2.5, "3"])
+def test_malformed_levels_raise_the_base_error(levels: Any) -> None:
+    with pytest.raises(CalibrationMapError) as caught:
+        _map(levels=levels)
+    assert type(caught.value) is CalibrationMapError
+
+
+def test_score_map_rescales_levels_and_recomputes_score() -> None:
+    wrapper, inner = _score_wrapper()
+    question = Score(criteria=["Low", "Mid", "High"])
+    response = wrapper.judge("text", {"fraud": question}, "fake-judgment")
+    cmap = _map(levels=3)
+    mapped = {k: cmap.apply(p) for k, p in LEVELS.items()}
+    total = sum(mapped.values())
+    expected = {k: v / total for k, v in mapped.items()}
+    answer = response.scores["fraud"]
+    assert answer.probabilities == pytest.approx(expected)
+    assert sum(answer.probabilities.values()) == pytest.approx(1.0)
+    assert answer.score == pytest.approx(sum(k * p for k, p in expected.items()))
+    assert answer.confidence == pytest.approx(max(expected.values()))
+    assert answer.legend == {0: "0", 1: "1", 2: "2"}
+    record = response.calibration["fraud"]
+    assert record.raw == pytest.approx(1.3)
+    assert record.calibrated == pytest.approx(answer.score)
+    assert record.calibrated != pytest.approx(record.raw)
+    assert record.raw_levels == LEVELS
+    assert record.calibrated_levels == pytest.approx(expected)
+    assert record.method == "platt"
+    assert inner.calls == 1
+
+
+def test_score_map_accepts_a_wire_score_question() -> None:
+    wrapper, _ = _score_wrapper()
+    wire = {"type": "score", "criteria": ["Low", "Mid", "High"]}
+    response = wrapper.judge("text", {"fraud": wire}, "fake-judgment")
+    assert response.calibration["fraud"].calibrated_levels is not None
+
+
+def test_noul_record_has_no_levels() -> None:
+    wrapper, _ = _wrapper()
+    records = wrapper.judge("text", {"fraud": Noul()}, "fake-judgment").calibration
+    assert records["fraud"].raw_levels is None
+    assert records["fraud"].calibrated_levels is None
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        Score(criteria=["Low", "High"]),
+        {"type": "score", "criteria": ["Low", "Mid", "High", "Top"]},
+        Noul(),
+        {"type": "noul"},
+        Choice(criteria={"a": "A", "b": "B", "c": "C"}),
+        {"type": "choice", "criteria": {"a": "A", "b": "B", "c": "C"}},
+    ],
+)
+def test_score_map_refuses_a_mismatch_before_io(question: Any) -> None:
+    wrapper, inner = _score_wrapper()
+    with pytest.raises(CalibrationTargetError):
+        wrapper.judge("text", {"fraud": question}, "fake-judgment")
+    assert inner.calls == 0
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [_score_answer({0: 0.4, 1: 0.6}), NoulAnswer(noul=0.6)],
+)
+def test_score_map_refuses_a_mismatched_answer(answer: Any) -> None:
+    wrapper, _ = _score_wrapper(answer)
+    with pytest.raises(CalibrationTargetError):
+        wrapper.judge("text", {"fraud": {"type": "wire"}}, "fake-judgment")
+
+
+# --- slice 2: the three slice-1 low notes ---------------------------------
+
+
+@pytest.mark.parametrize(
+    "wire",
+    [
+        {"type": "choice", "criteria": {"a": "A", "b": "B"}},
+        {"type": "score", "criteria": ["Low", "High"]},
+    ],
+)
+def test_mapped_wire_choice_or_score_refused_before_io(wire: dict[str, Any]) -> None:
+    answer = ChoiceAnswer(
+        choice="a", confidence=0.7, probabilities={"a": 0.7, "b": 0.3}
+    )
+    wrapper, inner = _wrapper(answer)
+    with pytest.raises(CalibrationTargetError):
+        wrapper.judge("text", {"fraud": wire}, "fake-judgment")
+    assert inner.calls == 0
+
+
+def test_model_check_runs_when_the_mapped_question_is_absent() -> None:
+    response = JudgmentResponse(
+        model="other-model", answers={"other": NoulAnswer(noul=0.3)}
+    )
+    wrapper = CalibratedJudgment(
+        _StubJudgment(response),
+        {"fraud": _map()},
+        task_id="fraud-message",
+        backend="llama_cpp",
+    )
+    with pytest.raises(CalibrationModelMismatchError):
+        wrapper.judge("text", {"other": Noul()}, "other-model")
+
+
+def test_receipt_digest_is_stored_in_lower_case() -> None:
+    data = _broken(("fitted_on", "receipt_sha256"), "AB" * 32)
+    cmap = calibration_map_from_mapping(data, sha256=DIGEST)
+    assert cmap.fitted_on.receipt_sha256 == "ab" * 32

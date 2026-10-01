@@ -1,4 +1,4 @@
-"""Judgment port wrapper that applies calibration maps to Noul answers (#352).
+"""Judgment port wrapper that applies calibration maps to Noul and Score (#352).
 
 ``CalibratedJudgment`` wraps any ``JudgmentPort``. The caller declares the
 task id and the serving backend once. The wrapper refuses a map fitted for
@@ -9,7 +9,14 @@ models or backends (#343).
 The model check reads ``JudgmentResponse.model``: the model id that the inner
 port reports for the answers. A response carries no backend name, so the
 ``backend`` argument is the backend that the caller declares for the inner
-port.
+port. The model check runs for every map on every response, also when the
+call does not ask the mapped question. A mapped question that the call does
+not ask is skipped.
+
+A Noul map changes the Noul probability. A Score map (a map with ``levels``)
+maps each level probability, rescales the levels to sum to 1, and then sets
+``score`` to the expected level and ``confidence`` to the largest level
+probability. A Choice question is refused.
 
 Examples:
     ```python
@@ -41,13 +48,13 @@ from typevet.domain.errors import (
     CalibrationTargetError,
     CalibrationTaskMismatchError,
 )
-from typevet.domain.judgment_answers import Answer, NoulAnswer
-from typevet.domain.judgment_questions import Choice, Question, Score
+from typevet.domain.judgment_answers import Answer, NoulAnswer, ScoreAnswer
+from typevet.domain.judgment_questions import Question, Score, question_types
 from typevet.domain.judgment_response import JudgmentResponse
 from typevet.domain.media import ImageInput
 from typevet.ports.judgment import JudgmentPort
 
-_TARGET_MESSAGE = "calibration maps apply to Noul questions only"
+_TARGET_MESSAGE = "calibration map kind does not match the question"
 
 
 def _checked_maps(
@@ -84,12 +91,119 @@ def _checked_maps(
     return dict(maps)
 
 
+def _question_levels(question: object) -> int | None:
+    """Return the level count of a typed or wire Score question, when known.
+
+    Args:
+        question: A typed question or a wire dictionary.
+
+    Returns:
+        The number of criteria, or ``None`` when the question does not list
+        them.
+    """
+    if isinstance(question, Score):
+        return len(question.criteria)
+    criteria = question.get("criteria") if isinstance(question, Mapping) else None
+    return len(criteria) if isinstance(criteria, (list, tuple)) else None
+
+
+def _check_question(cmap: CalibrationMap, kind: str | None, question: object) -> None:
+    """Refuse a mapped question whose kind or level count the map cannot take.
+
+    An unknown wire type passes; the answer check after the call decides.
+
+    Args:
+        cmap: The map for the question.
+        kind: The wire type name from ``question_types``.
+        question: The typed question or wire dictionary.
+
+    Raises:
+        CalibrationTargetError: The question is a Choice, the map kind does
+            not match the question kind, or the level count differs.
+    """
+    if kind == "choice":
+        raise CalibrationTargetError(_TARGET_MESSAGE)
+    wanted = "noul" if cmap.levels is None else "score"
+    if kind in {"noul", "score"} and kind != wanted:
+        raise CalibrationTargetError(_TARGET_MESSAGE)
+    levels = _question_levels(question) if kind == "score" else None
+    if levels is not None and levels != cmap.levels:
+        raise CalibrationTargetError(_TARGET_MESSAGE)
+
+
+def _calibrated_noul(
+    answer: Answer, cmap: CalibrationMap
+) -> tuple[NoulAnswer, CalibrationRecord]:
+    """Apply a Noul map to one answer.
+
+    Args:
+        answer: The inner answer.
+        cmap: A Noul map.
+
+    Returns:
+        The calibrated answer and its record.
+
+    Raises:
+        CalibrationTargetError: The answer is not a Noul.
+    """
+    if not isinstance(answer, NoulAnswer):
+        raise CalibrationTargetError(_TARGET_MESSAGE)
+    calibrated = cmap.apply(answer.noul)
+    record = CalibrationRecord(
+        raw=answer.noul,
+        calibrated=calibrated,
+        method=cmap.method,
+        map_sha256=cmap.sha256,
+    )
+    return NoulAnswer(noul=calibrated, off_option_flag=answer.off_option_flag), record
+
+
+def _calibrated_score(
+    answer: Answer, cmap: CalibrationMap
+) -> tuple[ScoreAnswer, CalibrationRecord]:
+    """Apply a pooled Score map to each level and recompute the score.
+
+    Args:
+        answer: The inner answer.
+        cmap: A Score map.
+
+    Returns:
+        The calibrated answer and its record.
+
+    Raises:
+        CalibrationTargetError: The answer is not a Score, or its level
+            count differs from the map.
+    """
+    if not isinstance(answer, ScoreAnswer) or len(answer.probabilities) != cmap.levels:
+        raise CalibrationTargetError(_TARGET_MESSAGE)
+    probabilities = cmap.apply_levels(answer.probabilities)
+    low, high = min(probabilities), max(probabilities)
+    score = sum(level * p for level, p in probabilities.items())
+    calibrated = ScoreAnswer(
+        score=min(max(score, low), high),
+        confidence=max(probabilities.values()),
+        legend=dict(answer.legend),
+        probabilities=probabilities,
+        off_option_flag=answer.off_option_flag,
+    )
+    record = CalibrationRecord(
+        raw=answer.score,
+        calibrated=calibrated.score,
+        method=cmap.method,
+        map_sha256=cmap.sha256,
+        raw_levels=dict(answer.probabilities),
+        calibrated_levels=dict(probabilities),
+    )
+    return calibrated, record
+
+
 class CalibratedJudgment:
-    """``JudgmentPort`` that calibrates mapped Noul answers of an inner port.
+    """``JudgmentPort`` that calibrates mapped answers of an inner port.
 
     The answer carries the calibrated value. ``JudgmentResponse.calibration``
     records the raw value, the calibrated value, the method and the map
-    digest for each mapped question. Unmapped questions stay raw.
+    digest for each mapped question. A Score record also holds the raw and
+    calibrated level probabilities. Unmapped questions stay raw.
 
     Attributes:
         _inner (JudgmentPort): The wrapped port; not closed by this wrapper.
@@ -134,7 +248,7 @@ class CalibratedJudgment:
         media: tuple[ImageInput, ...] | None = None,
         off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
-        """Judge with the inner port, then calibrate each mapped Noul answer.
+        """Judge with the inner port, then calibrate each mapped answer.
 
         Args:
             state: Content under evaluation.
@@ -147,15 +261,17 @@ class CalibratedJudgment:
             The inner response with calibrated answers and records.
 
         Raises:
-            CalibrationTargetError: A mapped question is a Choice or Score,
-                before the inner call, or a mapped answer is not a Noul.
+            CalibrationTargetError: Before the inner call, a mapped question
+                is a Choice, its kind does not match the map, or its level
+                count differs. After the call, a mapped answer does not
+                match the map.
             CalibrationModelMismatchError: The response model differs from
-                the model of a map that applies.
+                the model of any map.
             CalibrationMapError: A mapped answer already carries a record.
         """
-        for name, question in questions.items():
-            if name in self._maps and isinstance(question, (Choice, Score)):
-                raise CalibrationTargetError(_TARGET_MESSAGE)
+        for name, kind in question_types(questions).items():
+            if name in self._maps:
+                _check_question(self._maps[name], kind, questions[name])
         response = self._inner.judge(
             state,
             questions,
@@ -163,26 +279,18 @@ class CalibratedJudgment:
             media=media,
             off_option_threshold=off_option_threshold,
         )
+        if any(m.fitted_on.model != response.model for m in self._maps.values()):
+            msg = "calibration map model does not match the judgment model"
+            raise CalibrationModelMismatchError(msg)
         answers: dict[str, Answer] = dict(response.answers)
         records = dict(response.calibration)
         for name, cmap in self._maps.items():
             if name not in answers:
                 continue
-            answer = answers[name]
-            if not isinstance(answer, NoulAnswer):
-                raise CalibrationTargetError(_TARGET_MESSAGE)
-            if cmap.fitted_on.model != response.model:
-                msg = "calibration map model does not match the judgment model"
-                raise CalibrationModelMismatchError(msg)
+            calibrate = _calibrated_noul if cmap.levels is None else _calibrated_score
+            answer, record = calibrate(answers[name], cmap)
             if name in records:
                 msg = "judgment answer already carries a calibration record"
                 raise CalibrationMapError(msg)
-            calibrated = cmap.apply(answer.noul)
-            answers[name] = NoulAnswer(noul=calibrated)
-            records[name] = CalibrationRecord(
-                raw=answer.noul,
-                calibrated=calibrated,
-                method=cmap.method,
-                map_sha256=cmap.sha256,
-            )
+            answers[name], records[name] = answer, record
         return dataclasses.replace(response, answers=answers, calibration=records)

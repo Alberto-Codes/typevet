@@ -36,6 +36,7 @@ See Also:
     - [typevet_evals.tpjep][]: TPJEP fixture, records and runner
     - [typevet_evals.experiment_identity][]: Receipt identity and snapshots
     - [typevet_evals.calibration][]: Post-hoc calibration of receipt probabilities
+    - [typevet_evals.calibration_artifact][]: Calibration map writer
 """
 
 __all__: list[str] = []

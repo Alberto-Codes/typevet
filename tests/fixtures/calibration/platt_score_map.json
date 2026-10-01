@@ -1,0 +1,20 @@
+{
+  "schema": "typevet.calibration_map/1",
+  "method": "platt",
+  "levels": 3,
+  "parameters": {"slope": 2.0, "intercept": -1.0},
+  "fitted_on": {
+    "task_id": "answer-quality",
+    "receipt": "synthetic: #343 fitted no Score series",
+    "receipt_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "n_calibration": 60,
+    "model": "fake-judgment",
+    "backend": "llama_cpp"
+  },
+  "evaluation": {
+    "n_evaluation": 60,
+    "before": {"ece": 0.2, "brier": 0.2, "accuracy": 0.6},
+    "after": {"ece": 0.1, "brier": 0.18, "accuracy": 0.6}
+  },
+  "producer": {"typevet_evals": "0.0.0"}
+}

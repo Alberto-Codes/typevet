@@ -162,8 +162,30 @@ The answer carries the calibrated Noul. `JudgmentResponse.calibration`
 records the raw value, the calibrated value, the method and the map digest.
 Each refusal is a `CalibrationMapError` with no values in its message.
 
-This slice maps Noul answers only. A map for a Choice or Score question is
-refused. A map whose evaluation failed the rule is recorded, not refused.
+A map with a top-level `"levels": n` field is a Score map. It is one pooled
+map for all the level probabilities. The wrapper maps each level and rescales
+the levels to sum to 1. Then it sets the score to the expected level and the
+confidence to the largest level probability. For a Score answer, the record
+holds the raw and calibrated score and both sets of level probabilities. No
+Score map has a held-out result: #343 fitted no Score series.
+
+The recorded `after` metrics describe the pooled fit before the rescale, not
+the rescaled levels a caller reads. A pooled map cannot correct a bias at one
+level.
+
+A map for a Choice question is refused before the inner call. A map whose
+kind or level count does not match the question is also refused before the
+call. This applies to typed questions and to wire dictionaries. A wire Score
+without a `criteria` list is checked only after the call, by the answer check.
+The model check runs for every map on every response. A mapped question that the call
+does not ask is skipped. The map stores the receipt digest in lower case. A
+map whose evaluation failed the rule is recorded, not refused.
+
+The `typevet_evals.calibration_artifact` module writes the map. It fits one
+method on the calibration half and measures the evaluation half. It records
+the sha256 of the source receipt. It returns the sha256 of the bytes it wrote,
+and the caller pins that digest. The steps are in
+[Calibrate a task with your own receipts](../how-to/calibrate-a-task-with-your-own-receipts.md).
 
 ## Limits
 

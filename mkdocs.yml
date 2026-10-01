@@ -110,6 +110,7 @@ nav:
       - Serve Gemma 4 31B on a rented H100: how-to/serve-gemma-4-31b-on-a-rented-h100.md
       - Connect Gemma 4 native vision judgment: how-to/connect-gemma4-native-vision-judgment.md
       - Use typevet as a judgevet provider: how-to/use-typevet-as-a-judgevet-provider.md
+      - Calibrate a task with your own receipts: how-to/calibrate-a-task-with-your-own-receipts.md
       - Run a small live judgment eval: how-to/run-a-small-live-judgment-eval.md
       - Run the image-conditioned live smoke: how-to/run-a-multimodal-live-smoke.md
       - Run the CORD expense smoke: how-to/run-the-cord-expense-smoke.md

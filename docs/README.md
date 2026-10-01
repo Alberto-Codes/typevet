@@ -77,6 +77,9 @@ answers a question, and a reference gives facts.
 - [Use typevet as a judgevet provider](how-to/use-typevet-as-a-judgevet-provider.md):
   the `typevet[judgevet]` extra, a judgevet `SystemOnePort` over typevet, and the
   declared capabilities (#284).
+- [Calibrate a task with your own receipts](how-to/calibrate-a-task-with-your-own-receipts.md):
+  fit a calibration map on a labelled receipt, pin its sha256 and wrap the
+  judgment port (#352).
 
 ## Architecture decisions
 

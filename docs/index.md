@@ -50,6 +50,7 @@ The [full index](https://github.com/Alberto-Codes/typevet/blob/main/docs/README.
     Find the public surface, the settings and the errors.
 
     - [Call typevet from Python](how-to/call-typevet-from-python.md)
+    - [Calibrate a task with your own receipts](how-to/calibrate-a-task-with-your-own-receipts.md)
     - [Python API reference](reference/api/index.md)
     - [Supported imports](reference/supported-imports.md)
     - [Configuration](reference/configuration.md)
