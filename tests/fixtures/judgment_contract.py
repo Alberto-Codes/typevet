@@ -210,6 +210,28 @@ def fake_for(fixture: dict[str, Any]) -> ContractJudgmentFake:
     )
 
 
+def get_threshold_parity_fixture() -> dict[str, Any]:
+    """Return the shared ``off_option_threshold`` parity case (#370).
+
+    The contract fake and the real scoring adapter judge the same Noul with
+    each threshold. Both raise ``JudgmentValidationError`` for each invalid
+    value, and both accept each valid value.
+
+    Returns:
+        Fixture dict with ``state``, ``model``, ``questions``, ``invalid``
+        and ``valid`` thresholds.
+    """
+    return {
+        "name": "off_option_threshold_parity",
+        "label": "synthetic",
+        "state": "I was charged twice on my card.",
+        "model": "fake-judgment",
+        "questions": {"billing": Noul(instructions="Is this about billing?")},
+        "invalid": (1.5, -0.1, float("nan"), True, "0.2"),
+        "valid": (0, 1),
+    }
+
+
 def exc_type_from_name(name: str) -> type[JudgmentError]:
     mapping: dict[str, type[JudgmentError]] = {
         "JudgmentError": JudgmentError,

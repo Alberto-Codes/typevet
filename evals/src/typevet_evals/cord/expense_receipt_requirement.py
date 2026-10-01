@@ -170,6 +170,7 @@ def judge_cord_expense_arm(
     *,
     application_mode: str,
     question_name: str = _EXPENSE_FIELD,
+    off_option_threshold: float | None = None,
 ) -> dict[str, object]:
     """Score one CORD expense arm or return a deterministic missing-receipt row.
 
@@ -180,6 +181,8 @@ def judge_cord_expense_arm(
         media: Receipt images for ``combined`` / ``image_only`` arms.
         application_mode: Smoke modality name.
         question_name: Field id for ``expense_question()``.
+        off_option_threshold: Off-option mass limit forwarded to the port,
+            or ``None`` (the default) to turn the guard off.
 
     Returns:
         Row dict with label, probabilities, usage metadata and provenance fields.
@@ -201,6 +204,7 @@ def judge_cord_expense_arm(
         {question_name: expense_question()},
         model,
         media=images,
+        off_option_threshold=off_option_threshold,
     )
     answer = response.choices[question_name]
     return _row_from_outcome(

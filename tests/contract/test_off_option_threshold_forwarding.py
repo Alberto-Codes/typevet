@@ -19,6 +19,7 @@ from __future__ import annotations
 import asyncio
 import dataclasses
 import hashlib
+import math
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -29,6 +30,10 @@ from judgevet.domain.media import ImageAttachment, ImageEvidence, MediaCapabilit
 from judgevet.domain.questions import Noul as JevNoul
 
 from tests.fixtures.judgevet_bridge import FAKE_MODEL, STATE, judgment_port
+from tests.fixtures.judgment_contract import (
+    ContractJudgmentFake,
+    get_threshold_parity_fixture,
+)
 from tests.fixtures.scoring_contract import OFF_OPTION_N_VOCAB, get_off_option_fixture
 from typevet.adapters.inbound import load_calibration_map
 from typevet.adapters.inbound.backend_settings import _KeyMaskingJudgmentPort
@@ -38,12 +43,16 @@ from typevet.adapters.inbound.judgevet import (
     TypevetSystemOnePort,
 )
 from typevet.adapters.inbound.settings import LlamaSettings
+from typevet.adapters.outbound.vllm.request_ids import RequestIdJudgmentPort
+from typevet.domain.errors import JudgmentError
 from typevet.domain.judgment_questions import Noul, Question
 from typevet.domain.judgment_response import JudgmentResponse
 from typevet.domain.media import ImageInput
 from typevet.ports.judgment import JudgmentPort
+from typevet.runtime import ScoringJudgmentAdapter
 from typevet.runtime.calibrated_judgment import CalibratedJudgment
 from typevet.runtime.llama_cpp_gemma_vision import open_gemma_native_vision_judgment
+from typevet.testing import ScriptedScoringFake
 
 pytestmark = pytest.mark.contract
 
@@ -216,3 +225,107 @@ def test_calibrated_judgment_forwards_threshold() -> None:
     port.judge(STATE, {"q": Noul()}, FAKE_MODEL)
     assert inner.thresholds == [0.25, None]
     assert response.off_option["q"].off_option_threshold == 0.25
+
+
+def _scoring_adapter() -> ScoringJudgmentAdapter:
+    """Build the real scoring adapter over a scripted Noul scorer.
+
+    Returns:
+        A ``ScoringJudgmentAdapter`` with no network IO.
+    """
+    fake = ScriptedScoringFake(logprobs={"True": math.log(0.6), "False": math.log(0.4)})
+    return ScoringJudgmentAdapter(fake, tokenize_content=lambda s: (ord(s[0]),))
+
+
+class _RecordingScoringAdapter(ScoringJudgmentAdapter):
+    """Real scoring adapter that records each threshold it receives.
+
+    Attributes:
+        thresholds (list[float | None]): Threshold of each ``judge`` call.
+    """
+
+    def __init__(self) -> None:
+        fake = ScriptedScoringFake(
+            logprobs={"True": math.log(0.6), "False": math.log(0.4)}
+        )
+        super().__init__(fake, tokenize_content=lambda s: (ord(s[0]),))
+        self.thresholds: list[float | None] = []
+
+    def judge(
+        self,
+        state: str | dict[str, Any] | list[Any],
+        questions: Mapping[str, Question | Mapping[str, Any]],
+        model: str,
+        *,
+        media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
+    ) -> JudgmentResponse:
+        """Record ``off_option_threshold``, then judge with the real adapter.
+
+        Args:
+            state: Content under evaluation.
+            questions: Named questions.
+            model: Model id.
+            media: Images for every question.
+            off_option_threshold: Threshold to record and forward.
+
+        Returns:
+            The real adapter response.
+        """
+        self.thresholds.append(off_option_threshold)
+        return super().judge(
+            state,
+            questions,
+            model,
+            media=media,
+            off_option_threshold=off_option_threshold,
+        )
+
+
+def test_request_id_wrapper_forwards_threshold() -> None:
+    inner = _RecordingScoringAdapter()
+    port: JudgmentPort = RequestIdJudgmentPort(inner)
+    response = port.judge(STATE, {"q": Noul()}, FAKE_MODEL, off_option_threshold=0.25)
+    port.judge(STATE, {"q": Noul()}, FAKE_MODEL)
+    assert inner.thresholds == [0.25, None]
+    assert response.off_option["q"].off_option_threshold == 0.25
+
+
+def _outcome(port: JudgmentPort, threshold: float | None) -> str:
+    """Judge the shared parity fixture and name the outcome.
+
+    Args:
+        port: Port under test.
+        threshold: Threshold from the fixture, valid or not.
+
+    Returns:
+        ``"accept"``, or the class name of the raised ``JudgmentError``.
+    """
+    fixture = get_threshold_parity_fixture()
+    try:
+        port.judge(
+            fixture["state"],
+            fixture["questions"],
+            fixture["model"],
+            off_option_threshold=threshold,
+        )
+    except JudgmentError as exc:
+        return type(exc).__name__
+    return "accept"
+
+
+_PARITY = get_threshold_parity_fixture()
+
+
+@pytest.mark.parametrize(
+    ("threshold", "expected"),
+    [(value, "JudgmentValidationError") for value in _PARITY["invalid"]]
+    + [(value, "accept") for value in _PARITY["valid"]],
+    ids=repr,
+)
+def test_fake_and_scoring_adapter_agree_on_threshold(
+    threshold: float | None, expected: str
+) -> None:
+    fake = _outcome(ContractJudgmentFake(), threshold)
+    real = _outcome(_scoring_adapter(), threshold)
+    assert (fake, real) == (expected, expected)

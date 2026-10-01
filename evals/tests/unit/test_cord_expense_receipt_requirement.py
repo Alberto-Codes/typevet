@@ -14,6 +14,8 @@ See Also:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -133,3 +135,60 @@ def test_combined_with_image_uses_direct_three_label_choice() -> None:
     assert row["routing"] == MODEL_ROUTING
     assert row["deterministic_abstain"] is False
     assert row["label"] == MATCH
+
+
+class _RecordingPort:
+    """Expense port that records each ``off_option_threshold`` it receives.
+
+    Attributes:
+        thresholds (list[float | None]): Threshold of each ``judge`` call.
+    """
+
+    def __init__(self) -> None:
+        self.thresholds: list[float | None] = []
+
+    def judge(
+        self,
+        state: str | dict[str, Any] | list[Any],
+        questions: Mapping[str, object],
+        model: str,
+        *,
+        media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
+    ) -> JudgmentResponse:
+        """Record the threshold and return one ``match`` expense answer.
+
+        Args:
+            state: Claim text under evaluation.
+            questions: Named native questions.
+            model: Model id.
+            media: Receipt images.
+            off_option_threshold: Threshold to record.
+
+        Returns:
+            A response with one ``match`` answer per question.
+        """
+        self.thresholds.append(off_option_threshold)
+        answer = ChoiceAnswer(
+            choice=MATCH,
+            confidence=1.0,
+            probabilities={INSUFFICIENT_EVIDENCE: 0.0, MISMATCH: 0.0, MATCH: 1.0},
+        )
+        return JudgmentResponse(model=model, answers=dict.fromkeys(questions, answer))
+
+
+def test_arm_forwards_off_option_threshold_to_the_port() -> None:
+    """The arm passes ``off_option_threshold`` to the port, None by default."""
+    port = _RecordingPort()
+    judge_cord_expense_arm(
+        port,
+        "fake",
+        _STATEMENT,
+        (_PNG,),
+        application_mode="combined",
+        off_option_threshold=0.25,
+    )
+    judge_cord_expense_arm(
+        port, "fake", _STATEMENT, (_PNG,), application_mode="combined"
+    )
+    assert port.thresholds == [0.25, None]
