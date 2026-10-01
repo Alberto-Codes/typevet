@@ -17,7 +17,7 @@ Measure each judge model on your own task before you trust its numbers.
   See [Run Gemma 4 on llama.cpp](run-gemma4-llamacpp.md) or [Serve typevet on vLLM](serve-typevet-on-vllm.md).
 - The `TYPEVET_BACKEND` and backend settings in the environment.
   See [configuration](../reference/configuration.md).
-- judgevet 0.14 or 0.15. The `judgevet` extra pins `judgevet>=0.14,<0.16`.
+- judgevet 0.17. The `judgevet` extra pins `judgevet>=0.17,<0.18`.
 
 ## Install the extra
 
@@ -186,7 +186,7 @@ Other exceptions keep their type.
 ## Evidence limits
 
 Offline tests prove the bridge on typevet fakes.
-The text, media and async ports pass the judgevet provider conformance kit, `judgevet.testing.conformance` from judgevet 0.15.0.
+The text, media and async ports pass the judgevet provider conformance kit, `judgevet.testing.conformance` from judgevet 0.17.0.
 The tests also run judgevet's command line and MCP server on the bridge.
 They prove no live model behaviour.
 One live run per backend (llama.cpp and vLLM) asked one Noul, one Choice and one Score through the bridge and returned typed answers; see [#289](https://github.com/Alberto-Codes/typevet/issues/289). This is not a quality claim.

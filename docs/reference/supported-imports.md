@@ -183,7 +183,7 @@ It is the only typevet module that imports judgevet (#284).
 | `DEFAULT_MAX_CHOICE_OPTIONS` | The default Choice option and Score level cap, `MAX_ENUM_CHOICES` (24) |
 
 Two import-linter contracts keep judgevet in this module.
-The text, media and async ports pass the judgevet provider conformance kit (`judgevet.testing.conformance`, judgevet 0.15.0).
+The text, media and async ports pass the judgevet provider conformance kit (`judgevet.testing.conformance`, judgevet 0.17.0).
 See [use typevet as a judgevet provider](../how-to/use-typevet-as-a-judgevet-provider.md).
 
 ## `typevet.adapters.outbound`
@@ -403,7 +403,7 @@ reason and exits `0`. See [live eval runner](eval-live-runner.md).
 | Evaluation | Not shipped | All evaluation code is in the `typevet-evals` workspace member. See [Not in the wheel](#not-in-the-wheel) |
 | CLI | Not shipped | No console script and no module entry in the wheel. In a checkout: `python -m typevet_evals.cli.eval_runner` and `python -m typevet_evals.cli.cord_semantic_acceptance`. The `cli` extra lists Typer only and no module imports it |
 | MCP | Not shipped | No entry point. With the `judgevet` extra, judgevet's MCP server can serve a typevet provider |
-| judgevet bridge | Optional extra | `typevet[judgevet]` adds `judgevet>=0.14,<0.16`. See [judgevet bridge](#judgevet-bridge) |
+| judgevet bridge | Optional extra | `typevet[judgevet]` adds `judgevet>=0.17,<0.18`. See [judgevet bridge](#judgevet-bridge) |
 | Dependencies | `httpx`, `jsonschema`, `structlog` | Locked via `uv.lock` in development |
 
 Additive changes should extend `__all__` and this page. Breaking renames or

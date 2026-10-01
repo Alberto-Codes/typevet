@@ -3,7 +3,7 @@
 Every port here runs ``ScoringJudgmentAdapter`` over ``ScriptedScoringFake``,
 so the bridge tests exercise the real typevet judgment path with no network.
 The questions match the questions of the judgevet provider conformance kit
-(``judgevet.testing.conformance``, judgevet 0.15.0).
+(``judgevet.testing.conformance``, judgevet 0.17.0).
 """
 
 from __future__ import annotations

@@ -3,7 +3,7 @@
 A caller typed to ``JudgmentPort`` passes the #353 guard. Through the
 llama.cpp factory session, the key-masking wrapper and ``CalibratedJudgment``
 the receipt on the answer holds the threshold and the flag. The judgevet
-bridge forwards the keyword; its response carries no receipt.
+bridge forwards the keyword and returns the receipt in ``receipts`` (#370).
 
 Examples:
     ```bash

@@ -28,6 +28,15 @@ Declared capabilities (``BridgeCapabilities``):
   backend still gets one scoring call per question. Questions with no
   images go as one text judgment. The answers merge into one response;
   the groups must report the same model id, and token counts add up.
+- Off-option guard: the ``off_option_threshold`` keyword, or the
+  ``off_option_threshold`` key of judgevet ``provider_options`` when the
+  keyword is ``None``, goes to the typevet port. Any other option key is
+  refused with ``ProviderCapabilityError``. An invalid option value raises
+  ``ProviderRequestError``; the message does not show the value.
+- Receipts: each typevet ``OffOptionReceipt`` goes into
+  ``SystemOneResponse.receipts`` under its answer name, with
+  ``off_option_mass``, ``off_option_threshold`` and ``off_option_flag``. An
+  answer with no receipt has no ``receipts`` entry.
 
 Error mapping (typevet error to judgevet error):
 
@@ -102,6 +111,7 @@ except ModuleNotFoundError as missing:
     msg = "typevet.adapters.inbound.judgevet needs judgevet; install typevet[judgevet]"
     raise ImportError(msg) from missing
 
+from typevet.domain.decision_execute import check_off_option_threshold
 from typevet.domain.decisions import MAX_ENUM_CHOICES
 from typevet.domain.errors import (
     BackendHttpError,
@@ -157,6 +167,7 @@ _ERROR_MAP: tuple[tuple[type[GenerationError], type[ProviderError]], ...] = (
 
 State = str | dict[str, Any] | list[Any]
 Questions = Mapping[str, JevQuestion | Mapping[str, Any]]
+Options = Mapping[str, object] | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -320,6 +331,35 @@ def _to_judgevet(answer: Answer | object) -> JevAnswer:
     raise ProviderResponseError(f"typevet returned a {type(answer).__name__} answer")
 
 
+def _threshold(keyword: float | None, options: Options) -> float | None:
+    """Pick the off-option threshold from the keyword or the provider options.
+
+    Args:
+        keyword: The ``off_option_threshold`` keyword; it wins when set.
+        options: judgevet ``provider_options``, or ``None`` for none.
+
+    Returns:
+        The keyword, else the option value, else ``None``.
+
+    Raises:
+        ProviderCapabilityError: The options carry a key other than
+            ``off_option_threshold``.
+        ProviderRequestError: The option value is not ``None`` or a number in
+            ``[0, 1]``. The message does not show the value.
+    """
+    if set(options or {}) - {"off_option_threshold"}:
+        raise ProviderCapabilityError("typevet reads only off_option_threshold")
+    value = (options or {}).get("off_option_threshold")
+    try:
+        check_off_option_threshold(value)
+    except DecisionExecutionError:
+        msg = "provider option off_option_threshold must be None or in [0, 1]"
+        raise ProviderRequestError(msg) from None
+    if keyword is None and isinstance(value, (int, float)):
+        return float(value)
+    return keyword
+
+
 def _to_response(response: JudgmentResponse, questions: Questions) -> SystemOneResponse:
     """Convert a typevet response, keeping the model id typevet reports.
 
@@ -328,7 +368,8 @@ def _to_response(response: JudgmentResponse, questions: Questions) -> SystemOneR
         questions: The judgevet questions, keyed by name.
 
     Returns:
-        The judgevet response with one answer per question.
+        The judgevet response with one answer per question and one receipt
+        per answer that has an off-option receipt.
 
     Raises:
         ProviderResponseError: Answer names differ from question names.
@@ -337,7 +378,8 @@ def _to_response(response: JudgmentResponse, questions: Questions) -> SystemOneR
         raise ProviderResponseError("typevet answer names differ from the questions")
     usage = Usage(response.usage.input_tokens, response.usage.output_tokens)
     answers = {name: _to_judgevet(value) for name, value in response.answers.items()}
-    return SystemOneResponse(model=response.model, usage=usage, answers=answers)
+    receipts = {name: r.as_dict() for name, r in response.off_option.items()}
+    return SystemOneResponse(response.model, usage, answers, receipts)
 
 
 class TypevetSystemOnePort:
@@ -392,6 +434,7 @@ class TypevetSystemOnePort:
         model: str,
         *,
         off_option_threshold: float | None = None,
+        provider_options: Options = None,
     ) -> SystemOneResponse:
         """Judge ``state`` against every question through typevet.
 
@@ -399,19 +442,25 @@ class TypevetSystemOnePort:
             state: The content to judge: text, a JSON object or an array.
             questions: judgevet questions or raw wire mappings, keyed by name.
             model: The model id typevet sends to its backend.
-            off_option_threshold: Forwarded to the typevet port. No judgevet
-                setting maps to it, so the default ``None`` turns the guard off.
+            off_option_threshold: Forwarded to the typevet port, or ``None``
+                to read ``provider_options`` instead.
+            provider_options: judgevet provider options. The bridge reads only
+                ``off_option_threshold``, and only when the keyword is ``None``.
 
         Returns:
-            Typed answers, the model id the backend reports and token usage.
+            Typed answers, the model id the backend reports, token usage and
+            the off-option receipt of each answer in ``receipts``.
 
         Raises:
-            ProviderRequestError: A question is malformed, or typevet rejects it.
-            ProviderCapabilityError: The request needs a capability typevet lacks.
+            ProviderRequestError: A question is malformed, the option threshold
+                is invalid, or typevet rejects the request.
+            ProviderCapabilityError: The request needs a capability typevet
+                lacks, or ``provider_options`` has another key.
             ProviderTransportError: The backend could not be reached.
             ProviderResponseError: The backend answer broke the typed contract.
         """
-        return self._judge(state, questions, model, None, off_option_threshold)
+        threshold = _threshold(off_option_threshold, provider_options)
+        return self._judge(state, questions, model, None, threshold)
 
     def _judge(
         self,
@@ -419,7 +468,7 @@ class TypevetSystemOnePort:
         questions: Questions,
         model: str,
         media: tuple[ImageInput, ...] | None,
-        off_option_threshold: float | None,
+        threshold: float | None,
     ) -> SystemOneResponse:
         """Convert, call typevet, map failures and convert the answers back.
 
@@ -428,7 +477,7 @@ class TypevetSystemOnePort:
             questions: judgevet questions keyed by name.
             model: The model id.
             media: Images for every question, or ``None`` for text.
-            off_option_threshold: The typevet off-option guard, or ``None``.
+            threshold: The typevet off-option guard, or ``None``.
 
         Returns:
             The judgevet response.
@@ -436,17 +485,10 @@ class TypevetSystemOnePort:
         Raises:
             ProviderError: A mapped typevet failure or a refused request.
         """
-        converted = {
-            name: _to_typevet(name, question, self._cap)
-            for name, question in questions.items()
-        }
+        converted = {n: _to_typevet(n, q, self._cap) for n, q in questions.items()}
         try:
             response = self._judgment.judge(
-                state,
-                converted,
-                model,
-                media=media,
-                off_option_threshold=off_option_threshold,
+                state, converted, model, media=media, off_option_threshold=threshold
             )
         except GenerationError as error:
             raise _provider_error(error) from error
@@ -468,17 +510,12 @@ def _image_groups(
 
     Raises:
         ProviderCapabilityError: An image type is outside typevet's supported
-            set.
+            set. The check runs before the bridge reads any image data.
     """
-    if any(
-        image.media_type not in SUPPORTED_IMAGE_MIME_TYPES for image in evidence.images
-    ):
-        raise ProviderCapabilityError(
-            "an image type is outside typevet's supported set"
-        )
-    images = {
-        image.id: ImageInput(image.data, image.media_type) for image in evidence.images
-    }
+    if any(i.media_type not in SUPPORTED_IMAGE_MIME_TYPES for i in evidence.images):
+        msg = "an image type is outside typevet's supported set"
+        raise ProviderCapabilityError(msg)
+    images = {i.id: ImageInput(i.data, i.media_type) for i in evidence.images}
     groups: dict[tuple[str, ...], dict[str, Any]] = {}
     for name, question in questions.items():
         key = tuple(evidence.by_question.get(name, ()))
@@ -507,8 +544,8 @@ def _merge(responses: Sequence[SystemOneResponse]) -> SystemOneResponse:
         responses: One response per image group, in group order.
 
     Returns:
-        One response with every answer; a token count is ``None`` when any
-        group left it unknown.
+        One response with every answer and receipt; a token count is ``None``
+        when any group left it unknown.
 
     Raises:
         ProviderResponseError: The groups report different model ids.
@@ -520,7 +557,8 @@ def _merge(responses: Sequence[SystemOneResponse]) -> SystemOneResponse:
         _add_counts([r.usage.output_tokens for r in responses]),
     )
     answers = {k: v for r in responses for k, v in r.answers.items()}
-    return SystemOneResponse(model=responses[0].model, usage=usage, answers=answers)
+    receipts = {k: v for r in responses for k, v in r.receipts.items()}
+    return SystemOneResponse(responses[0].model, usage, answers, receipts)
 
 
 class TypevetMediaSystemOnePort(TypevetSystemOnePort):
@@ -590,6 +628,7 @@ class TypevetMediaSystemOnePort(TypevetSystemOnePort):
         *,
         evidence: ImageEvidence,
         off_option_threshold: float | None = None,
+        provider_options: Options = None,
     ) -> SystemOneResponse:
         """Judge ``state`` and the images against every question.
 
@@ -599,24 +638,24 @@ class TypevetMediaSystemOnePort(TypevetSystemOnePort):
             model: The model id typevet sends to its backend.
             evidence: The images and the images each question is bound to.
             off_option_threshold: Forwarded to the typevet port for each
-                image group, or ``None`` to turn the guard off.
+                image group, or ``None`` to read ``provider_options`` instead.
+            provider_options: judgevet provider options. The bridge reads only
+                ``off_option_threshold``, and only when the keyword is ``None``.
 
         Returns:
-            Typed answers, the model id the backend reports and summed usage.
+            Typed answers, the model id the backend reports, summed usage and
+            the off-option receipt of each answer in ``receipts``.
 
         Raises:
             ProviderCapabilityError: An image type is outside typevet's
-                supported set, or the request needs a capability typevet lacks.
+                supported set, the request needs a capability typevet lacks,
+                or ``provider_options`` has another key.
             ProviderResponseError: The image groups report different models.
             ProviderError: A mapped typevet failure or a refused request.
         """
+        threshold = _threshold(off_option_threshold, provider_options)
         groups = _image_groups(questions, evidence)
-        return _merge(
-            [
-                self._judge(state, group, model, media, off_option_threshold)
-                for group, media in groups
-            ]
-        )
+        return _merge([self._judge(state, g, model, m, threshold) for g, m in groups])
 
 
 class AsyncTypevetSystemOnePort:
