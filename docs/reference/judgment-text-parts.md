@@ -14,8 +14,8 @@ The parent plan is [#360](https://github.com/Alberto-Codes/typevet/issues/360).
 |---|---|---|---|---|---|
 | Question `instructions` | `src/typevet/domain/judgment_questions.py:67` | Yes. The caller sets it on each `Noul`, `Choice` or `Score`. | Wording receipts store seed and evolved text verbatim and by digest. Identity receipts hash it in `prompt_digests`. | Yes, the DIFrauD `is_scam` Noul ([#309](https://github.com/Alberto-Codes/typevet/issues/309), [#252](https://github.com/Alberto-Codes/typevet/issues/252)). | Yes. |
 | `criteria` (true/false text, option labels, scale anchors) | `src/typevet/domain/judgment_questions.py:68` | Yes. The caller sets it on each question. | Wording receipts store the `Noul` criteria in `seed_parts` and `evolved_parts` when a run passes its parts. Identity receipts hash it in `prompt_digests`. | No live run yet. A run can evolve `Noul` criteria since [#363](https://github.com/Alberto-Codes/typevet/issues/363). | Yes. `Choice` and `Score` criteria are not named yet. |
-| Rendered option block | `src/typevet/domain/text_parts.py:72` | Yes, as a template ([#364](https://github.com/Alberto-Codes/typevet/issues/364)). The caller sets `TextParts(option_block=...)`. | `JudgmentResponse.text_parts` records its digest, or `"default"` when unset. | No. | Yes. |
-| Context / user-text template | `src/typevet/domain/text_parts.py:75` | Yes, as a template ([#364](https://github.com/Alberto-Codes/typevet/issues/364)). The caller sets `TextParts(context_template=...)`. A framing excludes it. | `JudgmentResponse.text_parts` records its digest, or `"default"` when unset. | No. | Yes. |
+| Rendered option block | `src/typevet/domain/text_parts.py:74` | Yes, as a template ([#364](https://github.com/Alberto-Codes/typevet/issues/364)). The caller sets `TextParts(option_block=...)`. | `JudgmentResponse.text_parts` records its digest, or `"default"` when unset. | No. | Yes. |
+| Context / user-text template | `src/typevet/domain/text_parts.py:77` | Yes, as a template ([#364](https://github.com/Alberto-Codes/typevet/issues/364)). The caller sets `TextParts(context_template=...)`. A framing gets the rendered user text ([#373](https://github.com/Alberto-Codes/typevet/issues/373)). | `JudgmentResponse.text_parts` records its digest, or `"default"` when unset. | No. | Yes. |
 | Framing preamble | `src/typevet/adapters/outbound/gemma/scoring_prefix.py:104` | Yes, through `ScoringJudgmentAdapter(framing=...)` with a `ModelFramingPort`. | Identity receipts record the served-template family. They do not record a framing class. | No. | Yes. No child issue exists yet. |
 | No-thinking prefill | `src/typevet/adapters/outbound/gemma/served_template.py:27` | No. A Gemma 4 framing must end with it, and typevet refuses a framing without it. | Only through the commit and the served-template family. | No. | Never. |
 | Control-token rule | `src/typevet/domain/judgment_normalize.py:41` | No. | Only through the commit. | No. | Never. |
@@ -23,15 +23,15 @@ The parent plan is [#360](https://github.com/Alberto-Codes/typevet/issues/360).
 ## Row notes
 
 - **Question `instructions`.** `Noul` sets it at line 67, `Choice` at line 110 and `Score` at line 151 of `judgment_questions.py`.
-- **`criteria`.** `Choice` sets it at line 109 and `Score` at line 150. `_field_criteria` at `judgment_scoring.py:172` turns it into option descriptions.
+- **`criteria`.** `Choice` sets it at line 109 and `Score` at line 150. `_field_criteria` at `judgment_scoring.py:170` turns it into option descriptions.
 - **Rendered option block.** `render_field_instructions` at `field_instructions.py:109` renders the `option_block` template.
 - **Rendered option block.** `_answer_instruction` at `field_instructions.py:72` writes the answer rule for the `{answer_rule}` placeholder.
-- **Context / user-text template.** `render_context` at `text_parts.py:239` renders the `context_template` template.
-- **Context / user-text template.** `_state_context` at `judgment_scoring.py:182` writes JSON for a non-string `state`.
+- **Context / user-text template.** `render_context` at `text_parts.py:245` renders the `context_template` template.
+- **Context / user-text template.** `_state_context` at `judgment_scoring.py:183` writes JSON for a non-string `state`.
 - **Context / user-text template.** `_media_context` puts one media marker per image before the context.
 - **Framing preamble.** The turn markers and the role headers come from `served_template.py`, lines 24 to 36.
 - **Framing preamble.** `compose_media_scoring_prefix` at `scoring_prefix.py:124` writes the native Gemma turns.
-- **Framing preamble.** `ModelFramingPort` at `src/typevet/ports/framing.py:40` is the caller hook.
+- **Framing preamble.** `ModelFramingPort` at `src/typevet/ports/framing.py:41` is the caller hook.
 - **No-thinking prefill.** `require_no_thinking_prefill` at `scoring_prefix.py:64` refuses a Gemma 4 framing that lacks it ([#354](https://github.com/Alberto-Codes/typevet/issues/354)).
 - **No-thinking prefill.** On vLLM, the scoring adapter sends `enable_thinking: false` in place of the prefill text.
 - **Control-token rule.** `control_binding_pairs` at line 185 maps labels to the controls `0` to `9`, then `A` to `Z`.
@@ -80,14 +80,23 @@ The other placeholders must not be on it.
   `TURN_MARKERS` lists them.
   These are the ChatML, Gemma 3 and Gemma 4 markers from `served_template.py`.
   A turn marker in a template can open or close a turn, so typevet refuses it ([#373](https://github.com/Alberto-Codes/typevet/issues/373)).
+- The template has a Gemma 4 control token: `<|channel>`, `<channel|>`, `<|think|>` or `<|tool_response>`.
+  `TURN_MARKERS` also lists these tokens, and the rule message calls each one a turn marker.
+  These tokens can open a thinking channel or a tool reply ([#373](https://github.com/Alberto-Codes/typevet/issues/373)).
+
+The rules check the templates only.
+typevet does not check caller values (state, criteria and labels), with or without text parts.
 
 The error names the part and the rule.
 It never holds the template text.
 Write a literal brace as `{{` or `}}`.
 
-A framing composes the whole prefix.
-Thus `ScoringJudgmentAdapter` refuses a framing together with a `context_template`.
-A framing works with an `option_block`, and the prefill check still applies.
+`ScoringJudgmentAdapter` renders the `context_template` first, then gives the user text to a framing.
+`ModelFramingPort.compose_prefix(*, user_text, media)` wraps that text in turn markers.
+Thus both text parts apply under every framing ([#373](https://github.com/Alberto-Codes/typevet/issues/373)).
+The prefill check still applies to the framing prefix.
+`ScoringJudgmentAdapter` refuses a framing together with a `served_template`.
+`open_vllm_judgment` and `open_gemma_native_vision_judgment` take an optional `text_parts` keyword.
 
 `TextParts.receipt()` gives the `text_parts` receipt block.
 It has one key for each part: `option_block` and `context_template`.

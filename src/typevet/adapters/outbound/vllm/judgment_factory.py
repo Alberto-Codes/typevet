@@ -2,7 +2,9 @@
 
 The vLLM server applies the served chat template, so the factory needs no
 template probe. It does not call ``/props``, ``/apply-template`` or any
-other probe. Prefixes are plain chat content from ``ChatContentFraming``.
+other probe. Prefixes are plain chat content from ``ChatContentFraming``. An
+optional ``text_parts`` keyword sets the option block and the context
+template; the framing sends the rendered user text (#373).
 Control strings are tokenized through vLLM ``/tokenize`` with
 ``add_special_tokens: false``, as vLLM v0.30.0
 ``vllm/entrypoints/serve/tokenize/protocol.py`` defines the
@@ -58,6 +60,7 @@ from typevet.adapters.outbound.vllm.scoring import (
     VllmCandidateScoringAdapter,
 )
 from typevet.domain.errors import GenerationError
+from typevet.domain.text_parts import TextParts
 from typevet.ports.judgment import JudgmentPort
 from typevet.ports.scoring import CandidateScoringPort
 
@@ -178,6 +181,7 @@ def open_vllm_judgment(
     tokenize_content: Callable[[str], Sequence[int]] | None = None,
     scoring_port_wrapper: Callable[[CandidateScoringPort], CandidateScoringPort]
     | None = None,
+    text_parts: TextParts | None = None,
 ) -> Iterator[VllmJudgmentSession]:
     """Open a judgment port for a vLLM chat-completions server.
 
@@ -194,6 +198,9 @@ def open_vllm_judgment(
         tokenize_content: Optional tokenizer hook; defaults to ``vllm_tokenize``.
         scoring_port_wrapper: Optional wrapper applied before ``JudgmentPort``
             wiring.
+        text_parts: Option block and context templates, or ``None`` for the
+            defaults. ``ChatContentFraming`` sends the rendered user text
+            (#373).
 
     Yields:
         A session holding the configured ``JudgmentPort``. Its responses map
@@ -213,6 +220,7 @@ def open_vllm_judgment(
         framing=ChatContentFraming(),
         tokenize_content=tokenize,
         pinned_model=model,
+        text_parts=text_parts,
     )
     port = RequestIdJudgmentPort(adapter)
     try:

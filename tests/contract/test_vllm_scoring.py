@@ -163,13 +163,11 @@ def test_vllm_scoring_logprob_token_ids_follow_request_order() -> None:
 def test_chat_content_framing_has_no_turn_markers_and_keeps_media() -> None:
     framing = ChatContentFraming()
     image = ImageInput(data=b"\x89PNG", mime_type="image/png")
-    text = framing.compose_prefix(context="ctx", field_block="fields", media=())
+    text = framing.compose_prefix(user_text="ctx\n\nfields", media=())
     assert text == "ctx\n\nfields"
-    context = f"{MEDIA_MARKER}\nctx"
-    with_media = framing.compose_prefix(
-        context=context, field_block="fields", media=(image,)
-    )
-    assert with_media == f"{MEDIA_MARKER}\nctx\n\nfields"
+    user_text = f"{MEDIA_MARKER}\nctx\n\nfields"
+    with_media = framing.compose_prefix(user_text=user_text, media=(image,))
+    assert with_media == user_text
 
 
 @pytest.mark.contract

@@ -15,7 +15,8 @@ placeholder, names an unknown placeholder, uses a conversion or a format
 spec, drops a control line, holds a gold-reference marker, holds a media
 marker or holds a chat turn marker. An ``option_block`` also needs
 ``{answer_rule}`` (#373). The error names the part and the rule, never the
-template text.
+template text. The rule guards the templates only: caller values (state,
+criteria, labels) are not checked (#373).
 
 Attributes:
     OPTION_BLOCK (str): Component name of the option block part.
@@ -25,8 +26,9 @@ Attributes:
     DEFAULT_CONTEXT_TEMPLATE (str): Context template typevet uses when the
         part is unset.
     DEFAULT_PART (str): Receipt value of a part that is unset.
-    TURN_MARKERS (tuple[str, ...]): ChatML, Gemma 3 and Gemma 4 turn markers
-        that no template may hold.
+    TURN_MARKERS (tuple[str, ...]): ChatML, Gemma 3 and Gemma 4 turn markers,
+        and the Gemma 4 channel, think and tool-response tokens, that no
+        template may hold (#373).
 
 Examples:
     ```python
@@ -82,6 +84,10 @@ TURN_MARKERS: Final[tuple[str, ...]] = (
     "<end_of_turn>",
     "<|turn>",
     "<turn|>",
+    "<|channel>",
+    "<channel|>",
+    "<|think|>",
+    "<|tool_response>",
 )
 
 _LINE_FIELDS: Final[frozenset[str]] = frozenset({"control", "label", "description"})

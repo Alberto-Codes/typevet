@@ -172,8 +172,10 @@ def test_vllm_media_text_blocks_split_at_markers(
 def test_vllm_media_text_blocks_equal_framing_prefix_minus_markers() -> None:
     media = (solid_image("red"), solid_image("green"))
     prefix = ChatContentFraming().compose_prefix(
-        context=f"{MEDIA_MARKER}\n{MEDIA_MARKER}\nExpense claim: total 12.",
-        field_block="verdict: Pick one.",
+        user_text=(
+            f"{MEDIA_MARKER}\n{MEDIA_MARKER}\nExpense claim: total 12.\n\n"
+            "verdict: Pick one."
+        ),
         media=media,
     )
     content = _content(prefix, media)

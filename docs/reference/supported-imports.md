@@ -129,7 +129,7 @@ Thin orchestration facades over domain, ports, and outbound adapters
 | `probe_gemma_native_vision_support` | Router probe for Gemma native vision support, without a long-lived port |
 
 `open_vllm_judgment` takes keyword `client`, `model`, and optional `base_url`,
-`tokenize_content` and `scoring_port_wrapper`. It sends no template probe.
+`tokenize_content`, `scoring_port_wrapper` and `text_parts`. It sends no template probe.
 Scoring and `/tokenize` requests go to `base_url`, or to the client
 `base_url` when `base_url` is not set. The caller owns the client.
 

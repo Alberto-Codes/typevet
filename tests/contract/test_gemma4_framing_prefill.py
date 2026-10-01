@@ -52,16 +52,14 @@ def _tokenize(text: str) -> tuple[int, ...]:
     return (ord(text[0]),) if text else ()
 
 
-def _gemma4_user_turn(context: str, field_block: str) -> str:
-    return f"{GEMMA4_TURN_OPEN}user\n{context}\n\n{field_block}{GEMMA4_TURN_CLOSE}\n"
+def _gemma4_user_turn(user_text: str) -> str:
+    return f"{GEMMA4_TURN_OPEN}user\n{user_text}{GEMMA4_TURN_CLOSE}\n"
 
 
 class ShippedGemma4Framing:
     """Caller framing that delegates to the shipped Gemma 4 composer."""
 
-    def compose_prefix(
-        self, *, context: str, field_block: str, media: tuple[ImageInput, ...]
-    ) -> str:
+    def compose_prefix(self, *, user_text: str, media: tuple[ImageInput, ...]) -> str:
         """Return the shipped native Gemma 4 prefix.
 
         Returns:
@@ -69,25 +67,24 @@ class ShippedGemma4Framing:
         """
         del media
         return compose_media_scoring_prefix(
-            context=context,
-            field_block=field_block,
+            context=user_text,
+            field_block="",
             template_class=ServedTemplateClass.NATIVE_GEMMA4_TURN,
+            context_template="{context}{field_block}",
         )
 
 
 class NoPrefillGemma4Framing:
     """Caller framing that stops at the Gemma 4 model header."""
 
-    def compose_prefix(
-        self, *, context: str, field_block: str, media: tuple[ImageInput, ...]
-    ) -> str:
+    def compose_prefix(self, *, user_text: str, media: tuple[ImageInput, ...]) -> str:
         """Return a Gemma 4 prefix without the no-thinking prefill.
 
         Returns:
             Prefix that ends with the Gemma 4 model header.
         """
         del media
-        return f"{_gemma4_user_turn(context, field_block)}{GEMMA4_MODEL_TURN_HEADER}"
+        return f"{_gemma4_user_turn(user_text)}{GEMMA4_MODEL_TURN_HEADER}"
 
 
 class DeclaresButOmitsFraming:
@@ -95,25 +92,21 @@ class DeclaresButOmitsFraming:
 
     no_thinking_prefill = GEMMA4_NO_THINKING_PREFILL
 
-    def compose_prefix(
-        self, *, context: str, field_block: str, media: tuple[ImageInput, ...]
-    ) -> str:
+    def compose_prefix(self, *, user_text: str, media: tuple[ImageInput, ...]) -> str:
         """Put the prefill in the user turn, not at the answer boundary.
 
         Returns:
             Prefix that holds the prefill text but ends at the model header.
         """
         del media
-        user = _gemma4_user_turn(f"{context}{GEMMA4_NO_THINKING_PREFILL}", field_block)
+        user = _gemma4_user_turn(f"{GEMMA4_NO_THINKING_PREFILL}{user_text}")
         return f"{user}{GEMMA4_MODEL_TURN_HEADER}"
 
 
 class ChatMLFraming:
     """Non-Gemma-4 framing that ends at the ChatML assistant header."""
 
-    def compose_prefix(
-        self, *, context: str, field_block: str, media: tuple[ImageInput, ...]
-    ) -> str:
+    def compose_prefix(self, *, user_text: str, media: tuple[ImageInput, ...]) -> str:
         """Return a ChatML prefix whose context holds Gemma 4 marker text.
 
         Returns:
@@ -121,17 +114,15 @@ class ChatMLFraming:
         """
         del media
         return (
-            f"{CHATML_IM_START}user\n{GEMMA4_MODEL_TURN_HEADER}{context}\n\n"
-            f"{field_block}{CHATML_IM_END}\n{CHATML_ASSISTANT_HEADER}"
+            f"{CHATML_IM_START}user\n{GEMMA4_MODEL_TURN_HEADER}{user_text}"
+            f"{CHATML_IM_END}\n{CHATML_ASSISTANT_HEADER}"
         )
 
 
 class Gemma3Framing:
     """Non-Gemma-4 framing in the Gemma 3 turn family."""
 
-    def compose_prefix(
-        self, *, context: str, field_block: str, media: tuple[ImageInput, ...]
-    ) -> str:
+    def compose_prefix(self, *, user_text: str, media: tuple[ImageInput, ...]) -> str:
         """Return a Gemma 3 prefix that ends at the model header.
 
         Returns:
@@ -139,7 +130,7 @@ class Gemma3Framing:
         """
         del media
         return (
-            f"{GEMMA3_START_OF_TURN}user\n{context}\n\n{field_block}"
+            f"{GEMMA3_START_OF_TURN}user\n{user_text}"
             f"{GEMMA3_END_OF_TURN}\n{GEMMA3_MODEL_TURN_HEADER}"
         )
 
@@ -147,16 +138,14 @@ class Gemma3Framing:
 class PlainContentFraming:
     """Non-Gemma-4 framing that sends plain chat content."""
 
-    def compose_prefix(
-        self, *, context: str, field_block: str, media: tuple[ImageInput, ...]
-    ) -> str:
-        """Return the context and field block with no turn markers.
+    def compose_prefix(self, *, user_text: str, media: tuple[ImageInput, ...]) -> str:
+        """Return the user text with no turn markers.
 
         Returns:
             Plain prefix text.
         """
         del media
-        return f"{context}\n\n{field_block}"
+        return user_text
 
 
 def _adapter(

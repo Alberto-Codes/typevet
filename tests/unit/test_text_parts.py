@@ -22,6 +22,10 @@ from typevet.adapters.outbound.gemma.served_template import (
     CHATML_IM_START,
     GEMMA3_END_OF_TURN,
     GEMMA3_START_OF_TURN,
+    GEMMA4_CHANNEL_CLOSE,
+    GEMMA4_NO_THINKING_PREFILL,
+    GEMMA4_THINK_TRIGGER,
+    GEMMA4_TOOL_RESPONSE,
     GEMMA4_TURN_CLOSE,
     GEMMA4_TURN_OPEN,
 )
@@ -47,6 +51,17 @@ _SENTINEL = "ZEBRA-SENTINEL"
 _LINE = "{control} → {label}{description}"
 
 _RULE = "\n{answer_rule}"
+# served_template.py has no constant for the channel open marker; the
+# no-thinking prefill starts with it (#373).
+_CHANNEL_OPEN = GEMMA4_NO_THINKING_PREFILL.removesuffix(
+    f"thought\n{GEMMA4_CHANNEL_CLOSE}"
+)
+_NEW_MARKERS = (
+    _CHANNEL_OPEN,
+    GEMMA4_CHANNEL_CLOSE,
+    GEMMA4_THINK_TRIGGER,
+    GEMMA4_TOOL_RESPONSE,
+)
 
 _BAD_OPTION_BLOCKS: list[tuple[str, str, str]] = [
     ("missing", f"{_SENTINEL}\n{_LINE}{_RULE}", "missing placeholder"),
@@ -107,6 +122,14 @@ _BAD_OPTION_BLOCKS: list[tuple[str, str, str]] = [
         )
         for index, marker in enumerate(TURN_MARKERS)
     ),
+    *(
+        (
+            f"control_marker_{index}",
+            f"{_SENTINEL} {{question}} {marker}\n{_LINE}{_RULE}",
+            "turn marker",
+        )
+        for index, marker in enumerate(_NEW_MARKERS)
+    ),
 ]
 
 _BAD_CONTEXT_TEMPLATES: list[tuple[str, str, str]] = [
@@ -138,6 +161,14 @@ _BAD_CONTEXT_TEMPLATES: list[tuple[str, str, str]] = [
             "turn marker",
         )
         for index, marker in enumerate(TURN_MARKERS)
+    ),
+    *(
+        (
+            f"control_marker_{index}",
+            f"{_SENTINEL} {marker}{{context}}\n{{field_block}}",
+            "turn marker",
+        )
+        for index, marker in enumerate(_NEW_MARKERS)
     ),
 ]
 
@@ -190,7 +221,12 @@ def test_domain_turn_markers_equal_the_served_template_constants() -> None:
         GEMMA3_END_OF_TURN,
         GEMMA4_TURN_OPEN,
         GEMMA4_TURN_CLOSE,
+        _CHANNEL_OPEN,
+        GEMMA4_CHANNEL_CLOSE,
+        GEMMA4_THINK_TRIGGER,
+        GEMMA4_TOOL_RESPONSE,
     )
+    assert _CHANNEL_OPEN == "<|channel>"
 
 
 def test_a_non_string_template_is_refused_by_part_name() -> None:
@@ -228,8 +264,17 @@ def test_substituted_option_block_keeps_every_control_line_in_order() -> None:
         decision, original_labels=labels, option_block=template
     )
     controls = [*"0123456789", "A", "B"]
+    rule = (
+        "Answer with exactly one control string (the digit or letter shown), "
+        "not the original label text."
+    )
     lines = [f"* {c} → {label} *" for c, label in zip(controls, labels, strict=True)]
-    assert block.split("\n")[:-1] == ["Q: Which one?", "Controls:", *lines]
+    assert block.split("\n") == [
+        "Q: Which one?",
+        "Controls:",
+        *lines,
+        rule,
+    ]
 
 
 def test_receipt_records_default_for_unset_and_digest_for_set_parts() -> None:

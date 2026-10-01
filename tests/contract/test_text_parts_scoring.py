@@ -29,6 +29,7 @@ from typevet.adapters.outbound.gemma.served_template import (
     GEMMA4_NO_THINKING_PREFILL,
 )
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
+from typevet.adapters.outbound.vllm.scoring import ChatContentFraming
 from typevet.domain.errors import GemmaTemplateError, JudgmentValidationError
 from typevet.domain.judgment_questions import Choice, Noul, Score
 from typevet.domain.judgment_response import JudgmentResponse
@@ -42,6 +43,7 @@ from typevet.domain.text_parts import (
     TURN_MARKERS,
     TextParts,
 )
+from typevet.ports.framing import ModelFramingPort
 
 pytestmark = pytest.mark.contract
 
@@ -114,23 +116,39 @@ class _Gemma4FramingWithoutPrefill:
 
     Examples:
         ```python
-        _Gemma4FramingWithoutPrefill().compose_prefix(
-            context="c", field_block="f", media=()
-        )
+        _Gemma4FramingWithoutPrefill().compose_prefix(user_text="u", media=())
         ```
     """
 
-    def compose_prefix(
-        self, *, context: str, field_block: str, media: tuple[ImageInput, ...]
-    ) -> str:
+    def compose_prefix(self, *, user_text: str, media: tuple[ImageInput, ...]) -> str:
         """Return the turn without the prefill.
 
         Returns:
             A Gemma 4 user turn and a bare model header.
         """
         del media
-        return f"<|turn>user\n{context}\n\n{field_block}<turn|>\n" + (
-            GEMMA4_MODEL_TURN_HEADER
+        return f"<|turn>user\n{user_text}<turn|>\n{GEMMA4_MODEL_TURN_HEADER}"
+
+
+class _Gemma4FramingWithPrefill:
+    """Framing that wraps the user text in a Gemma 4 turn with the prefill.
+
+    Examples:
+        ```python
+        _Gemma4FramingWithPrefill().compose_prefix(user_text="u", media=())
+        ```
+    """
+
+    def compose_prefix(self, *, user_text: str, media: tuple[ImageInput, ...]) -> str:
+        """Return the user turn, the model header and the prefill.
+
+        Returns:
+            A Gemma 4 prefix that ends with the no-thinking prefill.
+        """
+        del media
+        return (
+            f"<|turn>user\n{user_text}<turn|>\n{GEMMA4_MODEL_TURN_HEADER}"
+            f"{GEMMA4_NO_THINKING_PREFILL}"
         )
 
 
@@ -198,12 +216,42 @@ def test_option_block_with_framing_still_requires_the_prefill() -> None:
         )
 
 
-def test_framing_and_context_template_are_mutually_exclusive() -> None:
-    with pytest.raises(ValueError, match="context_template"):
+@pytest.mark.parametrize(
+    ("framing", "start", "end"),
+    [
+        (ChatContentFraming(), "", ""),
+        (
+            _Gemma4FramingWithPrefill(),
+            "<|turn>user\n",
+            f"<turn|>\n{GEMMA4_MODEL_TURN_HEADER}{GEMMA4_NO_THINKING_PREFILL}",
+        ),
+    ],
+    ids=["chat_content", "gemma4"],
+)
+def test_framing_renders_a_substituted_context_template(
+    framing: ModelFramingPort, start: str, end: str
+) -> None:
+    _, default_fake, default_response = _run(framing=framing)
+    _, fake, response = _run(
+        framing=framing, text_parts=TextParts(context_template=_CONTEXT_TEMPLATE)
+    )
+    for call, default_call in zip(fake.calls, default_fake.calls, strict=True):
+        field_block = default_call.prefix.removeprefix(
+            f"{start}{_STATE}\n\n"
+        ).removesuffix(end)
+        user_text = f"Text under review:\n{_STATE}\n---\n{field_block}\nDecide."
+        assert call.prefix == f"{start}{user_text}{end}"
+        assert call.candidates == default_call.candidates
+    assert response.answers == default_response.answers
+
+
+def test_framing_and_served_template_are_still_mutually_exclusive() -> None:
+    with pytest.raises(ValueError, match="served_template"):
         ScoringJudgmentAdapter(
             SequentialScoringFake([]),
             tokenize_content=_tokenize,
-            framing=_Gemma4FramingWithoutPrefill(),
+            framing=_Gemma4FramingWithPrefill(),
+            served_template=ServedTemplateClass.NATIVE_GEMMA4_TURN,
             text_parts=TextParts(context_template=_CONTEXT_TEMPLATE),
         )
 

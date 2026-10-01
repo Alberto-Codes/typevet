@@ -72,9 +72,7 @@ _QUESTIONS = {
 class Gemma4Framing:
     """Fake framing that wraps the prefix in Gemma 4 turn markers."""
 
-    def compose_prefix(
-        self, *, context: str, field_block: str, media: tuple[ImageInput, ...]
-    ) -> str:
+    def compose_prefix(self, *, user_text: str, media: tuple[ImageInput, ...]) -> str:
         """Return a Gemma 4 turn prefix ending with the no-thinking prefill.
 
         Returns:
@@ -82,7 +80,7 @@ class Gemma4Framing:
         """
         del media
         return (
-            f"{GEMMA4_TURN_OPEN}user\n{context}\n\n{field_block}"
+            f"{GEMMA4_TURN_OPEN}user\n{user_text}"
             f"{GEMMA4_TURN_CLOSE}\n{GEMMA4_TURN_OPEN}model\n"
             f"{GEMMA4_NO_THINKING_PREFILL}"
         )
@@ -91,16 +89,14 @@ class Gemma4Framing:
 class BracketFraming:
     """Fake non-Gemma framing with a distinct marker set."""
 
-    def compose_prefix(
-        self, *, context: str, field_block: str, media: tuple[ImageInput, ...]
-    ) -> str:
+    def compose_prefix(self, *, user_text: str, media: tuple[ImageInput, ...]) -> str:
         """Return a bracket-marker prefix ending at the answer header.
 
         Returns:
             Prefix wrapped in the bracket marker set.
         """
         del media
-        return f"{_OTHER_OPEN}{context}\n\n{field_block}{_OTHER_CLOSE}{_OTHER_ANSWER}"
+        return f"{_OTHER_OPEN}{user_text}{_OTHER_CLOSE}{_OTHER_ANSWER}"
 
 
 class _RecordingTransport:
@@ -277,18 +273,18 @@ def test_framing_that_drops_media_markers_fails_before_scoring_io() -> None:
     """A framing whose prefix loses media markers fails closed before IO."""
 
     class MarkerDroppingFraming:
-        """Fake framing that drops the context and its media markers."""
+        """Fake framing that drops the user text and its media markers."""
 
         def compose_prefix(
-            self, *, context: str, field_block: str, media: tuple[ImageInput, ...]
+            self, *, user_text: str, media: tuple[ImageInput, ...]
         ) -> str:
-            """Return a prefix without context.
+            """Return a prefix without the user text.
 
             Returns:
                 Prefix that holds no media marker.
             """
-            del context, media
-            return f"{_OTHER_OPEN}{field_block}{_OTHER_ANSWER}"
+            del user_text, media
+            return f"{_OTHER_OPEN}{_OTHER_ANSWER}"
 
     transport = LlamaStyleTransport()
     adapter = ScoringJudgmentAdapter(

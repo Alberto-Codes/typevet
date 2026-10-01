@@ -26,20 +26,18 @@ class _FakeFraming:
 
     Examples:
         ```python
-        _FakeFraming().compose_prefix(context="c", field_block="f", media=())
+        _FakeFraming().compose_prefix(user_text="u", media=())
         ```
     """
 
-    def compose_prefix(
-        self, *, context: str, field_block: str, media: tuple[ImageInput, ...]
-    ) -> str:
+    def compose_prefix(self, *, user_text: str, media: tuple[ImageInput, ...]) -> str:
         """Return a plain prefix without media markers.
 
         Returns:
-            The context and field block joined by a blank line.
+            The user text unchanged.
         """
         del media
-        return f"{context}\n\n{field_block}"
+        return user_text
 
 
 def _tokenize(text: str) -> tuple[int, ...]:

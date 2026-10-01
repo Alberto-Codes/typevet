@@ -1,8 +1,9 @@
 """Model framing port: wrap judgment text in one model's turn markers (#174).
 
 A framing owns the chat-turn markers for one model family. It does not own
-the transport payload. ``ScoringJudgmentAdapter`` takes an optional framing
-and sends the composed prefix to any ``CandidateScoringPort``.
+the transport payload or the user text. ``ScoringJudgmentAdapter`` renders the
+user text with the ``context_template`` text part, passes it to an optional
+framing and sends the composed prefix to any ``CandidateScoringPort`` (#373).
 
 A framing for a thinking model on llama.cpp must end the prefix with the
 no-thinking prefill. For Gemma 4 that prefill is ``GEMMA4_NO_THINKING_PREFILL``
@@ -19,7 +20,7 @@ Examples:
 
 
     def use(framing: ModelFramingPort) -> str:
-        return framing.compose_prefix(context="c", field_block="f", media=())
+        return framing.compose_prefix(user_text="text", media=())
     ```
 
 See Also:
@@ -52,15 +53,15 @@ class ModelFramingPort(Protocol):
     def compose_prefix(
         self,
         *,
-        context: str,
-        field_block: str,
+        user_text: str,
         media: tuple[ImageInput, ...],
     ) -> str:
-        """Wrap context and field block in this model's turn markers.
+        """Wrap the rendered user text in this model's turn markers.
 
         Args:
-            context: Rendered state context; holds one media marker per image.
-            field_block: Rendered field instructions.
+            user_text: User text that the ``context_template`` text part
+                rendered from the state context and the field block. It holds
+                one media marker per image.
             media: Images the prefix marks, in order.
 
         Returns:

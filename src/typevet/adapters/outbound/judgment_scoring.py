@@ -3,7 +3,8 @@
 A native served family wraps every prefix, with or without media; Gemma 3 and
 Gemma 4 turns both qualify (#171, #179). Without one, text-only prefixes use
 degraded ChatML and media fails closed (#157). An injected ``ModelFramingPort``
-replaces that served-template choice for every prefix (#174). A framing prefix
+replaces that served-template choice for every prefix (#174); it receives the
+user text that the ``context_template`` rendered (#373). A framing prefix
 that ends in a Gemma 4 model turn without the no-thinking prefill is refused
 before scoring (#354). An optional ``off_option_threshold`` flags each answer
 whose off-option mass is above it and keeps one ``OffOptionReceipt`` per
@@ -70,7 +71,7 @@ from typevet.domain.judgment_response import (
     TokenUsage,
 )
 from typevet.domain.media import MEDIA_MARKER, ImageInput, count_media_markers
-from typevet.domain.text_parts import TextParts
+from typevet.domain.text_parts import TextParts, render_context
 from typevet.ports.framing import ModelFramingPort
 from typevet.ports.scoring import CandidateScoringPort
 
@@ -239,24 +240,19 @@ class ScoringJudgmentAdapter:
     ) -> None:
         """Wire scoring port, tokenizer, family, pin, framing and text parts.
 
-        ``framing`` is exclusive with ``served_template`` and with a set
-        ``text_parts.context_template``: a framing composes every prefix, so
-        neither would be read. ``text_parts.option_block`` works with every
-        path. ``TextParts`` validates both templates when it is built.
+        ``framing`` is exclusive with ``served_template``: a framing composes
+        every prefix, so the family would not be read. Both text parts work
+        with every path; a framing receives the user text that
+        ``context_template`` rendered (#373). ``TextParts`` validates both
+        templates when it is built.
 
         Raises:
-            ValueError: ``framing`` is set with ``served_template`` or with a
-                ``context_template``.
+            ValueError: ``framing`` is set with ``served_template``.
         """
-        parts = text_parts or TextParts()
-        for name, value in (
-            ("served_template", served_template),
-            ("context_template", parts.context_template),
-        ):
-            if framing is not None and value is not None:
-                msg = f"pass framing or {name}, not both"
-                raise ValueError(msg)
-        self._text_parts = parts
+        if framing is not None and served_template is not None:
+            msg = "pass framing or served_template, not both"
+            raise ValueError(msg)
+        self._text_parts = text_parts or TextParts()
         self._port = scoring_port
         self._tokenize = tokenize_content
         self._temperature = temperature
@@ -295,7 +291,8 @@ class ScoringJudgmentAdapter:
     ) -> str:
         """Compose one field prefix with the framing, else the served family.
 
-        With a framing, ``served_template`` is not read. The framing prefix
+        With a framing, ``served_template`` is not read. The framing receives
+        the user text that ``context_template`` rendered. The framing prefix
         must keep one media marker per image. A prefix whose last turn is a
         Gemma 4 model turn must end with the no-thinking prefill (#354).
         Either failure is raised here, before any scoring IO.
@@ -322,9 +319,12 @@ class ScoringJudgmentAdapter:
                 served_template=self._served_template,
                 context_template=self._text_parts.context_template,
             )
-        prefix = self._framing.compose_prefix(
-            context=context, field_block=field_block, media=media
+        user_text = render_context(
+            self._text_parts.context_template,
+            context=context,
+            field_block=field_block,
         )
+        prefix = self._framing.compose_prefix(user_text=user_text, media=media)
         markers = count_media_markers(prefix)
         if markers != len(media):
             msg = (

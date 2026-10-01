@@ -76,35 +76,33 @@ MAX_LOGPROB_TOKEN_IDS = 128
 class ChatContentFraming:
     """Compose a scoring prefix as plain chat content, without turn markers.
 
-    The server applies the chat template, so this framing only joins the
-    context and the field block. Media markers already in the context stay
-    in place.
+    The server applies the chat template, so this framing returns the
+    rendered user text unchanged. Media markers in that text stay in place.
 
     Examples:
         ```python
-        ChatContentFraming().compose_prefix(context="c", field_block="f", media=())
+        ChatContentFraming().compose_prefix(user_text="text", media=())
         ```
     """
 
     def compose_prefix(
         self,
         *,
-        context: str,
-        field_block: str,
+        user_text: str,
         media: tuple[ImageInput, ...],
     ) -> str:
-        """Join the context and the field block with one blank line.
+        """Return the rendered user text as the chat content.
 
         Args:
-            context: Rendered state context; holds one media marker per image.
-            field_block: Rendered field instructions.
-            media: Images the context marks; not changed by this framing.
+            user_text: User text from the ``context_template`` text part; it
+                holds one media marker per image.
+            media: Images the user text marks; not changed by this framing.
 
         Returns:
-            The context, one blank line, then the field block.
+            ``user_text`` unchanged.
         """
         del media
-        return f"{context}\n\n{field_block}"
+        return user_text
 
 
 class VllmCandidateScoringAdapter:

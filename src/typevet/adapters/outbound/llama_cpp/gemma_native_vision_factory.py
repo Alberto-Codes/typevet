@@ -15,6 +15,8 @@ Examples:
 The factory pins ``session.model`` on ``session.port``; other model ids fail
 before tokenization. Optional ``tokenize_content`` and ``scoring_port_wrapper``
 hooks support consumer dispatch ledgers without importing ``typevet_evals``.
+An optional ``text_parts`` keyword passes caller templates to the scoring
+adapter ([#373][i373]).
 The default ``/tokenize`` hook maps an httpx failure to ``TransportError`` and
 a status of 400 or above to ``BackendHttpError`` ([#298][i298]). A 200 body
 that is not JSON, or that has no ``tokens`` list of integers, raises
@@ -35,6 +37,7 @@ See Also:
 [i305]: https://github.com/Alberto-Codes/typevet/issues/305
 [i310]: https://github.com/Alberto-Codes/typevet/issues/310
 [i311]: https://github.com/Alberto-Codes/typevet/issues/311
+[i373]: https://github.com/Alberto-Codes/typevet/issues/373
 """
 
 from __future__ import annotations
@@ -42,7 +45,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import Any, Protocol, TypedDict, Unpack
 
 import httpx
 
@@ -65,6 +68,7 @@ from typevet.adapters.outbound.llama_cpp.scoring import (
     LlamaCppCandidateScoringAdapter,
 )
 from typevet.domain.errors import GenerationError
+from typevet.domain.text_parts import TextParts
 from typevet.ports.judgment import JudgmentPort
 from typevet.ports.scoring import CandidateScoringPort
 
@@ -235,6 +239,23 @@ def _token_ids(payload: Any) -> tuple[int, ...]:
     return tuple(tokens)
 
 
+class _JudgmentHooks(TypedDict, total=False):
+    """Optional keywords that ``open_gemma_native_vision_judgment`` wires in.
+
+    Attributes:
+        tokenize_content (Callable | None): Tokenizer hook; default router
+            ``/tokenize``.
+        scoring_port_wrapper (Callable | None): Wrapper applied before
+            ``JudgmentPort`` wiring.
+        text_parts (TextParts | None): Option block and context templates;
+            default ``None`` (#373).
+    """
+
+    tokenize_content: Callable[[str], Sequence[int]] | None
+    scoring_port_wrapper: Callable[[CandidateScoringPort], CandidateScoringPort] | None
+    text_parts: TextParts | None
+
+
 @contextmanager
 def open_gemma_native_vision_judgment(
     *,
@@ -243,9 +264,7 @@ def open_gemma_native_vision_judgment(
     require_gemma4: bool = True,
     n_vocab: int | None = DEFAULT_N_VOCAB,
     http_client: httpx.Client | None = None,
-    tokenize_content: Callable[[str], Sequence[int]] | None = None,
-    scoring_port_wrapper: Callable[[CandidateScoringPort], CandidateScoringPort]
-    | None = None,
+    **hooks: Unpack[_JudgmentHooks],
 ) -> Iterator[GemmaNativeVisionSession]:
     """Open a judgment port for Gemma native-turn vision on a llama.cpp router.
 
@@ -261,8 +280,14 @@ def open_gemma_native_vision_judgment(
             size, so the session sends no ``/v1/models`` request. ``None``
             lets the scoring adapter read it from ``/v1/models`` (#321).
         http_client: Optional pre-built client (for tests); not closed on exit.
-        tokenize_content: Optional tokenizer hook; defaults to router ``/tokenize``.
-        scoring_port_wrapper: Optional wrapper applied before ``JudgmentPort`` wiring.
+
+    Other Parameters:
+        tokenize_content (Callable | None): Optional tokenizer hook; defaults
+            to router ``/tokenize``.
+        scoring_port_wrapper (Callable | None): Optional wrapper applied
+            before ``JudgmentPort`` wiring.
+        text_parts (TextParts | None): Option block and context templates, or
+            ``None`` for the defaults (#373).
 
     Yields:
         A session holding the configured ``JudgmentPort`` and probe metadata.
@@ -276,6 +301,8 @@ def open_gemma_native_vision_judgment(
     """
     model_id = model or settings.multimodal_model
     base = settings.base_url.rstrip("/")
+    tokenize_content = hooks.get("tokenize_content")
+    scoring_port_wrapper = hooks.get("scoring_port_wrapper")
 
     def _session(client: httpx.Client) -> Iterator[GemmaNativeVisionSession]:
         capability = fetch_media_capability(client, f"{base}/", model_id)
@@ -301,6 +328,7 @@ def open_gemma_native_vision_judgment(
             tokenize_content=tokenize,
             served_template=served,
             pinned_model=model_id,
+            text_parts=hooks.get("text_parts"),
         )
         try:
             yield GemmaNativeVisionSession(
