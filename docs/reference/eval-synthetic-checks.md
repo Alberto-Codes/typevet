@@ -219,6 +219,32 @@ the value.
 The decision label uses the point estimates only. The intervals are
 reported, not part of the rule.
 
+### Repeat runs
+
+Issue [#357](https://github.com/Alberto-Codes/typevet/issues/357) holds the
+pre-registered rule. The repeats use the main live test with a new receipt
+path each time.
+
+| Receipt | Run |
+|---|---|
+| `check_match_llama_cpp_receipt.json` | Run 0, with other code-path digests |
+| `check_match_llama_cpp_repeat1.json` to `check_match_llama_cpp_repeat5.json` | Repeats 1 to 5 of seed 0 on llama.cpp |
+
+`typevet_evals.check_match.repeats` reads the receipts. `repeat_summary(paths)`
+returns these keys.
+
+| Summary key | Meaning |
+|---|---|
+| `runs` | Per run: name, baseline commit, accuracy, false-clear rate, ECE per `Noul`, wall seconds |
+| `runs[].included` | False when the code-path digests differ from the majority |
+| `runs[].agreement`, `runs[].max_abs_difference` | Verdict agreement and largest probability change against the first included run |
+| `excluded` | Run name and the names of the differing digests, never the values |
+| `statistics` | Mean, sample `sd`, `min`, `max` and `range` of accuracy, false-clear rate and each ECE |
+| `accuracy_interval` | 95% percentile interval over pooled case rows: 10,000 resamples, seed 0 |
+| `agreement` | Share of cases with one verdict in every included run |
+| `max_abs_difference` | Largest change of any recorded probability over included runs |
+| `stable` | True when the accuracy range and every ECE range are below 0.01 |
+
 ## llama.cpp media marker
 
 The llama.cpp router gives each model load a new random media marker. The

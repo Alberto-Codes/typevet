@@ -92,6 +92,9 @@ A valid structure is not a correct answer.
 
 - Smoke runs prove typed wiring, image attachment and controls.
   They do not prove model quality or calibration.
+- Run-to-run spread is measured on one slice only: the seed-0 synthetic checks on llama.cpp.
+  Five repeats gave identical answers, so those one-run numbers are stable to the reported precision.
+  Other slices and vLLM have no repeats. See [#357](https://github.com/Alberto-Codes/typevet/issues/357).
 - The samples are small. Each multimodal set has 18 or fewer items per check.
   Treat them as smoke evidence, not as accuracy you can expect in production.
 - A saved receipt can pass pytest and still fail the semantic acceptance floors.

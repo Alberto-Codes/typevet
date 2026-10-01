@@ -242,7 +242,9 @@ price from the run plan.
 - **No general vLLM or GPU claim.** The run used one model, one GPU, one pin
   and one flag set.
 - **No variance.** Each level ran once. The run has no repeats and no
-  confidence interval.
+  confidence interval. Run-to-run spread was measured on the llama.cpp checks
+  slice only ([#357](https://github.com/Alberto-Codes/typevet/issues/357)). Its answers were identical, but its throughput
+  was not compared.
 - **No other levels.** The sweep tried 1, 4, 16 and 32 only. The best level
   can lie between them.
 - **No split of the gain.** The receipts do not separate concurrency, caching

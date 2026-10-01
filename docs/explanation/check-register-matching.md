@@ -50,7 +50,8 @@ live runs. A model check does not count as that human check.
 
 ## The two runs
 
-Each backend ran the slice once. There are no repeats. Both runs used the
+Each backend ran the slice once for this table. Later llama.cpp repeats are
+in [Limits of the data](#limits-of-the-data). Both runs used the
 same renders: the slice SHA-256 starts `64a9621a2d55` in both receipts.
 
 | Topic | llama.cpp | vLLM |
@@ -252,7 +253,19 @@ synthetic strokes.
 - **Generated layout.** One layout, the bundled Pillow font and one blur kind.
   Real checks vary in paper, print, handwriting and scan quality.
 - **Small slice.** 20 register rows, 20 cases per variant.
-- **One run per backend.** The slice gives no variance estimate.
+- **Run-to-run spread, llama.cpp only.** Issue [#357](https://github.com/Alberto-Codes/typevet/issues/357) ran the seed-0
+  slice five more times on llama.cpp, with equal code paths. All five gave
+  the same 140 verdicts. The largest change of any recorded probability was 0.
+  Accuracy (0.821), false-clear rate (0.03) and each `Noul` ECE had a range of 0.
+  Under the pre-registered rule, the one-run numbers are stable to the reported
+  precision. The pooled 95% bootstrap interval of accuracy is 0.794 to 0.849.
+  Its 700 rows repeat the same 140 cases, so it does not cover new cases.
+  The first receipt, `check_match_llama_cpp_receipt.json`, has other code-path
+  digests, so it is outside the statistics.
+  Its answers are identical too. The vLLM run has no repeats. Wall times are
+  reported, not compared. Other jobs shared the CPU during the repeats (see
+  the evidence note on #357). The receipts are repeats
+  [1](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/checks/receipts/check_match_llama_cpp_repeat1.json), [2](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/checks/receipts/check_match_llama_cpp_repeat2.json), [3](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/checks/receipts/check_match_llama_cpp_repeat3.json), [4](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/checks/receipts/check_match_llama_cpp_repeat4.json) and [5](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/checks/receipts/check_match_llama_cpp_repeat5.json).
 - **Different weights.** `Q2_K` on llama.cpp and BF16 on vLLM. The receipts
   cannot separate a weights effect from a backend effect. They also pin only
   the llama.cpp alias, not the weights file.

@@ -171,7 +171,9 @@ signature, a cheque, a contract or a person.
 - **Possible memorization.** CEDAR is public. Its images may be in the model's
   training data. This was not tested.
 - **One slice, one run.** Each backend ran 180 pairs once. The slice gives no
-  variance estimate. Five writers appear twice in each kind.
+  variance estimate. Five writers appear twice in each kind. Run-to-run spread
+  was measured on the checks slice only. Five llama.cpp repeats there were
+  identical ([#357](https://github.com/Alberto-Codes/typevet/issues/357)).
 
 ## Latency and cost
 

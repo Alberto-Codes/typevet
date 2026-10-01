@@ -28,9 +28,13 @@ Attributes:
     PAYEE_MATCHES (str): ``Noul`` question id for the payee.
     POSITION_SPREAD_LIMIT (float): Largest position spread with no bias.
     RECEIPT_ISSUE (int): Issue number recorded in every receipt.
+    REPEAT_LEVEL (float): Level of the repeat-run accuracy interval.
+    REPEAT_RESAMPLES (int): Bootstrap resamples of the repeat study.
+    REPEAT_SEED (int): Bootstrap seed of the repeat study.
     ROW_COUNT (int): Register rows in the default slice.
     SEED_ENV (str): Environment variable that sets the live-run seed.
     SPECIMEN_MARK (str): Mark across the check face.
+    STABILITY_RANGE_LIMIT (float): Largest stable range is below this.
     VERDICT (str): ``Choice`` question id for the verdict.
     VERDICT_LABELS (tuple[str, ...]): ``Choice`` labels in prompt order.
     VOID_MARK (str): Mark across the signature line.
@@ -54,6 +58,7 @@ Attributes:
     build_check_match_receipt (callable): Run to a key-free receipt body.
     build_check_match_request (callable): Case and image to a request.
     build_orderings_receipt (callable): Order-study run to a receipt body.
+    case_agreement (callable): Share of cases with one verdict in all runs.
     check_cases (callable): Every variant of every register row.
     check_match_metrics (callable): Every metric over the outcomes.
     check_match_questions (callable): New ``Noul``, ``Choice`` and ``Score``.
@@ -63,27 +68,34 @@ Attributes:
     class_key (callable): Accuracy class name of one label set.
     counts_for_false_clear (callable): Whether a case enters false clear.
     decision_label (callable): The pre-registered order-study rule.
+    digest_outliers (callable): Runs with odd code-path digests.
     dollars_in_words (callable): Whole dollars in lower-case words.
     false_clear_rate (callable): Share of mismatch cases called consistent.
     generator_pins (callable): Receipt pins for the slice and its seed.
     judge_check_match (callable): Send one request to a judgment port.
     legibility_gap (callable): Clean minus low-legibility mean ``Score``.
+    max_probability_difference (callable): Largest probability change
+        across runs.
     mean_probabilities (callable): Mean of post-softmax probabilities.
     noul_choice_agreement (callable): Whether the ``Noul`` answers support
         the verdict.
     orderings_statistics (callable): Order-study statistics from receipt
         cases.
     parse_seed (callable): The one seed rule of the variable and the flag.
+    pooled_accuracy_interval (callable): Bootstrap interval of pooled
+        accuracy.
     position_probabilities (callable): Probability at each position.
     register_rows (callable): Seeded register rows.
     remap_positions (callable): Per-position probabilities to labels.
     render_check (callable): One case to PNG bytes.
     render_check_image (callable): One case to a Pillow image.
     reordered_choice (callable): A ``Choice`` with options in one order.
+    repeat_summary (callable): Repeat-run statistics from receipt files.
     run_check_match (callable): Judge each case once; stop at a failure.
     run_orderings (callable): Score the verdict once per ordering.
     score_summary (callable): ``Score`` mean and level counts.
     single_order_cases (callable): Single-order receipt cases by case id.
+    stability_verdict (callable): The pre-registered stability rule.
     verdict_correct (callable): Whether a verdict is in the accepted set.
     write_contact_sheet (callable): Grid of renders to a caller-given path.
 
@@ -103,6 +115,7 @@ See Also:
     - [typevet_evals.check_match.cases][]: register, variants and labels
     - [typevet_evals.check_match.metrics][]: check-specific metric rules
     - [typevet_evals.check_match.orderings][]: option-order study (#105)
+    - [typevet_evals.check_match.repeats][]: repeat-run variance (#357)
     - [typevet_evals.check_match.runner][]: run, metrics and receipt
     - [typevet_evals.check_match.render][]: renders and contact sheet
     - [typevet_evals.check_match.request][]: request builder
@@ -173,6 +186,18 @@ from typevet_evals.check_match.render import (
     render_check_image,
     write_contact_sheet,
 )
+from typevet_evals.check_match.repeats import (
+    REPEAT_LEVEL,
+    REPEAT_RESAMPLES,
+    REPEAT_SEED,
+    STABILITY_RANGE_LIMIT,
+    case_agreement,
+    digest_outliers,
+    max_probability_difference,
+    pooled_accuracy_interval,
+    repeat_summary,
+    stability_verdict,
+)
 from typevet_evals.check_match.request import (
     AMOUNTS_MATCH,
     CHECK_MATCH_STATE,
@@ -224,9 +249,13 @@ __all__ = [
     "PAYEE_MATCHES",
     "POSITION_SPREAD_LIMIT",
     "RECEIPT_ISSUE",
+    "REPEAT_LEVEL",
+    "REPEAT_RESAMPLES",
+    "REPEAT_SEED",
     "ROW_COUNT",
     "SEED_ENV",
     "SPECIMEN_MARK",
+    "STABILITY_RANGE_LIMIT",
     "VERDICT",
     "VERDICT_LABELS",
     "VOID_MARK",
@@ -250,6 +279,7 @@ __all__ = [
     "build_check_match_receipt",
     "build_check_match_request",
     "build_orderings_receipt",
+    "case_agreement",
     "check_cases",
     "check_match_metrics",
     "check_match_questions",
@@ -259,25 +289,30 @@ __all__ = [
     "class_key",
     "counts_for_false_clear",
     "decision_label",
+    "digest_outliers",
     "dollars_in_words",
     "false_clear_rate",
     "generator_pins",
     "judge_check_match",
     "legibility_gap",
+    "max_probability_difference",
     "mean_probabilities",
     "noul_choice_agreement",
     "orderings_statistics",
     "parse_seed",
+    "pooled_accuracy_interval",
     "position_probabilities",
     "register_rows",
     "remap_positions",
     "render_check",
     "render_check_image",
     "reordered_choice",
+    "repeat_summary",
     "run_check_match",
     "run_orderings",
     "score_summary",
     "single_order_cases",
+    "stability_verdict",
     "verdict_correct",
     "write_contact_sheet",
 ]

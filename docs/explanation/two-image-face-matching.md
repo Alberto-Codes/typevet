@@ -100,7 +100,8 @@ these results to admit or refuse a person.
   in the model's training data. The model could recognize a known face instead
   of comparing two faces. This was not tested.
 - **One slice, one run.** Each backend ran 200 pairs once. The slice gives no
-  variance estimate.
+  variance estimate. Run-to-run spread was measured on the checks slice only.
+  Five llama.cpp repeats there were identical ([#357](https://github.com/Alberto-Codes/typevet/issues/357)).
 
 ## Face images are biometric data
 
