@@ -144,6 +144,28 @@ The port merges the answers into one response and adds up the token counts.
 If the groups report different model ids, the port raises `ProviderResponseError`.
 An image type outside the declared `MediaCapabilities` raises `ProviderCapabilityError` before any backend call.
 
+## Evolved wording over the bridge
+
+An evolution run can change more than one text part of a question.
+Render each candidate to the existing question fields before you call the bridge.
+The bridge needs no other field.
+
+| Part | Component names | Question field |
+|---|---|---|
+| Question instructions | `instructions` | `instructions`, as text |
+| Noul true and false texts | `criteria_true`, `criteria_false` | `criteria`, as `{"true": ..., "false": ...}` |
+
+The bridge sends both fields to typevet unchanged.
+This applies to a typed judgevet `Noul` and to a raw wire dict.
+Object or array instructions still raise `ProviderCapabilityError`.
+That error message does not repeat the question text.
+
+The rendered option block and the context template never cross the bridge.
+typevet renders them from the question, so a caller cannot change them through judgevet.
+Issue [#364](https://github.com/Alberto-Codes/typevet/issues/364) tracks evolution of those parts.
+[Judgment text parts](../reference/judgment-text-parts.md#component-names) lists each part and its component name.
+Contract tests in `tests/contract/test_judgevet_bridge_evolved_wording.py` prove this on offline fakes.
+
 ## Handle errors
 
 The bridge maps each typevet error to a judgevet `ProviderError` subclass.
