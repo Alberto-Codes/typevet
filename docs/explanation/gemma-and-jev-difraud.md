@@ -266,9 +266,16 @@ scorer and 158 held-out rows are those of the #252 llama.cpp run.
 | Arm 0: seed with criteria | none | — | — | 0.918 | 0.067 | 0.075 | 0.785 | not judged |
 | Arm A | `criteria_true`, `criteria_false` | 6 | 0.928 | 0.918 | 0.074 | 0.078 | 0.785 | loses (Brier +0.041, accuracy −0.050) |
 | Arm B | `instructions`, `criteria_true`, `criteria_false` | 9 | 0.958 | 0.949 | 0.049 | 0.055 | 0.867 | loses (Brier +0.016, accuracy −0.019) |
+| Arm C (#376) | `instructions` on the arm 0 seed | 10 | 0.963 | 0.956 | 0.043 | 0.043 | 0.878 | loses (Brier +0.010, accuracy −0.012) |
 
 Validation 1 − Brier is the mean score per validation row. The verdict
 column compares each arm with the #252 evolved row.
+
+Arm C came later, under
+[#376](https://github.com/Alberto-Codes/typevet/issues/376). It starts from
+the arm 0 seed, evolves the instructions only and freezes both criteria. Its
+rule is the #365 rule. The arm 0 row is its seed row, and the held-out seed
+numbers came out equal.
 
 ### The two evolved texts
 
@@ -279,6 +286,7 @@ frozen-part check passed on both evolution artifacts.
 |---|---|---|
 | A | `criteria_true` | `The message intentionally deceives or pressures the reader to send money, credentials, or take an unsafe action.` |
 | B | `instructions` | `Is this an unsolicited scam, phishing, spam, or social-engineering message to the recipient?` |
+| C | `instructions` | `Is the message a malicious scam, phishing, impersonation, or social engineering attempt?` |
 
 Each receipt also gives a paired bootstrap 95% interval of evolved minus arm
 0. They use 2,000 resamples, seed 0.
@@ -287,8 +295,10 @@ Each receipt also gives a paired bootstrap 95% interval of evolved minus arm
 |---|---|---|
 | A | [−0.001, +0.008] | [+0.001, +0.014] |
 | B | [−0.045, 0.000] | [−0.041, +0.001] |
+| C | [−0.057, −0.010] | [−0.047, −0.007] |
 
-Arm A made held-out Brier worse. The arm B interval touches 0.
+Arm A made held-out Brier worse. The arm B interval touches 0. The arm C
+intervals stay below 0, so the evolution helped the criteria seed.
 
 ### The answer
 
@@ -306,6 +316,14 @@ proposed each part in turn. It accepted two `instructions` proposals and
 rejected all six criteria proposals. So with all parts open, the gain came
 from `instructions` only. Arm B then stopped below the #252 level.
 
+Arm C asked whether instructions-only evolution on the criteria seed beats
+#252. It does not. It accepted three proposals and ended at 0.956 accuracy
+and 0.043 Brier. That beats arm B on every metric and misses the #252 row
+on accuracy by 0.012. Its numbers equal the arm 0 context column below, where
+the #252 evolved instructions run with the criteria. So the criteria seed
+reaches the same level by either path. The DIFrauD seed default stays as it
+is.
+
 ### Caveats
 
 - **One run per arm.** There is no repeat. The reflector proposals can
@@ -315,7 +333,7 @@ from `instructions` only. Arm B then stopped below the #252 level.
 - **Shared machine.** Other jobs ran on the same machine. The wall times (A
   1,899.7 s, B 2,120.8 s) do not compare with #252.
 - **Judge failures.** Arm A had 10 failed judge calls of 1,432. Arm B had 1
-  of 1,664.
+  of 1,664. Arm C had 12 of 2,272 and ran all ten iterations (wall 2,299.5 s).
 - **One shared reflection prompt.** All parts use the same reflection prompt
   until [gepa-adk #437](https://github.com/Alberto-Codes/gepa-adk/issues/437)
   adds a prompt per part.
@@ -355,6 +373,10 @@ yet, so this page makes no claim about it.
   [`wording365_armB_held_out_gemma_llama_cpp.json`](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/difraud/receipts/wording365_armB_held_out_gemma_llama_cpp.json):
   the #365 held-out checks for arm 0, arm A and arm B, with per-row
   probabilities, metrics, intervals and pins.
+- [`wording376_armC_evolution_gemma_llama_cpp.json`](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/difraud/receipts/wording376_armC_evolution_gemma_llama_cpp.json)
+  and
+  [`wording376_armC_held_out_gemma_llama_cpp.json`](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/difraud/receipts/wording376_armC_held_out_gemma_llama_cpp.json):
+  the #376 arm C evolution artifact and held-out check, in the same shape.
 
 ## Related pages
 
