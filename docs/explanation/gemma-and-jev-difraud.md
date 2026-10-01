@@ -11,6 +11,8 @@ The study follows the #309 page,
 [Wording evolution on DIFrauD scam messages](wording-evolution-difraud.md).
 It also corrects one reading on that page: the #309 backend gap was mostly
 prompt framing. See [the framing correction](#the-framing-correction).
+A later section reports the #365 follow-up, which evolved the criteria
+texts. See [evolving the criteria](#evolving-the-criteria-365).
 
 The plan is the
 [#252 design](https://github.com/Alberto-Codes/typevet/issues/252#issuecomment-5915065291).
@@ -238,6 +240,90 @@ Cost for each judge:
   cost is shared with the #336 image runs. It is not the cost of this check
   alone.
 
+## Evolving the criteria (#365)
+
+[#365](https://github.com/Alberto-Codes/typevet/issues/365) asked a follow-up
+question. Does evolving the `Noul` criteria texts beat the #252
+instructions-only result? Its rule was fixed before the runs. An arm wins
+when held-out Brier drops by 0.01 or more and accuracy drops by 0.01 or less.
+The reference is the evolved Gemma row on llama.cpp above (0.968 and 0.033).
+An arm ties when both metrics stay within 0.01. Otherwise it loses.
+
+The #252 seed instructions got two criteria texts, fixed before the runs:
+
+- `criteria_true`: `The message tries to deceive the reader into money, credentials or an unsafe action.`
+- `criteria_false`: `The message is an ordinary personal, commercial or informational text.`
+
+The criteria change the seed prompt. So arm 0 scores the seed with criteria,
+with no evolution. Arm A evolves the two criteria texts and freezes the
+instructions. Arm B evolves all three parts. The judge, reflector, budget,
+scorer and 158 held-out rows are those of the #252 llama.cpp run.
+
+| Row | Parts evolved | Iterations (of 10) | Validation 1 − Brier | Held-out accuracy | Brier | ECE | κ | Verdict |
+|---|---|---|---|---|---|---|---|---|
+| #252 seed, no criteria | none | — | — | 0.829 | 0.152 | 0.170 | 0.616 | reference seed |
+| #252 evolved | `instructions` | 10 | 0.988 | 0.968 | 0.033 | 0.034 | 0.911 | reference |
+| Arm 0: seed with criteria | none | — | — | 0.918 | 0.067 | 0.075 | 0.785 | not judged |
+| Arm A | `criteria_true`, `criteria_false` | 6 | 0.928 | 0.918 | 0.074 | 0.078 | 0.785 | loses (Brier +0.041, accuracy −0.050) |
+| Arm B | `instructions`, `criteria_true`, `criteria_false` | 9 | 0.958 | 0.949 | 0.049 | 0.055 | 0.867 | loses (Brier +0.016, accuracy −0.019) |
+
+Validation 1 − Brier is the mean score per validation row. The verdict
+column compares each arm with the #252 evolved row.
+
+### The two evolved texts
+
+Each arm changed one part. The other parts kept their seed text. The
+frozen-part check passed on both evolution artifacts.
+
+| Arm | Part changed | Evolved text |
+|---|---|---|
+| A | `criteria_true` | `The message intentionally deceives or pressures the reader to send money, credentials, or take an unsafe action.` |
+| B | `instructions` | `Is this an unsolicited scam, phishing, spam, or social-engineering message to the recipient?` |
+
+Each receipt also gives a paired bootstrap 95% interval of evolved minus arm
+0. They use 2,000 resamples, seed 0.
+
+| Arm | ECE difference | Brier difference |
+|---|---|---|
+| A | [−0.001, +0.008] | [+0.001, +0.014] |
+| B | [−0.045, 0.000] | [−0.041, +0.001] |
+
+Arm A made held-out Brier worse. The arm B interval touches 0.
+
+### The answer
+
+The answer is no. Evolving the criteria, alone or with the instructions, did
+not beat the #252 instructions-only result. This holds for this seed, budget
+and scorer.
+
+The criteria texts help on their own. Arm 0 recovers most of the seed gap
+with no evolution. Accuracy moves from 0.829 to 0.918, and Brier from 0.152
+to 0.067.
+
+The shared reflection prompt did not improve the criteria texts. In arm A,
+the one accepted change made held-out Brier worse. In arm B, the reflector
+proposed each part in turn. It accepted two `instructions` proposals and
+rejected all six criteria proposals. So with all parts open, the gain came
+from `instructions` only. Arm B then stopped below the #252 level.
+
+### Caveats
+
+- **One run per arm.** There is no repeat. The reflector proposals can
+  change from run to run.
+- **Patience stop.** Arms A and B each ended after five rejected proposals in
+  a row. Their receipts still record the stop reason `max_iterations`.
+- **Shared machine.** Other jobs ran on the same machine. The wall times (A
+  1,899.7 s, B 2,120.8 s) do not compare with #252.
+- **Judge failures.** Arm A had 10 failed judge calls of 1,432. Arm B had 1
+  of 1,664.
+- **One shared reflection prompt.** All parts use the same reflection prompt
+  until [gepa-adk #437](https://github.com/Alberto-Codes/gepa-adk/issues/437)
+  adds a prompt per part.
+- **The arm 0 evolved column is not an arm.** The arm 0 receipt also scores
+  the #252 evolved instructions with the criteria (0.956, Brier 0.042, ECE
+  0.043). Those instructions were evolved without criteria. The column is
+  context only and enters no verdict.
+
 ## What comes next
 
 A third judge is planned:
@@ -258,6 +344,17 @@ yet, so this page makes no claim about it.
   and
   [`wording252_held_out_gemma_vllm.json`](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/difraud/receipts/wording252_held_out_gemma_vllm.json):
   per-row probabilities, metrics, intervals, per-call latency and pins.
+- [`wording365_armA_evolution_gemma_llama_cpp.json`](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/difraud/receipts/wording365_armA_evolution_gemma_llama_cpp.json)
+  and
+  [`wording365_armB_evolution_gemma_llama_cpp.json`](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/difraud/receipts/wording365_armB_evolution_gemma_llama_cpp.json):
+  the #365 evolution artifacts, with the evolved parts, seed parts, digests,
+  settings, iteration history and per-call records.
+- [`wording365_seed_criteria_held_out_gemma_llama_cpp.json`](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/difraud/receipts/wording365_seed_criteria_held_out_gemma_llama_cpp.json),
+  [`wording365_armA_held_out_gemma_llama_cpp.json`](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/difraud/receipts/wording365_armA_held_out_gemma_llama_cpp.json)
+  and
+  [`wording365_armB_held_out_gemma_llama_cpp.json`](https://github.com/Alberto-Codes/typevet/blob/main/evals/fixtures/difraud/receipts/wording365_armB_held_out_gemma_llama_cpp.json):
+  the #365 held-out checks for arm 0, arm A and arm B, with per-row
+  probabilities, metrics, intervals and pins.
 
 ## Related pages
 

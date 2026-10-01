@@ -33,6 +33,8 @@ The evolved text is the `instructions` string of the DIFrauD `is_scam`
 not the model. Since
 [#363](https://github.com/Alberto-Codes/typevet/issues/363), a run can also
 evolve the `Noul` criteria texts. This run evolved the `instructions` only.
+The #365 runs evolved the criteria texts. See
+[evolving the criteria](gemma-and-jev-difraud.md#evolving-the-criteria-365).
 
 | Wording | Text | Length |
 |---|---|---|

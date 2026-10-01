@@ -1,0 +1,4590 @@
+{
+  "issue": 329,
+  "parent_issue": 252,
+  "comparison": "252 Jev vs Gemma; numbers per judge; no substitution claim",
+  "pass_rule": null,
+  "judge": "gemma_llama_cpp",
+  "backend": "llama_cpp",
+  "model": "gemma-4-31b-kv9-q4km-mm",
+  "split": "test",
+  "positive_threshold": 0.5,
+  "ece_bins": 10,
+  "seed_text": "Is this message a scam, phishing or social-engineering attempt?",
+  "evolved_text": "Label 1 only for obvious deceptive scam/phishing/social engineering; ignore personal text.",
+  "components": [
+    "instructions"
+  ],
+  "seed_parts": {
+    "instructions": "Is this message a scam, phishing or social-engineering attempt?",
+    "criteria_true": "The message tries to deceive the reader into money, credentials or an unsafe action.",
+    "criteria_false": "The message is an ordinary personal, commercial or informational text."
+  },
+  "evolved_parts": {
+    "instructions": "Label 1 only for obvious deceptive scam/phishing/social engineering; ignore personal text.",
+    "criteria_true": "The message tries to deceive the reader into money, credentials or an unsafe action.",
+    "criteria_false": "The message is an ordinary personal, commercial or informational text."
+  },
+  "wording_digests": {
+    "seed": {
+      "components": {
+        "instructions": "d66f4edafd8d4b0abeb7f5a877e80c669b35a9492e439c54a40e774b3b9f9fe6",
+        "criteria_true": "ade11d4d4bad90418aab7ab9b2a4d73d6788844c2a3c4f1c0e88ce460a488c16",
+        "criteria_false": "a31ec6bf694795cbed518201de696fb12eabe2a4e7c3e18a2a9625e85616bfa7"
+      },
+      "mapping": "a7315206a34bea5753910398580909b275c454173d50c1c841d939e9b6ca1134",
+      "gepa_candidate_id": "75113cb9d5d1"
+    },
+    "evolved": {
+      "components": {
+        "instructions": "4c9e72fe5c92fc0cf218250723ee8354bca888ec87b54b0e923df7ec3aed2138",
+        "criteria_true": "ade11d4d4bad90418aab7ab9b2a4d73d6788844c2a3c4f1c0e88ce460a488c16",
+        "criteria_false": "a31ec6bf694795cbed518201de696fb12eabe2a4e7c3e18a2a9625e85616bfa7"
+      },
+      "mapping": "fefe34138a5ea8a81d3bbcc138ed3d834fe04a4405a2a769c9b7c517f54c3a09",
+      "gepa_candidate_id": "e5a7597ef22f"
+    }
+  },
+  "rows": 158,
+  "calls": {
+    "seed": 158,
+    "evolved": 158,
+    "total": 316
+  },
+  "stopped": null,
+  "metrics": {
+    "seed": {
+      "rows": 158,
+      "positives": 36,
+      "accuracy": 0.9177215189873418,
+      "brier": 0.06692143378825988,
+      "ece": 0.07456207278271643,
+      "kappa": 0.7851014856664574
+    },
+    "evolved": {
+      "rows": 158,
+      "positives": 36,
+      "accuracy": 0.9556962025316456,
+      "brier": 0.042149267331776666,
+      "ece": 0.042622057908199326,
+      "kappa": 0.8753100338218714
+    }
+  },
+  "bootstrap": {
+    "resamples": 2000,
+    "seed": 0,
+    "level": 0.95,
+    "ece_difference": {
+      "low": -0.0625104734140897,
+      "high": -0.0038735731365545367
+    },
+    "brier_difference": {
+      "low": -0.0514057877508963,
+      "high": -2.823347754329908e-05
+    }
+  },
+  "pairs": [
+    {
+      "record_id": "sha256:1b977908aa36f4b0",
+      "label": 0,
+      "seed": 1.0194468220650493e-06,
+      "evolved": 1.2647973256979396e-06
+    },
+    {
+      "record_id": "sha256:835f9b83b88a42ca",
+      "label": 0,
+      "seed": 2.1757492591241567e-06,
+      "evolved": 6.965538950632248e-07
+    },
+    {
+      "record_id": "sha256:26226b68a9098d44",
+      "label": 0,
+      "seed": 2.3010993178058273e-05,
+      "evolved": 1.7069717705343944e-06
+    },
+    {
+      "record_id": "sha256:60b0203f958b23df",
+      "label": 0,
+      "seed": 4.7441886466290105e-07,
+      "evolved": 1.2709304628548895e-06
+    },
+    {
+      "record_id": "sha256:f0f439d932f0158c",
+      "label": 0,
+      "seed": 4.021385264109023e-06,
+      "evolved": 2.8684153467147297e-06
+    },
+    {
+      "record_id": "sha256:b6bed3955d993f20",
+      "label": 0,
+      "seed": 9.625988053281009e-07,
+      "evolved": 7.625959291219711e-07
+    },
+    {
+      "record_id": "sha256:fceb9482f71d1b6f",
+      "label": 1,
+      "seed": 0.0618825217812234,
+      "evolved": 4.02365675000014e-06
+    },
+    {
+      "record_id": "sha256:0916d2192fd3bac1",
+      "label": 0,
+      "seed": 5.508407996677261e-05,
+      "evolved": 1.1884404763742505e-06
+    },
+    {
+      "record_id": "sha256:41b1fb98928993c6",
+      "label": 0,
+      "seed": 0.009086293590232929,
+      "evolved": 0.00015483573767421891
+    },
+    {
+      "record_id": "sha256:bf7d02fce9c43c50",
+      "label": 0,
+      "seed": 8.348617503372308e-07,
+      "evolved": 7.707196553234725e-07
+    },
+    {
+      "record_id": "sha256:8c1a535fe28d5ed5",
+      "label": 0,
+      "seed": 8.46830800977497e-07,
+      "evolved": 1.0345271405504532e-06
+    },
+    {
+      "record_id": "sha256:c0178a437493b7eb",
+      "label": 0,
+      "seed": 0.5545034324560378,
+      "evolved": 1.7825683106112843e-06
+    },
+    {
+      "record_id": "sha256:65c300da1da6c76e",
+      "label": 1,
+      "seed": 0.9999997175216474,
+      "evolved": 0.9999999454948624
+    },
+    {
+      "record_id": "sha256:0406268ffa5d3986",
+      "label": 0,
+      "seed": 1.2957849427852646e-05,
+      "evolved": 1.1875952727417576e-06
+    },
+    {
+      "record_id": "sha256:057c8ac488fd1ce7",
+      "label": 0,
+      "seed": 0.016168662111296556,
+      "evolved": 1.0052847489761088e-06
+    },
+    {
+      "record_id": "sha256:f6ac1fffe6303ea4",
+      "label": 1,
+      "seed": 0.9999996255367115,
+      "evolved": 0.9999998922723247
+    },
+    {
+      "record_id": "sha256:bd4f65219c28babb",
+      "label": 0,
+      "seed": 7.522526960105241e-07,
+      "evolved": 1.228428772544329e-06
+    },
+    {
+      "record_id": "sha256:fb78bf3201acabf1",
+      "label": 1,
+      "seed": 0.9999995225681358,
+      "evolved": 0.9999996925066326
+    },
+    {
+      "record_id": "sha256:928b85e7d18320d9",
+      "label": 1,
+      "seed": 0.9936369691835605,
+      "evolved": 0.9548282534856737
+    },
+    {
+      "record_id": "sha256:18c28d5672158410",
+      "label": 0,
+      "seed": 8.195608851853526e-07,
+      "evolved": 6.267100333481381e-07
+    },
+    {
+      "record_id": "sha256:3fe04604fefa00cf",
+      "label": 1,
+      "seed": 0.9999998904676826,
+      "evolved": 0.9999999630938676
+    },
+    {
+      "record_id": "sha256:1cf80e28001ff11b",
+      "label": 0,
+      "seed": 1.348418042496752e-06,
+      "evolved": 7.264546588645963e-07
+    },
+    {
+      "record_id": "sha256:11118ed524ae2763",
+      "label": 1,
+      "seed": 0.9999998472279907,
+      "evolved": 0.9999999248253942
+    },
+    {
+      "record_id": "sha256:32b5c8c45d8d1e67",
+      "label": 0,
+      "seed": 5.081584942299699e-07,
+      "evolved": 1.2185963774194424e-06
+    },
+    {
+      "record_id": "sha256:18c27570dc80ff5e",
+      "label": 0,
+      "seed": 2.3215660790127427e-05,
+      "evolved": 1.1057316837584046e-06
+    },
+    {
+      "record_id": "sha256:2d51e4ba5da41b25",
+      "label": 0,
+      "seed": 4.4468411227273256e-07,
+      "evolved": 9.805085264446156e-07
+    },
+    {
+      "record_id": "sha256:5eefb3b4a6e303c4",
+      "label": 0,
+      "seed": 0.7783368613830489,
+      "evolved": 1.2051967112419896e-06
+    },
+    {
+      "record_id": "sha256:c0fdb8bf4a7ac17e",
+      "label": 0,
+      "seed": 0.9976938873748504,
+      "evolved": 6.975947763891516e-07
+    },
+    {
+      "record_id": "sha256:d2eaf339d387a761",
+      "label": 0,
+      "seed": 1.984042218423407e-06,
+      "evolved": 1.6320124547763767e-06
+    },
+    {
+      "record_id": "sha256:ec263425b0f4b391",
+      "label": 0,
+      "seed": 6.475944122103324e-07,
+      "evolved": 8.828371892964181e-07
+    },
+    {
+      "record_id": "sha256:9c93337c3ceda972",
+      "label": 0,
+      "seed": 9.510945856642369e-07,
+      "evolved": 1.1806525577118394e-06
+    },
+    {
+      "record_id": "sha256:9520df86b2a38ed0",
+      "label": 0,
+      "seed": 9.008977963966e-07,
+      "evolved": 1.241144050255699e-06
+    },
+    {
+      "record_id": "sha256:f4d82938de2178ad",
+      "label": 0,
+      "seed": 3.4654085751288064e-07,
+      "evolved": 4.95160030550713e-07
+    },
+    {
+      "record_id": "sha256:517a281b81b02578",
+      "label": 0,
+      "seed": 1.8076651422374545e-06,
+      "evolved": 8.778774224783e-07
+    },
+    {
+      "record_id": "sha256:e31eb6b3579d6dfc",
+      "label": 0,
+      "seed": 5.3788298589869796e-05,
+      "evolved": 9.924963015797894e-07
+    },
+    {
+      "record_id": "sha256:ee29bb920325a4b6",
+      "label": 1,
+      "seed": 0.9999996391936979,
+      "evolved": 0.9999872439638928
+    },
+    {
+      "record_id": "sha256:bca32fc0867f162f",
+      "label": 1,
+      "seed": 0.999999759147075,
+      "evolved": 0.9999998854387693
+    },
+    {
+      "record_id": "sha256:31cdb5f8875e2c3b",
+      "label": 0,
+      "seed": 2.1647236624749253e-06,
+      "evolved": 0.027866555286886478
+    },
+    {
+      "record_id": "sha256:5552cec9fd6de50b",
+      "label": 0,
+      "seed": 1.4451242836203608e-06,
+      "evolved": 1.198380362831593e-06
+    },
+    {
+      "record_id": "sha256:69c44610d5a7c25d",
+      "label": 0,
+      "seed": 0.7162178400382079,
+      "evolved": 2.8166478342816337e-06
+    },
+    {
+      "record_id": "sha256:cb86f694ad28d443",
+      "label": 1,
+      "seed": 0.9999996145887537,
+      "evolved": 0.9999998841885486
+    },
+    {
+      "record_id": "sha256:799d8b00a4bece73",
+      "label": 1,
+      "seed": 0.9999991773883624,
+      "evolved": 0.9999845684194532
+    },
+    {
+      "record_id": "sha256:a1107d403f3a0518",
+      "label": 0,
+      "seed": 1.150225069257845e-06,
+      "evolved": 5.957934691507691e-07
+    },
+    {
+      "record_id": "sha256:0e3366b4e948cae3",
+      "label": 0,
+      "seed": 7.298936226475821e-06,
+      "evolved": 2.7227584745086953e-06
+    },
+    {
+      "record_id": "sha256:02612e96433e766a",
+      "label": 0,
+      "seed": 7.38838838282922e-07,
+      "evolved": 8.999816437470903e-07
+    },
+    {
+      "record_id": "sha256:d728c7e91d6119f4",
+      "label": 0,
+      "seed": 0.9999997457791714,
+      "evolved": 0.9995985500874257
+    },
+    {
+      "record_id": "sha256:ff5bfa1f988dd188",
+      "label": 1,
+      "seed": 0.9999997265445457,
+      "evolved": 0.9999999035182576
+    },
+    {
+      "record_id": "sha256:01a2bc378f1db625",
+      "label": 0,
+      "seed": 0.0007422005446446449,
+      "evolved": 1.768458883357842e-06
+    },
+    {
+      "record_id": "sha256:d4e7a51868fd600b",
+      "label": 0,
+      "seed": 7.332817006374245e-07,
+      "evolved": 7.387453070784184e-07
+    },
+    {
+      "record_id": "sha256:46ea1be9afaf10b5",
+      "label": 0,
+      "seed": 0.8204598918623479,
+      "evolved": 0.9435071959021863
+    },
+    {
+      "record_id": "sha256:c1158daec8bcc3ee",
+      "label": 1,
+      "seed": 0.9999997519239199,
+      "evolved": 0.999999845294306
+    },
+    {
+      "record_id": "sha256:b823749a7d35776c",
+      "label": 0,
+      "seed": 1.1539770845192674e-06,
+      "evolved": 9.95141312949876e-07
+    },
+    {
+      "record_id": "sha256:fc526e4bfbb288ae",
+      "label": 0,
+      "seed": 0.9999996704122207,
+      "evolved": 0.968239714792216
+    },
+    {
+      "record_id": "sha256:e2d962af4e983f12",
+      "label": 0,
+      "seed": 1.0347994782506106e-06,
+      "evolved": 9.018633675400536e-07
+    },
+    {
+      "record_id": "sha256:df811707b1669625",
+      "label": 0,
+      "seed": 2.041018917716624e-06,
+      "evolved": 4.189759956560573e-06
+    },
+    {
+      "record_id": "sha256:b2c2f87287a9b4d6",
+      "label": 0,
+      "seed": 1.0938346158931042e-06,
+      "evolved": 9.839874720731262e-07
+    },
+    {
+      "record_id": "sha256:86da1dd303e7596f",
+      "label": 0,
+      "seed": 8.978870712990562e-07,
+      "evolved": 8.100308730502082e-07
+    },
+    {
+      "record_id": "sha256:f0c0aacbccce5924",
+      "label": 0,
+      "seed": 3.0323612784533734e-06,
+      "evolved": 1.8853453169827484e-06
+    },
+    {
+      "record_id": "sha256:dfbbc0aa9ec9904e",
+      "label": 0,
+      "seed": 6.007872447503981e-07,
+      "evolved": 7.57520024115393e-07
+    },
+    {
+      "record_id": "sha256:9d121a3ff2c7cd8f",
+      "label": 0,
+      "seed": 5.180058714953494e-06,
+      "evolved": 9.169641654410092e-07
+    },
+    {
+      "record_id": "sha256:fae2ba55e074e33f",
+      "label": 0,
+      "seed": 8.22285839216697e-07,
+      "evolved": 9.641945863122037e-07
+    },
+    {
+      "record_id": "sha256:dbd6aede59d79fe8",
+      "label": 0,
+      "seed": 9.264644696313537e-07,
+      "evolved": 9.025896775409614e-07
+    },
+    {
+      "record_id": "sha256:47a99659676937d1",
+      "label": 0,
+      "seed": 0.000348813297060199,
+      "evolved": 1.0712334585912744e-06
+    },
+    {
+      "record_id": "sha256:f482a3d230036af6",
+      "label": 0,
+      "seed": 0.3873164147548077,
+      "evolved": 0.00022508618437532351
+    },
+    {
+      "record_id": "sha256:0770b1a84ec0b928",
+      "label": 1,
+      "seed": 0.9999996542646757,
+      "evolved": 0.9999961313849923
+    },
+    {
+      "record_id": "sha256:b1a74ad496bcee86",
+      "label": 0,
+      "seed": 1.0746651572178844e-06,
+      "evolved": 7.494081126626752e-07
+    },
+    {
+      "record_id": "sha256:9aa29454294ab9fe",
+      "label": 0,
+      "seed": 6.983245517448524e-07,
+      "evolved": 8.286763219841996e-07
+    },
+    {
+      "record_id": "sha256:ad794d21aa86d897",
+      "label": 0,
+      "seed": 9.303920645539308e-07,
+      "evolved": 1.580184670517356e-06
+    },
+    {
+      "record_id": "sha256:0f21cdda496aac7f",
+      "label": 1,
+      "seed": 0.9999996644074434,
+      "evolved": 0.9999998892700328
+    },
+    {
+      "record_id": "sha256:dd3697c0c79db526",
+      "label": 1,
+      "seed": 0.9999994844681963,
+      "evolved": 0.9999997150348817
+    },
+    {
+      "record_id": "sha256:0bc388cfec027821",
+      "label": 0,
+      "seed": 1.492836531896522e-06,
+      "evolved": 8.282042602073957e-07
+    },
+    {
+      "record_id": "sha256:468b472080e73298",
+      "label": 1,
+      "seed": 0.999999712752143,
+      "evolved": 0.9999999133409239
+    },
+    {
+      "record_id": "sha256:d2ac56def8caf4a2",
+      "label": 1,
+      "seed": 0.9999998432632747,
+      "evolved": 0.9999999313481462
+    },
+    {
+      "record_id": "sha256:92036d518333d644",
+      "label": 0,
+      "seed": 5.662491199836204e-06,
+      "evolved": 1.5120749844828668e-06
+    },
+    {
+      "record_id": "sha256:6daa74be8d5437af",
+      "label": 0,
+      "seed": 1.5962946557940312e-06,
+      "evolved": 1.7560679156641382e-06
+    },
+    {
+      "record_id": "sha256:edb035d9027dd3a2",
+      "label": 0,
+      "seed": 7.327638686398664e-07,
+      "evolved": 9.33100570755263e-07
+    },
+    {
+      "record_id": "sha256:cafa11d825b32aa3",
+      "label": 1,
+      "seed": 0.999999695507296,
+      "evolved": 0.999999932547203
+    },
+    {
+      "record_id": "sha256:2a5981f89b648063",
+      "label": 1,
+      "seed": 0.99999981101622,
+      "evolved": 0.9999999607992469
+    },
+    {
+      "record_id": "sha256:4322ee57fc274f73",
+      "label": 0,
+      "seed": 4.284334232650675e-06,
+      "evolved": 1.637419201058888e-06
+    },
+    {
+      "record_id": "sha256:59d7e3adee2cc472",
+      "label": 0,
+      "seed": 4.4482784683667613e-07,
+      "evolved": 5.752595301653863e-07
+    },
+    {
+      "record_id": "sha256:15626d15a7ab3ff6",
+      "label": 1,
+      "seed": 0.9999998868786267,
+      "evolved": 0.9999998379505558
+    },
+    {
+      "record_id": "sha256:db4522c1c5a524fc",
+      "label": 0,
+      "seed": 1.5052372682447187e-06,
+      "evolved": 1.1772779713383564e-06
+    },
+    {
+      "record_id": "sha256:16656d7deafc53ac",
+      "label": 0,
+      "seed": 7.992741508908015e-07,
+      "evolved": 1.019654168903808e-06
+    },
+    {
+      "record_id": "sha256:3b1e27d61e1567c0",
+      "label": 0,
+      "seed": 2.7549489683836706e-06,
+      "evolved": 6.542483514488423e-07
+    },
+    {
+      "record_id": "sha256:e1f8d0f247ea5b5e",
+      "label": 0,
+      "seed": 0.8435090136921645,
+      "evolved": 9.595635129995508e-07
+    },
+    {
+      "record_id": "sha256:8b704a4b7e013791",
+      "label": 0,
+      "seed": 7.104936463798327e-07,
+      "evolved": 6.764993746446171e-07
+    },
+    {
+      "record_id": "sha256:f9cf9b75a7700b9b",
+      "label": 1,
+      "seed": 0.9997719477905023,
+      "evolved": 0.9850131539498936
+    },
+    {
+      "record_id": "sha256:6cf27480e4774445",
+      "label": 1,
+      "seed": 0.9913067480425036,
+      "evolved": 0.08046959419916237
+    },
+    {
+      "record_id": "sha256:bd20299a030cb71f",
+      "label": 1,
+      "seed": 0.9999997774914857,
+      "evolved": 0.9999998654844656
+    },
+    {
+      "record_id": "sha256:788570289d0ee97b",
+      "label": 0,
+      "seed": 3.7520047283953006e-06,
+      "evolved": 7.274481208761951e-07
+    },
+    {
+      "record_id": "sha256:7c6e24a07c764e9a",
+      "label": 0,
+      "seed": 3.176002629745907e-07,
+      "evolved": 5.196719859070671e-07
+    },
+    {
+      "record_id": "sha256:0ac215201f4d15e0",
+      "label": 1,
+      "seed": 0.9999996953257866,
+      "evolved": 0.999999890785244
+    },
+    {
+      "record_id": "sha256:c2b12f8d95a05682",
+      "label": 0,
+      "seed": 9.97203693799727e-07,
+      "evolved": 1.580172237987165e-06
+    },
+    {
+      "record_id": "sha256:2facf52133f48a9f",
+      "label": 0,
+      "seed": 1.1716192593613375e-06,
+      "evolved": 9.408917224470876e-07
+    },
+    {
+      "record_id": "sha256:688b971cf395da31",
+      "label": 0,
+      "seed": 1.4176884499373776e-06,
+      "evolved": 1.290968071468639e-06
+    },
+    {
+      "record_id": "sha256:67019e39347bd96b",
+      "label": 0,
+      "seed": 0.001992350404940898,
+      "evolved": 1.4871750065975691e-06
+    },
+    {
+      "record_id": "sha256:4e073e80c7007bf8",
+      "label": 0,
+      "seed": 5.867818880011527e-07,
+      "evolved": 8.552463469698439e-07
+    },
+    {
+      "record_id": "sha256:1bdf7a937e935d71",
+      "label": 0,
+      "seed": 7.653235946716656e-07,
+      "evolved": 9.870522487966328e-07
+    },
+    {
+      "record_id": "sha256:1a8dd9f24d8385ad",
+      "label": 0,
+      "seed": 8.833312295995123e-07,
+      "evolved": 1.0895440565854603e-06
+    },
+    {
+      "record_id": "sha256:20bbcdb5ed17e4a6",
+      "label": 0,
+      "seed": 7.80368746246514e-07,
+      "evolved": 1.030054339568007e-06
+    },
+    {
+      "record_id": "sha256:0b161f8ef2aae7af",
+      "label": 0,
+      "seed": 8.918980049942716e-07,
+      "evolved": 1.0186801510245351e-06
+    },
+    {
+      "record_id": "sha256:d14cb1bfe6a6f5a7",
+      "label": 0,
+      "seed": 8.850131199270975e-07,
+      "evolved": 1.088254556269914e-06
+    },
+    {
+      "record_id": "sha256:13eaeec5fb7872f8",
+      "label": 0,
+      "seed": 1.0086807358233068e-05,
+      "evolved": 2.05675437740434e-06
+    },
+    {
+      "record_id": "sha256:0c50f96dfc7fd41e",
+      "label": 0,
+      "seed": 9.583220546812611e-07,
+      "evolved": 1.0040451785247194e-06
+    },
+    {
+      "record_id": "sha256:b46a1135f17855ff",
+      "label": 0,
+      "seed": 0.8854447220188095,
+      "evolved": 1.9507828921414492e-06
+    },
+    {
+      "record_id": "sha256:06be94e34256786d",
+      "label": 0,
+      "seed": 8.700813124122962e-07,
+      "evolved": 7.260273266023989e-07
+    },
+    {
+      "record_id": "sha256:d8e899581ce284c0",
+      "label": 1,
+      "seed": 0.9999998705613168,
+      "evolved": 0.9999998941751166
+    },
+    {
+      "record_id": "sha256:c188f80ae5f9099f",
+      "label": 0,
+      "seed": 2.278814670247432e-05,
+      "evolved": 7.043137169999963e-07
+    },
+    {
+      "record_id": "sha256:a42530d3b4183203",
+      "label": 0,
+      "seed": 0.06904356410788894,
+      "evolved": 7.688476646732891e-06
+    },
+    {
+      "record_id": "sha256:7126a8689afc002a",
+      "label": 0,
+      "seed": 8.547553792776958e-07,
+      "evolved": 8.23904532774938e-07
+    },
+    {
+      "record_id": "sha256:81d7a971b2804885",
+      "label": 1,
+      "seed": 0.9999997306644731,
+      "evolved": 0.9999999290051419
+    },
+    {
+      "record_id": "sha256:b27ec26c31b231e4",
+      "label": 0,
+      "seed": 7.473700895174276e-07,
+      "evolved": 1.0525367455393157e-06
+    },
+    {
+      "record_id": "sha256:af2ca314a25cc144",
+      "label": 0,
+      "seed": 9.359779538027877e-07,
+      "evolved": 7.110136243970142e-07
+    },
+    {
+      "record_id": "sha256:55f441fe2095ffdf",
+      "label": 0,
+      "seed": 1.0793489127769752e-06,
+      "evolved": 1.53443049438739e-06
+    },
+    {
+      "record_id": "sha256:1964e5a15073d08e",
+      "label": 1,
+      "seed": 0.9999992367209518,
+      "evolved": 0.9999941879689365
+    },
+    {
+      "record_id": "sha256:b0c7096ab544d1d1",
+      "label": 0,
+      "seed": 9.0683918595199e-07,
+      "evolved": 9.857772240325613e-07
+    },
+    {
+      "record_id": "sha256:a83fec342812aeaa",
+      "label": 0,
+      "seed": 6.433476955401381e-07,
+      "evolved": 9.243705196309699e-07
+    },
+    {
+      "record_id": "sha256:67aa05516b6769b9",
+      "label": 1,
+      "seed": 0.9999993254379219,
+      "evolved": 0.9999998765903407
+    },
+    {
+      "record_id": "sha256:caa2c01469c08ea4",
+      "label": 0,
+      "seed": 7.281847337261239e-07,
+      "evolved": 1.0346409758953628e-06
+    },
+    {
+      "record_id": "sha256:112a54cd0f8c4113",
+      "label": 0,
+      "seed": 1.274117452619623e-06,
+      "evolved": 1.1952531479066482e-06
+    },
+    {
+      "record_id": "sha256:dbe4f1e97187307d",
+      "label": 0,
+      "seed": 1.328281636980554e-06,
+      "evolved": 1.3180867598254381e-06
+    },
+    {
+      "record_id": "sha256:8470a911737229d1",
+      "label": 0,
+      "seed": 0.00012563617888879867,
+      "evolved": 5.727122986940112e-07
+    },
+    {
+      "record_id": "sha256:82a542e92687cbd5",
+      "label": 0,
+      "seed": 3.450438133913016e-07,
+      "evolved": 8.17185456732315e-07
+    },
+    {
+      "record_id": "sha256:8c32dbd454db5ee1",
+      "label": 0,
+      "seed": 8.873549743964279e-07,
+      "evolved": 9.97780527194078e-07
+    },
+    {
+      "record_id": "sha256:0b7ff1c824e00d19",
+      "label": 0,
+      "seed": 1.1446332113447012e-06,
+      "evolved": 1.720334878222483e-06
+    },
+    {
+      "record_id": "sha256:2cf023e7d616aa2b",
+      "label": 0,
+      "seed": 7.297615391702079e-07,
+      "evolved": 9.404884709945117e-07
+    },
+    {
+      "record_id": "sha256:6578c1e5810b6c77",
+      "label": 0,
+      "seed": 1.3885602575566896e-06,
+      "evolved": 7.293819948164759e-07
+    },
+    {
+      "record_id": "sha256:86dcec6c8d465b04",
+      "label": 1,
+      "seed": 0.9999987453103101,
+      "evolved": 0.9999989035771133
+    },
+    {
+      "record_id": "sha256:5b94e425c2a83ea3",
+      "label": 0,
+      "seed": 8.719130959016664e-07,
+      "evolved": 9.593961768146864e-07
+    },
+    {
+      "record_id": "sha256:b4bd635b391ce0ec",
+      "label": 0,
+      "seed": 7.337401551097645e-07,
+      "evolved": 7.791002371014571e-07
+    },
+    {
+      "record_id": "sha256:df4c1f05fae1c3db",
+      "label": 1,
+      "seed": 0.9999996097276944,
+      "evolved": 0.9999998725415813
+    },
+    {
+      "record_id": "sha256:b5805755e0d1fb9f",
+      "label": 0,
+      "seed": 9.946206673207505e-07,
+      "evolved": 4.88915363439925e-07
+    },
+    {
+      "record_id": "sha256:a5ddd576cd2df182",
+      "label": 0,
+      "seed": 5.560272712181796e-07,
+      "evolved": 5.400048176592906e-07
+    },
+    {
+      "record_id": "sha256:5b7882ce72191eb9",
+      "label": 0,
+      "seed": 0.9999998160571036,
+      "evolved": 0.9920308695765296
+    },
+    {
+      "record_id": "sha256:951f31617ed7e361",
+      "label": 0,
+      "seed": 0.0007152174937002284,
+      "evolved": 1.6076910602332498e-06
+    },
+    {
+      "record_id": "sha256:a4feae7a54ec4ae2",
+      "label": 0,
+      "seed": 7.994651164795346e-07,
+      "evolved": 1.18550552552048e-06
+    },
+    {
+      "record_id": "sha256:fb4d9929bfaa16cb",
+      "label": 0,
+      "seed": 4.09841887689209e-06,
+      "evolved": 2.0434078953542988e-06
+    },
+    {
+      "record_id": "sha256:e288c92386623dc0",
+      "label": 0,
+      "seed": 8.980391828827527e-07,
+      "evolved": 7.794866037956708e-07
+    },
+    {
+      "record_id": "sha256:95731de91bf950ff",
+      "label": 0,
+      "seed": 7.301155177701274e-07,
+      "evolved": 8.594598156037017e-07
+    },
+    {
+      "record_id": "sha256:084e34c0102c08d1",
+      "label": 0,
+      "seed": 0.0003263162348385948,
+      "evolved": 8.761060046803994e-07
+    },
+    {
+      "record_id": "sha256:5f7803a269a03402",
+      "label": 1,
+      "seed": 0.9999995502589911,
+      "evolved": 0.9999994409004462
+    },
+    {
+      "record_id": "sha256:4ded357d736bfffc",
+      "label": 0,
+      "seed": 0.9736788388893056,
+      "evolved": 2.5078994950044332e-05
+    },
+    {
+      "record_id": "sha256:c6d15b625a760e46",
+      "label": 1,
+      "seed": 0.9999950740618893,
+      "evolved": 0.9999946944459477
+    },
+    {
+      "record_id": "sha256:d0d8282c501e354d",
+      "label": 1,
+      "seed": 0.9999997082644024,
+      "evolved": 0.9999997657180835
+    },
+    {
+      "record_id": "sha256:15d20489bb46553d",
+      "label": 0,
+      "seed": 3.0431156716573318e-06,
+      "evolved": 1.6747969216380665e-06
+    },
+    {
+      "record_id": "sha256:18215a6d26eb8898",
+      "label": 0,
+      "seed": 1.3667198028490061e-06,
+      "evolved": 1.1604021149853418e-06
+    },
+    {
+      "record_id": "sha256:a672411e7428be0f",
+      "label": 1,
+      "seed": 0.9999990045562533,
+      "evolved": 0.9999988023925349
+    },
+    {
+      "record_id": "sha256:eeeb1fccc6b77619",
+      "label": 0,
+      "seed": 7.48732766395412e-07,
+      "evolved": 1.3291697646443243e-06
+    },
+    {
+      "record_id": "sha256:366a7c495046803d",
+      "label": 0,
+      "seed": 2.947819819684853e-06,
+      "evolved": 2.284841358592128e-06
+    },
+    {
+      "record_id": "sha256:3c5fe153d6ff6ed9",
+      "label": 1,
+      "seed": 4.5460345351373084e-05,
+      "evolved": 1.038078325482126e-06
+    },
+    {
+      "record_id": "sha256:efcc7dbdff030d11",
+      "label": 0,
+      "seed": 6.742652549807959e-07,
+      "evolved": 3.6482048945010514e-07
+    },
+    {
+      "record_id": "sha256:1678966213f55e34",
+      "label": 0,
+      "seed": 5.541730376789763e-07,
+      "evolved": 6.864146977560657e-07
+    },
+    {
+      "record_id": "sha256:5644f06304345547",
+      "label": 0,
+      "seed": 7.321115509044266e-07,
+      "evolved": 1.1059738513852719e-06
+    },
+    {
+      "record_id": "sha256:51f4836be2f96f23",
+      "label": 0,
+      "seed": 3.479718612818547e-05,
+      "evolved": 1.3268011610751371e-06
+    },
+    {
+      "record_id": "sha256:31d64172621c8d36",
+      "label": 0,
+      "seed": 0.0002132639451690054,
+      "evolved": 1.2977628187965499e-06
+    },
+    {
+      "record_id": "sha256:304c7307a378472a",
+      "label": 0,
+      "seed": 3.199236528014082e-06,
+      "evolved": 1.402206883542051e-06
+    },
+    {
+      "record_id": "sha256:e60e9d8dc6bf43bd",
+      "label": 0,
+      "seed": 8.381691702232973e-07,
+      "evolved": 8.042538254408725e-07
+    },
+    {
+      "record_id": "sha256:c6d556034c7a0c70",
+      "label": 0,
+      "seed": 7.188698286806752e-07,
+      "evolved": 1.2626265172270615e-06
+    }
+  ],
+  "per_call": [
+    {
+      "index": 0,
+      "state_sha256": "1b977908aa36f4b0dbdb438657dded160d0ff794bcd8469f9afe8674270efe8f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.446433,
+      "input_tokens": 101,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 1,
+      "state_sha256": "1b977908aa36f4b0dbdb438657dded160d0ff794bcd8469f9afe8674270efe8f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.255385,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 2,
+      "state_sha256": "835f9b83b88a42cae8b969197a22cd5371d584faf6908fcee4ac447a0b91b25c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.22848,
+      "input_tokens": 141,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 3,
+      "state_sha256": "835f9b83b88a42cae8b969197a22cd5371d584faf6908fcee4ac447a0b91b25c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.249619,
+      "input_tokens": 147,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 4,
+      "state_sha256": "26226b68a9098d4465211cd1e2be82629088f44d4405003e8f6c9e9cdabad613",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.263241,
+      "input_tokens": 108,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 5,
+      "state_sha256": "26226b68a9098d4465211cd1e2be82629088f44d4405003e8f6c9e9cdabad613",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.246266,
+      "input_tokens": 114,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 6,
+      "state_sha256": "60b0203f958b23dfe5ce5c4696c13b86759ecb895e3730bce2da0a63fc3d8dac",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.254705,
+      "input_tokens": 147,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 7,
+      "state_sha256": "60b0203f958b23dfe5ce5c4696c13b86759ecb895e3730bce2da0a63fc3d8dac",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.27115,
+      "input_tokens": 153,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 8,
+      "state_sha256": "f0f439d932f0158c28f5ee0082b4ae3b0dd545d54440a1ebbd98f620df2ded9f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.278796,
+      "input_tokens": 101,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 9,
+      "state_sha256": "f0f439d932f0158c28f5ee0082b4ae3b0dd545d54440a1ebbd98f620df2ded9f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.210965,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 10,
+      "state_sha256": "b6bed3955d993f20074c3b9a25ff966e47ca5c7377d281a7a9f038c2cc5eb88a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.24327,
+      "input_tokens": 110,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 11,
+      "state_sha256": "b6bed3955d993f20074c3b9a25ff966e47ca5c7377d281a7a9f038c2cc5eb88a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.266148,
+      "input_tokens": 116,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 12,
+      "state_sha256": "fceb9482f71d1b6f7e02532b6a7f0505dac9f2894b594fc4ca599d15e8b7e935",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.250171,
+      "input_tokens": 142,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 13,
+      "state_sha256": "fceb9482f71d1b6f7e02532b6a7f0505dac9f2894b594fc4ca599d15e8b7e935",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.259423,
+      "input_tokens": 148,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 14,
+      "state_sha256": "0916d2192fd3bac1418f052eee01310c2f9086bf6643cf229868fef583de7f53",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.295774,
+      "input_tokens": 105,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 15,
+      "state_sha256": "0916d2192fd3bac1418f052eee01310c2f9086bf6643cf229868fef583de7f53",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.257868,
+      "input_tokens": 111,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 16,
+      "state_sha256": "41b1fb98928993c60b74cd03438779deddb7372937aa27ea9c43d6c2cc9ad93a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.246537,
+      "input_tokens": 103,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 17,
+      "state_sha256": "41b1fb98928993c60b74cd03438779deddb7372937aa27ea9c43d6c2cc9ad93a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.236017,
+      "input_tokens": 109,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 18,
+      "state_sha256": "bf7d02fce9c43c50c6b460327e466aac984d5025b04926acbde0d7ae9c3509b2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.222536,
+      "input_tokens": 109,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 19,
+      "state_sha256": "bf7d02fce9c43c50c6b460327e466aac984d5025b04926acbde0d7ae9c3509b2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.16922,
+      "input_tokens": 115,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 20,
+      "state_sha256": "8c1a535fe28d5ed5f517c2df218536e3d91ca8b2aabc0ce07bc38b31d834ffdf",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.191868,
+      "input_tokens": 104,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 21,
+      "state_sha256": "8c1a535fe28d5ed5f517c2df218536e3d91ca8b2aabc0ce07bc38b31d834ffdf",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.253806,
+      "input_tokens": 110,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 22,
+      "state_sha256": "c0178a437493b7eb5848ec8b282a16be56a744376926fbc25b0ce1171485d6e2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.284512,
+      "input_tokens": 119,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 23,
+      "state_sha256": "c0178a437493b7eb5848ec8b282a16be56a744376926fbc25b0ce1171485d6e2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.227584,
+      "input_tokens": 125,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 24,
+      "state_sha256": "65c300da1da6c76e38646c37d67652ae817e12399736119cc60d01a9a6bfa9e2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.257605,
+      "input_tokens": 148,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 25,
+      "state_sha256": "65c300da1da6c76e38646c37d67652ae817e12399736119cc60d01a9a6bfa9e2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.307977,
+      "input_tokens": 154,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 26,
+      "state_sha256": "0406268ffa5d39864b494bcbad137cf12f801f03e39b60ec60f578e208d0f680",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.273781,
+      "input_tokens": 113,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 27,
+      "state_sha256": "0406268ffa5d39864b494bcbad137cf12f801f03e39b60ec60f578e208d0f680",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.250811,
+      "input_tokens": 119,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 28,
+      "state_sha256": "057c8ac488fd1ce7e48831ea899cc522548e821618192c95a7ce32b4a17dbcfd",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.252855,
+      "input_tokens": 108,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 29,
+      "state_sha256": "057c8ac488fd1ce7e48831ea899cc522548e821618192c95a7ce32b4a17dbcfd",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.2403,
+      "input_tokens": 114,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 30,
+      "state_sha256": "f6ac1fffe6303ea4ef3417699335c931c04a1fbd145a90c85fa0e5943e19c428",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.183991,
+      "input_tokens": 144,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 31,
+      "state_sha256": "f6ac1fffe6303ea4ef3417699335c931c04a1fbd145a90c85fa0e5943e19c428",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.217198,
+      "input_tokens": 150,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 32,
+      "state_sha256": "bd4f65219c28babb46fd8e1ecd04e2e0cecd56fc568aa065cf3de13be6bb7218",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.23172,
+      "input_tokens": 116,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 33,
+      "state_sha256": "bd4f65219c28babb46fd8e1ecd04e2e0cecd56fc568aa065cf3de13be6bb7218",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.183915,
+      "input_tokens": 122,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 34,
+      "state_sha256": "fb78bf3201acabf17446209df836d67b4c132191f9569e70b9c8d7bc3795b785",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.259022,
+      "input_tokens": 167,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 35,
+      "state_sha256": "fb78bf3201acabf17446209df836d67b4c132191f9569e70b9c8d7bc3795b785",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.301957,
+      "input_tokens": 173,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 36,
+      "state_sha256": "928b85e7d18320d9321aa8d911955b296902275379529aa098ab8c34e12d3c61",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.262561,
+      "input_tokens": 140,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 37,
+      "state_sha256": "928b85e7d18320d9321aa8d911955b296902275379529aa098ab8c34e12d3c61",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.282024,
+      "input_tokens": 146,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 38,
+      "state_sha256": "18c28d5672158410a9e8aac2d52f88d5b009f2ecace3f46e0c593e5e02c9d077",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.257535,
+      "input_tokens": 141,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 39,
+      "state_sha256": "18c28d5672158410a9e8aac2d52f88d5b009f2ecace3f46e0c593e5e02c9d077",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.248155,
+      "input_tokens": 147,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 40,
+      "state_sha256": "3fe04604fefa00cf9c66c24a3545de4a4d738400676c010164b2caa3794b8ba0",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.286691,
+      "input_tokens": 148,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 41,
+      "state_sha256": "3fe04604fefa00cf9c66c24a3545de4a4d738400676c010164b2caa3794b8ba0",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.274666,
+      "input_tokens": 154,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 42,
+      "state_sha256": "1cf80e28001ff11b187acc8a66e6dba400547d4a4fd09b51d33aa863362a1dba",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.20876,
+      "input_tokens": 160,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 43,
+      "state_sha256": "1cf80e28001ff11b187acc8a66e6dba400547d4a4fd09b51d33aa863362a1dba",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.270826,
+      "input_tokens": 166,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 44,
+      "state_sha256": "11118ed524ae276379d7f55adf7887dab939e630dacd86facfdf8384288f97c2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.244921,
+      "input_tokens": 169,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 45,
+      "state_sha256": "11118ed524ae276379d7f55adf7887dab939e630dacd86facfdf8384288f97c2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.321102,
+      "input_tokens": 175,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 46,
+      "state_sha256": "32b5c8c45d8d1e67ea94aa32f8bb34913840ebd67b06fe8d5e75f839f0deb0b8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.302507,
+      "input_tokens": 149,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 47,
+      "state_sha256": "32b5c8c45d8d1e67ea94aa32f8bb34913840ebd67b06fe8d5e75f839f0deb0b8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.256915,
+      "input_tokens": 155,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 48,
+      "state_sha256": "18c27570dc80ff5ea41efb64216bdd429f19d62fcba2cd4db32457e25b734f93",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.280089,
+      "input_tokens": 125,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 49,
+      "state_sha256": "18c27570dc80ff5ea41efb64216bdd429f19d62fcba2cd4db32457e25b734f93",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.286619,
+      "input_tokens": 131,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 50,
+      "state_sha256": "2d51e4ba5da41b258cf43e10288157291fce1f3ff8c297454039cb6d20fae285",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.247794,
+      "input_tokens": 119,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 51,
+      "state_sha256": "2d51e4ba5da41b258cf43e10288157291fce1f3ff8c297454039cb6d20fae285",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.26988,
+      "input_tokens": 125,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 52,
+      "state_sha256": "5eefb3b4a6e303c481c0c22ff1f0403c10496d7cab4dd2f670b1d2069ff8cd4c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.225757,
+      "input_tokens": 109,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 53,
+      "state_sha256": "5eefb3b4a6e303c481c0c22ff1f0403c10496d7cab4dd2f670b1d2069ff8cd4c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.237627,
+      "input_tokens": 115,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 54,
+      "state_sha256": "c0fdb8bf4a7ac17ec12f2ecaa477dc6acfbdc46d2551a024ada39717b69eac3b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.188431,
+      "input_tokens": 126,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 55,
+      "state_sha256": "c0fdb8bf4a7ac17ec12f2ecaa477dc6acfbdc46d2551a024ada39717b69eac3b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.244139,
+      "input_tokens": 132,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 56,
+      "state_sha256": "d2eaf339d387a761163aa15e31d356498caf1d207d40d55e1307e39df543b02b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.214242,
+      "input_tokens": 104,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 57,
+      "state_sha256": "d2eaf339d387a761163aa15e31d356498caf1d207d40d55e1307e39df543b02b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.179755,
+      "input_tokens": 110,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 58,
+      "state_sha256": "ec263425b0f4b39139e07e4c766b78682f279ede415384bd4af5eed2c674caad",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.235952,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 59,
+      "state_sha256": "ec263425b0f4b39139e07e4c766b78682f279ede415384bd4af5eed2c674caad",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.203811,
+      "input_tokens": 113,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 60,
+      "state_sha256": "9c93337c3ceda97286d1a5bd05d5b35276c32b9e55e81a46a9262f6becfa9705",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.191636,
+      "input_tokens": 122,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 61,
+      "state_sha256": "9c93337c3ceda97286d1a5bd05d5b35276c32b9e55e81a46a9262f6becfa9705",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.225145,
+      "input_tokens": 128,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 62,
+      "state_sha256": "9520df86b2a38ed001c4a8399ed2e2d476e3c7c990cf357c80324a69f47d9075",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.256683,
+      "input_tokens": 101,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 63,
+      "state_sha256": "9520df86b2a38ed001c4a8399ed2e2d476e3c7c990cf357c80324a69f47d9075",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.207036,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 64,
+      "state_sha256": "f4d82938de2178ad043905c9f249e397641bc6eca74275421ab74e1eff2edb2f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.249535,
+      "input_tokens": 148,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 65,
+      "state_sha256": "f4d82938de2178ad043905c9f249e397641bc6eca74275421ab74e1eff2edb2f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.350134,
+      "input_tokens": 154,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 66,
+      "state_sha256": "517a281b81b02578f403dd7ff928183f5080dcabe1c7ff5ade7d4abdd64174d3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.244925,
+      "input_tokens": 108,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 67,
+      "state_sha256": "517a281b81b02578f403dd7ff928183f5080dcabe1c7ff5ade7d4abdd64174d3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.155418,
+      "input_tokens": 114,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 68,
+      "state_sha256": "e31eb6b3579d6dfca172d9459bf4140b0fc0ba6bb55c0c770ef3e73d98f4ee89",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.191791,
+      "input_tokens": 115,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 69,
+      "state_sha256": "e31eb6b3579d6dfca172d9459bf4140b0fc0ba6bb55c0c770ef3e73d98f4ee89",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.16631,
+      "input_tokens": 121,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 70,
+      "state_sha256": "ee29bb920325a4b6ded7b282ff73274db6e931c48f61a8bb8cd6ed5114d24c9f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.224095,
+      "input_tokens": 144,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 71,
+      "state_sha256": "ee29bb920325a4b6ded7b282ff73274db6e931c48f61a8bb8cd6ed5114d24c9f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.250301,
+      "input_tokens": 150,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 72,
+      "state_sha256": "bca32fc0867f162f37bbb6685e81f34fef34bc7dfc63117f4fad501591905b90",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.309939,
+      "input_tokens": 156,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 73,
+      "state_sha256": "bca32fc0867f162f37bbb6685e81f34fef34bc7dfc63117f4fad501591905b90",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.236692,
+      "input_tokens": 162,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 74,
+      "state_sha256": "31cdb5f8875e2c3ba2e170e5ca076e8411d3cf631cede71812086482121f3316",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.209551,
+      "input_tokens": 101,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 75,
+      "state_sha256": "31cdb5f8875e2c3ba2e170e5ca076e8411d3cf631cede71812086482121f3316",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.194435,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 76,
+      "state_sha256": "5552cec9fd6de50bce6a720e5cccc68974a1f22a3cb87c60f526a19b8a1766f1",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.210083,
+      "input_tokens": 101,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 77,
+      "state_sha256": "5552cec9fd6de50bce6a720e5cccc68974a1f22a3cb87c60f526a19b8a1766f1",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.210135,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 78,
+      "state_sha256": "69c44610d5a7c25d244c81b36c862b2009173e293f943ab637d6d66adf5ebe45",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.157775,
+      "input_tokens": 112,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 79,
+      "state_sha256": "69c44610d5a7c25d244c81b36c862b2009173e293f943ab637d6d66adf5ebe45",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.17782,
+      "input_tokens": 118,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 80,
+      "state_sha256": "cb86f694ad28d44322643d931b9ceb69b1e5ac784213da4196ed170c6bc3d449",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.205884,
+      "input_tokens": 143,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 81,
+      "state_sha256": "cb86f694ad28d44322643d931b9ceb69b1e5ac784213da4196ed170c6bc3d449",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.225271,
+      "input_tokens": 149,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 82,
+      "state_sha256": "799d8b00a4bece738325e2d11496a0b51319f9f38a11204b47dabc8e562993fe",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.269472,
+      "input_tokens": 134,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 83,
+      "state_sha256": "799d8b00a4bece738325e2d11496a0b51319f9f38a11204b47dabc8e562993fe",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.255807,
+      "input_tokens": 140,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 84,
+      "state_sha256": "a1107d403f3a0518022c9dc0dcdfcb5d614e2dd37e7fb2c9ef2c9dbaef99de6e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.22836,
+      "input_tokens": 106,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 85,
+      "state_sha256": "a1107d403f3a0518022c9dc0dcdfcb5d614e2dd37e7fb2c9ef2c9dbaef99de6e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.26081,
+      "input_tokens": 112,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 86,
+      "state_sha256": "0e3366b4e948cae355071be602ea6a34bfb8a68872f5b7f44544f942ac355bbb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.239731,
+      "input_tokens": 100,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 87,
+      "state_sha256": "0e3366b4e948cae355071be602ea6a34bfb8a68872f5b7f44544f942ac355bbb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.2061,
+      "input_tokens": 106,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 88,
+      "state_sha256": "02612e96433e766a0375f8658772e7ed0c50722ef54eb802f7b3947d54c68a55",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.21687,
+      "input_tokens": 102,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 89,
+      "state_sha256": "02612e96433e766a0375f8658772e7ed0c50722ef54eb802f7b3947d54c68a55",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.227982,
+      "input_tokens": 108,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 90,
+      "state_sha256": "d728c7e91d6119f47a630ae2a877227d87c1351132df0bb90ec22baad634f889",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.292313,
+      "input_tokens": 101,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 91,
+      "state_sha256": "d728c7e91d6119f47a630ae2a877227d87c1351132df0bb90ec22baad634f889",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.183892,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 92,
+      "state_sha256": "ff5bfa1f988dd188a519d2107b114167deaf90330d735edae01cff3976ae8613",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.183464,
+      "input_tokens": 152,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 93,
+      "state_sha256": "ff5bfa1f988dd188a519d2107b114167deaf90330d735edae01cff3976ae8613",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.187119,
+      "input_tokens": 158,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 94,
+      "state_sha256": "01a2bc378f1db625311a2eb86e640cc0543201513748c521c7e686cd283a11f8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.168582,
+      "input_tokens": 100,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 95,
+      "state_sha256": "01a2bc378f1db625311a2eb86e640cc0543201513748c521c7e686cd283a11f8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.184917,
+      "input_tokens": 106,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 96,
+      "state_sha256": "d4e7a51868fd600b4c51bfc443adad6334ee21be783ed890a57348d055072e1e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.198283,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 97,
+      "state_sha256": "d4e7a51868fd600b4c51bfc443adad6334ee21be783ed890a57348d055072e1e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.219365,
+      "input_tokens": 113,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 98,
+      "state_sha256": "46ea1be9afaf10b565d66bbf283372b6aa94b385fdaa26dc5daab97d29687c7b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.226439,
+      "input_tokens": 100,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 99,
+      "state_sha256": "46ea1be9afaf10b565d66bbf283372b6aa94b385fdaa26dc5daab97d29687c7b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.208226,
+      "input_tokens": 106,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 100,
+      "state_sha256": "c1158daec8bcc3ee53337dddb81855741fb46f7ac5b228bf42304a0b181286ad",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.251809,
+      "input_tokens": 141,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 101,
+      "state_sha256": "c1158daec8bcc3ee53337dddb81855741fb46f7ac5b228bf42304a0b181286ad",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.280853,
+      "input_tokens": 147,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 102,
+      "state_sha256": "b823749a7d35776c1117334227d5ae5bdd3209e1200971fe3a34e4a82576e08b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.281074,
+      "input_tokens": 106,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 103,
+      "state_sha256": "b823749a7d35776c1117334227d5ae5bdd3209e1200971fe3a34e4a82576e08b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.190581,
+      "input_tokens": 112,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 104,
+      "state_sha256": "fc526e4bfbb288ae45739655b1dbea5a49e34a76f37f54010ac432db22772ce3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.223881,
+      "input_tokens": 111,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 105,
+      "state_sha256": "fc526e4bfbb288ae45739655b1dbea5a49e34a76f37f54010ac432db22772ce3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.211345,
+      "input_tokens": 117,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 106,
+      "state_sha256": "e2d962af4e983f12968a820961c7296452c9b0d8888f20d558c8b421d385f04e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.191516,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 107,
+      "state_sha256": "e2d962af4e983f12968a820961c7296452c9b0d8888f20d558c8b421d385f04e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.233657,
+      "input_tokens": 113,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 108,
+      "state_sha256": "df811707b1669625c54e14d381fdeaeb6d0e5bcde01b1bc862052924af2d1fcb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.208817,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 109,
+      "state_sha256": "df811707b1669625c54e14d381fdeaeb6d0e5bcde01b1bc862052924af2d1fcb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.201238,
+      "input_tokens": 113,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 110,
+      "state_sha256": "b2c2f87287a9b4d656f910110435ed05d30992b1eba31feec7c534e279f863e1",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.200871,
+      "input_tokens": 105,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 111,
+      "state_sha256": "b2c2f87287a9b4d656f910110435ed05d30992b1eba31feec7c534e279f863e1",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.231636,
+      "input_tokens": 111,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 112,
+      "state_sha256": "86da1dd303e7596f26c5c9da2cb251c05009b351e8d29835b1e4acd901eeedd8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.246811,
+      "input_tokens": 108,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 113,
+      "state_sha256": "86da1dd303e7596f26c5c9da2cb251c05009b351e8d29835b1e4acd901eeedd8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.20838,
+      "input_tokens": 114,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 114,
+      "state_sha256": "f0c0aacbccce59248abb451ecc92b1dd2a50481f6a76fb794cfba3d2dfd07bfa",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.23738,
+      "input_tokens": 105,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 115,
+      "state_sha256": "f0c0aacbccce59248abb451ecc92b1dd2a50481f6a76fb794cfba3d2dfd07bfa",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.196439,
+      "input_tokens": 111,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 116,
+      "state_sha256": "dfbbc0aa9ec9904ef6ea9da9fcb701befe9d435a52af31475eae751f993dea57",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.181745,
+      "input_tokens": 106,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 117,
+      "state_sha256": "dfbbc0aa9ec9904ef6ea9da9fcb701befe9d435a52af31475eae751f993dea57",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.180611,
+      "input_tokens": 112,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 118,
+      "state_sha256": "9d121a3ff2c7cd8f3a1943394a9ed9d790e118c52694b8c386ec7a0db763cdde",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.221861,
+      "input_tokens": 108,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 119,
+      "state_sha256": "9d121a3ff2c7cd8f3a1943394a9ed9d790e118c52694b8c386ec7a0db763cdde",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.198714,
+      "input_tokens": 114,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 120,
+      "state_sha256": "fae2ba55e074e33f3a0a06515f1f4e1cb35b395fc5e0fa7f01392377714f0fb3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.24214,
+      "input_tokens": 103,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 121,
+      "state_sha256": "fae2ba55e074e33f3a0a06515f1f4e1cb35b395fc5e0fa7f01392377714f0fb3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.238948,
+      "input_tokens": 109,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 122,
+      "state_sha256": "dbd6aede59d79fe8cbe2af92a5a67fa86198669f36d3b6160d3df755470e485c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.211978,
+      "input_tokens": 104,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 123,
+      "state_sha256": "dbd6aede59d79fe8cbe2af92a5a67fa86198669f36d3b6160d3df755470e485c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.209701,
+      "input_tokens": 110,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 124,
+      "state_sha256": "47a99659676937d17ec56fe0dff329d38b8f729dfb7522c537930ca2bdaebac8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.230321,
+      "input_tokens": 108,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 125,
+      "state_sha256": "47a99659676937d17ec56fe0dff329d38b8f729dfb7522c537930ca2bdaebac8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.210984,
+      "input_tokens": 114,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 126,
+      "state_sha256": "f482a3d230036af66a2e92665cad354544c6c7fbd28a4a98282b5f5a745c7556",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.254794,
+      "input_tokens": 104,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 127,
+      "state_sha256": "f482a3d230036af66a2e92665cad354544c6c7fbd28a4a98282b5f5a745c7556",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.198953,
+      "input_tokens": 110,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 128,
+      "state_sha256": "0770b1a84ec0b92831f9ca8e9bb856d8289969c957569dce35b055a4a0b412db",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.187099,
+      "input_tokens": 161,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 129,
+      "state_sha256": "0770b1a84ec0b92831f9ca8e9bb856d8289969c957569dce35b055a4a0b412db",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.213199,
+      "input_tokens": 167,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 130,
+      "state_sha256": "b1a74ad496bcee86efb17e10c0915f9242f26291ae8cb10bfc3104aca6268dda",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.25024,
+      "input_tokens": 112,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 131,
+      "state_sha256": "b1a74ad496bcee86efb17e10c0915f9242f26291ae8cb10bfc3104aca6268dda",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.224176,
+      "input_tokens": 118,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 132,
+      "state_sha256": "9aa29454294ab9fe447bddf67daf53e9f9fb63e4fbf404b3ce340e6aaa03f10d",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.219967,
+      "input_tokens": 111,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 133,
+      "state_sha256": "9aa29454294ab9fe447bddf67daf53e9f9fb63e4fbf404b3ce340e6aaa03f10d",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.215857,
+      "input_tokens": 117,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 134,
+      "state_sha256": "ad794d21aa86d89700f0223f94f91adbd1d1f1968cd2c143ebd28f182810482f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.210331,
+      "input_tokens": 104,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 135,
+      "state_sha256": "ad794d21aa86d89700f0223f94f91adbd1d1f1968cd2c143ebd28f182810482f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.200004,
+      "input_tokens": 110,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 136,
+      "state_sha256": "0f21cdda496aac7fd6237beaefec53fdd2b87a4c2f2fc47e4febf881797b874b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.247931,
+      "input_tokens": 144,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 137,
+      "state_sha256": "0f21cdda496aac7fd6237beaefec53fdd2b87a4c2f2fc47e4febf881797b874b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.235174,
+      "input_tokens": 150,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 138,
+      "state_sha256": "dd3697c0c79db52614261afa5dde4122b29ca532e5b098c4b648f1cc776653ed",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.257942,
+      "input_tokens": 148,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 139,
+      "state_sha256": "dd3697c0c79db52614261afa5dde4122b29ca532e5b098c4b648f1cc776653ed",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.19947,
+      "input_tokens": 154,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 140,
+      "state_sha256": "0bc388cfec0278219e5236fef66bd83ebbc71054af3fc2ebdf1e97a113f8589f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.219068,
+      "input_tokens": 136,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 141,
+      "state_sha256": "0bc388cfec0278219e5236fef66bd83ebbc71054af3fc2ebdf1e97a113f8589f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.236362,
+      "input_tokens": 142,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 142,
+      "state_sha256": "468b472080e732983fcec04542c689572b299c57b6456f1f786ea9ddb7096363",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.287932,
+      "input_tokens": 151,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 143,
+      "state_sha256": "468b472080e732983fcec04542c689572b299c57b6456f1f786ea9ddb7096363",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.267178,
+      "input_tokens": 157,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 144,
+      "state_sha256": "d2ac56def8caf4a2f82386726004f5cca27c133a68d74c6924e2bdb86fa630c4",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.26768,
+      "input_tokens": 150,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 145,
+      "state_sha256": "d2ac56def8caf4a2f82386726004f5cca27c133a68d74c6924e2bdb86fa630c4",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.257799,
+      "input_tokens": 156,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 146,
+      "state_sha256": "92036d518333d644ba7aafb6f16ae61eafe566456059718145bb8cff16b35a08",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.74491,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 147,
+      "state_sha256": "92036d518333d644ba7aafb6f16ae61eafe566456059718145bb8cff16b35a08",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.230815,
+      "input_tokens": 113,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 148,
+      "state_sha256": "6daa74be8d5437af5618d273d231b5502a783c6096c2f0b4a23a6b194945c89a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.311417,
+      "input_tokens": 116,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 149,
+      "state_sha256": "6daa74be8d5437af5618d273d231b5502a783c6096c2f0b4a23a6b194945c89a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.228041,
+      "input_tokens": 122,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 150,
+      "state_sha256": "edb035d9027dd3a2b5bf0c77d3ff8577ec644bf37aea462461754f279bbdb672",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.23833,
+      "input_tokens": 117,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 151,
+      "state_sha256": "edb035d9027dd3a2b5bf0c77d3ff8577ec644bf37aea462461754f279bbdb672",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.174578,
+      "input_tokens": 123,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 152,
+      "state_sha256": "cafa11d825b32aa34b2fa2db01b8903f0d12aeac9d6b901af2a005fce50c5942",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.204966,
+      "input_tokens": 150,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 153,
+      "state_sha256": "cafa11d825b32aa34b2fa2db01b8903f0d12aeac9d6b901af2a005fce50c5942",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.251709,
+      "input_tokens": 156,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 154,
+      "state_sha256": "2a5981f89b648063194362874dc38a29c851cd850726bbb1ef8fca1963fbb08f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.318766,
+      "input_tokens": 136,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 155,
+      "state_sha256": "2a5981f89b648063194362874dc38a29c851cd850726bbb1ef8fca1963fbb08f",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.266875,
+      "input_tokens": 142,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 156,
+      "state_sha256": "4322ee57fc274f7328f07266db6abe93a9955b1453c42573961eea5b14c5c437",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.264808,
+      "input_tokens": 105,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 157,
+      "state_sha256": "4322ee57fc274f7328f07266db6abe93a9955b1453c42573961eea5b14c5c437",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.215732,
+      "input_tokens": 111,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 158,
+      "state_sha256": "59d7e3adee2cc472825bf9be5a30b2e1344ef2ab9b4cce1ced1492c1be1ce126",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.213174,
+      "input_tokens": 132,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 159,
+      "state_sha256": "59d7e3adee2cc472825bf9be5a30b2e1344ef2ab9b4cce1ced1492c1be1ce126",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.23139,
+      "input_tokens": 138,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 160,
+      "state_sha256": "15626d15a7ab3ff6c5f81cf6c66db76c2b21a3f8b17ee018715e454fb0800019",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.258636,
+      "input_tokens": 140,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 161,
+      "state_sha256": "15626d15a7ab3ff6c5f81cf6c66db76c2b21a3f8b17ee018715e454fb0800019",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.260272,
+      "input_tokens": 146,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 162,
+      "state_sha256": "db4522c1c5a524fc9577d0809f070c8074dc969c5d95156678c6ccb80cde51f9",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.238514,
+      "input_tokens": 100,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 163,
+      "state_sha256": "db4522c1c5a524fc9577d0809f070c8074dc969c5d95156678c6ccb80cde51f9",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.145811,
+      "input_tokens": 106,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 164,
+      "state_sha256": "16656d7deafc53ac2c85a217361e43ef0a476fd39abcbff0924fefb70f521fe5",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.172969,
+      "input_tokens": 124,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 165,
+      "state_sha256": "16656d7deafc53ac2c85a217361e43ef0a476fd39abcbff0924fefb70f521fe5",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.160144,
+      "input_tokens": 130,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 166,
+      "state_sha256": "3b1e27d61e1567c0ab33d95194fd06a9d5e74e923cc7011cd4badb4306855075",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.190273,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 167,
+      "state_sha256": "3b1e27d61e1567c0ab33d95194fd06a9d5e74e923cc7011cd4badb4306855075",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.199811,
+      "input_tokens": 113,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 168,
+      "state_sha256": "e1f8d0f247ea5b5e6602c006d14cdca0ac82ac591c1b61226e871706179c7308",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.232706,
+      "input_tokens": 134,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 169,
+      "state_sha256": "e1f8d0f247ea5b5e6602c006d14cdca0ac82ac591c1b61226e871706179c7308",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.256137,
+      "input_tokens": 140,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 170,
+      "state_sha256": "8b704a4b7e013791a500a287f3f4e26217ce420038fc598f99900809079e5a9c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.248447,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 171,
+      "state_sha256": "8b704a4b7e013791a500a287f3f4e26217ce420038fc598f99900809079e5a9c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.224729,
+      "input_tokens": 113,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 172,
+      "state_sha256": "f9cf9b75a7700b9bfae5d3c3a3a1ce06730c4eeb146d25fc3d9caf2ae4098fff",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.231959,
+      "input_tokens": 134,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 173,
+      "state_sha256": "f9cf9b75a7700b9bfae5d3c3a3a1ce06730c4eeb146d25fc3d9caf2ae4098fff",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.239562,
+      "input_tokens": 140,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 174,
+      "state_sha256": "6cf27480e4774445186bbab0fedd246282ff511f09281469fc2e40cedc8d1d6e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.263301,
+      "input_tokens": 153,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 175,
+      "state_sha256": "6cf27480e4774445186bbab0fedd246282ff511f09281469fc2e40cedc8d1d6e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.219497,
+      "input_tokens": 159,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 176,
+      "state_sha256": "bd20299a030cb71f8dcecccaab9dbef489d59501fceeec7017ff6937b5e630e7",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.237699,
+      "input_tokens": 146,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 177,
+      "state_sha256": "bd20299a030cb71f8dcecccaab9dbef489d59501fceeec7017ff6937b5e630e7",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.211563,
+      "input_tokens": 152,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 178,
+      "state_sha256": "788570289d0ee97be5c37dcd2a33a4dcb93f5a7eb21b987450ec12ebc986b8b2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.190325,
+      "input_tokens": 112,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 179,
+      "state_sha256": "788570289d0ee97be5c37dcd2a33a4dcb93f5a7eb21b987450ec12ebc986b8b2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.187662,
+      "input_tokens": 118,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 180,
+      "state_sha256": "7c6e24a07c764e9ad97bc87b2822da8a532442f48f3ab96afc52d54914174443",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.238137,
+      "input_tokens": 139,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 181,
+      "state_sha256": "7c6e24a07c764e9ad97bc87b2822da8a532442f48f3ab96afc52d54914174443",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.273436,
+      "input_tokens": 145,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 182,
+      "state_sha256": "0ac215201f4d15e0516b660b0b8c8000256b15ce97508adec6cf11ba33b3ac3d",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.285475,
+      "input_tokens": 159,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 183,
+      "state_sha256": "0ac215201f4d15e0516b660b0b8c8000256b15ce97508adec6cf11ba33b3ac3d",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.264635,
+      "input_tokens": 165,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 184,
+      "state_sha256": "c2b12f8d95a05682ca8a3b3360a26411cf5289dade7a81d34d4fbbdf9eaee702",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.221234,
+      "input_tokens": 105,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 185,
+      "state_sha256": "c2b12f8d95a05682ca8a3b3360a26411cf5289dade7a81d34d4fbbdf9eaee702",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.193836,
+      "input_tokens": 111,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 186,
+      "state_sha256": "2facf52133f48a9f8a152a47b079316fc11c86efc01c2d97d9bab20d037294f9",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.246295,
+      "input_tokens": 134,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 187,
+      "state_sha256": "2facf52133f48a9f8a152a47b079316fc11c86efc01c2d97d9bab20d037294f9",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.180711,
+      "input_tokens": 140,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 188,
+      "state_sha256": "688b971cf395da3165b79729bdf867717c9614fd935b1fcbec32e337abf6b5d2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.177546,
+      "input_tokens": 101,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 189,
+      "state_sha256": "688b971cf395da3165b79729bdf867717c9614fd935b1fcbec32e337abf6b5d2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.171832,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 190,
+      "state_sha256": "67019e39347bd96bb68a3dd37d102d024532633c1382db4639ec5603075c6423",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.213672,
+      "input_tokens": 108,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 191,
+      "state_sha256": "67019e39347bd96bb68a3dd37d102d024532633c1382db4639ec5603075c6423",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.221788,
+      "input_tokens": 114,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 192,
+      "state_sha256": "4e073e80c7007bf8f3044e3cad88609bd43bf813452d82b3718849ad4db37730",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.223325,
+      "input_tokens": 134,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 193,
+      "state_sha256": "4e073e80c7007bf8f3044e3cad88609bd43bf813452d82b3718849ad4db37730",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.255061,
+      "input_tokens": 140,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 194,
+      "state_sha256": "1bdf7a937e935d71127f01c30adcd618b677ba81a7d4f3b3c75d053b41483942",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.244556,
+      "input_tokens": 110,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 195,
+      "state_sha256": "1bdf7a937e935d71127f01c30adcd618b677ba81a7d4f3b3c75d053b41483942",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.203837,
+      "input_tokens": 116,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 196,
+      "state_sha256": "1a8dd9f24d8385adab9678cd48d2dce71f430fad0664a8779636540b0b980136",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.239792,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 197,
+      "state_sha256": "1a8dd9f24d8385adab9678cd48d2dce71f430fad0664a8779636540b0b980136",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.242365,
+      "input_tokens": 113,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 198,
+      "state_sha256": "20bbcdb5ed17e4a6da1dd67418e718f4a398bcb3ff82d3d956416a66a1f1bc58",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.227816,
+      "input_tokens": 114,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 199,
+      "state_sha256": "20bbcdb5ed17e4a6da1dd67418e718f4a398bcb3ff82d3d956416a66a1f1bc58",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.186122,
+      "input_tokens": 120,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 200,
+      "state_sha256": "0b161f8ef2aae7af7a82cd69ce80e96a7724d8b7fd38b5e0551c90809fbea95b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.179492,
+      "input_tokens": 102,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 201,
+      "state_sha256": "0b161f8ef2aae7af7a82cd69ce80e96a7724d8b7fd38b5e0551c90809fbea95b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.173063,
+      "input_tokens": 108,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 202,
+      "state_sha256": "d14cb1bfe6a6f5a73d1c2859e52ac45e8fb18d5dc8a3fd782b00e451d2892e76",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.152088,
+      "input_tokens": 105,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 203,
+      "state_sha256": "d14cb1bfe6a6f5a73d1c2859e52ac45e8fb18d5dc8a3fd782b00e451d2892e76",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.207514,
+      "input_tokens": 111,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 204,
+      "state_sha256": "13eaeec5fb7872f892ee5edcad3eba005dca37c436f0be09d98a64851d99a2eb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.222529,
+      "input_tokens": 102,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 205,
+      "state_sha256": "13eaeec5fb7872f892ee5edcad3eba005dca37c436f0be09d98a64851d99a2eb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.206423,
+      "input_tokens": 108,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 206,
+      "state_sha256": "0c50f96dfc7fd41e692f3ed5b31927b9bbb518370fee88a34c4fb42c8a1f00ad",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.228991,
+      "input_tokens": 104,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 207,
+      "state_sha256": "0c50f96dfc7fd41e692f3ed5b31927b9bbb518370fee88a34c4fb42c8a1f00ad",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.2334,
+      "input_tokens": 110,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 208,
+      "state_sha256": "b46a1135f17855fff112014794468aadc69a0ec3154ffc1093b5f2c5eb29c43a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.212332,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 209,
+      "state_sha256": "b46a1135f17855fff112014794468aadc69a0ec3154ffc1093b5f2c5eb29c43a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.182863,
+      "input_tokens": 113,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 210,
+      "state_sha256": "06be94e34256786df775269f0213fd60eaf7378cb6b9f7b1144a212cb93c84dc",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.229425,
+      "input_tokens": 111,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 211,
+      "state_sha256": "06be94e34256786df775269f0213fd60eaf7378cb6b9f7b1144a212cb93c84dc",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.182576,
+      "input_tokens": 117,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 212,
+      "state_sha256": "d8e899581ce284c04597b697aa230fc1a27495059e61168a238f12bf97326bcd",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.201942,
+      "input_tokens": 138,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 213,
+      "state_sha256": "d8e899581ce284c04597b697aa230fc1a27495059e61168a238f12bf97326bcd",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.200762,
+      "input_tokens": 144,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 214,
+      "state_sha256": "c188f80ae5f9099fbce873c85e38d9f4fd5e7c5782920c65241eb2de2d953877",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.232406,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 215,
+      "state_sha256": "c188f80ae5f9099fbce873c85e38d9f4fd5e7c5782920c65241eb2de2d953877",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.219553,
+      "input_tokens": 113,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 216,
+      "state_sha256": "a42530d3b4183203e53a8cc6279093cb4fe5d624218e35d85aed8670084d6e99",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.224433,
+      "input_tokens": 101,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 217,
+      "state_sha256": "a42530d3b4183203e53a8cc6279093cb4fe5d624218e35d85aed8670084d6e99",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.205678,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 218,
+      "state_sha256": "7126a8689afc002a8cfecffe5ead6ec75b36dacba68b588fff065085f4511f18",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.208642,
+      "input_tokens": 102,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 219,
+      "state_sha256": "7126a8689afc002a8cfecffe5ead6ec75b36dacba68b588fff065085f4511f18",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.205628,
+      "input_tokens": 108,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 220,
+      "state_sha256": "81d7a971b280488551ae6440b1dd258efb16fb7c84c4044aae3ad03608044b29",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.225498,
+      "input_tokens": 138,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 221,
+      "state_sha256": "81d7a971b280488551ae6440b1dd258efb16fb7c84c4044aae3ad03608044b29",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.28147,
+      "input_tokens": 144,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 222,
+      "state_sha256": "b27ec26c31b231e471581167bf28ac9a5aada79e355b96d193c448c13ba421f8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.245592,
+      "input_tokens": 101,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 223,
+      "state_sha256": "b27ec26c31b231e471581167bf28ac9a5aada79e355b96d193c448c13ba421f8",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.326303,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 224,
+      "state_sha256": "af2ca314a25cc144a34df66a888466b28cefa2a8676914f85974502940229760",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.166939,
+      "input_tokens": 117,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 225,
+      "state_sha256": "af2ca314a25cc144a34df66a888466b28cefa2a8676914f85974502940229760",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.17525,
+      "input_tokens": 123,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 226,
+      "state_sha256": "55f441fe2095ffdf3f09a7380aabaa66f4ca4c19ae1d2f7e5505896d880fa524",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.196852,
+      "input_tokens": 122,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 227,
+      "state_sha256": "55f441fe2095ffdf3f09a7380aabaa66f4ca4c19ae1d2f7e5505896d880fa524",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.203607,
+      "input_tokens": 128,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 228,
+      "state_sha256": "1964e5a15073d08e541ec3abfd3573882273f6d6c06a6f1561be6b2c20ea8fa4",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.234656,
+      "input_tokens": 154,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 229,
+      "state_sha256": "1964e5a15073d08e541ec3abfd3573882273f6d6c06a6f1561be6b2c20ea8fa4",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.228611,
+      "input_tokens": 160,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 230,
+      "state_sha256": "b0c7096ab544d1d146b8d8761f51b5671ed7919d056af85f098ba6ffbc7aaa64",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.232429,
+      "input_tokens": 111,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 231,
+      "state_sha256": "b0c7096ab544d1d146b8d8761f51b5671ed7919d056af85f098ba6ffbc7aaa64",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.260804,
+      "input_tokens": 117,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 232,
+      "state_sha256": "a83fec342812aeaa7ce0f1e7a1c2d5580358cc27bcf2964e0f4e761ef90bb130",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.249221,
+      "input_tokens": 125,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 233,
+      "state_sha256": "a83fec342812aeaa7ce0f1e7a1c2d5580358cc27bcf2964e0f4e761ef90bb130",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.234893,
+      "input_tokens": 131,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 234,
+      "state_sha256": "67aa05516b6769b9fb2314ae70289020b2d799b6b75e6562c1898eaf8462d804",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.238443,
+      "input_tokens": 152,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 235,
+      "state_sha256": "67aa05516b6769b9fb2314ae70289020b2d799b6b75e6562c1898eaf8462d804",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.24418,
+      "input_tokens": 158,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 236,
+      "state_sha256": "caa2c01469c08ea48ab9f71eecfc46c04608f11fc7aa53fc599df7c5e69e7a9a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.202503,
+      "input_tokens": 113,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 237,
+      "state_sha256": "caa2c01469c08ea48ab9f71eecfc46c04608f11fc7aa53fc599df7c5e69e7a9a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.150192,
+      "input_tokens": 119,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 238,
+      "state_sha256": "112a54cd0f8c411336e342d6ca6e70a7076b289b99cad290df77b30029474854",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.173822,
+      "input_tokens": 109,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 239,
+      "state_sha256": "112a54cd0f8c411336e342d6ca6e70a7076b289b99cad290df77b30029474854",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.190482,
+      "input_tokens": 115,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 240,
+      "state_sha256": "dbe4f1e97187307dff35c2accf619d8f181e4b1520f7be125ea89672ffafe103",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.221344,
+      "input_tokens": 114,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 241,
+      "state_sha256": "dbe4f1e97187307dff35c2accf619d8f181e4b1520f7be125ea89672ffafe103",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.235131,
+      "input_tokens": 120,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 242,
+      "state_sha256": "8470a911737229d12a8fcfb0fc6e8eaaad6a82bff2b0011ecc5356e832f1d1f6",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.263717,
+      "input_tokens": 135,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 243,
+      "state_sha256": "8470a911737229d12a8fcfb0fc6e8eaaad6a82bff2b0011ecc5356e832f1d1f6",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.240659,
+      "input_tokens": 141,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 244,
+      "state_sha256": "82a542e92687cbd517768ea167a981e92d8751f227bfdf1d1e057f456bcb8682",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.364746,
+      "input_tokens": 129,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 245,
+      "state_sha256": "82a542e92687cbd517768ea167a981e92d8751f227bfdf1d1e057f456bcb8682",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.259553,
+      "input_tokens": 135,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 246,
+      "state_sha256": "8c32dbd454db5ee1ba92da583753bd901a9d7c7529cdd9cc40e2bfff11e12bac",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.290281,
+      "input_tokens": 110,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 247,
+      "state_sha256": "8c32dbd454db5ee1ba92da583753bd901a9d7c7529cdd9cc40e2bfff11e12bac",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.218478,
+      "input_tokens": 116,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 248,
+      "state_sha256": "0b7ff1c824e00d19040b729834681824224b182fc28de900aac21786574d734a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.150954,
+      "input_tokens": 100,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 249,
+      "state_sha256": "0b7ff1c824e00d19040b729834681824224b182fc28de900aac21786574d734a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.181561,
+      "input_tokens": 106,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 250,
+      "state_sha256": "2cf023e7d616aa2ba536af75cd148d32cee4fcf32cafd0cb336fe91b3305d8d6",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.192597,
+      "input_tokens": 110,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 251,
+      "state_sha256": "2cf023e7d616aa2ba536af75cd148d32cee4fcf32cafd0cb336fe91b3305d8d6",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.218049,
+      "input_tokens": 116,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 252,
+      "state_sha256": "6578c1e5810b6c77bcc93e25d64c609ddd5419c5400a38660472757c5d6a7c69",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.294676,
+      "input_tokens": 123,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 253,
+      "state_sha256": "6578c1e5810b6c77bcc93e25d64c609ddd5419c5400a38660472757c5d6a7c69",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.276181,
+      "input_tokens": 129,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 254,
+      "state_sha256": "86dcec6c8d465b04bdce7d3337467235c8eb606106bc504461f3a9644554cae3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.263051,
+      "input_tokens": 145,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 255,
+      "state_sha256": "86dcec6c8d465b04bdce7d3337467235c8eb606106bc504461f3a9644554cae3",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.276682,
+      "input_tokens": 151,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 256,
+      "state_sha256": "5b94e425c2a83ea327a722d0f75f7ebcbe62cd338135dda6d454d0aec090e495",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.263169,
+      "input_tokens": 100,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 257,
+      "state_sha256": "5b94e425c2a83ea327a722d0f75f7ebcbe62cd338135dda6d454d0aec090e495",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.204041,
+      "input_tokens": 106,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 258,
+      "state_sha256": "b4bd635b391ce0ec4a48ef0e39fd46f8a4d5aa218e3ac3cadd3f1da22c54c072",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.211268,
+      "input_tokens": 111,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 259,
+      "state_sha256": "b4bd635b391ce0ec4a48ef0e39fd46f8a4d5aa218e3ac3cadd3f1da22c54c072",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.243816,
+      "input_tokens": 117,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 260,
+      "state_sha256": "df4c1f05fae1c3db75b20fb22ae0f59a1d866101d9cbbc284a1c629b63407c4b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.229197,
+      "input_tokens": 153,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 261,
+      "state_sha256": "df4c1f05fae1c3db75b20fb22ae0f59a1d866101d9cbbc284a1c629b63407c4b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.283449,
+      "input_tokens": 159,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 262,
+      "state_sha256": "b5805755e0d1fb9f95dc6ebe93126c8d20c120c6b714da57e0c962a9d7fa47cf",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.235841,
+      "input_tokens": 136,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 263,
+      "state_sha256": "b5805755e0d1fb9f95dc6ebe93126c8d20c120c6b714da57e0c962a9d7fa47cf",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.199082,
+      "input_tokens": 142,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 264,
+      "state_sha256": "a5ddd576cd2df1829c3fa7dc16ca83603edc70cce96f57a474e0b063e1e86f92",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.240227,
+      "input_tokens": 125,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 265,
+      "state_sha256": "a5ddd576cd2df1829c3fa7dc16ca83603edc70cce96f57a474e0b063e1e86f92",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.235408,
+      "input_tokens": 131,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 266,
+      "state_sha256": "5b7882ce72191eb92d4347de062b77e41bae2445235f51b7792b978f850b4025",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.22451,
+      "input_tokens": 101,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 267,
+      "state_sha256": "5b7882ce72191eb92d4347de062b77e41bae2445235f51b7792b978f850b4025",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.213574,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 268,
+      "state_sha256": "951f31617ed7e3618b9f2f27a537b8e4a31c593e1dbad13120c04dfd606c5f68",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.213933,
+      "input_tokens": 115,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 269,
+      "state_sha256": "951f31617ed7e3618b9f2f27a537b8e4a31c593e1dbad13120c04dfd606c5f68",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.247652,
+      "input_tokens": 121,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 270,
+      "state_sha256": "a4feae7a54ec4ae29e2e2f7968893be6be69cdcd4b778b43aa0747bbfb9e2537",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.224638,
+      "input_tokens": 104,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 271,
+      "state_sha256": "a4feae7a54ec4ae29e2e2f7968893be6be69cdcd4b778b43aa0747bbfb9e2537",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.217253,
+      "input_tokens": 110,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 272,
+      "state_sha256": "fb4d9929bfaa16cbea8494ee04f1380673db026c2afd34292094202a88d2088e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.165731,
+      "input_tokens": 106,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 273,
+      "state_sha256": "fb4d9929bfaa16cbea8494ee04f1380673db026c2afd34292094202a88d2088e",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.141528,
+      "input_tokens": 112,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 274,
+      "state_sha256": "e288c92386623dc01dfa201d3e14525ca3fba9fef044bc2ed4dcfa2c29db3d1c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.118075,
+      "input_tokens": 105,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 275,
+      "state_sha256": "e288c92386623dc01dfa201d3e14525ca3fba9fef044bc2ed4dcfa2c29db3d1c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.120616,
+      "input_tokens": 111,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 276,
+      "state_sha256": "95731de91bf950ff2b6a92014e0f55c1cab90af574c6fb8d865126526cb546d5",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.19117,
+      "input_tokens": 121,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 277,
+      "state_sha256": "95731de91bf950ff2b6a92014e0f55c1cab90af574c6fb8d865126526cb546d5",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.220799,
+      "input_tokens": 127,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 278,
+      "state_sha256": "084e34c0102c08d15eeeae83d675f206e9c8345706fb38402bc7b0ffc36fa4d2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.212951,
+      "input_tokens": 106,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 279,
+      "state_sha256": "084e34c0102c08d15eeeae83d675f206e9c8345706fb38402bc7b0ffc36fa4d2",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.198215,
+      "input_tokens": 112,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 280,
+      "state_sha256": "5f7803a269a03402833de8dabcb61c9f4ebf968a6e3e316576d6b5687c0924ed",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.21932,
+      "input_tokens": 162,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 281,
+      "state_sha256": "5f7803a269a03402833de8dabcb61c9f4ebf968a6e3e316576d6b5687c0924ed",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.278813,
+      "input_tokens": 168,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 282,
+      "state_sha256": "4ded357d736bfffc20b29991d566ce0f0d525e3b75a1202673114dbe742fb4bb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.204899,
+      "input_tokens": 103,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 283,
+      "state_sha256": "4ded357d736bfffc20b29991d566ce0f0d525e3b75a1202673114dbe742fb4bb",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.168462,
+      "input_tokens": 109,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 284,
+      "state_sha256": "c6d15b625a760e468cf4f00375b89d80d6eda96ef9a6be3cf5154c30da78e218",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.203926,
+      "input_tokens": 156,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 285,
+      "state_sha256": "c6d15b625a760e468cf4f00375b89d80d6eda96ef9a6be3cf5154c30da78e218",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.187499,
+      "input_tokens": 162,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 286,
+      "state_sha256": "d0d8282c501e354d8d8a5ea4b37ef18ea512b0768d6603bbc61c6cd414052956",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.216155,
+      "input_tokens": 153,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 287,
+      "state_sha256": "d0d8282c501e354d8d8a5ea4b37ef18ea512b0768d6603bbc61c6cd414052956",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.240295,
+      "input_tokens": 159,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 288,
+      "state_sha256": "15d20489bb46553d4a259accbffb9c625de19b3ba3e634cad437caf7d0df448b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.214854,
+      "input_tokens": 114,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 289,
+      "state_sha256": "15d20489bb46553d4a259accbffb9c625de19b3ba3e634cad437caf7d0df448b",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.2074,
+      "input_tokens": 120,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 290,
+      "state_sha256": "18215a6d26eb8898904a98b30779f1133de79d4b82a35961ce74bac2c340f853",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.212601,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 291,
+      "state_sha256": "18215a6d26eb8898904a98b30779f1133de79d4b82a35961ce74bac2c340f853",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.25115,
+      "input_tokens": 113,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 292,
+      "state_sha256": "a672411e7428be0f8eba378989834fe4bdd1e2ada34092c6f3235e775e6dab2a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.274357,
+      "input_tokens": 193,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 293,
+      "state_sha256": "a672411e7428be0f8eba378989834fe4bdd1e2ada34092c6f3235e775e6dab2a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.258619,
+      "input_tokens": 199,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 294,
+      "state_sha256": "eeeb1fccc6b77619f606d22320e4888fb5cf871c3aab2bd79a0195be441ca9e5",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.30289,
+      "input_tokens": 110,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 295,
+      "state_sha256": "eeeb1fccc6b77619f606d22320e4888fb5cf871c3aab2bd79a0195be441ca9e5",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.242467,
+      "input_tokens": 116,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 296,
+      "state_sha256": "366a7c495046803d93460875b49761287a7a3cdcb4791d529f8fb817ad8b5255",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.232747,
+      "input_tokens": 101,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 297,
+      "state_sha256": "366a7c495046803d93460875b49761287a7a3cdcb4791d529f8fb817ad8b5255",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.175816,
+      "input_tokens": 107,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 298,
+      "state_sha256": "3c5fe153d6ff6ed992d43d5c1bcf1ac506f046f3c8c7effa5ec00f96098cbc80",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.21571,
+      "input_tokens": 156,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 299,
+      "state_sha256": "3c5fe153d6ff6ed992d43d5c1bcf1ac506f046f3c8c7effa5ec00f96098cbc80",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.229866,
+      "input_tokens": 162,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 300,
+      "state_sha256": "efcc7dbdff030d1133765e8a905f181fe16c1e1b8dbf36ef36ae9018f04d33bc",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.298214,
+      "input_tokens": 142,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 301,
+      "state_sha256": "efcc7dbdff030d1133765e8a905f181fe16c1e1b8dbf36ef36ae9018f04d33bc",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.286998,
+      "input_tokens": 148,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 302,
+      "state_sha256": "1678966213f55e3432b7cdc0fbc758d3565dd783949c92c27e78611ab941d552",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.239352,
+      "input_tokens": 123,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 303,
+      "state_sha256": "1678966213f55e3432b7cdc0fbc758d3565dd783949c92c27e78611ab941d552",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.267264,
+      "input_tokens": 129,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 304,
+      "state_sha256": "5644f06304345547abfd485e385ee894c516a23fdb99c163000ccab94b6ef4f7",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.289545,
+      "input_tokens": 110,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 305,
+      "state_sha256": "5644f06304345547abfd485e385ee894c516a23fdb99c163000ccab94b6ef4f7",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.21292,
+      "input_tokens": 116,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 306,
+      "state_sha256": "51f4836be2f96f2343cfd9602de6b66cd257d24febd0aeeef381429d983b5b1a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.246196,
+      "input_tokens": 116,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 307,
+      "state_sha256": "51f4836be2f96f2343cfd9602de6b66cd257d24febd0aeeef381429d983b5b1a",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.195356,
+      "input_tokens": 122,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 308,
+      "state_sha256": "31d64172621c8d36d3f3e2329d1fa4b09d0ce58b508846532e7f5671d7f40b5c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.168235,
+      "input_tokens": 110,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 309,
+      "state_sha256": "31d64172621c8d36d3f3e2329d1fa4b09d0ce58b508846532e7f5671d7f40b5c",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.193793,
+      "input_tokens": 116,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 310,
+      "state_sha256": "304c7307a378472af75fc0d5962bf142303c102fbd0b06cdd0c7b393ad3cfd51",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.228447,
+      "input_tokens": 104,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 311,
+      "state_sha256": "304c7307a378472af75fc0d5962bf142303c102fbd0b06cdd0c7b393ad3cfd51",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.252867,
+      "input_tokens": 110,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 312,
+      "state_sha256": "e60e9d8dc6bf43bd697ac15a3557760f8b20ae8a28a64694aedc20a1151ff40d",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.227021,
+      "input_tokens": 113,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 313,
+      "state_sha256": "e60e9d8dc6bf43bd697ac15a3557760f8b20ae8a28a64694aedc20a1151ff40d",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.350553,
+      "input_tokens": 119,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 314,
+      "state_sha256": "c6d556034c7a0c7094a8cd52dc2acb0a4bfd623c814beb81f60bc137e6844a71",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.280718,
+      "input_tokens": 113,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    },
+    {
+      "index": 315,
+      "state_sha256": "c6d556034c7a0c7094a8cd52dc2acb0a4bfd623c814beb81f60bc137e6844a71",
+      "questions": [
+        "is_scam"
+      ],
+      "latency_seconds": 1.248215,
+      "input_tokens": 119,
+      "error": null,
+      "model": "gemma-4-31b-kv9-q4km-mm"
+    }
+  ],
+  "call_summary": {
+    "calls": 316,
+    "failed": 0,
+    "input_tokens_total": 39274,
+    "input_tokens_known": 316,
+    "latency_seconds_total": 389.160269677639,
+    "latency_seconds_median": 1.2284635859541595,
+    "latency_seconds_max": 1.7449098019860685,
+    "models": [
+      "gemma-4-31b-kv9-q4km-mm"
+    ]
+  },
+  "pins": {
+    "finished_utc": "2026-10-01T04:25:46.394186+00:00",
+    "wall_seconds": 389.2,
+    "dataset": "difraud/difraud sms",
+    "dataset_revision": "aaaf94b336c563a14806bb4f3f58727bed9ed8d4",
+    "split_seed": 0,
+    "served_template": "native_gemma4_turn",
+    "evolution_artifact": "wording252_evolution_gemma.json",
+    "evolution_artifact_sha256": "07bd6c9a07dcf5cc6104b678cd855a8bc89b021d7144070887a5298f2caec254",
+    "server": {
+      "served": [
+        {
+          "id": "gemma-4-31b-kv9-q4km-mm"
+        }
+      ],
+      "build_info": "b11277-eae11d221",
+      "model_alias": "gemma-4-31b-kv9-q4km-mm",
+      "model_ftype": "Q2_K - Medium",
+      "model_file": "gemma-4-31b-24gib-kv9-decoder.gguf"
+    },
+    "reported_models": [
+      "gemma-4-31b-kv9-q4km-mm"
+    ],
+    "budget_refusals": 0,
+    "spend": null
+  },
+  "identity": {
+    "run_id": "2d5a5d1b46b2477fa3bb057a4566029d",
+    "baseline_commit": "34ac50a2cad5c80a596255ad471775ad2d9be4e8",
+    "working_tree": {
+      "dirty": true,
+      "dirty_paths": [
+        "evals/fixtures/checks/receipts/check_match_llama_cpp_repeat1.json",
+        "evals/fixtures/checks/receipts/check_match_llama_cpp_repeat2.json",
+        "evals/fixtures/checks/receipts/check_match_llama_cpp_repeat3.json",
+        "evals/fixtures/checks/receipts/check_match_llama_cpp_repeat4.json",
+        "evals/fixtures/checks/receipts/check_match_llama_cpp_repeat5.json"
+      ],
+      "dirty_digest": "f7a1b8606ed25cc2294d184887ef967c914ea46d2bfb03c01a324f40234af6c5"
+    },
+    "prompt_digests": {
+      "seed": "4fd7cac541996c2e0b999de77c20f26cf6a9117873d29bda19ca30bf85495b76",
+      "evolved": "447d61a5c86e73e027dc49b8bc42c88e92370b42267d09ce43227e8c454a5681"
+    },
+    "code_path_digests": {
+      "comparison": "a954628583138781b4e31afd8d5f85748e94b8b9845419fb32f461430db4e69e",
+      "held_out": "380dcdc9bfec1e060fea42659f99d0211175720fe41d1b2d91befb90184578b6",
+      "metrics": "5709b4dd87b9ab4d5c1a59e73d32aa9eb2931216cae8fae88a51d050308ca641"
+    },
+    "fixture_digests": {
+      "evolution_artifact": "07bd6c9a07dcf5cc6104b678cd855a8bc89b021d7144070887a5298f2caec254"
+    },
+    "runtime": {
+      "model": "gemma-4-31b-kv9-q4km-mm",
+      "served_template": "native_gemma4_turn",
+      "server_build": "b11277-eae11d221",
+      "template_identity": "unknown",
+      "projector_identity": "unknown",
+      "config_identity": "unknown"
+    },
+    "arm_call_counts": {
+      "judgments": 316
+    },
+    "identity_digest": "a4bb4275275bafb31d61bfb5161d2e8871c2a53854f183858ec7cafed731501b"
+  }
+}
