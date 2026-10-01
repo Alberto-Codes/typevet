@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.7.0](https://github.com/Alberto-Codes/typevet/compare/v0.6.0...v0.7.0) (2026-10-01)
+
+
+### Features
+
+* **adapters:** expose Retry-After and rate-limit headers on a vLLM HTTP error ([8a273df](https://github.com/Alberto-Codes/typevet/commit/8a273dfddc070b6214e339a1d0db002f49c35d8d)), closes [#355](https://github.com/Alberto-Codes/typevet/issues/355)
+* **adapters:** record the request id typevet sends in receipts and errors ([68aab28](https://github.com/Alberto-Codes/typevet/commit/68aab28f77d375b0329482b8d0f123672782cbef)), closes [#356](https://github.com/Alberto-Codes/typevet/issues/356)
+* **adapters:** refuse a Gemma 4 framing that lacks the no-thinking prefill ([8edd342](https://github.com/Alberto-Codes/typevet/commit/8edd342ce94299899f7fef3de4fb05b14e450bbc)), closes [#354](https://github.com/Alberto-Codes/typevet/issues/354)
+* **domain:** make the option block and the context template substitutable named parts ([2db4a5e](https://github.com/Alberto-Codes/typevet/commit/2db4a5e6a68297cea7fa5f449ea3fe7f0578e8ce)), closes [#364](https://github.com/Alberto-Codes/typevet/issues/364) [#360](https://github.com/Alberto-Codes/typevet/issues/360)
+* **evals:** evolve criteria beside instructions through a multi-part wording candidate ([112bca9](https://github.com/Alberto-Codes/typevet/commit/112bca94e3580e7e8147fe16ce23ed87529a4f09)), closes [#363](https://github.com/Alberto-Codes/typevet/issues/363)
+* **evals:** pin seed and evolved wording by digest in wording receipts ([ea38912](https://github.com/Alberto-Codes/typevet/commit/ea389127b7e7473dcde80a526cff90ff4881c3f9)), closes [#362](https://github.com/Alberto-Codes/typevet/issues/362) [#360](https://github.com/Alberto-Codes/typevet/issues/360)
+* **ports:** carry off_option_threshold through the port protocol and every wrapper ([3df3ff7](https://github.com/Alberto-Codes/typevet/commit/3df3ff770f56e4ea401491f804d382260ac06c2a)), closes [#368](https://github.com/Alberto-Codes/typevet/issues/368) [#353](https://github.com/Alberto-Codes/typevet/issues/353)
+* **runtime:** apply a caller-supplied calibration map to Noul answers ([f1a6d6c](https://github.com/Alberto-Codes/typevet/commit/f1a6d6c167f72bfc2a8fa8dc037cdfc1c57fa288)), closes [#352](https://github.com/Alberto-Codes/typevet/issues/352)
+* **runtime:** apply a Score calibration map and write map artifacts from receipts ([00f7725](https://github.com/Alberto-Codes/typevet/commit/00f7725db3afc53976b1ae1050bfd8da3e0aee8b)), closes [#352](https://github.com/Alberto-Codes/typevet/issues/352)
+* **scoring:** flag an answer whose off-option mass exceeds a caller threshold ([722728b](https://github.com/Alberto-Codes/typevet/commit/722728b31e255b60479dfa5d5b16e9cf70f7b6b7)), closes [#353](https://github.com/Alberto-Codes/typevet/issues/353)
+
+
+### Fixes
+
+* **evals:** mask an echoed header name used as a JSON key in the acceptance receipt ([bbd1d19](https://github.com/Alberto-Codes/typevet/commit/bbd1d193de921d63362b83eb700334da8162e556)), closes [#351](https://github.com/Alberto-Codes/typevet/issues/351)
+
+
+### Documentation
+
+* **reference:** list the text parts of a judgment call and their evolution status ([f55a9c0](https://github.com/Alberto-Codes/typevet/commit/f55a9c08ddbac7239239786f8512356f4c7c23e8)), closes [#361](https://github.com/Alberto-Codes/typevet/issues/361) [#360](https://github.com/Alberto-Codes/typevet/issues/360)
+
 ## [0.6.0](https://github.com/Alberto-Codes/typevet/compare/v0.5.0...v0.6.0) (2026-09-30)
 
 
