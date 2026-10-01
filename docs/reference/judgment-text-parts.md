@@ -12,8 +12,8 @@ The parent plan is [#360](https://github.com/Alberto-Codes/typevet/issues/360).
 
 | Part | Defined at | Caller-substitutable today | Pinned in receipts | Evolved so far | May ever be evolved |
 |---|---|---|---|---|---|
-| Question `instructions` | `src/typevet/domain/judgment_questions.py:67` | Yes. The caller sets it on each `Noul`, `Choice` or `Score`. | Wording receipts store seed and evolved text verbatim, with no digest. Identity receipts hash it in `prompt_digests`. | Yes, the DIFrauD `is_scam` Noul ([#309](https://github.com/Alberto-Codes/typevet/issues/309), [#252](https://github.com/Alberto-Codes/typevet/issues/252)). | Yes. |
-| `criteria` (true/false text, option labels, scale anchors) | `src/typevet/domain/judgment_questions.py:68` | Yes. The caller sets it on each question. | Wording receipts do not store it. Identity receipts hash it in `prompt_digests`. | No. `WordingTransport` always reuses the seed `criteria`. | Yes, planned ([#363](https://github.com/Alberto-Codes/typevet/issues/363)). |
+| Question `instructions` | `src/typevet/domain/judgment_questions.py:67` | Yes. The caller sets it on each `Noul`, `Choice` or `Score`. | Wording receipts store seed and evolved text verbatim and by digest. Identity receipts hash it in `prompt_digests`. | Yes, the DIFrauD `is_scam` Noul ([#309](https://github.com/Alberto-Codes/typevet/issues/309), [#252](https://github.com/Alberto-Codes/typevet/issues/252)). | Yes. |
+| `criteria` (true/false text, option labels, scale anchors) | `src/typevet/domain/judgment_questions.py:68` | Yes. The caller sets it on each question. | Wording receipts store the `Noul` criteria in `seed_parts` and `evolved_parts` when a run passes its parts. Identity receipts hash it in `prompt_digests`. | No live run yet. A run can evolve `Noul` criteria since [#363](https://github.com/Alberto-Codes/typevet/issues/363). | Yes. `Choice` and `Score` criteria are not named yet. |
 | Rendered option block | `src/typevet/domain/field_instructions.py:84` | No. typevet renders it from the question. | Only through the commit. | No. | Yes, planned ([#364](https://github.com/Alberto-Codes/typevet/issues/364)). |
 | Context / user-text template | `src/typevet/adapters/outbound/judgment_scoring.py:191` | Partly. A framing places the rendered context, but cannot change how typevet renders `state`. | Only through the commit. | No. | Yes, planned ([#364](https://github.com/Alberto-Codes/typevet/issues/364)). |
 | Framing preamble | `src/typevet/adapters/outbound/gemma/scoring_prefix.py:97` | Yes, through `ScoringJudgmentAdapter(framing=...)` with a `ModelFramingPort`. | Identity receipts record the served-template family. They do not record a framing class. | No. | Yes. No child issue exists yet. |
@@ -41,11 +41,12 @@ Thus no evolution run may change either part.
 
 ## Receipt evidence
 
-- The held-out wording receipt stores `seed_text` and `evolved_text` at `evals/src/typevet_evals/wording/held_out.py:413`.
-- The comparison wording receipt stores the same two fields at `evals/src/typevet_evals/wording/comparison.py:218`.
+- The held-out wording receipt stores its wording keys at `evals/src/typevet_evals/wording/held_out.py:459`.
+- The comparison wording receipt stores the same keys at `evals/src/typevet_evals/wording/comparison.py:226`.
+- `wording_fields` at `evals/src/typevet_evals/wording/digests.py:138` builds those keys. [Wording parts block](eval-receipt-blocks.md#wording-parts-block) lists them.
 - `prompt_digest` at `evals/src/typevet_evals/experiment_identity.py:227` hashes `instructions`, `criteria` and the label order.
 - `RuntimeBuild` records `served_template` at `experiment_identity.py:147`. Its `template_identity` defaults to `unknown`.
-- `WordingTransport` builds each question from the evolved text and the seed `criteria` at `evals/src/typevet_evals/wording/transport.py:211`.
+- `WordingTransport` builds each question from every part of the mapping at `evals/src/typevet_evals/wording/transport.py:191`.
 - [Judgment live receipts](judgment-live-receipts.md) pin the commit, the model and the template family.
 
 ## Component names
@@ -53,6 +54,7 @@ Thus no evolution run may change either part.
 A candidate mapping names each part with one snake_case key.
 Use these keys only.
 gepa-adk accepts only keys that are Python identifiers, so a key never holds a dot.
+A wording run uses the `instructions`, `criteria_true` and `criteria_false` keys today ([#363](https://github.com/Alberto-Codes/typevet/issues/363)).
 
 | Part | Component name | Evolvable |
 |---|---|---|
@@ -66,6 +68,23 @@ gepa-adk accepts only keys that are Python identifiers, so a key never holds a d
 | Control-token rule | `control_token_rule` | Never |
 
 A mapping that names `no_thinking_prefill` or `control_token_rule` is out of scope for evolution.
+
+## Wording run parts
+
+`seed_mapping` in `typevet_evals.wording.parts` builds the full mapping from a seed `Noul`.
+A seed without `criteria` gives the `instructions` part only.
+A seed with `criteria` must hold exactly a `true` and a `false` text.
+`criteria_true` holds the `true` text, and `criteria_false` holds the `false` text.
+The wording run refuses a `Choice` or a `Score` seed.
+
+`evolve_wording(..., components=[...])` names the parts that evolve.
+The default is `["instructions"]`.
+gepa-adk evolves the named parts only, and the other parts are frozen.
+After the run, a check compares each frozen part with its seed text.
+A changed frozen part fails the run.
+
+The transport refuses an unknown key or a missing part.
+Its error names the key and never the text.
 
 ## See also
 

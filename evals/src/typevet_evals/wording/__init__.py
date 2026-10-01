@@ -1,8 +1,10 @@
 """Question wording that gepa-adk evolves (#259).
 
-The wording lives in a caller-owned ``dict[str, str]``. A tool-less ADK
-agent uses ``WordingTransport`` as its model. That model sends the current
-wording as a judgevet ``Noul`` to a judgevet ``SystemOnePort``.
+The wording lives in a caller-owned ``dict[str, str]`` of named parts:
+``instructions``, ``criteria_true`` and ``criteria_false`` (#363). A
+tool-less ADK agent uses ``WordingTransport`` as its model. That model sends
+a judgevet ``Noul`` built from every current part to a judgevet
+``SystemOnePort``.
 ``evolve_wording`` runs gepa-adk on train and validation records with a
 Brier reward and a proposal length cap (#308). ``score_held_out`` and
 ``held_out_receipt`` check the seed and evolved wording on the held-out rows
@@ -45,7 +47,11 @@ Attributes:
     stratified_subset (callable): Pick a fixed subset with the label shares.
     train_subset (callable): The train rows the evolution reflects on.
     wording_metrics (callable): Measure one wording over its rows.
-    length_cap (callable): A proposal validator that caps the proposal length.
+    length_cap (callable): A proposal validator that caps each part's length.
+    part_caps (callable): The length cap of each evolvable part.
+    PART_NAMES (tuple[str, ...]): The part names a run may evolve.
+    WordingParts (type): The evolved selection and both full part mappings.
+    seed_mapping (callable): The full part mapping of a seed ``Noul``.
     TRANSPORT_MODEL (str): The ADK model name of the stand-in.
     JudgePort (type): The synchronous ``SystemOnePort`` call the transport makes.
     SeedNoul (type): The seed judgevet ``Noul`` shape.
@@ -55,8 +61,9 @@ Attributes:
 
 Examples:
     ```python
-    from typevet_evals.wording import WordingTransport
+    from typevet_evals.wording import WordingTransport, seed_mapping
 
+    mapping = seed_mapping(seed)
     model = WordingTransport(
         port=port, mapping=mapping, key="is_scam", seed=seed, judge_model="gemma"
     )
@@ -64,6 +71,7 @@ Examples:
 
 See Also:
     - [typevet_evals.wording.transport][]: the transport module
+    - [typevet_evals.wording.parts][]: the part names and the frozen-part check
     - [typevet_evals.wording.runner][]: the evolution runner
     - [typevet_evals.wording.metrics][]: held-out metrics and the pass rule
     - [typevet_evals.wording.held_out][]: held-out scoring and receipts
@@ -101,6 +109,7 @@ from typevet_evals.wording.metrics import (
     pass_verdict,
     wording_metrics,
 )
+from typevet_evals.wording.parts import PART_NAMES, WordingParts, seed_mapping
 from typevet_evals.wording.runner import (
     BrierScorer,
     WordingRun,
@@ -108,6 +117,7 @@ from typevet_evals.wording.runner import (
     brier_score,
     evolve_wording,
     length_cap,
+    part_caps,
     reflection_prompt,
 )
 from typevet_evals.wording.served import (
@@ -128,6 +138,7 @@ from typevet_evals.wording.transport import (
 
 __all__ = [
     "ALLOW_DEGRADED_ENV",
+    "PART_NAMES",
     "TEXT_JUDGE",
     "TRANSPORT_MODEL",
     "BrierScorer",
@@ -143,6 +154,7 @@ __all__ = [
     "TimedJudgePort",
     "ValidationRows",
     "WordingMetrics",
+    "WordingParts",
     "WordingRun",
     "WordingRunConfig",
     "WordingTransport",
@@ -157,12 +169,14 @@ __all__ = [
     "last_user_text",
     "length_cap",
     "paired_bootstrap",
+    "part_caps",
     "pass_verdict",
     "probe_llama_template",
     "probe_vllm_template",
     "reflection_prompt",
     "require_native_template",
     "score_held_out",
+    "seed_mapping",
     "stratified_subset",
     "train_subset",
     "usage_metadata",

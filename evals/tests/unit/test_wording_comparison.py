@@ -37,6 +37,7 @@ from typevet_evals.wording.held_out import (
     score_held_out,
 )
 from typevet_evals.wording.metrics import cohen_kappa
+from typevet_evals.wording.parts import WordingParts
 
 pytestmark = pytest.mark.unit
 
@@ -209,8 +210,10 @@ def test_receipt_pins_the_seed_and_evolved_wording_by_digest() -> None:
     receipt = _receipt(HeldOutRun(_PAIRS, 4, 4, None, split="test"))
 
     for arm, text in (("seed", SEED_TEXT), ("evolved", "evolved")):
-        canonical = json.dumps({"instructions": text}, separators=(",", ":"))
-        loose = json.dumps({"instructions": text}, ensure_ascii=False)
+        canonical = json.dumps(
+            {"instructions": text}, sort_keys=True, separators=(",", ":")
+        )
+        loose = json.dumps({"instructions": text}, sort_keys=True, ensure_ascii=False)
         assert receipt["wording_digests"][arm] == {
             "components": {"instructions": hashlib.sha256(text.encode()).hexdigest()},
             "mapping": hashlib.sha256(canonical.encode()).hexdigest(),
@@ -218,6 +221,38 @@ def test_receipt_pins_the_seed_and_evolved_wording_by_digest() -> None:
         }
     assert receipt["seed_text"] == SEED_TEXT
     assert receipt["evolved_text"] == "evolved"
+
+
+def test_receipt_records_the_selection_and_both_full_mappings() -> None:
+    seed = {"instructions": SEED_TEXT, "criteria_true": "Yes", "criteria_false": "No"}
+    evolved = seed | {"instructions": "evolved", "criteria_false": "No money"}
+    parts = WordingParts(("instructions", "criteria_false"), seed, evolved)
+    run = HeldOutRun(_PAIRS, 4, 4, None, split="test", parts=parts)
+
+    receipt = comparison_receipt(
+        run,
+        ComparisonSubject("jev", "jev", "jev-latest", "test"),
+        seed_text=SEED_TEXT,
+        evolved_text="evolved",
+        pins={},
+        identity={},
+    )
+    default = _receipt(HeldOutRun(_PAIRS, 4, 4, None, split="test"))
+
+    assert receipt["components"] == ["instructions", "criteria_false"]
+    assert (receipt["seed_parts"], receipt["evolved_parts"]) == (seed, evolved)
+    assert default["components"] == ["instructions"]
+    assert default["seed_parts"] == {"instructions": SEED_TEXT}
+    assert default["evolved_parts"] == {"instructions": "evolved"}
+    with pytest.raises(ValueError, match="evolved_text"):
+        comparison_receipt(
+            run,
+            ComparisonSubject("jev", "jev", "jev-latest", "test"),
+            seed_text=SEED_TEXT,
+            evolved_text="other",
+            pins={},
+            identity={},
+        )
 
 
 def test_receipt_kappa_equals_the_metric_function() -> None:

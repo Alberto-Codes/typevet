@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from gepa_adk import Candidate
 from google.adk.models import BaseLlm, LlmRequest, LlmResponse
 from google.genai import types
 from judgevet import NoulAnswer, SystemOneResponse, Usage
@@ -33,12 +34,15 @@ from judgevet.domain.questions import Noul
 from typevet_evals.datasets import difraud
 from typevet_evals.datasets.difraud import DIFrauDRecord, map_row, record_id
 from typevet_evals.wording import runner
+from typevet_evals.wording.digests import wording_digests
+from typevet_evals.wording.parts import WordingParts, seed_mapping
 from typevet_evals.wording.runner import (
     BrierScorer,
     WordingRunConfig,
     brier_score,
     evolve_wording,
     length_cap,
+    reflection_prompt,
     to_rows,
 )
 
@@ -49,6 +53,14 @@ SEED_TEXT = "Is this message a scam?"
 BETTER = "Does it ask for money?"
 TOO_LONG = SEED_TEXT * 2
 SEED = Noul(instructions=SEED_TEXT, criteria=None)
+SEED_PARTS = {"instructions": SEED_TEXT}
+ONLY_INSTRUCTIONS = ("instructions",)
+ALL_PARTS = ("instructions", "criteria_true", "criteria_false")
+FULL_SEED = Noul(
+    instructions=SEED_TEXT,
+    criteria={"true": "It is a scam", "false": "It is legitimate"},
+)
+BETTER_TRUE = "It asks for money"
 
 
 def _record(text: str, scam: bool, split: str) -> DIFrauDRecord:
@@ -134,10 +146,13 @@ def _config(tmp_path: Path, *proposals: str, **kw: Any) -> WordingRunConfig:
 
 def _run(port: WordingPort, config: WordingRunConfig, **kw: Any) -> runner.WordingRun:
     """Run the runner over the fixture splits."""
-    args: dict[str, Any] = {"train": TRAIN, "validation": VALIDATION} | kw
-    return asyncio.run(
-        evolve_wording(port=port, seed=SEED, key=KEY, config=config, **args)
-    )
+    args: dict[str, Any] = {"train": TRAIN, "validation": VALIDATION, "seed": SEED}
+    return asyncio.run(evolve_wording(port=port, key=KEY, config=config, **args | kw))
+
+
+def _engine(config: WordingRunConfig) -> Any:
+    """Return the gepa-adk configuration of an instructions-only run."""
+    return runner.evolution_config(config, SEED_PARTS, ONLY_INSTRUCTIONS)
 
 
 @pytest.mark.parametrize(
@@ -189,11 +204,61 @@ def test_rows_carry_the_text_and_the_scam_label() -> None:
 
 
 def test_length_cap_rejects_text_longer_than_one_and_a_half_seeds() -> None:
-    check = length_cap("x" * 10)
+    check = length_cap({"instructions": "x" * 10})
 
-    assert check(KEY, "y" * 15) is None
-    assert check(KEY, "y" * 16) == "proposal has 16 characters; the cap is 15"
-    assert check(KEY, "  ") == "empty proposal"
+    assert check("instructions", "y" * 15) is None
+    assert (
+        check("instructions", "y" * 16) == "proposal has 16 characters; the cap is 15"
+    )
+    assert check("instructions", "  ") == "empty proposal"
+
+
+def test_the_validator_caps_each_part_by_its_own_seed_length() -> None:
+    seed = {
+        "instructions": "x" * 10,
+        "criteria_true": "y" * 4,
+        "criteria_false": "z" * 20,
+    }
+
+    check = length_cap(seed)
+
+    assert check("instructions", "a" * 15) is None
+    assert (
+        check("instructions", "a" * 16) == "proposal has 16 characters; the cap is 15"
+    )
+    assert check("criteria_true", "a" * 6) is None
+    assert check("criteria_true", "a" * 7) == "proposal has 7 characters; the cap is 6"
+    assert check("criteria_false", "a" * 30) is None
+    assert check("criteria_false", "a" * 31) == (
+        "proposal has 31 characters; the cap is 30"
+    )
+    assert check("criteria_true", " ") == "empty proposal"
+    assert check("criteria_maybe", "a") == "'criteria_maybe' is not an evolvable part"
+
+
+def test_the_validator_refuses_a_frozen_part() -> None:
+    check = length_cap(seed_mapping(FULL_SEED), ("criteria_true",))
+
+    assert check("criteria_true", "a") is None
+    assert check("instructions", "a") == "'instructions' is not an evolvable part"
+
+
+def test_the_reflection_prompt_lists_each_evolvable_part_with_its_role() -> None:
+    seed = seed_mapping(FULL_SEED)
+
+    prompt = reflection_prompt(seed, ALL_PARTS)
+    frozen = reflection_prompt(seed, ("criteria_true",))
+
+    for name in ALL_PARTS:
+        cap = int(1.5 * len(seed[name]))
+        [line] = [x for x in prompt.splitlines() if x.startswith(f"- {name} ")]
+        assert line.endswith(f"at most {cap} characters.")
+    assert "{component_text}" in prompt
+    assert "{trials}" in prompt
+    assert "Keep its role" in prompt
+    assert [x for x in frozen.splitlines() if x.startswith("- ")] == [
+        "- criteria_true (what a yes answer means): at most 18 characters."
+    ]
 
 
 def test_a_too_long_proposal_is_rejected_and_never_sent(tmp_path: Path) -> None:
@@ -267,7 +332,15 @@ def test_the_runner_cannot_reach_the_split_loaders(
 
     _run(WordingPort(), _config(tmp_path, BETTER))
 
-    assert params == {"port", "seed", "key", "train", "validation", "config"}
+    assert params == {
+        "port",
+        "seed",
+        "key",
+        "train",
+        "validation",
+        "config",
+        "components",
+    }
     assert not names & {"load_splits", "build_splits", "DIFrauDSplits", "difraud"}
 
 
@@ -282,19 +355,19 @@ def test_configuration_reaches_gepa_adk(tmp_path: Path) -> None:
 
     run = _run(WordingPort(), config)
 
-    engine = runner.evolution_config(config, SEED_TEXT)
+    engine = _engine(config)
     assert (engine.reflection_max_trials, engine.max_concurrent_evals) == (1, 1)
     assert engine.proposal_validator is not None
-    assert engine.proposal_validator(KEY, TOO_LONG) is not None
+    assert engine.proposal_validator("instructions", TOO_LONG) is not None
     assert run.result.total_iterations == 1
     assert json.loads((tmp_path / "checkpoint.json").read_text())
 
 
 def test_the_reflection_minibatch_size_reaches_gepa_adk(tmp_path: Path) -> None:
-    default = runner.evolution_config(_config(tmp_path, BETTER), SEED_TEXT)
+    default = _engine(_config(tmp_path, BETTER))
     config = _config(tmp_path, BETTER, reflection_minibatch_size=1, max_iterations=1)
 
-    engine = runner.evolution_config(config, SEED_TEXT)
+    engine = _engine(config)
     run = _run(WordingPort(), config)
 
     assert default.reflection_minibatch_size is None
@@ -317,7 +390,7 @@ def test_a_stop_callback_stops_the_run_with_its_reason(tmp_path: Path) -> None:
 
     run = _run(port, config)
 
-    assert runner.evolution_config(config, SEED_TEXT).stop_callbacks == [after_baseline]
+    assert _engine(config).stop_callbacks == [after_baseline]
     assert run.result.stop_reason.value == "stopper_triggered"
     assert run.result.total_iterations == 0
     assert seen == [0]
@@ -325,7 +398,7 @@ def test_a_stop_callback_stops_the_run_with_its_reason(tmp_path: Path) -> None:
 
 
 def test_the_default_run_has_no_stop_callback(tmp_path: Path) -> None:
-    engine = runner.evolution_config(_config(tmp_path, BETTER), SEED_TEXT)
+    engine = _engine(_config(tmp_path, BETTER))
 
     assert engine.stop_callbacks == []
 
@@ -333,7 +406,7 @@ def test_the_default_run_has_no_stop_callback(tmp_path: Path) -> None:
 def test_the_reflection_prompt_states_the_length_cap(tmp_path: Path) -> None:
     cap = int(1.5 * len(SEED_TEXT))
 
-    engine = runner.evolution_config(_config(tmp_path, BETTER), SEED_TEXT)
+    engine = _engine(_config(tmp_path, BETTER))
 
     assert engine.reflection_prompt is not None
     assert f"at most {cap} characters" in engine.reflection_prompt
@@ -367,7 +440,7 @@ def test_an_empty_split_or_seed_is_refused(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="validation is empty"):
         _run(WordingPort(), _config(tmp_path, BETTER), validation=())
     with pytest.raises(ValueError, match="empty seed"):
-        length_cap(" ")
+        length_cap({"instructions": " "})
 
 
 def test_a_generator_split_is_read_once_and_kept(tmp_path: Path) -> None:
@@ -470,3 +543,178 @@ def test_each_evaluation_sees_only_its_own_candidate(
             assert (depth, text) == (1, current), "a call saw another candidate"
     assert depth == 0
     assert {SEED_TEXT, BETTER} <= seen
+
+
+@dataclass
+class PartsPort(WordingPort):
+    """Answer 0.9/0.1 when ``criteria_true`` is ``BETTER_TRUE``, else 0.5.
+
+    Attributes:
+        nouls (list[Any]): Each call's question.
+    """
+
+    nouls: list[Any] = field(default_factory=list)
+
+    def system_one(
+        self, state: str, questions: Mapping[str, Any], model: str
+    ) -> SystemOneResponse:
+        """Record the question and answer from its ``true`` criterion.
+
+        Returns:
+            One ``Noul`` answer under ``KEY``.
+        """
+        noul = questions[KEY]
+        self.nouls.append(noul)
+        good = (noul.criteria or {}).get("true") == BETTER_TRUE
+        p = (0.9 if state in SCAMS else 0.1) if good else 0.5
+        return SystemOneResponse(
+            model=model, usage=Usage(), answers={KEY: NoulAnswer(noul=p)}
+        )
+
+
+class PartReflector(ScriptedReflector):
+    """Propose ``BETTER_TRUE`` for the ``true`` criterion, a short text otherwise."""
+
+    async def generate_content_async(
+        self, llm_request: LlmRequest, stream: bool = False
+    ) -> AsyncGenerator[LlmResponse, None]:
+        """Yield one proposal for the component text in the request.
+
+        Yields:
+            One text response.
+        """
+        text = str(llm_request.config.system_instruction) + "".join(
+            part.text or "" for c in llm_request.contents for part in c.parts or []
+        )
+        proposal = "Is it a con?"
+        if "It is a scam" in text:
+            proposal = BETTER_TRUE
+        elif "It is legitimate" in text:
+            proposal = "It is fine"
+        part = types.Part.from_text(text=proposal)
+        yield LlmResponse(content=types.Content(role="model", parts=[part]))
+
+
+def _parts_config(tmp_path: Path, iterations: int) -> WordingRunConfig:
+    """Return a configuration over the part-aware reflector."""
+    return replace(
+        _config(tmp_path, BETTER, max_iterations=iterations, patience=iterations),
+        reflector=PartReflector(proposals=[BETTER]),
+    )
+
+
+def test_every_selected_part_evolves_and_its_id_is_gepa_adks(tmp_path: Path) -> None:
+    port = PartsPort()
+
+    run = _run(port, _parts_config(tmp_path, 3), seed=FULL_SEED, components=ALL_PARTS)
+
+    digests = wording_digests(run.parts)
+    assert run.components == ALL_PARTS
+    assert run.seed_parts == seed_mapping(FULL_SEED)
+    assert run.evolved_parts == run.result.evolved_components
+    assert run.evolved_parts["criteria_true"] == BETTER_TRUE
+    assert digests["evolved"]["gepa_candidate_id"] == (
+        Candidate(components=dict(run.evolved_parts)).id
+    )
+    assert digests["seed"]["gepa_candidate_id"] == (
+        Candidate(components=seed_mapping(FULL_SEED)).id
+    )
+    assert BETTER_TRUE in {noul.criteria["true"] for noul in port.nouls}
+    assert run.seed_text == SEED_TEXT
+
+
+def test_a_selection_evolves_only_its_parts(tmp_path: Path) -> None:
+    port = PartsPort()
+    seed = seed_mapping(FULL_SEED)
+
+    run = _run(
+        port, _parts_config(tmp_path, 2), seed=FULL_SEED, components=("criteria_true",)
+    )
+
+    assert run.result.evolved_components == {"criteria_true": BETTER_TRUE}
+    assert run.evolved_parts == seed | {"criteria_true": BETTER_TRUE}
+    assert wording_digests(run.parts)["evolved"]["gepa_candidate_id"] == (
+        Candidate(components={"criteria_true": BETTER_TRUE}).id
+    )
+    assert {str(noul.instructions) for noul in port.nouls} == {SEED_TEXT}
+    assert {noul.criteria["false"] for noul in port.nouls} == {seed["criteria_false"]}
+
+
+@pytest.mark.parametrize(
+    ("components", "match"),
+    [
+        ((), "at least one"),
+        (("instructions", "instructions"), "'instructions' is selected twice"),
+        (("criteria_true",), "'criteria_true'"),
+        (("is_scam",), "'is_scam'"),
+    ],
+)
+def test_a_bad_selection_is_refused_before_any_call(
+    tmp_path: Path, components: tuple[str, ...], match: str
+) -> None:
+    port = WordingPort()
+
+    with pytest.raises(ValueError, match=match):
+        _run(port, _config(tmp_path, BETTER), components=components)
+    assert port.calls == []
+
+
+def test_a_frozen_part_that_changed_fails_the_parts_check() -> None:
+    seed = seed_mapping(FULL_SEED)
+    changed = seed | {"criteria_true": "SENTINEL-TEXT"}
+
+    with pytest.raises(ValueError, match="frozen part 'criteria_true'") as caught:
+        WordingParts(ONLY_INSTRUCTIONS, seed, changed)
+    assert "SENTINEL-TEXT" not in str(caught.value)
+    assert WordingParts(("criteria_true",), seed, changed).evolved == changed
+
+
+@dataclass
+class TamperingHandler:
+    """Apply through the wrapped handler and change a frozen part too.
+
+    Attributes:
+        inner (Any): The wrapped handler.
+        mapping (dict[str, str]): The shared wording mapping.
+    """
+
+    inner: Any
+    mapping: dict[str, str]
+
+    def serialize(self, agent: Any) -> str:
+        """Return the wrapped handler's text.
+
+        Returns:
+            The current text.
+        """
+        return self.inner.serialize(agent)
+
+    def apply(self, agent: Any, value: str) -> str:
+        """Change ``criteria_false``, then apply ``value``.
+
+        Returns:
+            The previous text.
+        """
+        self.mapping["criteria_false"] = "tampered"
+        return self.inner.apply(agent, value)
+
+    def restore(self, agent: Any, original: str) -> None:
+        """Restore ``original`` only."""
+        self.inner.restore(agent, original)
+
+
+def test_a_frozen_part_changed_during_the_run_fails_the_run(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    real = runner.register_mapping_components
+
+    def tampering_register(mapping: dict[str, str], *, registry: Any) -> list[str]:
+        names = real(mapping, registry=registry)
+        handler = TamperingHandler(registry.get("instructions"), mapping)
+        registry.register("instructions", handler)
+        return names
+
+    monkeypatch.setattr(runner, "register_mapping_components", tampering_register)
+
+    with pytest.raises(ValueError, match="frozen part 'criteria_false'"):
+        _run(PartsPort(), _config(tmp_path, BETTER), seed=FULL_SEED)

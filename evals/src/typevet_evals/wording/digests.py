@@ -1,21 +1,23 @@
-"""Pin the seed and evolved wording by digest in a receipt (#362).
+"""Pin the seed and evolved wording by digest in a receipt (#362, #363).
 
 A reader matches a receipt to a candidate by digest, not by full text. A
-candidate is a mapping of component name to text. ``component_digests``
-gives one digest per component, one digest of the whole mapping and the
-gepa-adk ``Candidate.id`` of the same mapping. ``wording_digests`` builds the
-``wording_digests`` receipt block for the seed and the evolved mapping.
-``wording_fields`` gives the verbatim texts and that block as receipt keys.
+candidate is a mapping of part name to text (#363). ``component_digests``
+gives one digest per part, one digest of the whole mapping and the gepa-adk
+``Candidate.id`` of the evolved selection. ``wording_digests`` builds the
+``wording_digests`` receipt block for the seed and the evolved mapping of a
+``WordingParts``. ``wording_fields`` gives the verbatim ``instructions``
+texts, the selection, both full mappings and that block as receipt keys.
 
 The rules:
 
 - A component digest is the SHA-256 of the UTF-8 text.
-- The mapping digest is the SHA-256 of the canonical JSON of the mapping:
-  sorted keys, no spaces (``separators=(",", ":")``), ASCII escapes.
-- ``gepa_candidate_id`` uses the gepa-adk rule: the first 12 hex characters
-  of the SHA-256 of ``json.dumps(components, sort_keys=True,
-  ensure_ascii=False)``. That JSON has spaces after the separators, so it
-  is not the mapping digest.
+- The mapping digest is the SHA-256 of the canonical JSON of the full
+  mapping: sorted keys, no spaces (``separators=(",", ":")``), ASCII escapes.
+- ``gepa_candidate_id`` uses the gepa-adk rule over the evolved selection
+  only, because a gepa-adk candidate holds the selected parts only: the
+  first 12 hex characters of the SHA-256 of ``json.dumps(selected,
+  sort_keys=True, ensure_ascii=False)``. That JSON has spaces after the
+  separators, so it is not the mapping digest.
 
 Attributes:
     WORDING_COMPONENT (str): The component name of the wording text.
@@ -23,8 +25,10 @@ Attributes:
 Examples:
     ```python
     from typevet_evals.wording.digests import wording_digests
+    from typevet_evals.wording.parts import WordingParts
 
-    block = wording_digests("Is this a scam?", "Does it ask for money?")
+    parts = WordingParts.from_texts("Is this a scam?", "Does it ask for money?")
+    block = wording_digests(parts)
     block["seed"]["components"]["instructions"]  # 64 hex characters
     ```
 
@@ -37,8 +41,10 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from typing import Any, Final
+
+from typevet_evals.wording.parts import INSTRUCTIONS, WordingParts
 
 __all__ = [
     "WORDING_COMPONENT",
@@ -50,7 +56,7 @@ __all__ = [
     "wording_fields",
 ]
 
-WORDING_COMPONENT: Final[str] = "instructions"
+WORDING_COMPONENT: Final[str] = INSTRUCTIONS
 _GEPA_ID_LENGTH: Final[int] = 12
 
 
@@ -92,52 +98,59 @@ def gepa_candidate_id(mapping: Mapping[str, str]) -> str:
     return text_digest(loose)[:_GEPA_ID_LENGTH]
 
 
-def component_digests(mapping: Mapping[str, str]) -> dict[str, Any]:
+def component_digests(
+    mapping: Mapping[str, str], selection: Iterable[str] | None = None
+) -> dict[str, Any]:
     """Return the digests of one candidate mapping.
 
     Args:
-        mapping: Component name to text.
+        mapping: Part name to text, the full mapping.
+        selection: The evolved part names; None selects every part.
 
     Returns:
-        ``components`` (name to digest), ``mapping`` and ``gepa_candidate_id``.
+        ``components`` (name to digest) and ``mapping`` over the full
+        mapping, and ``gepa_candidate_id`` over the selected parts.
     """
+    names = list(mapping) if selection is None else list(selection)
     return {
         "components": {name: text_digest(text) for name, text in mapping.items()},
         "mapping": mapping_digest(mapping),
-        "gepa_candidate_id": gepa_candidate_id(mapping),
+        "gepa_candidate_id": gepa_candidate_id({n: mapping[n] for n in names}),
     }
 
 
-def wording_digests(seed_text: str, evolved_text: str) -> dict[str, Any]:
+def wording_digests(parts: WordingParts) -> dict[str, Any]:
     """Return the ``wording_digests`` receipt block.
 
-    Each arm is the mapping ``{WORDING_COMPONENT: text}``.
-
     Args:
-        seed_text: The seed wording.
-        evolved_text: The evolved wording.
+        parts: The selection and the seed and evolved full mappings.
 
     Returns:
-        ``seed`` and ``evolved``, each a ``component_digests`` block.
+        ``seed`` and ``evolved``, each a ``component_digests`` block over
+        ``parts.components``.
     """
     return {
-        "seed": component_digests({WORDING_COMPONENT: seed_text}),
-        "evolved": component_digests({WORDING_COMPONENT: evolved_text}),
+        "seed": component_digests(parts.seed, parts.components),
+        "evolved": component_digests(parts.evolved, parts.components),
     }
 
 
-def wording_fields(seed_text: str, evolved_text: str) -> dict[str, Any]:
-    """Return the wording keys of a held-out or comparison receipt.
+def wording_fields(parts: WordingParts) -> dict[str, Any]:
+    """Return the wording keys of a held-out, comparison or evolution record.
 
     Args:
-        seed_text: The seed wording.
-        evolved_text: The evolved wording.
+        parts: The selection and the seed and evolved full mappings.
 
     Returns:
-        ``seed_text`` and ``evolved_text`` verbatim, and ``wording_digests``.
+        ``seed_text`` and ``evolved_text`` (the ``instructions`` parts,
+        verbatim), ``components``, ``seed_parts``, ``evolved_parts`` and
+        ``wording_digests``.
     """
     return {
-        "seed_text": seed_text,
-        "evolved_text": evolved_text,
-        "wording_digests": wording_digests(seed_text, evolved_text),
+        "seed_text": parts.seed_text,
+        "evolved_text": parts.evolved_text,
+        "components": list(parts.components),
+        "seed_parts": dict(parts.seed),
+        "evolved_parts": dict(parts.evolved),
+        "wording_digests": wording_digests(parts),
     }

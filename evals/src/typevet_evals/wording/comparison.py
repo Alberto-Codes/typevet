@@ -7,7 +7,8 @@ Gemma's artifact for ``llama_cpp`` and ``vllm``. ``comparison_receipt`` gives
 per arm Cohen's kappa against the DIFrauD labels, the Brier score, the ECE
 and the accuracy, the paired bootstrap intervals (context only) and each
 call's latency and input tokens.
-It pins both wordings by digest in ``wording_digests`` (#362).
+It pins both wordings by digest in ``wording_digests`` (#362) and records
+the evolved selection and both full part mappings (#363).
 
 The receipt has no pass rule. It does not apply the #309 verdict, and it
 makes no claim that one judge can replace the other. ``ValidationRows``
@@ -61,6 +62,7 @@ from typevet_evals.wording.metrics import (
     paired_bootstrap,
     wording_metrics,
 )
+from typevet_evals.wording.parts import receipt_parts
 
 __all__ = [
     "COMPARISON_BACKENDS",
@@ -188,11 +190,14 @@ def comparison_receipt(
         identity: The experiment identity mapping.
 
     Returns:
-        A JSON-serializable receipt. It keeps both texts verbatim and pins
-        them by digest in ``wording_digests`` (#362).
+        A JSON-serializable receipt. It keeps both texts verbatim, records
+        ``components``, ``seed_parts`` and ``evolved_parts`` from
+        ``run.parts`` (``instructions`` only when None, #363), and pins the
+        mappings by digest in ``wording_digests`` (#362).
 
     Raises:
-        ValueError: When ``subject.split`` is not ``run.split``.
+        ValueError: When ``subject.split`` is not ``run.split``, or
+            ``run.parts`` holds other texts.
     """
     if subject.split != run.split:
         msg = (
@@ -218,7 +223,7 @@ def comparison_receipt(
         "split": run.split,
         "positive_threshold": POSITIVE_THRESHOLD,
         "ece_bins": ECE_BINS,
-        **wording_fields(seed_text, evolved_text),
+        **wording_fields(receipt_parts(seed_text, evolved_text, run.parts)),
         "rows": len(run.pairs),
         "calls": {
             "seed": run.seed_calls,

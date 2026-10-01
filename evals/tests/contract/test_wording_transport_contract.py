@@ -4,9 +4,9 @@ The same assertions run against two ``SystemOnePort`` implementations on one
 shared fixture: judgevet's ``FakeSystemOnePort`` and typevet's
 ``TypevetSystemOnePort`` over ``ScoringJudgmentAdapter`` and
 ``ScriptedScoringFake``. A recording wrapper keeps the questions each port
-receives. The tests prove that the transport reads the caller-owned mapping at
-call time, returns the port's probability and lets concurrent evaluations
-overlap. They say nothing about model quality.
+receives. The tests prove that the transport reads every part of the
+caller-owned mapping (#363) at call time, returns the port's probability and
+lets concurrent evaluations overlap. They say nothing about model quality.
 """
 
 from __future__ import annotations
@@ -109,6 +109,15 @@ async def _turn(transport: WordingTransport) -> list[LlmResponse]:
     return [r async for r in transport.generate_content_async(_request(STATE))]
 
 
+def _parts(instructions: str) -> dict[str, str]:
+    """Return the full part mapping with ``instructions`` and the fixture criteria."""
+    return {
+        "instructions": instructions,
+        "criteria_true": CRITERIA["true"],
+        "criteria_false": CRITERIA["false"],
+    }
+
+
 def _transport(port: RecordingPort, mapping: dict[str, str]) -> WordingTransport:
     """Build the transport over the shared fixture."""
     return WordingTransport(
@@ -123,11 +132,11 @@ def test_each_call_sends_the_current_mapping_value(
 ) -> None:
     inner, prefix = make_port(p)
     port = RecordingPort(inner)
-    mapping = {KEY: WORDINGS[0]}
+    mapping = _parts(WORDINGS[0])
     transport = _transport(port, mapping)
 
     first = asyncio.run(_turn(transport))
-    mapping[KEY] = WORDINGS[1]
+    mapping["instructions"] = WORDINGS[1]
     second = asyncio.run(_turn(transport))
 
     sent = [call[1][KEY] for call in port.calls]
@@ -151,7 +160,7 @@ def test_concurrent_evaluations_overlap(
     calls = 3
     inner, _ = make_port(PROBABILITIES[0])
     port = RecordingPort(inner, threading.Barrier(calls, timeout=BARRIER_TIMEOUT))
-    transport = _transport(port, {KEY: WORDINGS[0]})
+    transport = _transport(port, _parts(WORDINGS[0]))
 
     async def gather() -> list[list[LlmResponse]]:
         return list(await asyncio.gather(*(_turn(transport) for _ in range(calls))))

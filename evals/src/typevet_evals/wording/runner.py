@@ -1,13 +1,17 @@
 """Evolve question wording with gepa-adk against a Brier score (#308).
 
-``evolve_wording`` puts the seed wording in a mapping, registers the mapping
-in a private gepa-adk component registry, and runs ``gepa_adk.evolve`` on a
-tool-less agent whose model is the #306 ``WordingTransport``. The reward is
-``BrierScorer``: one minus the squared error between the transport's
-``{"probability": p}`` and the DIFrauD label (``scam`` is 1). gepa-adk
-reflects on the train rows and scores and accepts candidates on the
-validation rows. The reflection prompt states the length limit, and a
-proposal longer than 1.5 times the seed is rejected before any evaluation.
+``evolve_wording`` puts every part of the seed ``Noul`` in a mapping
+(``instructions``, and ``criteria_true`` and ``criteria_false`` when the
+seed has criteria), registers the mapping in a private gepa-adk component
+registry, and runs ``gepa_adk.evolve`` on a tool-less agent whose model is
+the #306 ``WordingTransport``. ``components`` selects the parts that evolve
+(#363); the other parts stay frozen, and the run fails when a frozen part
+changed. The reward is ``BrierScorer``: one minus the squared error between
+the transport's ``{"probability": p}`` and the DIFrauD label (``scam`` is
+1). gepa-adk reflects on the train rows and scores and accepts candidates
+on the validation rows. The reflection prompt names each evolvable part,
+its role and its length limit, and a proposal longer than 1.5 times its
+seed part is rejected before any evaluation.
 Caller stoppers, such as a judge spend-cap check (#328), reach gepa-adk
 through ``WordingRunConfig.stop_callbacks``.
 
@@ -37,14 +41,16 @@ Examples:
         train=splits.train,
         validation=splits.validation,
         config=WordingRunConfig(reflector="<reflector-model>", judge_model="<judge>"),
+        components=("instructions", "criteria_true"),
     )
-    print(run.evolved_text)
+    print(run.evolved_parts)
     ```
 
     The real reflector is chosen on #309; ``<reflector-model>`` is a placeholder.
 
 See Also:
     - [typevet_evals.wording.transport][]: the model stand-in the agent uses
+    - [typevet_evals.wording.parts][]: the part names and the frozen-part check
     - [typevet_evals.datasets.difraud][]: the train, validation and held-out splits
 """
 
@@ -52,7 +58,7 @@ from __future__ import annotations
 
 import json
 import math
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -66,16 +72,33 @@ from google.adk.agents import LlmAgent
 from google.adk.models import BaseLlm
 
 from typevet_evals.datasets.difraud import DIFrauDRecord
-from typevet_evals.wording.transport import JudgePort, SeedNoul, WordingTransport
+from typevet_evals.wording.parts import (
+    INSTRUCTIONS,
+    PART_ROLES,
+    SeedNoul,
+    WordingParts,
+    check_selection,
+    seed_mapping,
+)
+from typevet_evals.wording.transport import JudgePort, WordingTransport
 
 LENGTH_RATIO = 1.5
-"""A proposal may be at most this many times the seed's length."""
+"""A proposal may be at most this many times the length of its seed part."""
 
 POSITIVE_LABEL = "scam"
 """The DIFrauD label whose target probability is 1."""
 
 AGENT_INSTRUCTION = "Answer with the probability."
 """The agent's own instruction; the transport never sends it."""
+
+_PARTS_INTRO = (
+    "The component text is one part of a yes/no question that a judge answers"
+    " about a message. The parts that evolve are:"
+)
+_PARTS_RULE = (
+    "The component text is one of these parts. Keep its role, and keep it"
+    " within the limit of that part."
+)
 
 
 def brier_score(probability: float, label: int) -> float:
@@ -168,59 +191,102 @@ class BrierScorer:
         return self.score(input_text, output, expected)
 
 
-def reflection_prompt(seed_text: str, ratio: float = LENGTH_RATIO) -> str:
-    """Return gepa-adk's default reflection prompt with the length limit added.
-
-    Without the limit the reflector proposes texts many times the seed's
-    length, and the length cap rejects each one (#309 smoke).
+def part_caps(
+    seed_parts: Mapping[str, str],
+    components: Iterable[str] | None = None,
+    ratio: float = LENGTH_RATIO,
+) -> dict[str, int]:
+    """Return the length cap of each evolvable part.
 
     Args:
-        seed_text: The seed wording.
-        ratio: The largest allowed proposal length, as a multiple of the seed.
+        seed_parts: The seed's full part mapping.
+        components: The evolvable part names; None selects every part.
+        ratio: The largest allowed proposal length, as a multiple of the
+            seed part.
+
+    Returns:
+        Part name to ``floor(ratio * len(seed part))``, in selection order.
+
+    Raises:
+        ValueError: If the selection is not valid or a selected seed part is
+            empty; the message names the part only.
+    """
+    selection = check_selection(
+        seed_parts if components is None else components, seed_parts
+    )
+    for name in selection:
+        if not seed_parts[name].strip():
+            msg = f"empty seed part {name!r}"
+            raise ValueError(msg)
+    return {name: math.floor(ratio * len(seed_parts[name])) for name in selection}
+
+
+def reflection_prompt(
+    seed_parts: Mapping[str, str],
+    components: Iterable[str] | None = None,
+    ratio: float = LENGTH_RATIO,
+) -> str:
+    """Return gepa-adk's default reflection prompt with the parts added.
+
+    gepa-adk takes one prompt per run, so the prompt lists every evolvable
+    part with its role and length limit. Without a limit the reflector
+    proposes texts many times the seed's length, and the length cap rejects
+    each one (#309 smoke).
+
+    Args:
+        seed_parts: The seed's full part mapping.
+        components: The evolvable part names; None selects every part.
+        ratio: The largest allowed proposal length, as a multiple of the
+            seed part.
 
     Returns:
         The default prompt, with its ``{component_text}`` and ``{trials}``
-        placeholders, and one line that gives the character limit.
+        placeholders, and one line per evolvable part.
     """
-    cap = math.floor(ratio * len(seed_text))
-    return (
-        f"{REFLECTION_INSTRUCTION}\n"
-        f"The improved text must be at most {cap} characters long."
-    )
+    caps = part_caps(seed_parts, components, ratio)
+    lines = [
+        f"- {name} ({PART_ROLES[name]}): at most {cap} characters."
+        for name, cap in caps.items()
+    ]
+    return "\n".join([REFLECTION_INSTRUCTION, _PARTS_INTRO, *lines, _PARTS_RULE])
 
 
-def length_cap(seed_text: str, ratio: float = LENGTH_RATIO) -> ProposalValidator:
-    """Return a gepa-adk proposal validator that caps the proposal length.
+def length_cap(
+    seed_parts: Mapping[str, str],
+    components: Iterable[str] | None = None,
+    ratio: float = LENGTH_RATIO,
+) -> ProposalValidator:
+    """Return a gepa-adk proposal validator that caps each part by its seed.
 
     Args:
-        seed_text: The seed wording.
-        ratio: The largest allowed proposal length, as a multiple of the seed.
+        seed_parts: The seed's full part mapping.
+        components: The evolvable part names; None selects every part.
+        ratio: The largest allowed proposal length, as a multiple of the
+            seed part.
 
     Returns:
-        A validator that returns a reason for an empty proposal or one longer
-        than ``floor(ratio * len(seed_text))`` characters, and None otherwise.
-
-    Raises:
-        ValueError: If the seed is empty.
+        A validator that returns a reason for a part that is not evolvable,
+        an empty proposal or one longer than its part's cap, and None
+        otherwise.
     """
-    if not seed_text.strip():
-        raise ValueError("empty seed wording")
-    cap = math.floor(ratio * len(seed_text))
+    caps = part_caps(seed_parts, components, ratio)
 
     def check(component: str, text: str) -> str | None:
         """Return why ``text`` is refused, or None to accept it.
 
         Args:
-            component: The gepa-adk component name; not used.
-            text: The proposed wording.
+            component: The gepa-adk component name, a part name.
+            text: The proposed text.
 
         Returns:
             The reason, or None.
         """
+        if component not in caps:
+            return f"{component!r} is not an evolvable part"
         if not text.strip():
             return "empty proposal"
-        if len(text) > cap:
-            return f"proposal has {len(text)} characters; the cap is {cap}"
+        if len(text) > caps[component]:
+            return f"proposal has {len(text)} characters; the cap is {caps[component]}"
         return None
 
     return check
@@ -283,7 +349,8 @@ class WordingRunConfig:
         checkpoint_path (Path | None): The JSON file gepa-adk checkpoints to.
         resume (bool): Continue from ``checkpoint_path``.
         seed (int | None): The seed of gepa-adk's engine decisions.
-        length_ratio (float): The proposal length cap, as a multiple of the seed.
+        length_ratio (float): The proposal length cap, as a multiple of the
+            seed part.
         stop_callbacks (tuple[StopperProtocol, ...]): gepa-adk stoppers, for
             example a judge spend-cap check (#328). gepa-adk checks them after
             the baseline and after each iteration, and a stop reports
@@ -320,11 +387,12 @@ class WordingRunConfig:
 
 @dataclass(frozen=True, slots=True)
 class WordingRun:
-    """The seed and evolved wording and gepa-adk's result.
+    """The seed and evolved parts and gepa-adk's result.
 
     Attributes:
-        seed_text (str): The seed wording.
-        evolved_text (str): The wording gepa-adk selected on validation.
+        parts (WordingParts): The evolved selection and the seed and evolved
+            full mappings. The evolved selected parts are gepa-adk's
+            ``evolved_components``, unchanged.
         result (EvolutionResult): gepa-adk's result. Its ``valset_score`` is
             the mean of ``1 - brier`` over the validation rows; its
             ``original_score`` and ``final_score`` are sums over them.
@@ -332,27 +400,77 @@ class WordingRun:
     Examples:
         ```python
         run = await evolve_wording(port=port, seed=seed, key="is_scam", ...)
-        mapping["is_scam"] = run.evolved_text
+        mapping.update(run.evolved_parts)
         ```
     """
 
-    seed_text: str
-    evolved_text: str
+    parts: WordingParts
     result: EvolutionResult
 
+    @property
+    def components(self) -> tuple[str, ...]:
+        """Return the evolved selection.
 
-def evolution_config(config: WordingRunConfig, seed_text: str) -> EvolutionConfig:
+        Returns:
+            The part names the run evolved.
+        """
+        return self.parts.components
+
+    @property
+    def seed_parts(self) -> Mapping[str, str]:
+        """Return the seed's full mapping.
+
+        Returns:
+            Part name to seed text.
+        """
+        return self.parts.seed
+
+    @property
+    def evolved_parts(self) -> Mapping[str, str]:
+        """Return the evolved full mapping.
+
+        Returns:
+            Part name to evolved text; a frozen part keeps its seed text.
+        """
+        return self.parts.evolved
+
+    @property
+    def seed_text(self) -> str:
+        """Return the seed ``instructions`` text.
+
+        Returns:
+            The seed wording.
+        """
+        return self.parts.seed_text
+
+    @property
+    def evolved_text(self) -> str:
+        """Return the evolved ``instructions`` text.
+
+        Returns:
+            The wording gepa-adk selected on validation.
+        """
+        return self.parts.evolved_text
+
+
+def evolution_config(
+    config: WordingRunConfig,
+    seed_parts: Mapping[str, str],
+    components: Iterable[str],
+) -> EvolutionConfig:
     """Return the gepa-adk configuration for one run.
 
     Args:
         config: The run settings.
-        seed_text: The seed wording, which sets the length cap.
+        seed_parts: The seed's full part mapping, which sets the length caps.
+        components: The evolvable part names.
 
     Returns:
         An ``EvolutionConfig`` with the reflector, the reflection minibatch
-        size, the length limit in the reflection prompt, the length cap, the
-        stoppers and the checkpoint settings.
+        size, the parts and limits in the reflection prompt, the per-part
+        length cap, the stoppers and the checkpoint settings.
     """
+    selection = tuple(components)
     return EvolutionConfig(
         max_iterations=config.max_iterations,
         patience=config.patience,
@@ -360,8 +478,8 @@ def evolution_config(config: WordingRunConfig, seed_text: str) -> EvolutionConfi
         reflection_model=config.reflector,
         reflection_max_trials=config.reflection_max_trials,
         reflection_minibatch_size=config.reflection_minibatch_size,
-        reflection_prompt=reflection_prompt(seed_text, config.length_ratio),
-        proposal_validator=length_cap(seed_text, config.length_ratio),
+        reflection_prompt=reflection_prompt(seed_parts, selection, config.length_ratio),
+        proposal_validator=length_cap(seed_parts, selection, config.length_ratio),
         checkpoint_path=config.checkpoint_path,
         resume=config.resume,
         seed=config.seed,
@@ -377,29 +495,36 @@ async def evolve_wording(
     train: Iterable[DIFrauDRecord],
     validation: Iterable[DIFrauDRecord],
     config: WordingRunConfig,
+    components: Sequence[str] = (INSTRUCTIONS,),
 ) -> WordingRun:
-    """Evolve the seed wording on train and select it on validation.
+    """Evolve the selected parts on train and select them on validation.
 
     Args:
         port: The judgevet ``SystemOnePort`` the transport calls.
-        seed: The seed judgevet ``Noul``; its instructions are the seed wording.
-        key: The question name and the gepa-adk component name.
+        seed: The seed judgevet ``Noul``; ``seed_mapping(seed)`` gives its parts.
+        key: The question name sent to the port.
         train: Records gepa-adk reflects on; each ``split`` is ``train``.
         validation: Records gepa-adk scores and accepts candidates on; each
             ``split`` is ``validation``.
         config: The run settings.
+        components: The part names gepa-adk evolves; ``instructions`` by
+            default. Every other part is frozen.
 
     Returns:
-        The seed and evolved wording and gepa-adk's result.
+        The selection, the seed and evolved full mappings and gepa-adk's
+        result.
 
     Raises:
-        ValueError: If a split is empty or holds a record of another split.
+        ValueError: If a split is empty or holds a record of another split,
+            the seed is not a ``Noul``, the selection is not valid, or a
+            frozen part changed during the run.
     """
     trainset, valset = _checked(train, "train"), _checked(validation, "validation")
-    seed_text = str(seed.instructions)
-    mapping = {key: seed_text}
+    seed_parts = seed_mapping(seed)
+    selection = check_selection(components, seed_parts)
+    mapping = dict(seed_parts)
     registry = ComponentHandlerRegistry()
-    components = register_mapping_components(mapping, registry=registry)
+    register_mapping_components(mapping, registry=registry)
     transport = WordingTransport(
         port=port, mapping=mapping, key=key, seed=seed, judge_model=config.judge_model
     )
@@ -409,8 +534,9 @@ async def evolve_wording(
         trainset,
         valset=valset,
         scorer=BrierScorer(),
-        config=evolution_config(config, seed_text),
-        components=components,
+        config=evolution_config(config, seed_parts, selection),
+        components=list(selection),
         registry=registry,
     )
-    return WordingRun(seed_text, result.evolved_components[key], result)
+    evolved = mapping | result.evolved_components
+    return WordingRun(WordingParts(selection, seed_parts, evolved), result)

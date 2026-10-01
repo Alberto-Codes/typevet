@@ -29,6 +29,7 @@ from judgevet.domain.questions import Noul
 from typevet_evals.datasets.difraud import DIFrauDRecord, map_row, record_id
 from typevet_evals.wording import WordingRun, WordingRunConfig
 from typevet_evals.wording.calls import CallRecord, call_summary
+from typevet_evals.wording.digests import wording_digests
 from typevet_evals.wording.held_out import (
     DEFAULT_TRAIN_ROWS,
     REFERENCE_ECE,
@@ -41,6 +42,7 @@ from typevet_evals.wording.held_out import (
     train_subset,
 )
 from typevet_evals.wording.metrics import pass_verdict, wording_metrics
+from typevet_evals.wording.parts import WordingParts, seed_mapping
 
 pytestmark = pytest.mark.unit
 
@@ -345,7 +347,7 @@ def test_evolution_artifact_holds_both_texts_and_the_selection_rows() -> None:
         total_iterations=0,
         valset_score=0.75,
     )
-    run = WordingRun(SEED_TEXT, EVOLVED_TEXT, result)
+    run = WordingRun(WordingParts.from_texts(SEED_TEXT, EVOLVED_TEXT), result)
     train = _records(2, 3, "train")
     validation = _records(1, 1, "validation")
     config = WordingRunConfig(
@@ -364,7 +366,11 @@ def test_evolution_artifact_holds_both_texts_and_the_selection_rows() -> None:
     assert artifact["judge_model"] == "judge"
     assert artifact["train_rows"] == 5
     assert artifact["validation_ids"] == [r.record_id for r in validation]
-    assert artifact["length_cap"] == int(1.5 * len(SEED_TEXT))
+    assert artifact["length_cap"] == {"instructions": int(1.5 * len(SEED_TEXT))}
+    assert artifact["components"] == ["instructions"]
+    assert artifact["seed_parts"] == {"instructions": SEED_TEXT}
+    assert artifact["evolved_parts"] == {"instructions": EVOLVED_TEXT}
+    assert artifact["wording_digests"] == wording_digests(run.parts)
     assert artifact["settings"]["max_iterations"] == 10
     assert artifact["settings"]["reflection_minibatch_size"] == 4
     assert artifact["result"]["valset_score"] == 0.75
@@ -388,7 +394,7 @@ def test_evolution_artifact_holds_the_per_call_records() -> None:
     )
 
     artifact = evolution_artifact(
-        WordingRun(SEED_TEXT, EVOLVED_TEXT, result),
+        WordingRun(WordingParts.from_texts(SEED_TEXT, EVOLVED_TEXT), result),
         config=WordingRunConfig(reflector="openai/reflector", judge_model="judge"),
         train=_records(1, 1, "train"),
         validation=_records(1, 1, "validation"),
@@ -504,3 +510,113 @@ def test_the_309_receipt_refuses_a_validation_run() -> None:
             pins={},
             identity={},
         )
+
+
+FULL_PARTS = seed_mapping(SEED)
+EVOLVED_PARTS = FULL_PARTS | {
+    "instructions": EVOLVED_TEXT,
+    "criteria_true": "It asks for money",
+}
+MULTI = WordingParts(("instructions", "criteria_true"), FULL_PARTS, EVOLVED_PARTS)
+
+
+def _multi_run() -> Any:
+    return score_held_out(
+        AnsweringPort(),
+        SEED,
+        KEY,
+        evolved_text=MULTI,
+        rows=HeldOutRows(HELD_OUT, frozenset()),
+        judge_model="judge",
+        failures=(RuntimeError,),
+    )
+
+
+def test_receipt_records_the_selection_and_both_full_mappings() -> None:
+    run = _multi_run()
+
+    receipt = held_out_receipt(
+        run,
+        seed_text=SEED_TEXT,
+        evolved_text=EVOLVED_TEXT,
+        backend="vllm",
+        model="judge",
+        pins={},
+        identity={},
+    )
+
+    assert run.parts is MULTI
+
+    assert receipt["components"] == ["instructions", "criteria_true"]
+    assert receipt["seed_parts"] == FULL_PARTS
+    assert receipt["evolved_parts"] == EVOLVED_PARTS
+    assert receipt["wording_digests"] == wording_digests(MULTI)
+    assert (receipt["seed_text"], receipt["evolved_text"]) == (SEED_TEXT, EVOLVED_TEXT)
+    json.dumps(receipt)
+
+
+def test_receipt_without_parts_records_the_instructions_only() -> None:
+    receipt = held_out_receipt(
+        _run(),
+        seed_text=SEED_TEXT,
+        evolved_text=EVOLVED_TEXT,
+        backend="vllm",
+        model="judge",
+        pins={},
+        identity={},
+    )
+
+    assert receipt["components"] == ["instructions"]
+    assert receipt["seed_parts"] == {"instructions": SEED_TEXT}
+    assert receipt["evolved_parts"] == {"instructions": EVOLVED_TEXT}
+
+
+def test_receipt_refuses_parts_that_disagree_with_the_texts() -> None:
+    with pytest.raises(ValueError, match="seed_text") as caught:
+        held_out_receipt(
+            _multi_run(),
+            seed_text="Another seed",
+            evolved_text=EVOLVED_TEXT,
+            backend="vllm",
+            model="judge",
+            pins={},
+            identity={},
+        )
+    assert "Another seed" not in str(caught.value)
+
+
+def test_score_held_out_sends_the_evolved_criteria_with_the_evolved_arm() -> None:
+    port = AnsweringPort()
+
+    score_held_out(
+        port,
+        SEED,
+        KEY,
+        evolved_text=MULTI,
+        rows=HeldOutRows(HELD_OUT[:1], frozenset()),
+        judge_model="judge",
+        failures=(RuntimeError,),
+    )
+
+    assert [(w, c) for _, w, c, _ in port.calls] == [
+        (SEED_TEXT, CRITERIA),
+        (EVOLVED_TEXT, {"true": "It asks for money", "false": "It is legitimate"}),
+    ]
+
+
+def test_score_held_out_refuses_parts_of_another_seed() -> None:
+    port = AnsweringPort()
+    other = Noul(instructions="Another seed", criteria=CRITERIA)
+
+    with pytest.raises(ValueError, match="seed's parts") as caught:
+        score_held_out(
+            port,
+            other,
+            KEY,
+            evolved_text=MULTI,
+            rows=HeldOutRows(HELD_OUT[:1], frozenset()),
+            judge_model="judge",
+            failures=(RuntimeError,),
+        )
+    assert "Another seed" not in str(caught.value)
+    assert port.calls == []

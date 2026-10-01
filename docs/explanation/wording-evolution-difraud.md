@@ -30,7 +30,9 @@ answer for one run.
 
 The evolved text is the `instructions` string of the DIFrauD `is_scam`
 `Noul` question. Nothing else changed: not the criteria, not the schema and
-not the model.
+not the model. Since
+[#363](https://github.com/Alberto-Codes/typevet/issues/363), a run can also
+evolve the `Noul` criteria texts. This run evolved the `instructions` only.
 
 | Wording | Text | Length |
 |---|---|---|
