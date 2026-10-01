@@ -13,7 +13,7 @@ directly. The call caps, ``CountingTransport``, ``CallCapReached`` and
 ``kv_cache_usage`` live in ``typevet_evals.vllm_acceptance.transport``; this
 module re-exports all of them except ``CallCapReached`` (#229). The
 receipt and its error message never hold the key or an extra header value
-(#348).
+(#348). That includes a header value that a server body uses as a key (#351).
 
 Examples:
     ```python
@@ -448,8 +448,8 @@ def _masked_headers(value: Any, settings: VllmSettings | None) -> Any:
     A gateway can echo a request header into a body or an error that the
     receipt records (#348). A value matches only between characters that are
     not ASCII letters or digits, as in the adapter errors, so a value such as
-    ``1`` leaves ``HTTP 401`` readable. Only string values are masked: dict
-    keys and numbers keep their JSON form.
+    ``1`` leaves ``HTTP 401`` readable. Strings and the keys of nested dicts
+    are masked. The keys of the outer dict, and numbers, keep their form (#351).
 
     Args:
         value: String, or a dict or list of JSON values.
@@ -464,16 +464,43 @@ def _masked_headers(value: Any, settings: VllmSettings | None) -> Any:
     return _masked_tokens(value, patterns) if patterns else value
 
 
-def _masked_tokens(value: Any, patterns: list[re.Pattern[str]]) -> Any:
+def _masked_tokens(
+    value: Any, patterns: list[re.Pattern[str]], *, keys: bool = False
+) -> Any:
     if isinstance(value, str):
         for pattern in patterns:
             value = pattern.sub(REDACTED, value)
         return value
     if isinstance(value, Mapping):
-        return {k: _masked_tokens(v, patterns) for k, v in value.items()}
+        names = _masked_keys(list(value), patterns) if keys else list(value)
+        items = zip(names, value.values(), strict=True)
+        return {n: _masked_tokens(v, patterns, keys=True) for n, v in items}
     if isinstance(value, list | tuple):
-        return [_masked_tokens(item, patterns) for item in value]
+        return [_masked_tokens(item, patterns, keys=keys) for item in value]
     return value
+
+
+def _masked_keys(names: list[Any], patterns: list[re.Pattern[str]]) -> list[Any]:
+    """Mask string keys as whole tokens, and keep them distinct (#351).
+
+    A key that the masking changes gets the first free name of
+    ``***``, ``***_2``, ``***_3`` and so on, in key order. A key that the
+    masking does not change keeps its name. Thus no key collapses.
+
+    Returns:
+        The masked keys, in the same order as ``names``.
+    """
+    masked = [_masked_tokens(n, patterns) if isinstance(n, str) else n for n in names]
+    taken = {new for old, new in zip(names, masked, strict=True) if old == new}
+    out = []
+    for old, new in zip(names, masked, strict=True):
+        name, count = new, 1
+        while old != new and name in taken:
+            count += 1
+            name = f"{new}_{count}"
+        taken.add(name)
+        out.append(name)
+    return out
 
 
 def _masked_echoes(
@@ -485,7 +512,10 @@ def _masked_echoes(
     server, and ``error.message``. The keys and the values that typevet sets,
     such as ``stopped``, ``passed`` and ``pins.configured_model``, stay as
     they are, so a header value equal to one of them cannot change the
-    receipt schema (#348).
+    receipt schema (#348). The ``status`` and ``body`` keys of
+    ``pins.version`` and the ``id`` and ``root`` keys of each served model
+    are typevet keys too. Keys below them come from the server and are
+    masked (#351).
 
     Args:
         receipt: Mapping from ``run_acceptance``.
@@ -517,8 +547,8 @@ def write_receipt(
     """Write the receipt JSON once, with secrets masked, and return its sha256.
 
     Each extra header value is masked as a whole token only in the parts that
-    ``_masked_echoes`` names, before the dump, so keys, numbers and the
-    values that typevet sets keep their form (#348). The key is then masked
+    ``_masked_echoes`` names, before the dump, so typevet keys, numbers and
+    the values that typevet sets keep their form (#348, #351). The key is then masked
     anywhere in the JSON text. The key is read from ``settings`` only inside
     the masking step, so no frame of this function binds the raw key to a
     local. ``VllmSettings`` leaves the key out of its

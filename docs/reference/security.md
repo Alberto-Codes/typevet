@@ -103,7 +103,7 @@ Only the vLLM path takes an API key. The settings are in
 | Settings errors | An error names the variable, never its value. |
 | Adapter errors | The adapters from `generation_adapter` and `async_vllm_generation_adapter` mask the key and each `TYPEVET_VLLM__HEADERS` value in a `GenerationError`. The port from `open_judgment` also masks them. Set a key or an extra header, and each such error becomes a masked copy. The copy has no cause or context. |
 | Gateway error pages | An HTML error body is not in the `BackendHttpError`. Its `body_snippet` is empty. |
-| Receipts | The vLLM live acceptance run in `evals/` masks the key and each `TYPEVET_VLLM__HEADERS` value before it writes the receipt. A header value is masked only in `pins.version`, `pins.served_models` and `error.message`. Keys and values that typevet sets stay as written. |
+| Receipts | The vLLM live acceptance run in `evals/` masks the key and each `TYPEVET_VLLM__HEADERS` value before it writes the receipt. A header value is masked only in `pins.version`, `pins.served_models` and `error.message`. Keys and values that typevet sets stay as written. Keys from the server body are masked too. Two masked keys get `***`, `***_2` and so on. Thus no key is lost. |
 
 When a key is set, each `GenerationError` from these wrappers is a masked
 copy. The copy shows `***` in place of the raw or JSON-escaped key. The copy
