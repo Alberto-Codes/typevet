@@ -98,6 +98,22 @@ def test_llama_cpp_adapter_http_error() -> None:
     assert exc_info.value.body_snippet == "boom"
 
 
+@pytest.mark.contract
+def test_llama_cpp_429_keeps_default_retry_fields() -> None:
+    """llama.cpp errors read no ``Retry-After`` or rate-limit header (#355)."""
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        headers = {"Retry-After": "7", "X-RateLimit-Remaining": "0"}
+        return httpx.Response(429, text="busy", headers=headers)
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    adapter = LlamaCppGenerationAdapter(base_url="http://test", client=client)
+    with pytest.raises(BackendHttpError, match="HTTP 429") as exc_info:
+        adapter.generate(GenerationRequest(prompt="x", schema=SCHEMA, model="m"))
+    assert exc_info.value.retry_after_seconds is None
+    assert dict(exc_info.value.rate_limit) == {}
+
+
 _BAD_SCHEMA = {"type": "object", "properties": {"answer": {"type": "not-a-type"}}}
 
 

@@ -16,7 +16,8 @@ The hooks go on each client that the composition root builds. The request
 hook sets a fresh UUID4 hex value in the request-id header when the request
 does not have one. The response hook refuses each redirect, because the
 clients do not follow redirects, and withholds an HTML error body. Neither
-error holds the ``Location`` header or the body.
+error holds the ``Location`` header or the body. Both errors keep the
+``Retry-After`` wait and the rate-limit headers (#355).
 
 Attributes:
     MAX_HEADER_FIELDS (int): Largest number of extra headers.
@@ -37,6 +38,7 @@ Examples:
 See Also:
     - [typevet.adapters.inbound.backend_settings][]: ``VllmSettings`` and clients
     - [typevet.domain.errors][]: ``BackendHttpError``
+    - [typevet.adapters.outbound.vllm.http_mapping][]: ``backend_http_error``
 """
 
 from __future__ import annotations
@@ -49,7 +51,7 @@ from typing import Any, Final
 
 import httpx
 
-from typevet.domain.errors import BackendHttpError
+from typevet.adapters.outbound.vllm.http_mapping import backend_http_error
 
 __all__ = [
     "MAX_HEADER_FIELDS",
@@ -217,13 +219,13 @@ def _guard(response: httpx.Response) -> None:
     status = response.status_code
     if status in _REDIRECT:
         msg = f"vLLM HTTP {status}: redirect not followed"
-        raise BackendHttpError(msg, status_code=status, body_snippet="")
+        raise backend_http_error(response, msg, "")
     content_type = response.headers.get("content-type", "").lower()
     if status >= _ERROR_STATUS and (
         "html" in content_type or response.text.lstrip().startswith("<")
     ):
         msg = f"vLLM HTTP {status}: HTML body withheld"
-        raise BackendHttpError(msg, status_code=status, body_snippet="")
+        raise backend_http_error(response, msg, "")
 
 
 def sync_event_hooks(

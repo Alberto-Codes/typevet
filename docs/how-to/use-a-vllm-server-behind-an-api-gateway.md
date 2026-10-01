@@ -121,6 +121,10 @@ It does not expand `$NAME` and does not run `!command`.
 
 - A gateway 429 raises `BackendHttpError` with `status_code` 429.
   Your code decides whether to retry. typevet adds no retry.
+- Read `retry_after_seconds` for the wait that `Retry-After` asks for.
+  It is `None` when the gateway sends no valid value.
+- Read `rate_limit` for the `x-ratelimit-*` and `ratelimit-*` headers.
+  It never holds the auth header or a `TYPEVET_VLLM__HEADERS` name.
 - An HTML error body from the gateway is not in the error.
   `body_snippet` is empty.
 - typevet follows no redirect.
@@ -131,6 +135,7 @@ It does not expand `$NAME` and does not run `!command`.
   The masked error has no cause or context.
 
 [Security](../reference/security.md#api-keys) lists the limits of this masking.
+[Retry hints](../reference/errors.md#retry-hints-on-a-vllm-error) gives the `Retry-After` rules.
 
 ## Related pages
 

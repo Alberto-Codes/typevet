@@ -13,7 +13,8 @@ See Also:
     - [typevet.adapters.outbound.llama_cpp.http_mapping][]: httpx to domain error mapping
 
 Attributes:
-    BackendHttpError (type): Backend HTTP status 400 or above, or a redirect.
+    BackendHttpError (type): Backend HTTP status 400 or above, or a redirect,
+        with the ``Retry-After`` wait and rate-limit headers when present.
     GenerationError (type): Base failure for a generation call.
     GenerationUnsupportedCapabilityError (type): Backend cannot honor the ask.
     JudgmentError (type): Base failure for a judgment call.
@@ -28,6 +29,9 @@ Attributes:
 """
 
 from __future__ import annotations
+
+from collections.abc import Mapping
+from types import MappingProxyType
 
 
 class GenerationError(Exception):
@@ -81,6 +85,12 @@ class BackendHttpError(GenerationError):
         status_code (int): HTTP status from the router or the gateway.
         body_snippet (str): Truncated response body text for diagnostics.
             Empty when the body is HTML, which a gateway error page often is.
+        retry_after_seconds (float | None): Wait that ``Retry-After`` asks
+            for, in seconds. ``None`` when the header is absent or invalid,
+            and always ``None`` for llama.cpp. typevet does not retry.
+        rate_limit (Mapping[str, str]): Read-only ``x-ratelimit-*`` and
+            ``ratelimit-*`` response headers, with lowercase names and
+            verbatim values. Empty when there are none, and for llama.cpp.
 
     Examples:
         ```python
@@ -100,17 +110,23 @@ class BackendHttpError(GenerationError):
         *,
         status_code: int,
         body_snippet: str,
+        retry_after_seconds: float | None = None,
+        rate_limit: Mapping[str, str] | None = None,
     ) -> None:
-        """Record an HTTP error status and response snippet.
+        """Record an HTTP error status, response snippet and retry hints.
 
         Args:
             message: Human-readable summary including status and snippet.
-            status_code: HTTP status from llama.cpp.
+            status_code: HTTP status from the backend or the gateway.
             body_snippet: Truncated response body text.
+            retry_after_seconds: Parsed ``Retry-After`` wait, or ``None``.
+            rate_limit: Rate-limit response headers; stored as a read-only copy.
         """
         super().__init__(message)
         self.status_code = status_code
         self.body_snippet = body_snippet
+        self.retry_after_seconds = retry_after_seconds
+        self.rate_limit: Mapping[str, str] = MappingProxyType(dict(rate_limit or {}))
 
 
 class JudgmentError(GenerationError):

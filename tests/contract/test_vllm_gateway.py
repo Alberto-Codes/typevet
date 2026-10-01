@@ -17,6 +17,8 @@ import asyncio
 import json
 import re
 from collections.abc import Callable, Iterator
+from datetime import UTC, datetime, timedelta
+from email.utils import format_datetime
 from pathlib import Path
 from typing import Any
 
@@ -365,3 +367,156 @@ def test_short_header_value_masks_whole_tokens_only(
     exposed = _exposed(err)
     assert "tenant 1 denied" not in exposed
     assert not [secret for secret in _SECRETS if secret in exposed]
+
+
+_LIMITS = {
+    "X-RateLimit-Remaining": "0",
+    "X-RateLimit-Limit": "100",
+    "RateLimit-Reset": "7",
+    "X-Other": "ignored",
+}
+_EXPECTED_LIMITS = {
+    "x-ratelimit-remaining": "0",
+    "x-ratelimit-limit": "100",
+    "ratelimit-reset": "7",
+}
+_DATE = "Wed, 30 Sep 2026 12:00:00 GMT"
+
+
+def _limited(headers: dict[str, str], *, html: bool = True) -> Handler:
+    """Return a gateway that answers 429 with ``_LIMITS`` and ``headers``."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        sent = {**_LIMITS, **headers}
+        if html:
+            sent["Content-Type"] = "text/html"
+            return httpx.Response(429, text=_HTML, headers=sent, request=request)
+        body = {"error": "slow down"}
+        return httpx.Response(429, json=body, headers=sent, request=request)
+
+    return handler
+
+
+@_ENTRY_POINTS
+@pytest.mark.parametrize("html", [True, False], ids=["html", "json"])
+def test_gateway_429_exposes_retry_after_seconds_and_rate_limit(
+    raised: Callable[[dict[str, str], Handler], GenerationError], html: bool
+) -> None:
+    """A delta-seconds ``Retry-After`` and rate-limit headers reach the caller (#355)."""
+    sent: list[httpx.Request] = []
+    gateway = _limited({"Retry-After": "7"}, html=html)
+
+    def counted(request: httpx.Request) -> httpx.Response:
+        sent.append(request)
+        return gateway(request)
+
+    err = raised(_gateway_env(), counted)
+    assert len(sent) == 1
+    assert type(err) is BackendHttpError
+    assert err.status_code == 429
+    assert err.retry_after_seconds == 7.0
+    assert dict(err.rate_limit) == _EXPECTED_LIMITS
+    writable: Any = err.rate_limit
+    with pytest.raises(TypeError):
+        writable["x-ratelimit-remaining"] = "1"
+
+
+@_ENTRY_POINTS
+@pytest.mark.parametrize("html", [True, False], ids=["html", "json"])
+def test_gateway_429_http_date_is_relative_to_the_date_header(
+    raised: Callable[[dict[str, str], Handler], GenerationError], html: bool
+) -> None:
+    """An HTTP-date ``Retry-After`` counts from the response ``Date`` (#355)."""
+    later = "Wed, 30 Sep 2026 12:00:30 GMT"
+    handler = _limited({"Retry-After": later, "Date": _DATE}, html=html)
+    err = raised(_gateway_env(), handler)
+    assert type(err) is BackendHttpError
+    assert err.retry_after_seconds == 30.0
+
+
+def test_gateway_429_http_date_without_date_header_counts_from_now() -> None:
+    """Without ``Date``, the HTTP-date counts from now; a past date gives 0 (#355)."""
+    ahead = datetime.now(UTC) + timedelta(seconds=120)
+    later = format_datetime(ahead, usegmt=True)
+    err = _sync_error(_gateway_env(), _limited({"Retry-After": later}))
+    assert type(err) is BackendHttpError
+    assert err.retry_after_seconds is not None
+    assert 100.0 < err.retry_after_seconds <= 120.0
+    past = _sync_error(_gateway_env(), _limited({"Retry-After": _DATE}))
+    assert type(past) is BackendHttpError
+    assert past.retry_after_seconds == 0.0
+
+
+@pytest.mark.parametrize(
+    "value", ["soon", "-1", "1.5", "", "7, 8", "Wed, 31 Feb 2026 99:00:00 GMT"]
+)
+def test_gateway_429_invalid_retry_after_is_none(value: str) -> None:
+    """A ``Retry-After`` that is neither form gives ``None`` (#355)."""
+    err = _sync_error(_gateway_env(), _limited({"Retry-After": value}, html=False))
+    assert type(err) is BackendHttpError
+    assert err.retry_after_seconds is None
+    assert dict(err.rate_limit) == _EXPECTED_LIMITS
+
+
+@_ENTRY_POINTS
+def test_gateway_429_without_retry_after_is_none(
+    raised: Callable[[dict[str, str], Handler], GenerationError],
+) -> None:
+    """No ``Retry-After`` gives ``None``; no rate-limit header gives empty (#355)."""
+
+    def bare(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(429, json={"error": "slow"}, request=request)
+
+    err = raised(_gateway_env(), bare)
+    assert type(err) is BackendHttpError
+    assert err.retry_after_seconds is None
+    assert dict(err.rate_limit) == {}
+
+
+@_ENTRY_POINTS
+def test_gateway_429_rate_limit_never_holds_auth_or_configured_headers(
+    raised: Callable[[dict[str, str], Handler], GenerationError],
+) -> None:
+    """Echoed auth and configured headers stay out of ``rate_limit`` (#355)."""
+    tier = "gold-tier-SENTINEL"
+    configured = json.dumps({**_EXTRA, "X-RateLimit-Tier": tier})
+    env = _gateway_env(
+        TYPEVET_VLLM__HEADERS=configured, TYPEVET_VLLM__AUTH_HEADER="RateLimit-Key"
+    )
+    echoed = {
+        "X-RateLimit-Tier": tier,
+        "RateLimit-Key": _KEY,
+        "Authorization": f"Bearer {_KEY}",
+        "Retry-After": "7",
+    }
+    err = raised(env, _limited(echoed, html=False))
+    assert type(err) is BackendHttpError
+    assert dict(err.rate_limit) == _EXPECTED_LIMITS
+    text = f"{err} {err!r} {vars(err)!r}"
+    assert not [secret for secret in (*_SECRETS, tier) if secret in text]
+
+
+@_ENTRY_POINTS
+def test_gateway_429_rate_limit_values_mask_key_and_header_values(
+    raised: Callable[[dict[str, str], Handler], GenerationError],
+) -> None:
+    """A key or header value inside a rate-limit value is masked (#355 F1)."""
+    policy = f"tenant={_TENANT};key={_KEY}"
+    handler = _limited({"X-RateLimit-Policy": policy}, html=False)
+    err = raised(_gateway_env(), handler)
+    assert type(err) is BackendHttpError
+    assert err.rate_limit["x-ratelimit-remaining"] == "0"
+    assert not [secret for secret in _SECRETS if secret in _exposed(err)]
+    writable: Any = err.rate_limit
+    with pytest.raises(TypeError):
+        writable["x-ratelimit-policy"] = "1"
+
+
+def test_gateway_429_retry_after_over_one_year_is_none() -> None:
+    """A delta-seconds value above one year gives ``None`` (#355 F2)."""
+    huge = _sync_error(_gateway_env(), _limited({"Retry-After": "9" * 400}))
+    assert type(huge) is BackendHttpError
+    assert huge.retry_after_seconds is None
+    year = _sync_error(_gateway_env(), _limited({"Retry-After": "31536000"}))
+    assert type(year) is BackendHttpError
+    assert year.retry_after_seconds == 31_536_000.0

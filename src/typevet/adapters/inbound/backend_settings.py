@@ -218,7 +218,10 @@ def _masked(value: Any, needles: _Needles) -> Any:
     Strings and bytes are masked by ``_masked_text`` and keep their type.
     Dicts, lists, tuples, sets and frozensets are copied as plain containers
     of the same kind with each key and item masked, so a parsed payload that
-    holds the key loses it. Other values are returned unchanged.
+    holds the key loses it. Another ``Mapping``, such as the read-only
+    ``rate_limit`` of a ``BackendHttpError``, becomes a read-only copy with
+    each value masked and each key unchanged (#355). Other values are
+    returned unchanged.
 
     Args:
         value: String, bytes, container or other attribute value.
@@ -231,6 +234,8 @@ def _masked(value: Any, needles: _Needles) -> Any:
         return _masked_text(value, needles)
     if isinstance(value, dict):
         return {_masked(k, needles): _masked(v, needles) for k, v in value.items()}
+    if isinstance(value, Mapping):
+        return MappingProxyType({k: _masked(v, needles) for k, v in value.items()})
     for kind in _PLAIN_CONTAINERS:
         if isinstance(value, kind):
             return kind(_masked(item, needles) for item in value)

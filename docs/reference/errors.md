@@ -44,7 +44,7 @@ The package root `typevet` exports only the first four types.
 |---|---|---|
 | `GenerationError` | `Exception` | A generation call failed before a valid `GenerationResult` existed (parse, shape, or empty fake). |
 | `TransportError` | `GenerationError` | The HTTP client failed before a usable response (`status_code` and `body_snippet` are `None`). |
-| `BackendHttpError` | `GenerationError` | llama.cpp or vLLM returned HTTP status 400 or above; carries `status_code` and truncated `body_snippet` (500 chars max). |
+| `BackendHttpError` | `GenerationError` | llama.cpp or vLLM returned HTTP status 400 or above; carries `status_code` and truncated `body_snippet` (500 chars max). From vLLM it also carries `retry_after_seconds` and `rate_limit`; see [retry boundaries](#retry-and-exception-boundaries). |
 | `SchemaValidationError` | `GenerationError` | Parsed output failed JSON Schema validation. Optional `payload` holds the rejected value. |
 | `GenerationUnsupportedCapabilityError` | `GenerationError` | The adapter cannot send a part of the request, such as images. Raised before any HTTP call. Import from `typevet.domain` or `typevet.domain.errors`. |
 | `ScoringError` | `GenerationError` | A candidate scoring call failed before a valid result existed. |
@@ -244,13 +244,33 @@ Use these boundaries when a caller adds retries:
 |---|---|---|
 | `SchemaValidationError` | No (fail-fast) | Same prompt and schema may repeat the same invalid output; fix schema, prompt, or model. Adapter docstring: fail-fast on schema mismatch. |
 | `TransportError`, `BackendHttpError` (5xx) | Optional caller policy | Not implemented in-repo; a supervisor may retry with backoff outside the adapter. |
-| `BackendHttpError` (4xx) | Usually no | Router config, model id, or request the backend rejects. A gateway 429 is this error too; typevet reads no `Retry-After`. |
+| `BackendHttpError` (4xx) | Usually no | Router config, model id, or request the backend rejects. A gateway 429 is this error too. Read `retry_after_seconds` and `rate_limit` before a retry. |
 | `BackendHttpError` (3xx) | No | The vLLM clients do not follow redirects. The error carries the 3xx status and no `Location` value. |
 | `GenerationError` (bad JSON shape on 2xx) | Usually no | Non-recoverable response shape from the model or router. |
 | `GenerationUnsupportedCapabilityError` | No | Use an adapter that supports the request, or remove the images. |
 | `SchemaError`, `NotImplementedError` | No | Fix or narrow the schema before calling generation. |
 | `GenerationRequest` `ValueError` / `TypeError` | No | Fix the request object. |
 | `RuntimeError` (`build one adapter per event loop`) | No | Build one adapter for each event loop. |
+
+### Retry hints on a vLLM error
+
+A vLLM `BackendHttpError` holds two retry hints from the response.
+typevet reads them and makes no retry.
+
+| Attribute | Value |
+|---|---|
+| `retry_after_seconds` | `float` or `None`. `Retry-After` as delta-seconds gives that number. A wait above one year (31,536,000 seconds) gives `None`. |
+| `rate_limit` | Read-only mapping of the `x-ratelimit-*` and `ratelimit-*` headers. Names are lowercase. Values are verbatim, except the masked key and header values. |
+
+An HTTP-date in `Retry-After` gives the seconds from the response `Date` header to that date.
+Without a valid `Date` header, the count starts at the current UTC time.
+A date in the past gives `0.0`.
+Any other value, or two `Retry-After` fields, gives `None`.
+`rate_limit` never holds a header name that the request sent, or `Authorization`.
+Thus the auth header and the `TYPEVET_VLLM__HEADERS` names stay out.
+A value can hold the API key or a `TYPEVET_VLLM__HEADERS` value.
+Then that token shows as `***`, by the [whole-token rule](security.md#api-keys).
+A llama.cpp error has `retry_after_seconds` `None` and an empty `rate_limit`.
 
 `except GenerationError` catches `SchemaValidationError` because it subclasses
 `GenerationError`. Use `except SchemaValidationError` when validation failures

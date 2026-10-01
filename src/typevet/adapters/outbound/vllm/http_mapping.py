@@ -7,6 +7,20 @@ copies request headers into an error. The snippet is the first 500
 characters of the server's own response body, so it holds
 whatever the server returns.
 
+Each ``BackendHttpError`` also gets the retry hints of the response (#355).
+``Retry-After`` as delta-seconds gives that number. An HTTP-date gives the
+seconds from the response ``Date`` header to that date. Without a valid
+``Date``, the count starts at the current UTC time. A past date gives 0. Any
+other value, more than one ``Retry-After`` field, or a wait above
+``MAX_RETRY_AFTER_SECONDS`` (one year) gives ``None``. The
+``x-ratelimit-*`` and ``ratelimit-*`` headers are copied with lowercase names
+and verbatim values. A name that the request sent, or ``Authorization``, is
+never copied. This module makes no retry.
+
+Attributes:
+    RATE_LIMIT_PREFIXES (tuple[str, ...]): Lowercase rate-limit name prefixes.
+    MAX_RETRY_AFTER_SECONDS (float): Largest wait kept; one year.
+
 Examples:
     ```python
     import httpx
@@ -26,7 +40,10 @@ See Also:
 
 from __future__ import annotations
 
-from typing import Any
+import re
+from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
+from typing import Any, Final
 
 import httpx
 
@@ -46,6 +63,90 @@ def map_transport_error(exc: httpx.HTTPError) -> TransportError:
     return TransportError(f"vLLM request failed: {exc}")
 
 
+RATE_LIMIT_PREFIXES: Final[tuple[str, ...]] = ("x-ratelimit-", "ratelimit-")
+MAX_RETRY_AFTER_SECONDS: Final[float] = 31_536_000.0
+_DELTA_SECONDS: Final = re.compile(r"[0-9]+")
+
+
+def _http_date(value: str) -> datetime | None:
+    try:
+        parsed = parsedate_to_datetime(value)
+    except (TypeError, ValueError):
+        return None
+    return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=UTC)
+
+
+def retry_after_seconds(
+    headers: httpx.Headers, now: datetime | None = None
+) -> float | None:
+    """Return the wait in seconds that ``Retry-After`` asks for.
+
+    Args:
+        headers: Response headers.
+        now: Reference time when ``Date`` is absent or invalid; default is
+            the current UTC time.
+
+    Returns:
+        The delta-seconds value, or the non-negative seconds from ``Date``
+        (else ``now``) to the HTTP-date. ``None`` when the header is absent,
+        repeated, neither form, or above ``MAX_RETRY_AFTER_SECONDS``.
+    """
+    values = headers.get_list("retry-after")
+    if len(values) != 1:
+        return None
+    value = values[0].strip()
+    if _DELTA_SECONDS.fullmatch(value):
+        seconds = float(value)
+    else:
+        target = _http_date(value)
+        if target is None:
+            return None
+        reference = _http_date(headers.get("date", "")) or now or datetime.now(UTC)
+        seconds = max(0.0, (target - reference).total_seconds())
+    return seconds if seconds <= MAX_RETRY_AFTER_SECONDS else None
+
+
+def rate_limit_headers(response: httpx.Response) -> dict[str, str]:
+    """Return the rate-limit headers of ``response``, never a sent header.
+
+    Args:
+        response: Response whose ``request`` is set.
+
+    Returns:
+        Lowercase names that start with a ``RATE_LIMIT_PREFIXES`` item, with
+        verbatim values. Names that the request sent and ``authorization``
+        are left out.
+    """
+    sent = {name.lower() for name in response.request.headers} | {"authorization"}
+    return {
+        name: value
+        for name, value in response.headers.items()
+        if name.startswith(RATE_LIMIT_PREFIXES) and name not in sent
+    }
+
+
+def backend_http_error(
+    response: httpx.Response, message: str, snippet: str
+) -> BackendHttpError:
+    """Build a ``BackendHttpError`` with the retry hints of ``response``.
+
+    Args:
+        response: Error or redirect response whose ``request`` is set.
+        message: Error message; it holds no header value.
+        snippet: Body snippet for the error, empty when withheld.
+
+    Returns:
+        The error with ``retry_after_seconds`` and ``rate_limit`` set.
+    """
+    return BackendHttpError(
+        message,
+        status_code=response.status_code,
+        body_snippet=snippet,
+        retry_after_seconds=retry_after_seconds(response.headers),
+        rate_limit=rate_limit_headers(response),
+    )
+
+
 def map_http_status(response: httpx.Response) -> BackendHttpError:
     """Build a backend HTTP error from a non-success status.
 
@@ -53,14 +154,12 @@ def map_http_status(response: httpx.Response) -> BackendHttpError:
         response: vLLM response with status at or above ``HTTP_ERROR_STATUS``.
 
     Returns:
-        A ``BackendHttpError`` carrying status and a bounded body snippet.
+        A ``BackendHttpError`` carrying status, a bounded body snippet and
+        the retry hints.
     """
     snippet = body_snippet(response.text)
-    return BackendHttpError(
-        f"vLLM HTTP {response.status_code}: {snippet}",
-        status_code=response.status_code,
-        body_snippet=snippet,
-    )
+    message = f"vLLM HTTP {response.status_code}: {snippet}"
+    return backend_http_error(response, message, snippet)
 
 
 def ensure_success_status(response: httpx.Response) -> None:
