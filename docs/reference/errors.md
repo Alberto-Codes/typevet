@@ -272,6 +272,21 @@ A value can hold the API key or a `TYPEVET_VLLM__HEADERS` value.
 Then that token shows as `***`, by the [whole-token rule](security.md#api-keys).
 A llama.cpp error has `retry_after_seconds` `None` and an empty `rate_limit`.
 
+### Request id on a vLLM error
+
+A vLLM `BackendHttpError` and a vLLM `TransportError` hold `request_id` ([#356](https://github.com/Alberto-Codes/typevet/issues/356)).
+
+| Attribute | Value |
+|---|---|
+| `request_id` | `str` or `None`. The `TYPEVET_VLLM__REQUEST_ID_HEADER` value of the request that failed. |
+
+The value is `None` when no request-id header is configured.
+A redirect and an HTML error body also give the id.
+A `/tokenize` failure gives the id of that `/tokenize` request.
+The id is not a secret, so the error does not mask it.
+No error message holds the id, and typevet never logs it.
+A llama.cpp error has `request_id` `None`.
+
 `except GenerationError` catches `SchemaValidationError` because it subclasses
 `GenerationError`. Use `except SchemaValidationError` when validation failures
 need distinct handling (for example logging `payload`).

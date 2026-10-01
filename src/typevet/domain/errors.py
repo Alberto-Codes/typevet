@@ -14,7 +14,7 @@ See Also:
 
 Attributes:
     BackendHttpError (type): Backend HTTP status 400 or above, or a redirect,
-        with the ``Retry-After`` wait and rate-limit headers when present.
+        with the ``Retry-After`` wait, rate-limit headers and request id.
     GenerationError (type): Base failure for a generation call.
     GenerationUnsupportedCapabilityError (type): Backend cannot honor the ask.
     JudgmentError (type): Base failure for a judgment call.
@@ -30,7 +30,8 @@ Attributes:
     ScoringValidationError (type): Score coverage or value failed validation.
     ScoringUnsupportedCapabilityError (type): Backend cannot honor the stage.
     SchemaValidationError (type): Output failed the requested schema.
-    TransportError (type): HTTP client failure before a response.
+    TransportError (type): HTTP client failure before a response, with the
+        request id when one was sent.
 """
 
 from __future__ import annotations
@@ -57,6 +58,8 @@ class TransportError(GenerationError):
     Attributes:
         status_code (None): Always ``None`` for transport failures.
         body_snippet (None): Always ``None`` when no response body was read.
+        request_id (str | None): Request-id header value of the failed vLLM
+            request, or ``None`` when no request-id header is configured.
 
     Examples:
         ```python
@@ -69,15 +72,17 @@ class TransportError(GenerationError):
     status_code: None
     body_snippet: None
 
-    def __init__(self, message: str) -> None:
-        """Record a transport failure message.
+    def __init__(self, message: str, *, request_id: str | None = None) -> None:
+        """Record a transport failure message and the request id.
 
         Args:
             message: Human-readable summary of the client failure.
+            request_id: Request-id header value of the failed request.
         """
         super().__init__(message)
         self.status_code = None
         self.body_snippet = None
+        self.request_id = request_id
 
 
 class BackendHttpError(GenerationError):
@@ -96,6 +101,9 @@ class BackendHttpError(GenerationError):
         rate_limit (Mapping[str, str]): Read-only ``x-ratelimit-*`` and
             ``ratelimit-*`` response headers, with lowercase names and
             verbatim values. Empty when there are none, and for llama.cpp.
+        request_id (str | None): Request-id header value of the failed
+            request (#356). ``None`` when no request-id header is
+            configured, and always ``None`` for llama.cpp.
 
     Examples:
         ```python
@@ -117,8 +125,9 @@ class BackendHttpError(GenerationError):
         body_snippet: str,
         retry_after_seconds: float | None = None,
         rate_limit: Mapping[str, str] | None = None,
+        request_id: str | None = None,
     ) -> None:
-        """Record an HTTP error status, response snippet and retry hints.
+        """Record an HTTP error status, response snippet, hints and request id.
 
         Args:
             message: Human-readable summary including status and snippet.
@@ -126,12 +135,14 @@ class BackendHttpError(GenerationError):
             body_snippet: Truncated response body text.
             retry_after_seconds: Parsed ``Retry-After`` wait, or ``None``.
             rate_limit: Rate-limit response headers; stored as a read-only copy.
+            request_id: Request-id header value of the failed request.
         """
         super().__init__(message)
         self.status_code = status_code
         self.body_snippet = body_snippet
         self.retry_after_seconds = retry_after_seconds
         self.rate_limit: Mapping[str, str] = MappingProxyType(dict(rate_limit or {}))
+        self.request_id = request_id
 
 
 class JudgmentError(GenerationError):

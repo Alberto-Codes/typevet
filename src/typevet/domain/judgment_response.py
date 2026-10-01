@@ -1,7 +1,8 @@
 """Response container for judgment port calls and the off-option receipt.
 
 ``OffOptionReceipt`` records the off-option mass, the caller threshold and
-the guard flag for each answer (#353).
+the guard flag for each answer (#353). ``JudgmentResponse.request_ids``
+records the request id that each question sent to a gateway (#356).
 
 Examples:
     ```python
@@ -128,6 +129,10 @@ class JudgmentResponse:
         calibration (dict[str, CalibrationRecord]): Raw and calibrated values
             keyed by question name, for each answer that a calibration map
             changed. Empty when no map applied.
+        request_ids (dict[str, str | None]): Request-id header value of the
+            scoring request for each question, keyed by question name
+            (#356). When one question sends more than one request, the last
+            one is kept. Empty when no request id was sent.
 
     Examples:
         ```python
@@ -146,6 +151,7 @@ class JudgmentResponse:
     answers: dict[str, Answer] = field(default_factory=dict)
     off_option: dict[str, OffOptionReceipt] = field(default_factory=dict)
     calibration: dict[str, CalibrationRecord] = field(default_factory=dict)
+    request_ids: dict[str, str | None] = field(default_factory=dict)
 
     @property
     def nouls(self) -> dict[str, NoulAnswer]:

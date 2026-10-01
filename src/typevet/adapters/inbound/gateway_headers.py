@@ -14,7 +14,9 @@ never holds a value.
 
 The hooks go on each client that the composition root builds. The request
 hook sets a fresh UUID4 hex value in the request-id header when the request
-does not have one. The response hook refuses each redirect, because the
+does not have one. It records the sent value in ``request.extensions``, so
+results and errors can carry it (#356); typevet never logs it. The response
+hook refuses each redirect, because the
 clients do not follow redirects, and withholds an HTML error body. Neither
 error holds the ``Location`` header or the body. Both errors keep the
 ``Retry-After`` wait and the rate-limit headers (#355).
@@ -51,7 +53,10 @@ from typing import Any, Final
 
 import httpx
 
-from typevet.adapters.outbound.vllm.http_mapping import backend_http_error
+from typevet.adapters.outbound.vllm.http_mapping import (
+    REQUEST_ID_EXTENSION,
+    backend_http_error,
+)
 
 __all__ = [
     "MAX_HEADER_FIELDS",
@@ -211,8 +216,11 @@ def parse_headers_json(raw: str, field: str) -> dict[str, str]:
 
 
 def _stamp(request: httpx.Request, name: str | None) -> None:
-    if name is not None and name not in request.headers:
+    if name is None:
+        return
+    if name not in request.headers:
         request.headers[name] = uuid.uuid4().hex
+    request.extensions[REQUEST_ID_EXTENSION] = request.headers[name]
 
 
 def _guard(response: httpx.Response) -> None:
@@ -242,6 +250,8 @@ def sync_event_hooks(
 
     def stamp(request: httpx.Request) -> None:
         """Set the request-id header when it is configured and absent.
+
+        The sent value is recorded in ``request.extensions``.
 
         Args:
             request: Outgoing request.
@@ -278,6 +288,8 @@ def async_event_hooks(
 
     async def stamp(request: httpx.Request) -> None:
         """Set the request-id header when it is configured and absent.
+
+        The sent value is recorded in ``request.extensions``.
 
         Args:
             request: Outgoing request.

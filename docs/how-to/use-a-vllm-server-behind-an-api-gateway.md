@@ -137,6 +137,39 @@ It does not expand `$NAME` and does not run `!command`.
 [Security](../reference/security.md#api-keys) lists the limits of this masking.
 [Retry hints](../reference/errors.md#retry-hints-on-a-vllm-error) gives the `Retry-After` rules.
 
+## Correlate a gateway log line
+
+Do this step when a gateway log line must match a typevet result or error.
+[Issue #356](https://github.com/Alberto-Codes/typevet/issues/356) holds the contract.
+
+1. Set `TYPEVET_VLLM__REQUEST_ID_HEADER` as in step 6.
+    Configure the gateway to log that header.
+
+2. Read the id of each judgment question from the response.
+
+    ```python
+    from typevet.adapters.inbound.backend_settings import open_judgment
+
+    with open_judgment() as session:
+        response = session.port.judge("state", questions, session.model)
+    for name, request_id in response.request_ids.items():
+        print(name, request_id)
+    ```
+
+    The id is the value in the scoring request of that question.
+    When a scoring wrapper sends more than one request for a question, the last id is kept.
+
+3. Read `request_id` on a `BackendHttpError` or a `TransportError`.
+    It is the id of the request that failed.
+    This works for `generation_adapter`, `async_vllm_generation_adapter` and `open_judgment`.
+
+4. Search the gateway log for that id.
+
+Without `TYPEVET_VLLM__REQUEST_ID_HEADER`, `request_ids` is empty and `request_id` is `None`.
+A successful generation result does not carry the id.
+The `/tokenize` requests of a judgment are not in `request_ids`.
+typevet never logs the id. The id is not a secret, so typevet does not mask it.
+
 ## Related pages
 
 - [Configuration](../reference/configuration.md#vllm-server)

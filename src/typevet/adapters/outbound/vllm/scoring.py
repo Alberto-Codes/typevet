@@ -9,7 +9,8 @@ generated position. A request with images sends the content as a list of
 holds at most ``MAX_LOGPROB_TOKEN_IDS`` ids, not the full distribution, so the
 result reports ``off_option_mass`` as ``None`` (unavailable). An adapter
 without a caller client creates one client on first use, safely across
-threads.
+threads. Each POST gives its request id to ``record_request_id``, so a
+vLLM judgment response can name it (#356).
 
 Examples:
     ```python
@@ -52,7 +53,8 @@ from urllib.parse import urljoin
 import httpx
 
 from typevet.adapters.outbound.vllm.content import content_blocks
-from typevet.adapters.outbound.vllm.http_mapping import post_json
+from typevet.adapters.outbound.vllm.http_mapping import post_json_traced
+from typevet.adapters.outbound.vllm.request_ids import record_request_id
 from typevet.domain.candidate_scoring_validate import build_and_validate_result
 from typevet.domain.errors import (
     GenerationError,
@@ -178,7 +180,8 @@ class VllmCandidateScoringAdapter:
         Returns:
             Validated ``CandidateScoringResult`` with raw logprobs per label.
             ``off_option_mass`` is always ``None``: the response does not hold
-            the full distribution (#297).
+            the full distribution (#297). The request id of the POST goes to
+            ``record_request_id``.
 
         Raises:
             ScoringUnsupportedCapabilityError: Non-``PRE_SAMPLING`` stage,
@@ -192,7 +195,10 @@ class VllmCandidateScoringAdapter:
         """
         _ensure_supported(request)
         url = urljoin(self._base_url, "v1/chat/completions")
-        payload = post_json(self._ensure_client(), url, _request_body(request))
+        payload, request_id = post_json_traced(
+            self._ensure_client(), url, _request_body(request)
+        )
+        record_request_id(request_id)
         token_logprobs = _extract_token_logprobs(payload)
         raw_by_label = {
             spec.label: token_logprobs[spec.token_ids[0]]

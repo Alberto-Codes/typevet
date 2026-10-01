@@ -7,6 +7,12 @@ copies request headers into an error. The snippet is the first 500
 characters of the server's own response body, so it holds
 whatever the server returns.
 
+The request hook of ``gateway_headers`` puts the request id that it sends in
+``request.extensions`` under ``REQUEST_ID_EXTENSION`` (#356).
+``BackendHttpError`` and ``TransportError`` get that id as ``request_id``,
+and ``post_json_traced`` returns it with the reply. Without a configured
+request-id header, the id is ``None``. No message holds the id.
+
 Each ``BackendHttpError`` also gets the retry hints of the response (#355).
 ``Retry-After`` as delta-seconds gives that number. An HTTP-date gives the
 seconds from the response ``Date`` header to that date. Without a valid
@@ -18,6 +24,7 @@ and verbatim values. A name that the request sent, or ``Authorization``, is
 never copied. This module makes no retry.
 
 Attributes:
+    REQUEST_ID_EXTENSION (str): ``request.extensions`` key of the request id.
     RATE_LIMIT_PREFIXES (tuple[str, ...]): Lowercase rate-limit name prefixes.
     MAX_RETRY_AFTER_SECONDS (float): Largest wait kept; one year.
 
@@ -50,6 +57,22 @@ import httpx
 from typevet.adapters.outbound.http_errors import HTTP_ERROR_STATUS, body_snippet
 from typevet.domain.errors import BackendHttpError, GenerationError, TransportError
 
+REQUEST_ID_EXTENSION: Final[str] = "typevet.request_id"
+
+
+def request_id_of(request: httpx.Request) -> str | None:
+    """Return the request id that the request hook recorded on ``request``.
+
+    Args:
+        request: Outgoing request.
+
+    Returns:
+        The id under ``REQUEST_ID_EXTENSION``, or ``None`` when no hook set
+        one.
+    """
+    value = request.extensions.get(REQUEST_ID_EXTENSION)
+    return value if isinstance(value, str) else None
+
 
 def map_transport_error(exc: httpx.HTTPError) -> TransportError:
     """Build a transport error from an httpx client failure.
@@ -58,9 +81,15 @@ def map_transport_error(exc: httpx.HTTPError) -> TransportError:
         exc: HTTP client exception from POST or connection setup.
 
     Returns:
-        A ``TransportError`` with no status or body snippet.
+        A ``TransportError`` with no status or body snippet. Its
+        ``request_id`` is the id of the failed request, or ``None``.
     """
-    return TransportError(f"vLLM request failed: {exc}")
+    try:
+        request: httpx.Request | None = exc.request
+    except RuntimeError:
+        request = None
+    request_id = None if request is None else request_id_of(request)
+    return TransportError(f"vLLM request failed: {exc}", request_id=request_id)
 
 
 RATE_LIMIT_PREFIXES: Final[tuple[str, ...]] = ("x-ratelimit-", "ratelimit-")
@@ -136,7 +165,8 @@ def backend_http_error(
         snippet: Body snippet for the error, empty when withheld.
 
     Returns:
-        The error with ``retry_after_seconds`` and ``rate_limit`` set.
+        The error with ``retry_after_seconds``, ``rate_limit`` and
+        ``request_id`` set.
     """
     return BackendHttpError(
         message,
@@ -144,6 +174,7 @@ def backend_http_error(
         body_snippet=snippet,
         retry_after_seconds=retry_after_seconds(response.headers),
         rate_limit=rate_limit_headers(response),
+        request_id=request_id_of(response.request),
     )
 
 
@@ -212,9 +243,31 @@ def post_json(client: httpx.Client, url: str, body: dict[str, Any]) -> Any:
         BackendHttpError: When the status is 400 or above.
         GenerationError: When the body is not valid JSON.
     """
+    return post_json_traced(client, url, body)[0]
+
+
+def post_json_traced(
+    client: httpx.Client, url: str, body: dict[str, Any]
+) -> tuple[Any, str | None]:
+    """POST like ``post_json`` and also return the request id that was sent.
+
+    Args:
+        client: Open HTTP client.
+        url: Absolute endpoint URL.
+        body: JSON request body.
+
+    Returns:
+        The parsed JSON value and the request id, or ``None`` when no
+        request-id header is configured.
+
+    Raises:
+        TransportError: When the httpx client fails.
+        BackendHttpError: When the status is 400 or above.
+        GenerationError: When the body is not valid JSON.
+    """
     try:
         response = client.post(url, json=body)
     except httpx.HTTPError as exc:
         raise map_transport_error(exc) from exc
     ensure_success_status(response)
-    return parse_json_response(response)
+    return parse_json_response(response), request_id_of(response.request)

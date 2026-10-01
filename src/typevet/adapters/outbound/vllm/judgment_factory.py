@@ -12,6 +12,10 @@ Control strings are tokenized through vLLM ``/tokenize`` with
 so the factory passes one base URL to the scoring adapter and to the
 ``/tokenize`` hook. Both requests go to the same host.
 
+The port sets ``JudgmentResponse.request_ids`` from the request id that each
+question's scoring POST sent (#356). The ``/tokenize`` requests are not
+recorded there; their errors carry the id as ``request_id``.
+
 Examples:
     ```python
     import httpx
@@ -29,6 +33,7 @@ See Also:
     - [typevet.adapters.outbound.vllm.scoring][]: Scoring adapter and framing
     - [typevet.adapters.outbound.judgment_scoring][]: ``ScoringJudgmentAdapter``
     - [typevet.adapters.outbound.vllm.http_mapping][]: Error mapping
+    - [typevet.adapters.outbound.vllm.request_ids][]: Request id per question
     - [typevet.runtime][]: Public re-exports for library callers
 
 [i169]: https://github.com/Alberto-Codes/typevet/issues/169
@@ -44,6 +49,10 @@ import httpx
 
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.adapters.outbound.vllm.http_mapping import post_json
+from typevet.adapters.outbound.vllm.request_ids import (
+    RequestIdJudgmentPort,
+    RequestIdScoringPort,
+)
 from typevet.adapters.outbound.vllm.scoring import (
     ChatContentFraming,
     VllmCandidateScoringAdapter,
@@ -187,7 +196,8 @@ def open_vllm_judgment(
             wiring.
 
     Yields:
-        A session holding the configured ``JudgmentPort``.
+        A session holding the configured ``JudgmentPort``. Its responses map
+        each question name to the scoring request id in ``request_ids``.
 
     Raises:
         ValueError: When no server root is known.
@@ -198,12 +208,13 @@ def open_vllm_judgment(
     scoring_port: CandidateScoringPort = scoring
     if scoring_port_wrapper is not None:
         scoring_port = scoring_port_wrapper(scoring)
-    port = ScoringJudgmentAdapter(
-        scoring_port,
+    adapter = ScoringJudgmentAdapter(
+        RequestIdScoringPort(scoring_port),
         framing=ChatContentFraming(),
         tokenize_content=tokenize,
         pinned_model=model,
     )
+    port = RequestIdJudgmentPort(adapter)
     try:
         yield VllmJudgmentSession(port=port, client=client, model=model)
     finally:
