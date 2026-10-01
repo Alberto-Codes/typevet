@@ -248,6 +248,7 @@ class _FakePort:
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         del state, questions, model
         self.media_counts.append(len(media or ()))

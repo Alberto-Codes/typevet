@@ -263,6 +263,7 @@ class _FakePort:
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         assert tuple(questions) == (VERDICT,)
         choice = questions[VERDICT]

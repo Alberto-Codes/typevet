@@ -41,6 +41,7 @@ class _TransportJudgmentFake:
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         _ = (state, questions, model, media)
         raise TransportError("reset")

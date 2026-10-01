@@ -30,7 +30,7 @@ from typevet_evals.psai_vision_consumer.protocol import FROZEN_SCORING_REQUESTS
 
 
 class _RaisingJudgmentPort(JudgmentPort):
-    def judge(self, state, questions, model, *, media=None):
+    def judge(self, state, questions, model, *, media=None, off_option_threshold=None):
         """Raise to exercise failure accounting on the judgment wrapper.
 
         Raises:

@@ -79,6 +79,7 @@ class _ScriptedJudgmentPort:
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         del state, media
         return JudgmentResponse(

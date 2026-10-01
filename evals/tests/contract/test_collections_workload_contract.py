@@ -46,6 +46,7 @@ class _RecordingPort:
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         self.calls.append((state, questions, model))
         return JudgmentResponse(

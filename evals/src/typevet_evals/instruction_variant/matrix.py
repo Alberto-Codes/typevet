@@ -133,8 +133,11 @@ class _LedgerJudgmentPort:
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         """Reserve judgment attempts and count returned responses separately.
+
+        ``media`` and ``off_option_threshold`` go to the inner port unchanged.
 
         Returns:
             Judgment response from the inner port.
@@ -144,7 +147,13 @@ class _LedgerJudgmentPort:
         """
         self._ledger.before_judgment()
         try:
-            response = self._inner.judge(state, questions, model, media=media)
+            response = self._inner.judge(
+                state,
+                questions,
+                model,
+                media=media,
+                off_option_threshold=off_option_threshold,
+            )
         except Exception:
             self._ledger.record_failure()
             raise

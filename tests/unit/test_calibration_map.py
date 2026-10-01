@@ -71,6 +71,7 @@ class _StubJudgment:
         model: str,
         *,
         media: Any = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         self.calls += 1
         return self.response

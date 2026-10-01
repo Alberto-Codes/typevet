@@ -132,6 +132,7 @@ class CalibratedJudgment:
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         """Judge with the inner port, then calibrate each mapped Noul answer.
 
@@ -140,6 +141,7 @@ class CalibratedJudgment:
             questions: Question names to typed questions or wire dictionaries.
             model: Backend model id or alias, forwarded to the inner port.
             media: Images forwarded to the inner port.
+            off_option_threshold: Off-option guard forwarded to the inner port.
 
         Returns:
             The inner response with calibrated answers and records.
@@ -154,7 +156,13 @@ class CalibratedJudgment:
         for name, question in questions.items():
             if name in self._maps and isinstance(question, (Choice, Score)):
                 raise CalibrationTargetError(_TARGET_MESSAGE)
-        response = self._inner.judge(state, questions, model, media=media)
+        response = self._inner.judge(
+            state,
+            questions,
+            model,
+            media=media,
+            off_option_threshold=off_option_threshold,
+        )
         answers: dict[str, Answer] = dict(response.answers)
         records = dict(response.calibration)
         for name, cmap in self._maps.items():

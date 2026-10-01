@@ -48,6 +48,7 @@ class JudgmentPort(Protocol):
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         """Evaluate ``state`` against named questions.
 
@@ -55,17 +56,26 @@ class JudgmentPort(Protocol):
         did before images existed. A non-empty tuple conditions every scored
         field on the same images.
 
+        A set ``off_option_threshold`` flags each answer whose off-option mass
+        is above it, and does not raise for that mass. The answer receipt in
+        ``JudgmentResponse.off_option`` holds the mass, the threshold and the
+        flag. ``None`` turns the guard off. A wrapper forwards the value to
+        the port it wraps.
+
         Args:
             state: Content under evaluation (text, JSON object, or array).
             questions: Question names to typed questions or raw wire dictionaries.
             model: Backend model id or alias.
             media: Images to condition every scored field on, in order.
+            off_option_threshold: Off-option mass limit in ``[0, 1]``, or
+                ``None`` (the default) to turn the guard off.
 
         Returns:
             Typed ``JudgmentResponse`` with one answer per question.
 
         Raises:
             typevet.domain.errors.JudgmentError: When the call fails before answers
-                exist. Concrete subclasses depend on the adapter.
+                exist, or the threshold is not ``None`` or in ``[0, 1]``.
+                Concrete subclasses depend on the adapter.
         """
         ...

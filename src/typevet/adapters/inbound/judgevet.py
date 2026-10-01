@@ -386,7 +386,12 @@ class TypevetSystemOnePort:
         return BridgeCapabilities(True, self._cap, None)
 
     def system_one(
-        self, state: State, questions: Questions, model: str
+        self,
+        state: State,
+        questions: Questions,
+        model: str,
+        *,
+        off_option_threshold: float | None = None,
     ) -> SystemOneResponse:
         """Judge ``state`` against every question through typevet.
 
@@ -394,6 +399,8 @@ class TypevetSystemOnePort:
             state: The content to judge: text, a JSON object or an array.
             questions: judgevet questions or raw wire mappings, keyed by name.
             model: The model id typevet sends to its backend.
+            off_option_threshold: Forwarded to the typevet port. No judgevet
+                setting maps to it, so the default ``None`` turns the guard off.
 
         Returns:
             Typed answers, the model id the backend reports and token usage.
@@ -404,7 +411,7 @@ class TypevetSystemOnePort:
             ProviderTransportError: The backend could not be reached.
             ProviderResponseError: The backend answer broke the typed contract.
         """
-        return self._judge(state, questions, model, None)
+        return self._judge(state, questions, model, None, off_option_threshold)
 
     def _judge(
         self,
@@ -412,6 +419,7 @@ class TypevetSystemOnePort:
         questions: Questions,
         model: str,
         media: tuple[ImageInput, ...] | None,
+        off_option_threshold: float | None,
     ) -> SystemOneResponse:
         """Convert, call typevet, map failures and convert the answers back.
 
@@ -420,6 +428,7 @@ class TypevetSystemOnePort:
             questions: judgevet questions keyed by name.
             model: The model id.
             media: Images for every question, or ``None`` for text.
+            off_option_threshold: The typevet off-option guard, or ``None``.
 
         Returns:
             The judgevet response.
@@ -432,7 +441,13 @@ class TypevetSystemOnePort:
             for name, question in questions.items()
         }
         try:
-            response = self._judgment.judge(state, converted, model, media=media)
+            response = self._judgment.judge(
+                state,
+                converted,
+                model,
+                media=media,
+                off_option_threshold=off_option_threshold,
+            )
         except GenerationError as error:
             raise _provider_error(error) from error
         return _to_response(response, questions)
@@ -574,6 +589,7 @@ class TypevetMediaSystemOnePort(TypevetSystemOnePort):
         model: str,
         *,
         evidence: ImageEvidence,
+        off_option_threshold: float | None = None,
     ) -> SystemOneResponse:
         """Judge ``state`` and the images against every question.
 
@@ -582,6 +598,8 @@ class TypevetMediaSystemOnePort(TypevetSystemOnePort):
             questions: judgevet questions or raw wire mappings, keyed by name.
             model: The model id typevet sends to its backend.
             evidence: The images and the images each question is bound to.
+            off_option_threshold: Forwarded to the typevet port for each
+                image group, or ``None`` to turn the guard off.
 
         Returns:
             Typed answers, the model id the backend reports and summed usage.
@@ -594,7 +612,10 @@ class TypevetMediaSystemOnePort(TypevetSystemOnePort):
         """
         groups = _image_groups(questions, evidence)
         return _merge(
-            [self._judge(state, group, model, media) for group, media in groups]
+            [
+                self._judge(state, group, model, media, off_option_threshold)
+                for group, media in groups
+            ]
         )
 
 
@@ -632,7 +653,12 @@ class AsyncTypevetSystemOnePort:
         return self._port.bridge_capabilities
 
     async def system_one(
-        self, state: State, questions: Questions, model: str
+        self,
+        state: State,
+        questions: Questions,
+        model: str,
+        *,
+        off_option_threshold: float | None = None,
     ) -> SystemOneResponse:
         """Judge ``state`` on a worker thread.
 
@@ -640,6 +666,7 @@ class AsyncTypevetSystemOnePort:
             state: The content to judge.
             questions: judgevet questions or raw wire mappings, keyed by name.
             model: The model id typevet sends to its backend.
+            off_option_threshold: Forwarded to the sync port.
 
         Returns:
             The sync port's response.
@@ -647,7 +674,13 @@ class AsyncTypevetSystemOnePort:
         Raises:
             ProviderError: The sync port's mapped failure.
         """
-        return await asyncio.to_thread(self._port.system_one, state, questions, model)
+        return await asyncio.to_thread(
+            self._port.system_one,
+            state,
+            questions,
+            model,
+            off_option_threshold=off_option_threshold,
+        )
 
 
 def provider_factory(

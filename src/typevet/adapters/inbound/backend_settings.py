@@ -65,6 +65,7 @@ See Also:
     - [typevet.adapters.outbound.vllm.generation_async][]: Async vLLM adapter
     - [typevet.adapters.outbound.vllm.judgment_factory][]: vLLM judgment factory
     - [typevet.adapters.diagnostics.redaction][]: ``REDACTED`` (``***``) mask
+    - [typevet.adapters.inbound.error_masking][]: Masked error copies
     - docs/reference/configuration.md: Environment variable reference
 """
 
@@ -83,6 +84,8 @@ from typing import TYPE_CHECKING, Any, Literal
 import httpx
 
 from typevet.adapters.diagnostics.redaction import REDACTED
+from typevet.adapters.inbound.error_masking import Needles as _Needles
+from typevet.adapters.inbound.error_masking import masked_error as _masked_error
 from typevet.adapters.inbound.gateway_headers import (
     async_event_hooks,
     check_auth_scheme,
@@ -187,81 +190,7 @@ class VllmSettings:
                 raise ValueError(msg)
 
 
-_PLAIN_CONTAINERS: tuple[type, ...] = (list, tuple, set, frozenset)
-_Needles = tuple[re.Pattern[str], ...]
 _BOUND = "(?<![A-Za-z0-9]){}(?![A-Za-z0-9])"
-
-
-def _masked_text(value: str | bytes, needles: _Needles) -> str | bytes:
-    """Replace each needle match in ``value`` with ``MASK``, keeping its type.
-
-    Bytes stay bytes: they are decoded and encoded again as Latin-1, which
-    keeps every byte. The key and header values are ASCII, so each needle
-    matches the same bytes.
-
-    Args:
-        value: String or bytes to mask.
-        needles: Patterns from ``_key_needles``.
-
-    Returns:
-        The masked string or bytes.
-    """
-    text = value.decode("latin-1") if isinstance(value, bytes) else value
-    for needle in needles:
-        text = needle.sub(MASK, text)
-    return text.encode("latin-1") if isinstance(value, bytes) else text
-
-
-def _masked(value: Any, needles: _Needles) -> Any:
-    """Replace each key form in ``value`` with ``MASK``.
-
-    Strings and bytes are masked by ``_masked_text`` and keep their type.
-    Dicts, lists, tuples, sets and frozensets are copied as plain containers
-    of the same kind with each key and item masked, so a parsed payload that
-    holds the key loses it. Another ``Mapping``, such as the read-only
-    ``rate_limit`` of a ``BackendHttpError``, becomes a read-only copy with
-    each value masked and each key unchanged (#355). Other values are
-    returned unchanged.
-
-    Args:
-        value: String, bytes, container or other attribute value.
-        needles: Patterns from ``_key_needles``.
-
-    Returns:
-        The masked value.
-    """
-    if isinstance(value, (str, bytes)):
-        return _masked_text(value, needles)
-    if isinstance(value, dict):
-        return {_masked(k, needles): _masked(v, needles) for k, v in value.items()}
-    if isinstance(value, Mapping):
-        return MappingProxyType({k: _masked(v, needles) for k, v in value.items()})
-    for kind in _PLAIN_CONTAINERS:
-        if isinstance(value, kind):
-            return kind(_masked(item, needles) for item in value)
-    return value
-
-
-def _masked_error(exc: GenerationError, needles: _Needles) -> GenerationError:
-    """Rebuild ``exc`` as the same type with the key masked and no chain.
-
-    ``BaseException.__new__`` makes the copy without calling ``__init__``, so
-    every ``GenerationError`` subclass keeps its type and attributes.
-
-    Args:
-        exc: Error raised by the vLLM adapter.
-        needles: Patterns from ``_key_needles``; each match becomes ``MASK``.
-
-    Returns:
-        A new error whose arguments and attributes are masked, including
-        strings and bytes inside dict, list, tuple, set and frozenset
-        values such as a payload.
-    """
-    masked = type(exc).__new__(type(exc))
-    masked.args = _masked(exc.args, needles)
-    for name, value in vars(exc).items():
-        setattr(masked, name, _masked(value, needles))
-    return masked
 
 
 def _key_needles(settings: VllmSettings) -> _Needles:
@@ -332,6 +261,7 @@ class _KeyMaskingJudgmentPort:
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         """Judge, and mask the configured key in any raised error.
 
@@ -340,6 +270,7 @@ class _KeyMaskingJudgmentPort:
             questions: Question names to typed or raw questions.
             model: Served model name.
             media: Images to condition every scored field on.
+            off_option_threshold: Forwarded to the wrapped port.
 
         Returns:
             The response from the wrapped port, unchanged.
@@ -348,7 +279,13 @@ class _KeyMaskingJudgmentPort:
             GenerationError: The port error, as a masked copy when a key is set.
         """
         try:
-            return self._port.judge(state, questions, model, media=media)
+            return self._port.judge(
+                state,
+                questions,
+                model,
+                media=media,
+                off_option_threshold=off_option_threshold,
+            )
         except GenerationError as exc:
             masked = _masked_if_keyed(exc, self._needles)
             if masked is None:

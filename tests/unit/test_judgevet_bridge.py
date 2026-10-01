@@ -89,6 +89,7 @@ class StubJudgment:
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         self.calls.append((state, questions, model, media))
         if self.error is not None:
@@ -324,6 +325,7 @@ class PerCallJudgment:
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         index = len(self.calls)
         self.calls.append((tuple(questions), media))

@@ -120,7 +120,9 @@ def test_ledger_judgment_port_records_failures() -> None:
     """Wrapped port counts validation failures before re-raising."""
 
     class _RaisingPort(JudgmentPort):
-        def judge(self, state, questions, model, *, media=None):
+        def judge(
+            self, state, questions, model, *, media=None, off_option_threshold=None
+        ):
             """Always fail validation for ledger accounting tests.
 
             Raises:
@@ -214,7 +216,9 @@ def test_probe_invalid_model_fails_open_without_validation_error() -> None:
     """Invalid-model probe reports failure when port accepts empty model."""
 
     class _AcceptingPort(JudgmentPort):
-        def judge(self, state, questions, model, *, media=None):
+        def judge(
+            self, state, questions, model, *, media=None, off_option_threshold=None
+        ):
             """Accept empty model to simulate fail-open probe.
 
             Returns:

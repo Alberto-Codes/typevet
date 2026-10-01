@@ -81,8 +81,9 @@ class _ExpenseJudgmentPort(Protocol):
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
-        """Score one state with native questions and optional media."""
+        """Score one state with native questions, optional media and a threshold."""
         ...
 
 

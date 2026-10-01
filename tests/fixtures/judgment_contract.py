@@ -10,7 +10,12 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from typevet.domain.errors import JudgmentError, JudgmentValidationError
+from typevet.domain.decision_execute import check_off_option_threshold
+from typevet.domain.errors import (
+    DecisionExecutionError,
+    JudgmentError,
+    JudgmentValidationError,
+)
 from typevet.domain.judgment_answers import (
     Answer,
     ChoiceAnswer,
@@ -74,6 +79,7 @@ class ContractJudgmentFake:
             tuple[Any, Mapping[str, Question | Mapping[str, Any]], str]
         ] = []
         self.media_calls: list[tuple[ImageInput, ...]] = []
+        self.thresholds: list[float | None] = []
 
     def judge(
         self,
@@ -82,13 +88,19 @@ class ContractJudgmentFake:
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         self.calls.append((state, questions, model))
         self.media_calls.append(media or ())
+        self.thresholds.append(off_option_threshold)
         if self._fail is not None:
             raise self._fail
         if not model.strip():
             raise JudgmentValidationError("model must be non-empty")
+        try:
+            check_off_option_threshold(off_option_threshold)
+        except DecisionExecutionError as exc:
+            raise JudgmentValidationError(str(exc)) from exc
 
         result: dict[str, Answer] = {}
         for name, question in questions.items():
