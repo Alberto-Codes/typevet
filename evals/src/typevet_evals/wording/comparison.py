@@ -3,7 +3,9 @@
 Each judge scores its seed wording and its own evolved wording once each on
 the #307 held-out rows. ``evolved_text_for`` takes the evolved wording from
 the evolution artifact of the backend's judge: Jev's artifact for ``jev``,
-Gemma's artifact for ``llama_cpp`` and ``vllm``. ``comparison_receipt`` gives
+Gemma's artifact for ``llama_cpp`` and ``vllm``. ``evolved_parts_for``
+applies the same checks and returns every evolved part (#365).
+``comparison_receipt`` gives
 per arm Cohen's kappa against the DIFrauD labels, the Brier score, the ECE
 and the accuracy, the paired bootstrap intervals (context only) and each
 call's latency and input tokens.
@@ -62,7 +64,12 @@ from typevet_evals.wording.metrics import (
     paired_bootstrap,
     wording_metrics,
 )
-from typevet_evals.wording.parts import receipt_parts
+from typevet_evals.wording.parts import (
+    INSTRUCTIONS,
+    WordingParts,
+    artifact_parts,
+    receipt_parts,
+)
 
 __all__ = [
     "COMPARISON_BACKENDS",
@@ -71,6 +78,7 @@ __all__ = [
     "ComparisonSubject",
     "ValidationRows",
     "comparison_receipt",
+    "evolved_parts_for",
     "evolved_text_for",
 ]
 
@@ -79,6 +87,35 @@ EVOLUTION_PROVIDER: Final[Mapping[str, str]] = MappingProxyType(
     {"jev": "jev", "llama_cpp": "gemma", "vllm": "gemma"}
 )
 COMPARISON_SPLITS: Final[tuple[str, ...]] = (HELD_OUT_SPLIT, VALIDATION_SPLIT)
+
+
+def _check_artifact(
+    artifact: Mapping[str, Any], *, backend: str, seed_text: str
+) -> None:
+    """Refuse an artifact that is not the backend judge's valid run on the seed.
+
+    Raises:
+        ValueError: When the backend is unknown, the artifact's
+            ``judge_provider`` is not the backend's judge, the artifact is not
+            valid or has budget refusals, or its seed differs.
+    """
+    if backend not in EVOLUTION_PROVIDER:
+        msg = f"backend {backend!r} is not one of {COMPARISON_BACKENDS}"
+        raise ValueError(msg)
+    expected = EVOLUTION_PROVIDER[backend]
+    provider = artifact.get("judge_provider")
+    if provider != expected:
+        msg = f"backend {backend!r} needs judge_provider {expected!r}, not {provider!r}"
+        raise ValueError(msg)
+    if artifact.get("valid") is not True:
+        msg = "the evolution artifact is not valid"
+        raise ValueError(msg)
+    if artifact.get("budget_refusals") != 0:
+        msg = f"the evolution artifact has budget_refusals {artifact.get('budget_refusals')!r}"
+        raise ValueError(msg)
+    if artifact.get("seed_text") != seed_text:
+        msg = "the evolution artifact's seed is not the is_scam seed"
+        raise ValueError(msg)
 
 
 def evolved_text_for(
@@ -100,28 +137,42 @@ def evolved_text_for(
             valid or has budget refusals, its seed differs, or its evolved
             wording is the seed.
     """
-    if backend not in EVOLUTION_PROVIDER:
-        msg = f"backend {backend!r} is not one of {COMPARISON_BACKENDS}"
-        raise ValueError(msg)
-    expected = EVOLUTION_PROVIDER[backend]
-    provider = artifact.get("judge_provider")
-    if provider != expected:
-        msg = f"backend {backend!r} needs judge_provider {expected!r}, not {provider!r}"
-        raise ValueError(msg)
-    if artifact.get("valid") is not True:
-        msg = "the evolution artifact is not valid"
-        raise ValueError(msg)
-    if artifact.get("budget_refusals") != 0:
-        msg = f"the evolution artifact has budget_refusals {artifact.get('budget_refusals')!r}"
-        raise ValueError(msg)
-    if artifact.get("seed_text") != seed_text:
-        msg = "the evolution artifact's seed is not the is_scam seed"
-        raise ValueError(msg)
+    _check_artifact(artifact, backend=backend, seed_text=seed_text)
     evolved = str(artifact["evolved_text"])
     if evolved == seed_text:
         msg = "the evolved wording is the same as the seed"
         raise ValueError(msg)
     return evolved
+
+
+def evolved_parts_for(
+    artifact: Mapping[str, Any], *, backend: str, seed_parts: Mapping[str, str]
+) -> WordingParts:
+    """Return the evolved parts of the backend's own judge (#365).
+
+    The checks of ``evolved_text_for`` apply, but the evolved and seed
+    mappings are compared in full, so a run that froze ``instructions`` and
+    evolved the criteria passes.
+
+    Args:
+        artifact: An evolution artifact, with or without the #363 parts fields.
+        backend: ``jev``, ``llama_cpp`` or ``vllm``.
+        seed_parts: The full mapping of the seed the caller scores.
+
+    Returns:
+        The parts that ``artifact_parts`` gives.
+
+    Raises:
+        ValueError: When a check of ``evolved_text_for`` other than the
+            same-text check fails, a check of ``artifact_parts`` fails, or
+            every evolved part is the seed's.
+    """
+    _check_artifact(artifact, backend=backend, seed_text=seed_parts[INSTRUCTIONS])
+    parts = artifact_parts(artifact, seed_parts)
+    if dict(parts.evolved) == dict(parts.seed):
+        msg = "the evolved wording is the same as the seed"
+        raise ValueError(msg)
+    return parts
 
 
 def _arm(probabilities: list[float], labels: list[int]) -> dict[str, Any]:

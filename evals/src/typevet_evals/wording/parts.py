@@ -7,7 +7,8 @@ because gepa-adk refuses a component name that is not an identifier.
 without ``criteria`` has the ``instructions`` part only. ``noul_from_parts``
 builds the question that a call sends. ``WordingParts`` holds the evolved
 selection and the seed and evolved mappings of one run. Its construction
-fails when a frozen part changed.
+fails when a frozen part changed. ``artifact_parts`` reads them back from an
+evolution artifact.
 
 Every refusal names the part or the question type, never a text, so an
 error message cannot leak a wording into a log.
@@ -50,6 +51,7 @@ __all__ = [
     "PART_ROLES",
     "SeedNoul",
     "WordingParts",
+    "artifact_parts",
     "check_parts",
     "check_selection",
     "noul_from_parts",
@@ -318,4 +320,48 @@ def receipt_parts(
     if parts is None:
         return WordingParts.from_texts(seed_text, evolved_text)
     parts.check_texts(seed_text, evolved_text)
+    return parts
+
+
+def artifact_parts(
+    artifact: Mapping[str, Any], seed_parts: Mapping[str, str]
+) -> WordingParts:
+    """Return the parts of an evolution artifact, checked against the seed.
+
+    An artifact written before #363 has no ``evolved_parts``. Its evolved
+    ``instructions`` text then goes onto the seed's parts, so both arms send
+    the seed's criteria, as ``score_held_out`` does for a text.
+
+    Args:
+        artifact: The evolution artifact.
+        seed_parts: The full mapping of the seed the caller scores.
+
+    Returns:
+        The artifact's selection and evolved mapping over ``seed_parts``.
+
+    Raises:
+        ValueError: If the artifact's seed or evolved ``instructions`` text,
+            its ``seed_parts`` or its ``components`` do not agree with the
+            seed and the part names, or a frozen part changed. The message
+            names the field only, never a value.
+        TypeError: If ``evolved_parts`` is not a mapping.
+    """
+    if artifact.get("seed_text") != seed_parts[INSTRUCTIONS]:
+        raise ValueError("the artifact seed_text is not the seed's instructions part")
+    if "evolved_parts" not in artifact:
+        evolved = dict(seed_parts) | {INSTRUCTIONS: str(artifact["evolved_text"])}
+        return WordingParts((INSTRUCTIONS,), dict(seed_parts), evolved)
+    components = artifact.get("components")
+    if not isinstance(components, list) or not all(
+        name in PART_NAMES for name in components
+    ):
+        raise ValueError("the artifact components name a part outside the Noul parts")
+    if artifact.get("seed_parts") != dict(seed_parts):
+        raise ValueError("the artifact seed_parts are not the seed's parts")
+    evolved = artifact["evolved_parts"]
+    if not isinstance(evolved, Mapping):
+        raise TypeError("the artifact evolved_parts must be a mapping")
+    parts = WordingParts(tuple(components), dict(seed_parts), dict(evolved))
+    if artifact.get("evolved_text") != parts.evolved_text:
+        raise ValueError("the artifact evolved_text is not its instructions part")
     return parts

@@ -30,6 +30,20 @@ repository. Settings:
   or ``jev`` (#328). ``TYPEVET_WORDING_CONCURRENCY`` sets gepa-adk's
   ``max_concurrent_evals`` (default 5 for Gemma, 1 for Jev).
 
+**Wording parts (#365).** ``TYPEVET_WORDING_COMPONENTS`` names the parts that
+evolve, comma-separated, from ``instructions``, ``criteria_true`` and
+``criteria_false`` (default ``instructions``); the other parts are frozen.
+``TYPEVET_WORDING_SEED_CRITERIA=1`` adds the pre-registered ``true`` and
+``false`` criteria (``SEED_CRITERIA``) to the seed; unset or ``0`` keeps the
+#252 seed without criteria. A criteria part needs the criteria seed. The
+test refuses an unknown part name before any call. The artifact records
+``components``, ``seed_parts``, ``evolved_parts`` and their digests. The
+held-out and comparison tests read the same ``TYPEVET_WORDING_SEED_CRITERIA``
+and build both arms from the artifact's ``evolved_parts``; the seed must equal
+the artifact's ``seed_parts``. An artifact without ``evolved_parts`` (#252)
+gives its evolved ``instructions`` with the seed criteria in both arms. The
+identity prompts hash each arm's criteria.
+
 **Jev judge** (``TYPEVET_WORDING_JUDGE_PROVIDER=jev``). The judge is
 judgevet's ``HTTPSystemOneAdapter``, built from judgevet's ``Settings``
 (``JEV_API__*``; key ``JEV_API__KEY`` or ``TYPESAFE_API_KEY``). The test
@@ -110,6 +124,13 @@ Examples:
       TYPEVET_WORDING_COMPARISON_RECEIPT=$R/wording252_held_out_jev.json \
       uv run pytest evals/tests/live/test_wording_evolution_live.py -m live -q -s \
       -k comparison
+
+    TYPEVET_WORDING_COMPONENTS=criteria_true,criteria_false \
+      TYPEVET_WORDING_SEED_CRITERIA=1 \
+      TYPEVET_WORDING_ARTIFACT=$R/wording365_armA_evolution_gemma_llama_cpp.json \
+      TYPEVET_WORDING_CHECKPOINT=$HOME/typevet-365/armA.checkpoint.json \
+      uv run pytest evals/tests/live/test_wording_evolution_live.py -m live -q -s \
+      -k evolution
     ```
 
 See Also:
@@ -124,11 +145,13 @@ import hashlib
 import json
 import os
 import time
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
+from types import MappingProxyType
+from typing import Any, Final
 
 import httpx
 import pytest
@@ -155,6 +178,7 @@ from typevet_evals.datasets.difraud import (
     IS_SCAM_NOUL_SCHEMA,
     PINNED_REVISION,
     PRIMARY_NOUL_NAME,
+    DIFrauDRecord,
     DIFrauDSplits,
     load_splits,
 )
@@ -172,6 +196,7 @@ from typevet_evals.experiment_identity import (
 from typevet_evals.face_match import ensure_key_free, served_weights_pins
 from typevet_evals.runner.live_gate import require_live_enabled
 from typevet_evals.wording import (
+    WordingRun,
     WordingRunConfig,
     evolution_artifact,
     evolve_wording,
@@ -184,12 +209,22 @@ from typevet_evals.wording.calls import TimedJudgePort, call_summary, error_coun
 from typevet_evals.wording.comparison import (
     ComparisonSubject,
     comparison_receipt,
-    evolved_text_for,
+    evolved_parts_for,
 )
 from typevet_evals.wording.held_out import (
     DEFAULT_TRAIN_ROWS,
     HeldOutRows,
     ValidationRows,
+)
+from typevet_evals.wording.parts import (
+    CRITERIA_FALSE,
+    CRITERIA_TRUE,
+    INSTRUCTIONS,
+    PART_NAMES,
+    WordingParts,
+    artifact_parts,
+    check_selection,
+    seed_mapping,
 )
 from typevet_evals.wording.served import (
     TEXT_JUDGE,
@@ -206,8 +241,160 @@ _SMOKE_ROWS = 10
 _REFLECTOR = "Qwen3.8-27B-UD-Q4_K_M"
 _N_VOCAB = 262144
 _TIMEOUT = 900.0
-_SEED_TEXT = str(IS_SCAM_NOUL_SCHEMA["properties"][PRIMARY_NOUL_NAME]["instructions"])
-_SEED = Noul(instructions=_SEED_TEXT)
+SEED_TEXT = str(IS_SCAM_NOUL_SCHEMA["properties"][PRIMARY_NOUL_NAME]["instructions"])
+_SEED = Noul(instructions=SEED_TEXT)
+SEED_CRITERIA: Final[Mapping[str, str]] = MappingProxyType(
+    {
+        "true": (
+            "The message tries to deceive the reader into money, credentials "
+            "or an unsafe action."
+        ),
+        "false": "The message is an ordinary personal, commercial or informational text.",
+    }
+)
+_LABELS = ("true", "false")
+
+
+def wording_components(environ: Mapping[str, str]) -> tuple[str, ...]:
+    """Read ``TYPEVET_WORDING_COMPONENTS``: the part names that evolve (#365).
+
+    Args:
+        environ: The environment.
+
+    Returns:
+        The comma-separated names, in order; ``("instructions",)`` when unset.
+
+    Raises:
+        ValueError: If a name is empty or not a ``Noul`` part. The message
+            does not repeat the value.
+    """
+    raw = environ.get("TYPEVET_WORDING_COMPONENTS", "").strip()
+    if not raw:
+        return (INSTRUCTIONS,)
+    names = tuple(name.strip() for name in raw.split(","))
+    if not all(name in PART_NAMES for name in names):
+        msg = f"TYPEVET_WORDING_COMPONENTS names a part outside {', '.join(PART_NAMES)}"
+        raise ValueError(msg)
+    return names
+
+
+def wording_seed(environ: Mapping[str, str]) -> Noul:
+    """Build the seed; ``TYPEVET_WORDING_SEED_CRITERIA=1`` adds the criteria.
+
+    Args:
+        environ: The environment.
+
+    Returns:
+        The #252 seed ``Noul``, with ``SEED_CRITERIA`` when the knob is ``1``.
+
+    Raises:
+        ValueError: If the knob is set to a value other than ``0`` or ``1``.
+    """
+    raw = environ.get("TYPEVET_WORDING_SEED_CRITERIA", "").strip()
+    if raw not in {"", "0", "1"}:
+        raise ValueError("TYPEVET_WORDING_SEED_CRITERIA must be 0 or 1")
+    criteria = dict(SEED_CRITERIA) if raw == "1" else None
+    return Noul(instructions=SEED_TEXT, criteria=criteria)
+
+
+def evolution_inputs(environ: Mapping[str, str]) -> tuple[Noul, tuple[str, ...]]:
+    """Return the seed and the checked selection, before any call.
+
+    Args:
+        environ: The environment.
+
+    Returns:
+        The seed and the part names that evolve.
+    """
+    seed = wording_seed(environ)
+    return seed, check_selection(wording_components(environ), seed_mapping(seed))
+
+
+async def evolve_from_env(
+    port: JudgePort,
+    environ: Mapping[str, str],
+    *,
+    train: Sequence[DIFrauDRecord],
+    validation: Sequence[DIFrauDRecord],
+    config: WordingRunConfig,
+) -> WordingRun:
+    """Evolve the parts the knobs select from the seed the knobs build.
+
+    Args:
+        port: The judge port.
+        environ: The environment.
+        train: The train records.
+        validation: The validation records.
+        config: The run settings.
+
+    Returns:
+        The run; its ``components``, ``seed_parts`` and ``evolved_parts``
+        reach the artifact.
+    """
+    seed, components = evolution_inputs(environ)
+    return await evolve_wording(
+        port=port,
+        seed=seed,
+        key=PRIMARY_NOUL_NAME,
+        train=train,
+        validation=validation,
+        config=config,
+        components=components,
+    )
+
+
+def held_out_parts(
+    artifact: Mapping[str, Any], environ: Mapping[str, str]
+) -> tuple[Noul, WordingParts]:
+    """Return the seed and the parts the held-out arms send.
+
+    Args:
+        artifact: The evolution artifact.
+        environ: The environment; ``TYPEVET_WORDING_SEED_CRITERIA`` must
+            match the artifact's seed.
+
+    Returns:
+        The seed and ``artifact_parts`` over the seed's parts.
+    """
+    seed = wording_seed(environ)
+    return seed, artifact_parts(artifact, seed_mapping(seed))
+
+
+def comparison_parts(
+    artifact: Mapping[str, Any], seed: Noul, *, backend: str
+) -> WordingParts:
+    """Return the parts of the comparison judge's own evolution.
+
+    Args:
+        artifact: The judge's evolution artifact.
+        seed: The seed ``Noul``.
+        backend: ``jev``, ``llama_cpp`` or ``vllm``.
+
+    Returns:
+        ``evolved_parts_for`` over the seed's parts.
+    """
+    return evolved_parts_for(artifact, backend=backend, seed_parts=seed_mapping(seed))
+
+
+def _criteria(mapping: Mapping[str, str]) -> dict[str, str]:
+    if CRITERIA_TRUE not in mapping:
+        return {}
+    return {"true": mapping[CRITERIA_TRUE], "false": mapping[CRITERIA_FALSE]}
+
+
+def prompt_specs(parts: WordingParts) -> tuple[PromptSpec, PromptSpec]:
+    """Return the identity prompts of both arms, with their criteria.
+
+    Args:
+        parts: The run's parts.
+
+    Returns:
+        The ``seed`` and ``evolved`` prompts; no criteria for a seed without.
+    """
+    return (
+        PromptSpec("seed", _LABELS, parts.seed_text, _criteria(parts.seed)),
+        PromptSpec("evolved", _LABELS, parts.evolved_text, _criteria(parts.evolved)),
+    )
 
 
 @dataclass(frozen=True)
@@ -467,6 +654,7 @@ def test_wording_evolution_live_artifact() -> None:
     artifact_path = _required_path("TYPEVET_WORDING_ARTIFACT", new=True)
     environ = dict(os.environ)
     provider = _judge_provider(environ)
+    evolution_inputs(environ)
     jev_api = _jev_api() if provider == "jev" else None
     checkpoint = _outside_repo(
         Path(
@@ -498,13 +686,8 @@ def test_wording_evolution_live_artifact() -> None:
         )
         timed = TimedJudgePort(judge.port)
         run = asyncio.run(
-            evolve_wording(
-                port=timed,
-                seed=_SEED,
-                key=PRIMARY_NOUL_NAME,
-                train=train,
-                validation=validation,
-                config=config,
+            evolve_from_env(
+                timed, environ, train=train, validation=validation, config=config
             )
         )
         spend = None if judge.spend is None else judge.spend()
@@ -601,16 +784,13 @@ def test_wording_held_out_live_receipt() -> None:
     secret = load_vllm_settings(environ).api_key if backend == "vllm" else None
     weights = served_weights_pins(backend, environ)
     evolved = json.loads(evolved_path.read_text(encoding="utf-8"))
-    assert evolved["seed_text"] == _SEED_TEXT, "artifact seed is not the is_scam seed"
-    evolved_text = str(evolved["evolved_text"])
+    assert evolved["seed_text"] == SEED_TEXT, "artifact seed is not the is_scam seed"
+    seed, parts = held_out_parts(evolved, environ)
     splits = load_splits(seed=0)
     assert len(splits.held_out) == 158, "held-out row count drifted"
     tree = _working_tree()
     snapshot = snapshot_evaluated_inputs(
-        prompts=(
-            PromptSpec("seed", ("true", "false"), _SEED_TEXT, {}),
-            PromptSpec("evolved", ("true", "false"), evolved_text, {}),
-        ),
+        prompts=prompt_specs(parts),
         code_paths={n: _WORDING_SRC / f"{n}.py" for n in ("held_out", "metrics")},
         fixture_paths={"evolution_artifact": evolved_path},
     )
@@ -625,9 +805,9 @@ def test_wording_held_out_live_receipt() -> None:
         timed = TimedJudgePort(TypevetSystemOnePort(port))
         run = score_held_out(
             timed,
-            _SEED,
+            seed,
             PRIMARY_NOUL_NAME,
-            evolved_text=evolved_text,
+            evolved_text=parts,
             rows=HeldOutRows(splits.held_out, splits.prior_measured_ids),
             judge_model=model,
             failures=(ProviderError,),
@@ -651,8 +831,8 @@ def test_wording_held_out_live_receipt() -> None:
     }
     receipt = held_out_receipt(
         run,
-        seed_text=_SEED_TEXT,
-        evolved_text=evolved_text,
+        seed_text=parts.seed_text,
+        evolved_text=parts.evolved_text,
         backend=backend,
         model=model,
         pins=pins,
@@ -819,14 +999,12 @@ def test_wording_comparison_live_receipt() -> None:
     provider = _judge_provider(environ)
     backend = "jev" if provider == "jev" else load_backend(environ)
     artifact = json.loads(evolved_path.read_text(encoding="utf-8"))
-    evolved_text = evolved_text_for(artifact, backend=backend, seed_text=_SEED_TEXT)
+    seed = wording_seed(environ)
+    parts = comparison_parts(artifact, seed, backend=backend)
     rows, split = _comparison_rows(load_splits(seed=0))
     tree = _working_tree()
     snapshot = snapshot_evaluated_inputs(
-        prompts=(
-            PromptSpec("seed", ("true", "false"), _SEED_TEXT, {}),
-            PromptSpec("evolved", ("true", "false"), evolved_text, {}),
-        ),
+        prompts=prompt_specs(parts),
         code_paths={
             n: _WORDING_SRC / f"{n}.py" for n in ("held_out", "metrics", "comparison")
         },
@@ -843,9 +1021,9 @@ def test_wording_comparison_live_receipt() -> None:
         timed = TimedJudgePort(judge.port)
         run = score_held_out(
             timed,
-            _SEED,
+            seed,
             PRIMARY_NOUL_NAME,
-            evolved_text=evolved_text,
+            evolved_text=parts,
             rows=rows,
             judge_model=judge.model,
             failures=(ProviderError,),
@@ -876,8 +1054,8 @@ def test_wording_comparison_live_receipt() -> None:
     receipt = comparison_receipt(
         run,
         subject,
-        seed_text=_SEED_TEXT,
-        evolved_text=evolved_text,
+        seed_text=parts.seed_text,
+        evolved_text=parts.evolved_text,
         pins=pins,
         identity=identity.to_receipt_mapping(),
     )
