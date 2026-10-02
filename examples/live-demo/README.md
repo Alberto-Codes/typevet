@@ -10,8 +10,13 @@ The page asks typed questions to Gemma 4 on a local llama.cpp router. It shows t
 
 | Path | Content |
 |---|---|
-| `server.py` | Web server. It holds one warm judgment session and serves the page and the API. |
+| `server.py` | Web server. Run this file. It starts the session and serves the page and the API. |
+| `demo.py` | Judgment session. It holds one warm session, runs each judgment and writes the receipts. |
+| `judge.py` | Typed questions. It turns each typevet answer into the page result and the receipt. |
+| `routes.py` | HTTP handlers. They serve the page, the gallery and the two judgment endpoints. |
 | `bts.py` | Behind-the-scenes capture. It records the router calls and the scoring requests. |
+| `raw_json.py` | Raw JSON trimmer. It shortens the router request and reply that the panel shows. |
+| `image_size.py` | Image size reader. It reads the width and height from the image header. |
 | `index.html` | The web page. |
 | `record.mjs` | Scripted headless Chrome recording of the run of show. |
 | `insufficient-R01-blurred.png` | Blurred receipt. Upload it for the "insufficient evidence" case. |

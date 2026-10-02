@@ -147,7 +147,7 @@ vet() {
     [ -n "$doc" ] && one+="docvet:"$'\n'"$doc"$'\n'
   fi
   if [ "$have_loc" -eq 1 ]; then
-    case "$rel" in ./src/*|./evals/src/*)
+    case "$rel" in ./src/*|./evals/src/*|./examples/*)
       loc=$(uv run python scripts/check_loc.py "$(dirname "$rel")" 2>&1 | grep -F -- "${rel#./}" || true)
       [ -n "$loc" ] && one+="check_loc:"$'\n'"$loc"$'\n'
       ;;
