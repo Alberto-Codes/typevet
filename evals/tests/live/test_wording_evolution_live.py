@@ -825,11 +825,12 @@ def _ollama_judge(
     base = environ.get("TYPEVET_OLLAMA_BASE", "").strip().rstrip("/") or _OLLAMA_BASE
     model = judge_name(environ, "ollama")
     identity = ollama_identity(get, base, model)
+    timeout = environ.get("TYPEVET_OLLAMA_TIMEOUT", "").strip() or "600"
     with adapter(
         api_key=OLLAMA_PLACEHOLDER_KEY,
         base_url=base,
         default_model=model,
-        timeout_seconds=float(environ.get("TYPEVET_OLLAMA_TIMEOUT", "600")),
+        timeout_seconds=float(timeout),
     ) as port:
         yield _EvolutionJudge(
             port=port,

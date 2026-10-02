@@ -189,3 +189,20 @@ def test_ollama_judge_needs_no_jev_key_or_cap(monkeypatch: pytest.MonkeyPatch) -
         monkeypatch.delenv(name, raising=False)
     with live._ollama_judge({}, adapter=_RecordingAdapter, get=_ollama_get()) as judge:
         assert judge.model == "nimble"
+
+
+@pytest.mark.parametrize("value", [None, "", "  "])
+def test_ollama_judge_timeout_defaults_to_600(value: str | None) -> None:
+    environ = {} if value is None else {"TYPEVET_OLLAMA_TIMEOUT": value}
+    with live._ollama_judge(environ, adapter=_RecordingAdapter, get=_ollama_get()):
+        pass
+    (kwargs,) = _RecordingAdapter.built
+    assert kwargs["timeout_seconds"] == 600.0
+
+
+def test_ollama_judge_reads_the_timeout_knob() -> None:
+    environ = {"TYPEVET_OLLAMA_TIMEOUT": " 42 "}
+    with live._ollama_judge(environ, adapter=_RecordingAdapter, get=_ollama_get()):
+        pass
+    (kwargs,) = _RecordingAdapter.built
+    assert kwargs["timeout_seconds"] == 42.0
