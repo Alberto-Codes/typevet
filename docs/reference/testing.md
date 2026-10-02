@@ -77,6 +77,8 @@ Public
 [typevet.testing.ScriptedJudgmentFake](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/testing/judgment_fake.py)
 answers each question from a scripted distribution.
 It takes P(True) for a Noul, label weights for a Choice and level weights for a Score.
+A Score answer's `score` is the expected level over the normalised weights, the same rule as the scoring adapter.
+Its `confidence` is the probability of the modal level.
 [tests/contract/test_judgment_fake_agreement.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/contract/test_judgment_fake_agreement.py)
 proves that it agrees with `ContractJudgmentFake` on each success fixture.
 

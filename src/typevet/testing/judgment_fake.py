@@ -149,7 +149,9 @@ def _score_answer(name: str, question: Score, distribution: object) -> ScoreAnsw
     """Build a Score answer from level weights.
 
     Levels absent from the weights get probability zero. The legend maps each
-    level to its rubric text. Ties go to the lowest level.
+    level to its rubric text. ``score`` is the expected level over the
+    normalised weights, as the scoring adapter computes it. ``confidence`` is
+    the probability of the modal level.
 
     Args:
         name: Question name for error messages.
@@ -157,7 +159,8 @@ def _score_answer(name: str, question: Score, distribution: object) -> ScoreAnsw
         distribution: Level to weight mapping.
 
     Returns:
-        Score answer with the argmax level as ``score``.
+        Score answer with the expected level as ``score`` and the modal
+        probability as ``confidence``.
 
     Raises:
         JudgmentValidationError: When a level is outside the rubric or the
@@ -175,10 +178,9 @@ def _score_answer(name: str, question: Score, distribution: object) -> ScoreAnsw
         raise JudgmentValidationError(msg)
     probabilities = {level: weights.get(level, 0.0) for level in levels}
     legend = {level: str(question.criteria[level]) for level in levels}
-    score = max(probabilities, key=lambda level: probabilities[level])
     return ScoreAnswer(
-        score=float(score),
-        confidence=probabilities[score],
+        score=sum(level * p for level, p in probabilities.items()),
+        confidence=max(probabilities.values()),
         legend=legend,
         probabilities=probabilities,
     )
@@ -190,7 +192,9 @@ class ScriptedJudgmentFake:
     Each question name maps to one distribution. A Noul takes P(True) as a
     float. A Choice takes label weights. A Score takes level weights, with
     levels counted from zero along the rubric. Weights are normalised by
-    their sum. Media is accepted and ignored, and nothing is forwarded.
+    their sum. A Score answer's ``score`` is the expected level and its
+    ``confidence`` is the modal probability. Media is accepted and ignored,
+    and nothing is forwarded.
 
     Attributes:
         _distributions (dict[str, Distribution]): Scripted distribution per
@@ -204,7 +208,8 @@ class ScriptedJudgmentFake:
         fake = ScriptedJudgmentFake({"quality": {0: 1.0, 2: 3.0}})
         rubric = Score(criteria=["Poor", "Fair", "Good"])
         answer = fake.judge("text", {"quality": rubric}, "m").scores["quality"]
-        assert answer.score == 2.0
+        assert answer.score == 1.5
+        assert answer.confidence == 0.75
         ```
     """
 

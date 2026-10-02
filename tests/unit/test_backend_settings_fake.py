@@ -80,7 +80,7 @@ def test_fake_session_defaults_to_uniform_distributions() -> None:
     assert route.choice == "billing"
     quality = response.scores["quality"]
     assert quality.probabilities == pytest.approx({0: 0.25, 1: 0.25, 2: 0.25, 3: 0.25})
-    assert quality.score == 0.0
+    assert quality.score == pytest.approx(1.5)
 
 
 def test_empty_variable_means_uniform() -> None:
@@ -112,7 +112,7 @@ def test_fake_session_reads_file_distributions(tmp_path: Path) -> None:
         {"billing": 0.25, "technical": 0.75, "other": 0.0}
     )
     quality = response.scores["quality"]
-    assert quality.score == 2.0
+    assert quality.score == pytest.approx(1.5)
     assert quality.probabilities == pytest.approx({0: 0.25, 1: 0.0, 2: 0.75, 3: 0.0})
     assert response.nouls["extra"].noul == pytest.approx(0.5)
     assert response.scores["level"].probabilities == pytest.approx({0: 0.5, 1: 0.5})

@@ -43,13 +43,21 @@ def test_choice_fills_unlisted_labels_with_zero() -> None:
 
 
 @pytest.mark.unit
-def test_score_normalises_weights_and_returns_argmax_level() -> None:
+def test_score_normalises_weights_and_returns_expected_level() -> None:
     fake = ScriptedJudgmentFake({"quality": {0: 1.0, 2: 3.0}})
     answer = fake.judge("text", {"quality": _QUALITY}, "m").scores["quality"]
-    assert answer.score == 2.0
+    assert answer.score == pytest.approx(1.5)
     assert answer.confidence == pytest.approx(0.75)
     assert answer.probabilities == pytest.approx({0: 0.25, 1: 0.0, 2: 0.75})
     assert answer.legend == {0: "Poor", 1: "Fair", 2: "Good"}
+
+
+@pytest.mark.unit
+def test_score_is_expected_level_and_confidence_is_modal_probability() -> None:
+    fake = ScriptedJudgmentFake({"quality": {0: 1, 2: 1}})
+    answer = fake.judge("text", {"quality": _QUALITY}, "m").scores["quality"]
+    assert answer.score == pytest.approx(1.0)
+    assert answer.confidence == pytest.approx(0.5)
 
 
 @pytest.mark.unit
