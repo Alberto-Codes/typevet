@@ -6,8 +6,8 @@
 # Reads the hook JSON on stdin. Write and Edit name the file. A Bash
 # command reports the files it changed in tool_response.bashEditDiff
 # when bashEditDiffEnabled is on. Without that list the hook takes every
-# Python file under src, tests, scripts or evals of the checkout that holds
-# the hook cwd whose mtime falls inside the command's duration.
+# Python file under src, tests, scripts, evals or examples of the checkout that
+# holds the hook cwd whose mtime falls inside the command's duration.
 # Each file is vetted from the git toplevel of its own checkout, so an edit
 # in a worktree under .claude/worktrees uses that worktree's config and
 # paths. Only the project checkout and its git worktrees are vetted.
@@ -88,7 +88,7 @@ try:
 except ValueError:
     window = 0.0
 since = time.time() - window - 2
-for top in ("src", "tests", "scripts", "evals"):
+for top in ("src", "tests", "scripts", "evals", "examples"):
     top = os.path.join(sys.argv[2], top)
     if not os.path.isdir(top):
         continue

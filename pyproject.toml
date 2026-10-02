@@ -166,7 +166,7 @@ fail_under = 90
 show_missing = true
 
 [tool.ty.src]
-include = ["src", "tests", "scripts", "evals/src", "evals/tests"]
+include = ["src", "tests", "scripts", "evals/src", "evals/tests", "examples"]
 
 [tool.importlinter]
 root_packages = ["typevet", "typevet_evals"]
