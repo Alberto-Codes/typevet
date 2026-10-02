@@ -29,11 +29,19 @@ toward the enclosing function.
 | Python module (file) | 300 code lines | **Fail** — a file at 301 or more must be split |
 | Function or method body | 50 code lines | **Fail** — a body at 51 or more must be refactored |
 
-The file cap is a **hard** limit at 300. This repo does **not** use a soft
-320-line band; 301 code lines fails the gate.
+The script defines both limits in these lines. The site build includes the
+fenced lines from the script, so they cannot drift. The table above repeats
+the numbers by hand.
 
-The function cap is enforced the same way as the file cap: over the limit
-prints a `FAIL` line and a non-zero exit code.
+``` { .python }
+--8<-- "scripts/check_loc.py:limits"
+```
+
+The file cap is a **hard** limit at 300. This repo does **not** use a soft
+320-line band. A file at 301 code lines fails the gate.
+
+The gate enforces the function cap the same way as the file cap. Over the
+limit, it prints a `FAIL` line and exits non-zero.
 
 ## Implementation
 

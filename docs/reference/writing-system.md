@@ -105,6 +105,15 @@ no marketing adjective.
 A rule binds the text a change writes or rewrites. Frozen text stays as it is
 until that change owns it.
 
+## Include code by snippet
+
+When a page quotes a tracked file, include the lines by snippet. Do not copy them.
+Put the include line in a fence, for example `--8<-- "scripts/check_loc.py:limits"`.
+Give the fence the attribute `{ .python }`, not the word `python`. Ruff formats a `python` fence and breaks the include line.
+In the source file, put `# --8<-- [start:limits]` before the lines and `# --8<-- [end:limits]` after them.
+Paths start at the repository root.
+With `check_paths`, `uv run mkdocs build --strict` fails when a snippet file moves or disappears, or a marker disappears.
+
 ## Gates
 
 | Gate | Command |

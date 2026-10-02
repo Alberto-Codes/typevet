@@ -41,8 +41,10 @@ import sys
 import tokenize
 from pathlib import Path
 
+# --8<-- [start:limits]
 LIMIT = 300
 FUNCTION_LIMIT = 50
+# --8<-- [end:limits]
 
 _SKIP_TOKENS = frozenset(
     {
