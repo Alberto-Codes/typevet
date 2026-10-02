@@ -71,6 +71,25 @@ Sources: [behaviour at HEAD](../reference/typed-judgment-release-support-matrix.
 [Gemma 4 multimodal judgments, limits](gemma-4-multimodal-judgments.md#limits),
 [Native typed judgments, limitations](native-typed-judgments.md#limitations).
 
+## Endpoints typevet does not score on
+
+[#405](https://github.com/Alberto-Codes/typevet/issues/405) checked three more endpoint kinds for typevet scoring.
+None of them gave a yes.
+
+- **Ollama.** Native `/api/generate` and `/api/chat`, and `/v1/chat/completions`, return at most the top 20 alternatives at a prefilled position.
+  They take no named token ids.
+  On the native endpoints, `num_predict: 0` still generates. `num_predict: 1` is the minimum for one position.
+  The probes ran on Ollama 0.35.0.
+  typevet has no Ollama scoring adapter ([#405](https://github.com/Alberto-Codes/typevet/issues/405)).
+- **Generic OpenAI-compatible gateways.** The chat-completions contract has no prefill field and no named token ids.
+  The vLLM scoring keys `logprob_token_ids`, `add_generation_prompt` and `chat_template_kwargs` are vLLM extras.
+  So typevet sends its vLLM scoring body to vLLM directly, not through a gateway ([#405](https://github.com/Alberto-Codes/typevet/issues/405)).
+- **Hosted OpenAI.** `top_logprobs` caps at 20, and there are no named token ids.
+  typevet owns open-weight self-hosted backends.
+  Hosted OpenAI is a non-goal beside Anthropic, Gemini and SGLang ([#405](https://github.com/Alberto-Codes/typevet/issues/405)).
+
+Source: the verdict comments on [#405](https://github.com/Alberto-Codes/typevet/issues/405).
+
 ## The local alias does not name its quantization
 
 Several receipts name the local llama.cpp alias `gemma-4-31b-kv9-q4km-mm`, and the name says Q4_K_M.
