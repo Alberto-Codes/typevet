@@ -175,9 +175,11 @@ def seed_labels(seed: object) -> tuple[str, ...]:
         seed: The seed question.
 
     Returns:
-        Each ``Choice`` label as text; an empty tuple for another seed type.
+        Each ``Choice`` label, in seed order; an empty tuple for another
+        seed type. A label is text: ``seed_mapping`` refuses another label
+        before a run picks its scorer.
     """
     if type(seed).__name__ != "Choice":
         return ()
     criteria: Mapping[Any, Any] = getattr(seed, "criteria", {})
-    return tuple(str(label) for label in criteria)
+    return tuple(criteria)

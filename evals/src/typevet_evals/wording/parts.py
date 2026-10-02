@@ -126,17 +126,17 @@ class SeedNoul(Protocol):
         ...
 
 
-def _option_names(labels: list[object]) -> list[str]:
+def _option_names(labels: list[str]) -> list[str]:
     """Return the component name of each ``Choice`` label, in label order.
 
     Args:
         labels: The labels, in seed order.
 
     Returns:
-        ``criteria_<label>`` when every label is a text identifier, else
+        ``criteria_<label>`` when every label is an identifier, else
         ``option_<i>`` for each label.
     """
-    if all(isinstance(label, str) and label.isidentifier() for label in labels):
+    if all(label.isidentifier() for label in labels):
         return [f"criteria_{label}" for label in labels]
     return [f"option_{i}" for i in range(len(labels))]
 
@@ -153,12 +153,19 @@ def _criteria_slots(seed: SeedNoul) -> list[tuple[str, str | int, object]]:
     Raises:
         ValueError: If the seed is of another type, or a ``Noul`` seed's
             criteria do not hold exactly a ``true`` and a ``false`` key.
+        TypeError: If a ``Choice`` label is not text; the message names the
+            label position only, never the label or its text.
     """
     kind, criteria = type(seed).__name__, seed.criteria
     if kind == "Score":
         return [(f"level_{i}", i, text) for i, text in enumerate(criteria)]
     if kind == "Choice":
-        labels = list(criteria)
+        labels: list[str] = []
+        for position, label in enumerate(criteria):
+            if not isinstance(label, str):
+                msg = f"the seed criteria label at position {position} must be text"
+                raise TypeError(msg)
+            labels.append(label)
         names = _option_names(labels)
         return [(n, k, criteria[k]) for n, k in zip(names, labels, strict=True)]
     if kind != "Noul":

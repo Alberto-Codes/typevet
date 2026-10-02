@@ -143,6 +143,9 @@ When every label is an identifier, a `true` or `false` label gives the `Noul` na
 A `None` description has no part.
 A description that is not text and not `None` refuses the seed.
 That error names the label or the level, never the text.
+A `Choice` label must be text.
+A label that is not text refuses the seed with a `TypeError`.
+That error names the label position, never the label or its text.
 `part_table` in `typevet_evals.wording.parts` maps each criterion name to its label or level index.
 For a `Noul`, it maps `criteria_true` to `true` and `criteria_false` to `false`.
 `question_mapping` builds the full mapping of a `Noul`, a `Choice` or a `Score` ([#369](https://github.com/Alberto-Codes/typevet/issues/369)).

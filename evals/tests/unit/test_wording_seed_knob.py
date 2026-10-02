@@ -133,5 +133,8 @@ def test_a_default_pubmedqa_run_takes_60_15_35_rows_per_label() -> None:
 
 
 def test_the_pubmedqa_splits_refuse_a_pool_too_small() -> None:
-    with pytest.raises(ValueError, match="per label"):
+    with pytest.raises(ValueError, match="per label") as caught:
         live.pubmedqa_wording_splits(PUBMEDQA, _jsonl(8), held_out=158)
+
+    assert "Question" not in str(caught.value)
+    assert "Some text." not in str(caught.value)

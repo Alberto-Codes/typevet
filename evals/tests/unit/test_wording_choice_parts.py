@@ -75,17 +75,15 @@ def test_one_non_identifier_label_makes_every_option_positional() -> None:
     assert part_table(SPACED) == {"option_0": "food", "option_1": "air travel"}
 
 
-def test_a_label_that_is_not_text_makes_every_option_positional() -> None:
+def test_a_label_that_is_not_text_refuses_the_seed() -> None:
     criteria: dict[Any, Any] = {"food": "A meal", 7: "Seven"}
     seed = Choice(instructions=ASK, criteria=criteria)
 
-    assert question_mapping(seed) == {
-        "instructions": ASK,
-        "option_0": "A meal",
-        "option_1": "Seven",
-    }
-    assert part_table(seed) == {"option_0": "food", "option_1": 7}
-    assert question_from_parts(seed, question_mapping(seed)).criteria == criteria
+    for build in (question_mapping, part_table):
+        with pytest.raises(TypeError, match="position 1") as caught:
+            build(seed)
+        assert "Seven" not in str(caught.value)
+        assert "7" not in str(caught.value)
 
 
 def test_a_score_level_without_a_description_has_no_part() -> None:
