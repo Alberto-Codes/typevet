@@ -109,6 +109,7 @@ nav:
       - Install typevet: how-to/install.md
       - Call typevet from Python: how-to/call-typevet-from-python.md
       - Run Gemma 4 on llama.cpp: how-to/run-gemma4-llamacpp.md
+      - Stand up the live demo: how-to/stand-up-the-live-demo.md
       - Serve typevet on vLLM: how-to/serve-typevet-on-vllm.md
       - Use a vLLM server behind an API gateway: how-to/use-a-vllm-server-behind-an-api-gateway.md
       - Serve Gemma 4 31B on a rented H100: how-to/serve-gemma-4-31b-on-a-rented-h100.md

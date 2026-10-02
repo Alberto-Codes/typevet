@@ -52,6 +52,8 @@ answers a question, and a reference gives facts.
   `pip install typevet` or `uv add typevet`, or build a wheel from a checkout.
 - [Run Gemma 4 on llama.cpp](how-to/run-gemma4-llamacpp.md): stock
   `llama-server`, nested `json_schema`, and opt-in live pytest.
+- [Stand up the live demo](how-to/stand-up-the-live-demo.md): the Gemma 4
+  receipt demo from `examples/live-demo/`, with screenshots and known limits.
 - [Serve typevet on vLLM](how-to/serve-typevet-on-vllm.md): the tested
   vLLM v0.30.0 pin, `TYPEVET_VLLM__*` settings and the live acceptance test (#170).
 - [Use a vLLM server behind an API gateway](how-to/use-a-vllm-server-behind-an-api-gateway.md):
