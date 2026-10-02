@@ -11,5 +11,7 @@ Each scenario example holds one `README.md` and one `run.py`. The live demo is a
 | `face_pair/` | Noul (same person in two face images) | `TYPEVET_EXAMPLE_IMAGE_A=a.jpg TYPEVET_EXAMPLE_IMAGE_B=b.jpg uv run python examples/face_pair/run.py` | yes (llama.cpp with Gemma 4), or no with `TYPEVET_BACKEND=fake` |
 | `live-demo/` | Choice (receipt claim against a receipt image) | `uv run python examples/live-demo/server.py` | yes (llama.cpp with Gemma 4) |
 | `receipt_claim/` | Choice (receipt claim against a receipt image) | `uv run python examples/receipt_claim/run.py` | yes (llama.cpp with Gemma 4), or no with `TYPEVET_BACKEND=fake` |
+| `scam_message/` | Noul (scam text message) | `uv run python examples/scam_message/run.py` | yes (llama.cpp), or no with `TYPEVET_BACKEND=fake` |
+| `screenshot_ui/` | Choice (website in a browser screenshot) | `uv run python examples/screenshot_ui/run.py` | yes (llama.cpp with Gemma 4), or no with `TYPEVET_BACKEND=fake` |
 | `signature_pair/` | Noul (same signer in two signature images) | `TYPEVET_EXAMPLE_IMAGE_A=a.png TYPEVET_EXAMPLE_IMAGE_B=b.png uv run python examples/signature_pair/run.py` | yes (llama.cpp with Gemma 4), or no with `TYPEVET_BACKEND=fake` |
 | `terminal-demo/` | Noul, Choice and Score (customer message), Choice (receipt image) | `uv run python examples/terminal-demo/run.py` | yes (llama.cpp with Gemma 4), or no with `TYPEVET_BACKEND=fake` |

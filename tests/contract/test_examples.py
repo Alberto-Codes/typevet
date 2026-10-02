@@ -96,6 +96,18 @@ EXPECTED: dict[str, tuple[str, tuple[Case, Case], str, str]] = {
         "last",
         "winner: {winner}",
     ),
+    "scam_message": (
+        "is_scam",
+        ((0.9, "yes"), (0.1, "no")),
+        "last",
+        "winner: {winner}",
+    ),
+    "screenshot_ui": (
+        "site",
+        _choice_cases("home_depot", "other"),
+        "last",
+        "winner: {winner}",
+    ),
     "signature_pair": (
         "same_signer",
         ((0.9, "yes"), (0.1, "no")),
