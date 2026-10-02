@@ -2,7 +2,7 @@
 
 Kind: reference. This page lists the files, the prerequisites, the command and the run of show for the live demo.
 
-The page asks typed questions to Gemma 4 on a local llama.cpp router. It shows the probability of each answer. A "behind the scenes" panel shows the prompt, the candidate tokens and the router calls.
+The page asks typed questions to Gemma 4 on a local llama.cpp router. It shows the probability of each answer. A "behind the scenes" panel shows the prompt, the candidate tokens and the router calls. The page uses the colour tokens of the documentation theme and follows the system colour scheme, light or dark.
 
 ## Files
 
