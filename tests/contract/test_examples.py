@@ -5,9 +5,11 @@ process with ``TYPEVET_BACKEND=fake``. A ``TYPEVET_FAKE__DISTRIBUTIONS`` file
 scripts one question of the example. Each example runs with two scripted
 winners, so neither a uniform default nor one fixed label can pass. Each
 example has one row in ``EXPECTED`` that names the scripted question, the two
-cases and the output line that proves the winner. An example in ``IMAGE_PAIR``
-reads two image paths from the environment, so the test writes two tiny PNG
-files under ``tmp_path`` and sets the two variables first.
+cases and the output line that proves the winner. The example directory goes
+first on ``sys.path``, as in a script run, so a flat sibling module imports.
+An example in ``IMAGE_PAIR`` reads two image paths from the environment, so the
+test writes two tiny PNG files under ``tmp_path`` and sets the two variables
+first.
 """
 
 from __future__ import annotations
@@ -15,6 +17,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import struct
+import sys
 import zlib
 from pathlib import Path
 
@@ -71,54 +74,46 @@ def _tiny_png(rgb: tuple[int, int, int]) -> bytes:
     )
 
 
-# Example directory -> (question name, two cases, where to look, expected stdout
-# text with ``{winner}``). "last": the last stdout line equals the text.
-# "part": some line holds it. Calibrate scripts P(True) 0.9 and 0.6. The Platt
+# Example directory -> (question name, two cases, expected last stdout line
+# with ``{winner}``). Calibrate scripts P(True) 0.9 and 0.6. The Platt
 # map (slope 2.0, intercept -1.0) gives 0.967 and 0.453, so the 0.6 case fails
 # an example that takes the winner from the raw probability.
-EXPECTED: dict[str, tuple[str, tuple[Case, Case], str, str]] = {
-    "calibrate": ("fraud", ((0.9, "yes"), (0.6, "no")), "last", "winner: {winner}"),
+EXPECTED: dict[str, tuple[str, tuple[Case, Case], str]] = {
+    "calibrate": ("fraud", ((0.9, "yes"), (0.6, "no")), "winner: {winner}"),
     "check_register": (
         "verdict",
         _choice_cases("differs", "unreadable"),
-        "last",
         "winner: {winner}",
     ),
     "face_pair": (
         "same_person",
         ((0.9, "yes"), (0.1, "no")),
-        "last",
         "winner: {winner}",
     ),
     "receipt_claim": (
         "verdict",
         _choice_cases("contradicted", "insufficient_evidence"),
-        "last",
         "winner: {winner}",
     ),
     "scam_message": (
         "is_scam",
         ((0.9, "yes"), (0.1, "no")),
-        "last",
         "winner: {winner}",
     ),
     "screenshot_ui": (
         "site",
         _choice_cases("home_depot", "other"),
-        "last",
         "winner: {winner}",
     ),
     "signature_pair": (
         "same_signer",
         ((0.9, "yes"), (0.1, "no")),
-        "last",
         "winner: {winner}",
     ),
     "terminal-demo": (
         "verdict",
         _choice_cases("contradicted", "insufficient_evidence"),
-        "part",
-        "-> model answer: {winner} (",
+        "winner: {winner}",
     ),
 }
 NAMES = sorted({p.parent.name for p in EXAMPLES.glob("*/run.py")} | set(EXPECTED))
@@ -136,7 +131,7 @@ def test_example_prints_the_scripted_winner(
     assert name in EXPECTED, f"add a row for examples/{name}/ to EXPECTED"
     script = EXAMPLES / name / "run.py"
     assert script.is_file(), f"missing {script.relative_to(REPO)}"
-    question, cases, where, template = EXPECTED[name]
+    question, cases, template = EXPECTED[name]
     value, winner = cases[case]
     dist = tmp_path / "distributions.json"
     dist.write_text(json.dumps({question: value}))
@@ -151,18 +146,28 @@ def test_example_prints_the_scripted_winner(
             image.write_bytes(_tiny_png(rgb))
             monkeypatch.setenv(variable, str(image))
 
+    # A script run puts its own directory first on sys.path, so a flat sibling
+    # module (terminal-demo/guards.py) imports by name. Do the same here.
+    monkeypatch.syspath_prepend(str(script.parent))
     spec = importlib.util.spec_from_file_location(f"example_{name}", script)
     assert spec is not None
     assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    if hasattr(module, "OUT_DIR"):
-        monkeypatch.setattr(module, "OUT_DIR", tmp_path / "typevet-receipts")
-    module.main()
+    before = set(sys.modules)
+    try:
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        if hasattr(module, "OUT_DIR"):
+            monkeypatch.setattr(module, "OUT_DIR", tmp_path / "typevet-receipts")
+        module.main()
+    finally:
+        # Evict the sibling modules that the run imported from the example
+        # directory, so a later example cannot reuse one of the same name (two
+        # examples can each have a guards.py). Library modules stay loaded.
+        home = script.parent.resolve()
+        for key in set(sys.modules) - before:
+            origin = getattr(sys.modules.get(key), "__file__", None)
+            if origin and Path(origin).resolve().is_relative_to(home):
+                sys.modules.pop(key, None)
 
     lines = capsys.readouterr().out.splitlines()
-    text = template.format(winner=winner)
-    if where == "last":
-        assert lines[-1] == text
-    else:
-        assert any(text in line for line in lines)
+    assert lines[-1] == template.format(winner=winner)

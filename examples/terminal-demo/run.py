@@ -4,7 +4,8 @@ Scenario: a customer reports a duplicate coffee charge. Three typed questions
 (Noul, Choice and Score) judge the message. Next, one expense claim is checked
 against two receipt images: the true receipt and a swapped one. Last, bad
 inputs are refused before any HTTP call. The script prints each probability
-distribution and writes a JSON receipt under ``typevet-receipts/``.
+distribution, writes a JSON receipt under ``typevet-receipts/`` and ends with
+``winner: <label>``, the verdict for the swapped receipt (case B).
 
 Run with: `uv run python examples/terminal-demo/run.py`
 
@@ -23,6 +24,7 @@ Examples:
 See Also:
     - [typevet.adapters.inbound.open_judgment][]: Session that the backend selects.
     - [typevet.runtime.open_gemma_native_vision_judgment][]: llama.cpp session.
+    - examples/terminal-demo/guards.py: The bad-input demonstrations.
     - examples/live-demo/README.md: The web page version of this demo.
 """
 
@@ -34,23 +36,17 @@ import subprocess
 import time
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
+from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any
 
 import httpx
+from guards import CountingTransport, bad_input_cases, refuse_bad_inputs
 
 from typevet.adapters.inbound import load_backend, load_llama_settings, open_judgment
-from typevet.domain import (
-    Choice,
-    ImageInput,
-    JudgmentResponse,
-    JudgmentValidationError,
-    Noul,
-    Question,
-    Score,
-    ScoringValidationError,
-)
+from typevet.domain import Choice, ImageInput, JudgmentResponse, Noul, Question, Score
+from typevet.ports import JudgmentPort
 from typevet.runtime import open_gemma_native_vision_judgment
 
 REPO = Path.cwd()
@@ -108,89 +104,13 @@ VERDICT_QUESTION = Choice(
 )
 
 
-class Judge(Protocol):
-    """The ``judge`` call that each judgment session port gives.
-
-    Examples:
-        ```python
-        def first_choice(port: Judge, model: str) -> str:
-            return port.judge("text", {"q": Choice()}, model).choices["q"].choice
-        ```
-    """
-
-    def judge(
-        self,
-        state: str,
-        questions: Mapping[str, Question],
-        model: str,
-        *,
-        media: tuple[ImageInput, ...] | None = None,
-    ) -> JudgmentResponse:
-        """Answer each question about ``state``.
-
-        Args:
-            state: Content under evaluation.
-            questions: Question names to typed questions.
-            model: Model id that the session pins.
-            media: Images that condition the judgment.
-        """
-        ...
-
-
-class CountingTransport(httpx.HTTPTransport):
-    """HTTP transport that records each request path in a shared log.
-
-    Attributes:
-        log (list[str]): Request lines, one for each request sent.
-
-    Examples:
-        ```python
-        log: list[str] = []
-        transport = CountingTransport(log)
-        ```
-    """
-
-    def __init__(self, log: list[str]) -> None:
-        """Store the shared log.
-
-        Args:
-            log: List that receives one line for each request.
-        """
-        super().__init__()
-        self.log = log
-
-    def handle_request(self, request: httpx.Request) -> httpx.Response:
-        """Record the request, then send it.
-
-        Args:
-            request: Outgoing request.
-
-        Returns:
-            The server response.
-        """
-        self.log.append(f"{request.method} {request.url.path}")
-        return super().handle_request(request)
-
-
-def rule(ch: str = "=") -> None:
-    """Print one horizontal rule.
-
-    Args:
-        ch: Character that fills the rule.
-    """
-    print(ch * WIDTH)
-
-
 def heading(title: str) -> None:
-    """Print a section heading between two rules.
+    """Print a section heading between two rules of ``=`` characters.
 
     Args:
         title: Heading text.
     """
-    print()
-    rule()
-    print(f" {title}")
-    rule()
+    print(f"\n{'=' * WIDTH}\n {title}\n{'=' * WIDTH}")
 
 
 def bar(p: float) -> str:
@@ -269,7 +189,7 @@ def load_cord_manifest() -> dict[str, Any]:
 @contextmanager
 def open_session(
     http_log: list[str], info: dict[str, Any]
-) -> Iterator[tuple[Judge, str]]:
+) -> Iterator[tuple[JudgmentPort, str]]:
     """Open the judgment session that ``TYPEVET_BACKEND`` selects.
 
     The llama.cpp branch builds its own client so that the demo can count
@@ -281,7 +201,7 @@ def open_session(
         info: Mapping that receives the session facts to print and record.
 
     Yields:
-        The session port and its model id.
+        The session port, typed as ``JudgmentPort``, and its model id.
     """
     backend = load_backend()
     info["backend"] = backend
@@ -317,8 +237,10 @@ def open_session(
             yield session.port, session.model
 
 
-def judge_text(port: Judge, model: str, http_log: list[str]) -> dict[str, Any]:
+def judge_text(port: JudgmentPort, model: str, http_log: list[str]) -> dict[str, Any]:
     """Ask the three typed questions about the customer message and print them.
+
+    ``text_entry`` builds the receipt entry from the response.
 
     Args:
         port: Session port.
@@ -329,35 +251,46 @@ def judge_text(port: Judge, model: str, http_log: list[str]) -> dict[str, Any]:
         The receipt entry for the text judgment.
     """
     heading("1. TEXT -- three typed questions on one customer message")
-    print("  Customer message:")
-    print(f'    "{CUSTOMER_MESSAGE[:73]}')
+    print(f'  Customer message:\n    "{CUSTOMER_MESSAGE[:73]}')
     print(f'     {CUSTOMER_MESSAGE[73:]}"')
     t0, n0 = time.perf_counter(), len(http_log)
     resp = port.judge(CUSTOMER_MESSAGE, TEXT_QUESTIONS, model)
     text_s, calls = time.perf_counter() - t0, len(http_log) - n0
     a = resp.nouls["unauthorized"]
-    print()
-    print("  a) Noul (yes/no): Does the customer report a transaction they did")
+    print("\n  a) Noul (yes/no): Does the customer report a transaction they did")
     print("     not authorize?")
     yes_no = {"yes": a.noul, "no": 1.0 - a.noul}
     print_dist(["yes", "no"], yes_no, "yes" if a.noul >= HALF else "no")
     c = resp.choices["fraud_type"]
-    print()
-    print("  b) Choice (pick one): Which type of issue does the customer report?")
+    print("\n  b) Choice (pick one): Which type of issue does the customer report?")
     print_dist(list(FRAUD_CRITERIA), c.probabilities, c.choice)
     s = resp.scores["urgency"]
-    print()
-    print("  c) Score (0-3): How urgent is this customer's issue?")
+    print("\n  c) Score (0-3): How urgent is this customer's issue?")
     labels = [f"{i} {level}" for i, level in enumerate(URGENCY_LEVELS)]
     probs = {labels[i]: s.probabilities[i] for i in s.probabilities}
     modal = max(s.probabilities, key=lambda k: s.probabilities[k])
     print_dist(labels, probs, labels[modal])
-    print(f"    Expected value (probability-weighted level): {s.score:.2f} / 3")
-    print()
     print(
+        f"    Expected value (probability-weighted level): {s.score:.2f} / 3\n\n"
         f"  Text judgment: {text_s:.1f}s, {calls} HTTP calls, "
         f"tokens in/out = {resp.usage.input_tokens}/{resp.usage.output_tokens}"
     )
+    return text_entry(resp, round(text_s, 3), calls)
+
+
+def text_entry(resp: JudgmentResponse, elapsed_s: float, calls: int) -> dict[str, Any]:
+    """Return the receipt entry for the text judgment.
+
+    Args:
+        resp: The response to the three text questions.
+        elapsed_s: Seconds the judgment took, rounded.
+        calls: HTTP calls the judgment made.
+
+    Returns:
+        The receipt entry with the questions, the answers, timing and usage.
+    """
+    a, c = resp.nouls["unauthorized"], resp.choices["fraud_type"]
+    s = resp.scores["urgency"]
     return {
         "kind": "text",
         "state": CUSTOMER_MESSAGE,
@@ -383,17 +316,18 @@ def judge_text(port: Judge, model: str, http_log: list[str]) -> dict[str, Any]:
                 "probabilities": {str(k): v for k, v in s.probabilities.items()},
             },
         },
-        "elapsed_s": round(text_s, 3),
+        "elapsed_s": elapsed_s,
         "http_calls": calls,
-        "usage": {
-            "input_tokens": resp.usage.input_tokens,
-            "output_tokens": resp.usage.output_tokens,
-        },
+        "usage": asdict(resp.usage),
     }
 
 
-def judge_images(port: Judge, model: str, http_log: list[str]) -> list[dict[str, Any]]:
+def judge_images(
+    port: JudgmentPort, model: str, http_log: list[str]
+) -> list[dict[str, Any]]:
     """Check one expense claim against the true and a swapped receipt image.
+
+    ``judge_case`` judges and prints each case: A, then B.
 
     Args:
         port: Session port.
@@ -413,56 +347,75 @@ def judge_images(port: Judge, model: str, http_log: list[str]) -> list[dict[str,
     print(f'  Claim (same for both cases): "{statement}"')
     print(f"  Source: CORD v2 validation receipts ({manifest['license']}), vendored.")
     cases = [
-        ("A", "R01", "true receipt for the claim", "supported"),
-        ("B", "R02", "SWAPPED: a different receipt", "contradicted"),
+        ("A", recs["R01"], "true receipt for the claim", "supported"),
+        ("B", recs["R02"], "SWAPPED: a different receipt", "contradicted"),
     ]
-    entries: list[dict[str, Any]] = []
-    for case_id, rid, desc, expect in cases:
-        rec = recs[rid]
-        data = (CORD / rec["image"]["file_name"]).read_bytes()
-        sha = hashlib.sha256(data).hexdigest()
-        image = ImageInput(data=data, mime_type=rec["image"]["mime_type"])
-        t0, n0 = time.perf_counter(), len(http_log)
-        r = port.judge(statement, {"verdict": VERDICT_QUESTION}, model, media=(image,))
-        el, calls = time.perf_counter() - t0, len(http_log) - n0
-        v = r.choices["verdict"]
-        print()
-        print(f"  Case {case_id}: image {rec['image']['file_name']} ({desc})")
-        print(
-            f"    receipt's real total (manifest): {rec['annotated_total']}   "
-            f"sha256 {sha[:16]}..."
-        )
-        print(f"    expected answer: {expect}")
-        print_dist(list(VERDICT_CRITERIA), v.probabilities, v.choice)
-        ok = "MATCHES expectation" if v.choice == expect else "DIFFERS from expectation"
-        print(f"    -> model answer: {v.choice} ({ok}); {el:.1f}s, {calls} HTTP calls")
-        entries.append(
-            {
-                "kind": "image",
-                "case": case_id,
-                "state": statement,
-                "question": VERDICT_QUESTION.instructions,
-                "options": VERDICT_CRITERIA,
-                "image_file": rec["image"]["file_name"],
-                "image_sha256": sha,
-                "manifest_total": rec["annotated_total"],
-                "expected": expect,
-                "answer": {
-                    "choice": v.choice,
-                    "confidence": v.confidence,
-                    "probabilities": v.probabilities,
-                },
-                "elapsed_s": round(el, 3),
-                "http_calls": calls,
-            }
-        )
-    return entries
+    return [judge_case(port, model, http_log, statement, case=case) for case in cases]
+
+
+def judge_case(
+    port: JudgmentPort,
+    model: str,
+    http_log: list[str],
+    statement: str,
+    *,
+    case: tuple[str, dict[str, Any], str, str],
+) -> dict[str, Any]:
+    """Judge the claim against one receipt image and print the distribution.
+
+    Args:
+        port: Session port.
+        model: Model id that the session pins.
+        http_log: Shared HTTP request log.
+        statement: The expense claim.
+        case: Case id, manifest record, description and expected verdict.
+
+    Returns:
+        The receipt entry for this image case.
+    """
+    case_id, rec, desc, expect = case
+    data = (CORD / rec["image"]["file_name"]).read_bytes()
+    sha = hashlib.sha256(data).hexdigest()
+    image = ImageInput(data=data, mime_type=rec["image"]["mime_type"])
+    t0, n0 = time.perf_counter(), len(http_log)
+    r = port.judge(statement, {"verdict": VERDICT_QUESTION}, model, media=(image,))
+    el, calls = time.perf_counter() - t0, len(http_log) - n0
+    v = r.choices["verdict"]
+    print(f"\n  Case {case_id}: image {rec['image']['file_name']} ({desc})")
+    print(
+        f"    receipt's real total (manifest): {rec['annotated_total']}   "
+        f"sha256 {sha[:16]}..."
+    )
+    print(f"    expected answer: {expect}")
+    print_dist(list(VERDICT_CRITERIA), v.probabilities, v.choice)
+    ok = "MATCHES expectation" if v.choice == expect else "DIFFERS from expectation"
+    print(f"    -> model answer: {v.choice} ({ok}); {el:.1f}s, {calls} HTTP calls")
+    return {
+        "kind": "image",
+        "case": case_id,
+        "state": statement,
+        "question": VERDICT_QUESTION.instructions,
+        "options": VERDICT_CRITERIA,
+        "image_file": rec["image"]["file_name"],
+        "image_sha256": sha,
+        "manifest_total": rec["annotated_total"],
+        "expected": expect,
+        "answer": {
+            "choice": v.choice,
+            "confidence": v.confidence,
+            "probabilities": v.probabilities,
+        },
+        "elapsed_s": round(el, 3),
+        "http_calls": calls,
+    }
 
 
 def typed_rejections(
-    port: Judge, http_log: list[str], *, pinned: bool
+    port: JudgmentPort, http_log: list[str], *, pinned: bool
 ) -> dict[str, Any]:
     """Show that bad inputs are refused before any HTTP call.
+
+    Prints the section heading, then runs the cases from ``guards``.
 
     Args:
         port: Session port.
@@ -473,47 +426,20 @@ def typed_rejections(
         The receipt entry for the refused inputs.
     """
     heading("3. TYPED GUARANTEE -- bad inputs are rejected before any HTTP call")
-    n0 = len(http_log)
-    rejects: list[dict[str, str]] = []
-    bad_cases: list[tuple[str, Callable[[], object]]] = [
-        (
-            "ImageInput with mime type image/gif",
-            lambda: ImageInput(data=b"GIF89a", mime_type="image/gif"),
-        ),
-        (
-            "ImageInput with empty bytes",
-            lambda: ImageInput(data=b"", mime_type="image/png"),
-        ),
-    ]
-    if pinned:
-        bad_cases.append(
-            (
-                "judge() with a model id the session is not pinned to",
-                lambda: port.judge(
-                    CUSTOMER_MESSAGE, TEXT_QUESTIONS, "some-other-model"
-                ),
-            )
-        )
-    for label, fn in bad_cases:
-        try:
-            fn()
-        except (ScoringValidationError, JudgmentValidationError) as exc:
-            print(f"  {label}")
-            print(f"    -> {type(exc).__name__}:")
-            print(f"       {exc}")
-            rejects.append(
-                {"case": label, "error": type(exc).__name__, "message": str(exc)}
-            )
-        else:
-            print(f"  {label}: NOT rejected (unexpected)")
-            rejects.append({"case": label, "error": "none"})
-    extra = len(http_log) - n0
-    print(f"  HTTP calls made by these {len(bad_cases)} attempts: {extra}")
-    return {"cases": rejects, "http_calls": extra}
+
+    def other_model() -> object:
+        """Judge with a model id that the session does not pin.
+
+        Returns:
+            Nothing in practice: the session refuses the call.
+        """
+        return port.judge(CUSTOMER_MESSAGE, TEXT_QUESTIONS, "some-other-model")
+
+    return refuse_bad_inputs(bad_input_cases(other_model if pinned else None), http_log)
 
 
 def main() -> None:
-    """Run the three demo sections and write the JSON receipt."""
+    """Run the three demo sections, write the JSON receipt and print the winner."""
     t_start = time.perf_counter()
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     http_log: list[str] = []
@@ -553,12 +479,12 @@ def main() -> None:
     heading("SUMMARY")
     print(
         f"  HTTP calls to the backend       : {len(http_log)} "
-        f"({scoring_calls} scoring /completion, rest probes/tokenize)"
+        f"({scoring_calls} scoring /completion, rest probes/tokenize)\n"
+        f"  Total elapsed                   : {total_s:.1f}s\n  JSON receipt:\n    {out}"
     )
-    print(f"  Total elapsed                   : {total_s:.1f}s")
-    print("  JSON receipt:")
-    print(f"    {out}")
-    rule()
+    print("=" * WIDTH)
+    # The swapped receipt (case B) is judged last; its verdict is the winner.
+    print(f"winner: {requests[-1]['answer']['choice']}")
 
 
 if __name__ == "__main__":

@@ -11,3 +11,5 @@ uv run python examples/terminal-demo/run.py
 ```
 
 `TYPEVET_BACKEND` selects the backend. The default is `llama_cpp` and needs a router that serves a Gemma 4 model, named by `TYPEVET_LLAMA__MULTIMODAL_MODEL`. `TYPEVET_BACKEND=fake` runs offline with uniform answers. The script prints each probability distribution and writes a JSON receipt under `typevet-receipts/`.
+
+The output has five sections: session facts, the text judgment, two receipt cases, refused inputs and a summary. The last line is `winner: <label>`. The label is the verdict for case B, the swapped receipt. On the fake backend with uniform answers, the last line is `winner: supported`.
