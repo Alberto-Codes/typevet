@@ -6,4 +6,5 @@ Each scenario example holds one `README.md` and one `run.py`. The live demo is a
 
 | Scenario | Judgment kind | One command | Needs a server |
 |---|---|---|---|
-| `live-demo/` | Choice (receipt claim against a receipt image) | pending | yes (llama.cpp with Gemma 4) |
+| `live-demo/` | Choice (receipt claim against a receipt image) | `uv run python examples/live-demo/server.py` | yes (llama.cpp with Gemma 4) |
+| `terminal-demo/` | Noul, Choice and Score (customer message), Choice (receipt image) | `uv run python examples/terminal-demo/run.py` | yes (llama.cpp with Gemma 4), or no with `TYPEVET_BACKEND=fake` |

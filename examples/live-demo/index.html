@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Typed Decisions Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f5; --panel:#ffffff; --ink:#111827; --ink2:#374151; --muted:#4b5563; --line:#d9dee7; --soft:#f6f8fb;
+  --accent:#1d4ed8; --accent-soft:#e4ebff; --win:#06704b; --win-soft:#dcf3e8; --win-line:#9fd8bf;
+  --bar:#b8c2d1; --track:#e8ecf2; --info:#1e40af; --info-soft:#eaf0ff; --warn:#a4231b; --warn-soft:#fdeceb;
+  --tok:#6d28d9; --tok-soft:#f1eafe; --imgc:#7a5200; --img-soft:#fff3d1;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:14px; --gap:16px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.45 var(--sans);-webkit-font-smoothing:antialiased}
+.mono,code{font-family:var(--mono);font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0}
+button{font-family:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.hidden{display:none!important}
+
+/* header */
+header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:12px 28px;
+  background:var(--panel);border-bottom:1px solid var(--line)}
+h1{font-size:26px;font-weight:800;margin:0;letter-spacing:-.015em;line-height:1.15}
+h1 span{color:var(--accent)}
+.ident{display:flex;align-items:center;gap:14px;min-width:0}
+.local{display:inline-flex;align-items:center;gap:9px;background:var(--win-soft);color:var(--win);border:1px solid var(--win-line);
+  border-radius:999px;padding:7px 16px;font-weight:700;font-size:17px;white-space:nowrap}
+.local i{width:10px;height:10px;border-radius:50%;background:var(--win);box-shadow:0 0 0 4px rgba(6,112,75,.18)}
+.stack{display:flex;flex-direction:column;align-items:flex-end;line-height:1.25;min-width:0}
+.stack .big{font-weight:700;font-size:17px;white-space:nowrap}
+.stack .small{font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
+.stack .small b{color:var(--ink2);font-weight:600}
+
+/* layout */
+main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);gap:var(--gap);padding:var(--gap) 28px var(--gap);align-items:start;max-width:1920px;margin:0 auto}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;box-shadow:0 1px 2px rgba(17,24,39,.04)}
+.tabs{display:inline-flex;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:3px;margin-bottom:6px}
+.tabs button{border:0;background:transparent;font-weight:600;font-size:17px;padding:6px 24px;border-radius:8px;cursor:pointer;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.lbl{font-size:14px;font-weight:700;letter-spacing:.02em;color:var(--muted);margin:12px 0 6px;display:flex;justify-content:space-between;gap:8px}
+.lbl .note{font-weight:500;color:var(--muted)}
+.gallery{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.thumb{position:relative;border:2px solid var(--line);border-radius:9px;overflow:hidden;cursor:pointer;
+  background:#e5e7eb;aspect-ratio:3/4;padding:0;display:block;max-height:150px;width:100%}
+.thumb img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.thumb .id{position:absolute;left:5px;top:5px;background:rgba(17,24,39,.82);color:#fff;font:700 13px var(--sans);padding:1px 7px;border-radius:6px}
+.thumb.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.thumb:hover{border-color:var(--accent)}
+.thumb.up{display:flex;align-items:center;justify-content:center;flex-direction:column;font:600 14px/1.25 var(--sans);color:var(--ink2);text-align:center;background:var(--soft);border-style:dashed}
+.thumb.up .plus{font-size:26px;font-weight:500;line-height:1;color:var(--accent)}
+.thumb.up small{font-size:12px;color:var(--muted);font-weight:500}
+.thumb.up:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+textarea{width:100%;font:17px/1.4 var(--sans);border:1px solid var(--line);border-radius:10px;padding:9px 12px;resize:vertical;color:var(--ink);background:var(--soft);display:block}
+textarea:focus{outline:3px solid var(--accent-soft);border-color:var(--accent);background:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--line);background:var(--panel);font-weight:600;font-size:15px;padding:7px 13px;border-radius:9px;cursor:pointer;color:var(--ink)}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled,.go:disabled{opacity:.5;cursor:not-allowed}
+.go{background:var(--accent);color:#fff;border:0;font-weight:700;font-size:19px;padding:12px 28px;border-radius:11px;cursor:pointer;display:inline-flex;align-items:center;gap:10px}
+.go:hover:not(:disabled){background:#1e3fae}
+.go .mini{width:16px;height:16px;border:3px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:s 1s linear infinite}
+.guar{color:var(--info);border-color:#bccaf5;background:var(--info-soft)}
+.qbox{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:16px;color:var(--ink2)}
+.qbox .qt{font-weight:600;color:var(--ink)}
+.qbox ul{margin:4px 0 0;padding-left:18px}
+.qbox li{margin:1px 0}
+.qbox code{font-size:15px;color:var(--ink);font-weight:500}
+.qbox ol{margin:2px 0 0;padding-left:20px}
+.qbox ol li{margin:4px 0}
+.actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+
+/* result */
+#out{min-height:220px}
+.empty{color:var(--muted);font-size:19px;text-align:center;padding:48px 20px}
+.empty b{color:var(--ink)}
+.wait{display:flex;align-items:center;gap:18px;padding:26px 8px;font-size:20px;color:var(--ink2)}
+.spin{width:44px;height:44px;border:5px solid var(--accent-soft);border-top-color:var(--accent);border-radius:50%;animation:s 1s linear infinite;flex:none}
+.wait .mono{font-size:22px;color:var(--accent);font-weight:700;margin-left:auto}
+@keyframes s{to{transform:rotate(360deg)}}
+.err{background:var(--warn-soft);color:var(--warn);border:1px solid #f0c2be;border-radius:10px;padding:12px 14px;font-weight:600}
+
+.hero{display:flex;gap:18px;align-items:stretch;margin-bottom:14px}
+.hero .pic{flex:none;width:112px;height:150px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#e5e7eb;position:relative}
+.hero .pic img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.hero .pic .id{position:absolute;left:5px;top:5px;background:rgba(17,24,39,.82);color:#fff;font:700 13px var(--sans);padding:1px 7px;border-radius:6px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hero .txt{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.kicker{font-size:14px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.verdict{font-size:36px;font-weight:800;letter-spacing:-.02em;line-height:1.1;color:var(--win)}
+.verdict .p{font:700 22px var(--mono);color:var(--ink2);margin-left:10px;letter-spacing:0}
+.hero .claim{font-size:16px;color:var(--ink2);overflow-wrap:anywhere}
+.hero .claim b{color:var(--ink)}
+
+.q{margin-bottom:14px}
+.q:last-of-type{margin-bottom:6px}
+.qh{display:flex;align-items:baseline;gap:10px;margin:0 0 6px;font-size:18px;font-weight:700;line-height:1.3}
+.tag{flex:none;font-weight:700;font-size:13px;color:var(--accent);background:var(--accent-soft);padding:2px 9px;border-radius:999px;letter-spacing:.02em}
+.qh .ans{margin-left:auto;flex:none;color:var(--win);font-weight:800;white-space:nowrap}
+.opt{display:grid;grid-template-columns:minmax(150px,36%) 1fr 96px;gap:12px;align-items:center;padding:4px 8px;border-radius:8px;border:1px solid transparent}
+.opt .name{font:500 16px var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink2);display:flex;align-items:center;gap:7px}
+.opt .name .ck{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--win);color:#fff;font:700 13px var(--sans);flex:none}
+.opt .track{height:16px;background:var(--track);border-radius:5px;overflow:hidden}
+.opt .fill{height:100%;background:var(--bar);border-radius:5px;min-width:3px;transition:width .6s ease}
+.opt .pct{text-align:right;font:600 17px var(--mono);color:var(--ink2)}
+.opt.win{background:var(--win-soft);border-color:var(--win-line)}
+.opt.win .name,.opt.win .pct{color:var(--win);font-weight:700}
+.opt.win .fill{background:var(--win)}
+/* text mode: three questions share the panel, so rows are tighter */
+.txtres .q{margin-bottom:10px}
+.txtres .qh{font-size:17px;margin-bottom:3px}
+.txtres .opt{grid-template-columns:minmax(0,46%) 1fr 90px;padding:1px 8px}
+.txtres .opt .name{font-size:15px}
+.txtres .opt .track{height:12px}
+.txtres .opt .pct{font-size:16px}
+.txtres .bts{margin-top:4px}
+.txtres .bts>summary{padding:3px 12px;font-size:14.5px}
+.txtres .ev{margin-top:2px}
+.ev{font-size:16px;color:var(--muted);margin:5px 8px 0}
+.ev b{color:var(--ink)}
+.meta{border-top:1px solid var(--line);padding-top:10px;margin-top:10px;font-size:14px;color:var(--muted);display:flex;gap:6px 20px;flex-wrap:wrap}
+.meta b{color:var(--ink2)}
+
+/* history strip */
+.hist{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.hist .lbl{margin-top:0}
+.hrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.hcard{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:7px;background:var(--soft);min-width:0}
+.hcard.now{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft);background:#fff}
+.hcard img{width:42px;height:56px;object-fit:cover;object-position:top;border-radius:6px;flex:none;background:#e5e7eb}
+.hcard .t{min-width:0;line-height:1.25}
+.hcard .n{font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hcard .w{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hcard .c{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.w-supported{color:var(--win)} .w-contradicted{color:var(--warn)} .w-insufficient_evidence{color:#8a5a00}
+.hcard .hp{font:600 13px var(--mono);color:var(--muted)}
+
+/* typed guarantee */
+.guard{display:flex;gap:18px;align-items:flex-start;border:1px solid #bccaf5;background:var(--info-soft);border-radius:12px;padding:18px 20px}
+.guard .shield{flex:none;width:52px;height:52px;border-radius:14px;background:var(--info);color:#fff;display:grid;place-items:center}
+.guard h3{margin:0 0 4px;font-size:24px;color:var(--info);letter-spacing:-.01em}
+.guard p{margin:0 0 10px;color:var(--ink2);font-size:17px}
+.guard .detail{font:14.5px/1.45 var(--mono);color:var(--ink2);background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;overflow-wrap:anywhere}
+.guard .calls{margin-top:10px;font-size:16px;color:var(--ink2)}
+.guard .calls b{font:700 20px var(--mono);color:var(--info)}
+
+/* behind the scenes */
+.bts{margin:8px 0 0;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.bts>summary{cursor:pointer;font-weight:700;font-size:15px;padding:7px 12px;color:var(--accent);list-style:none;display:flex;align-items:center;gap:8px}
+.bts>summary::-webkit-details-marker{display:none}
+.bts>summary::before{content:"";width:0;height:0;border-left:6px solid currentColor;border-top:5px solid transparent;border-bottom:5px solid transparent;transition:transform .15s}
+.bts[open]>summary::before{transform:rotate(90deg)}
+.bts>summary .hint{font-weight:500;color:var(--muted);font-size:14px}
+.bts[open]>summary{border-bottom:1px solid var(--line)}
+.bts .in{padding:4px 14px 14px}
+.bts,.bts *{font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0}
+.bts .strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 4px}
+.bts .stat{background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:7px 10px}
+.bts .stat .k{font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.bts .stat .v{font:700 20px var(--mono);color:var(--ink)}
+.bts .stat .s{font-size:13px;color:var(--muted)}
+.bts h4{font-size:14px;font-weight:700;color:var(--ink);margin:16px 0 6px;display:flex;align-items:center;gap:8px}
+.bts h4 .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--accent-soft);color:var(--accent);font-size:13px}
+.bts h4 .sub{font-weight:500;color:var(--muted)}
+.bts pre{margin:0;white-space:pre-wrap;word-break:break-word;background:#fbfcfe;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:15px/1.5 var(--mono);color:var(--ink2);font-variant-ligatures:none}
+.bts pre.prompt{max-height:320px;overflow:auto}
+.bts pre.raw{max-height:260px;overflow:auto;white-space:pre;font-size:13.5px}
+.bts .tok{background:var(--tok-soft);border-radius:4px;padding:0 3px;color:var(--tok);font-weight:700}
+.bts .img{background:var(--img-soft);border:1px dashed #c99700;border-radius:4px;padding:0 4px;color:var(--imgc)}
+.bts .pf{background:var(--win-soft);outline:2px solid var(--win);border-radius:4px;padding:0 3px;color:var(--win);font-weight:700}
+.bts .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);margin-top:6px}
+.bts .legend span{display:inline-flex;align-items:center;gap:6px}
+.bts .legend i{display:inline-block;width:12px;height:12px;border-radius:3px}
+.bts .pfline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:15px}
+.bts .pfnote{font:600 14.5px var(--sans);color:var(--win)}
+.bts table{border-collapse:collapse;width:100%;font:14.5px var(--mono)}
+.bts th,.bts td{border-bottom:1px solid var(--line);padding:5px 8px;text-align:right;white-space:nowrap}
+.bts th:first-child,.bts td:first-child{text-align:left}
+.bts th{font:700 13px var(--sans);color:var(--muted);background:var(--soft)}
+.bts tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+.bts tr.off td{color:var(--muted);font-style:italic}
+.bts tr.bold td{font-weight:700}
+.bts .scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+.bts .scroll table tr:last-child td{border-bottom:0}
+.bts .small{font-size:14px;line-height:1.45;color:var(--muted);margin-top:6px}
+.bts .small .mono{color:var(--ink2)}
+.bts .yes{color:var(--win);font-weight:700}
+
+/* projector scale: the layout is designed at 1280x720; scale it up on large screens */
+@media (min-width:1600px) and (min-height:900px){ html{zoom:1.25} }
+@media (min-width:2200px) and (min-height:1200px){ html{zoom:1.6} }
+@media (max-width:1400px){ h1{font-size:23px} .stack .small{max-width:36vw} }
+@media (max-width:1100px){ .stack{display:none} }
+@media (max-width:900px){
+  .bts .strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  header{padding:12px 16px;flex-wrap:wrap}
+  main{grid-template-columns:1fr;padding:12px 16px 24px}
+  .gallery{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .thumb{max-height:none}
+  .hrow{grid-template-columns:1fr}
+  .verdict{font-size:30px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Typed decisions on <span>Gemma 4</span></h1>
+  <div class="ident">
+    <div class="stack" id="ident"><span class="big">connecting…</span></div>
+    <span class="local"><i></i>Local only · no cloud</span>
+  </div>
+</header>
+<main>
+  <section class="panel" id="left" aria-label="Inputs">
+    <div class="tabs" role="tablist"><button id="tImg" role="tab" aria-selected="true">Image</button><button id="tTxt" role="tab" aria-selected="false">Text</button></div>
+
+    <div id="imgMode">
+      <div class="lbl"><span>Receipt</span><span class="note">CORD v2, CC-BY-4.0 · pick one or upload</span></div>
+      <div class="gallery" id="gallery"></div>
+      <div class="lbl"><label for="claim">Claim</label></div>
+      <textarea id="claim" rows="2">Expense claim for this receipt: total 80,500.</textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="pTrue">True total for R01</button>
+        <button class="btn" id="pSwap">Same claim, swapped receipt</button>
+      </div>
+      <div class="lbl"><span>Question</span><span class="note">typed: pick exactly one</span></div>
+      <div class="qbox"><span class="qt">Look at the receipt image. Does it support the expense claim?</span>
+        <ul>
+          <li><code>supported</code> — the receipt image shows this total</li>
+          <li><code>contradicted</code> — the receipt image shows a different total</li>
+          <li><code>insufficient_evidence</code> — the image does not show enough to decide</li>
+        </ul>
+      </div>
+      <div class="actions">
+        <button class="go" id="askImg">Ask Gemma 4</button>
+        <button class="btn guar" id="guar" title="Submits a GIF, which the typed input rejects before any model call">Typed guarantee: try a GIF</button>
+      </div>
+    </div>
+
+    <div id="txtMode" class="hidden">
+      <div class="lbl"><label for="msg">Customer message</label><span class="note">synthetic</span></div>
+      <textarea id="msg" rows="4">I just saw two charges of $84.20 from the same coffee shop this morning, I only bought one coffee. Can you fix this?</textarea>
+      <div class="lbl"><span>Three typed questions, asked together</span></div>
+      <div class="qbox">
+        <ol>
+          <li><b>Yes / no</b> — Does the customer report a transaction they did not authorize?</li>
+          <li><b>Pick one</b> — Which type of issue? <code>unauthorized_transaction</code>, <code>duplicate_charge</code>, <code>phishing_or_scam</code>, <code>account_takeover</code>, <code>not_fraud</code>, <code>unclear</code></li>
+          <li><b>Score 0–3</b> — How urgent? 0 none · 1 low · 2 high · 3 critical</li>
+        </ol>
+      </div>
+      <div class="actions"><button class="go" id="askTxt">Ask Gemma 4</button></div>
+    </div>
+  </section>
+
+  <section class="panel" id="outPanel" aria-label="Answer" aria-live="polite">
+    <div id="out"><div class="empty">Pick an input and press <b>Ask Gemma 4</b>.<br>Every allowed answer gets a probability.</div></div>
+    <div id="hist" class="hist hidden"></div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let selected = "R01", upload = null, busy = false, R01_TOTAL = "80,500", mode = "img";
+const history = [];   // last image answers, newest first; every entry is from a live call
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function pct(p){
+  if (p >= 0.9999 && p < 1) return ">99.99%";
+  if (p > 0 && p < 0.0001) return "<0.01%";
+  return (p*100).toFixed(2) + "%";
+}
+const thumbUrl = (id) => `/thumb/${encodeURIComponent(id)}.jpg`;
+
+async function loadStatus(){
+  try{
+    const r = await fetch("/api/status"); const s = await r.json();
+    R01_TOTAL = s.r01_total || R01_TOTAL;
+    $("ident").innerHTML =
+      `<span class="big">Gemma 4 · ${esc(s.gpu)}</span>`+
+      `<span class="small" title="llama.cpp ${esc(s.build)} · template ${esc(s.template)}"><b class="mono">${esc(s.model)}</b> · llama.cpp ${esc(s.build)}</span>`;
+    const g = $("gallery"); g.innerHTML = "";
+    for (const rc of s.receipts){
+      const b = document.createElement("button"); b.className = "thumb"; b.dataset.id = rc.id;
+      b.setAttribute("aria-label", `Receipt ${rc.id}`);
+      b.innerHTML = `<img src="${thumbUrl(rc.id)}" alt="" loading="lazy" decoding="async"><span class="id">${esc(rc.id)}</span>`;
+      b.onclick = () => { selected = rc.id; upload = null; mark(); };
+      g.appendChild(b);
+    }
+    const u = document.createElement("label"); u.className = "thumb up"; u.id = "upTile";
+    u.innerHTML = `<input type="file" id="file" class="sr" accept="image/png,image/jpeg,image/webp"><span id="upText"><span class="plus">+</span><br>Upload<br><small>PNG · JPEG · WebP</small></span>`;
+    g.appendChild(u);
+    $("file").onchange = onFile;
+    mark();
+  }catch(e){ $("ident").innerHTML = `<span class="big" style="color:var(--warn)">server not reachable</span>`; }
+}
+function mark(){
+  document.querySelectorAll(".thumb[data-id]").forEach(t => { const on = !upload && t.dataset.id === selected; t.classList.toggle("on", on); t.setAttribute("aria-pressed", on); });
+  const up = $("upTile"); if (up) up.classList.toggle("on", !!upload);
+}
+// Small preview of an uploaded image for display only; the model gets the original bytes.
+function preview(dataUrl){
+  return new Promise((res) => {
+    const im = new Image();
+    im.onload = () => {
+      const w = 240, h = Math.round(im.naturalHeight * w / im.naturalWidth);
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      c.getContext("2d").drawImage(im, 0, 0, w, h);
+      res(c.toDataURL("image/jpeg", 0.8));
+    };
+    im.onerror = () => res(dataUrl);
+    im.src = dataUrl;
+  });
+}
+function onFile(ev){
+  const f = ev.target.files[0]; if (!f) return;
+  const ok = ["image/png","image/jpeg","image/webp"];
+  if (!ok.includes(f.type)){ showErr(`Only PNG, JPEG or WebP images are accepted (got ${f.type || "unknown type"}).`); return; }
+  const rd = new FileReader();
+  rd.onload = async () => {
+    const thumb = await preview(String(rd.result));
+    upload = {name: f.name, mime_type: f.type, data_b64: String(rd.result).split(",")[1], thumb};
+    $("upText").innerHTML = `<img src="${thumb}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top"><span class="id">upload</span>`;
+    mark();
+  };
+  rd.readAsDataURL(f);
+}
+
+function setMode(m){
+  mode = m;
+  $("tImg").setAttribute("aria-selected", m === "img"); $("tTxt").setAttribute("aria-selected", m === "txt");
+  $("imgMode").classList.toggle("hidden", m !== "img"); $("txtMode").classList.toggle("hidden", m !== "txt");
+}
+$("tImg").onclick = () => setMode("img");
+$("tTxt").onclick = () => setMode("txt");
+$("pTrue").onclick = () => { selected = "R01"; upload = null; $("claim").value = `Expense claim for this receipt: total ${R01_TOTAL}.`; mark(); };
+$("pSwap").onclick = () => { selected = "R02"; upload = null; $("claim").value = `Expense claim for this receipt: total ${R01_TOTAL}.`; mark(); };
+
+let timer = null, activeBtn = null;
+function startWait(label, btn){
+  busy = true; document.querySelectorAll(".go,.guar,.tabs button").forEach(b => b.disabled = true);
+  activeBtn = btn || null;
+  if (activeBtn){ activeBtn.dataset.label = activeBtn.textContent; activeBtn.innerHTML = `<span class="mini"></span>Asking…`; }
+  const t0 = performance.now();
+  $("out").innerHTML = `<div class="wait"><div class="spin"></div><div>${esc(label)}</div><div class="mono" id="tick">0.0 s</div></div>`;
+  timer = setInterval(() => { const t = $("tick"); if (t) t.textContent = ((performance.now()-t0)/1000).toFixed(1) + " s"; }, 100);
+}
+function stopWait(){
+  busy = false; clearInterval(timer);
+  document.querySelectorAll(".go,.guar,.tabs button").forEach(b => b.disabled = false);
+  if (activeBtn){ activeBtn.textContent = activeBtn.dataset.label; activeBtn = null; }
+}
+function showErr(msg){ $("out").innerHTML = `<div class="err">${esc(msg)}</div>`; }
+
+async function post(url, body){
+  let r;
+  try { r = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)}); }
+  catch(e){ return {error: "Cannot reach the demo server."}; }
+  try { return await r.json(); } catch(e){ return {error: `Server returned HTTP ${r.status}.`}; }
+}
+
+const SHIELD = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M8.5 12.2l2.4 2.4 4.6-4.8"/></svg>`;
+
+function optionRows(q){
+  let h = "";
+  for (const o of q.options){
+    const w = q.winner === o.key;
+    const tip = `p = ${o.p.toExponential(3)}${o.desc ? " — " + o.desc : ""}`;
+    h += `<div class="opt${w ? " win" : ""}" title="${esc(tip)}"><div class="name">${w ? '<span class="ck" aria-label="answer">✓</span>' : ""}<span>${esc(o.label)}</span></div>
+      <div class="track"><div class="fill" style="width:${(o.p*100).toFixed(3)}%"></div></div>
+      <div class="pct">${pct(o.p)}</div></div>`;
+  }
+  return h;
+}
+function metaRow(res){
+  return `<div class="meta"><span>elapsed <b>${res.elapsed_s.toFixed(1)} s</b></span><span>router calls <b>${res.router_http_calls}</b></span><span>receipt saved <b class="mono">${esc(res.receipt_file)}</b></span></div>`;
+}
+
+function renderGuard(res){
+  $("out").innerHTML = `<div class="guard"><div class="shield">${SHIELD}</div><div>
+    <h3>Rejected by the type system — no model call made</h3>
+    <p>The typed image input accepts PNG, JPEG or WebP. A GIF is stopped before anything is sent to Gemma 4.</p>
+    <div class="detail">${esc(res.error_type)}: ${esc(res.message)}</div>
+    <div class="calls">HTTP calls to the model router: <b>${res.router_http_calls}</b></div></div></div>`;
+}
+
+function renderImage(res, info){
+  const q = res.results[0];
+  const win = q.options.find(o => o.key === q.winner);
+  history.unshift({thumb: info.thumb, name: res.image_name || info.name, claim: info.claim, winner: q.winner, p: win ? win.p : null});
+  if (history.length > 3) history.length = 3;
+  let h = `<div class="hero"><div class="pic"><img src="${info.thumb}" alt="Judged image ${esc(res.image_name || info.name)}"><span class="id">${esc(info.short)}</span></div>
+    <div class="txt"><div class="kicker">Gemma 4 answer for ${esc(res.image_name || info.name)}</div>
+    <div class="verdict w-${esc(q.winner)}">${esc(q.winner)}<span class="p">${win ? pct(win.p) : ""}</span></div>
+    <div class="claim">Claim: <b>${esc(info.claim)}</b></div></div></div>`;
+  h += `<div class="q"><div class="qh"><span class="tag">${esc(q.type)}</span><span>${esc(q.title)}</span></div>${optionRows(q)}`;
+  if (q.bts) h += bts(q.bts);
+  h += `</div>` + metaRow(res);
+  $("out").innerHTML = h;
+  renderHist();
+}
+function renderHist(){
+  const el = $("hist");
+  if (mode !== "img" || history.length < 1){ el.classList.add("hidden"); return; }
+  let h = `<div class="lbl"><span>Recent answers</span><span class="note">newest first · each one a live call</span></div><div class="hrow">`;
+  history.forEach((e, i) => {
+    h += `<div class="hcard${i === 0 ? " now" : ""}"><img src="${e.thumb}" alt=""><div class="t">
+      <div class="n">${esc(e.name)}${i === 0 ? " · now" : ""}</div>
+      <div class="w w-${esc(e.winner)}">${esc(e.winner)} <span class="hp">${e.p != null ? pct(e.p) : ""}</span></div>
+      <div class="c" title="${esc(e.claim)}">claim: ${esc(e.claim.replace(/^Expense claim for this receipt:\s*(total\s*)?/i, ""))}</div></div></div>`;
+  });
+  el.innerHTML = h + `</div>`;
+  el.classList.remove("hidden");
+}
+
+function renderText(res){
+  let h = "";
+  for (const q of res.results){
+    const win = q.options.find(o => o.key === q.winner);
+    h += `<div class="q"><div class="qh"><span class="tag">${esc(q.type)}</span><span>${esc(q.title)}</span></div>${optionRows(q)}`;
+    if (q.expected !== undefined) h += `<div class="ev">Expected value (probability-weighted): <b>${q.expected.toFixed(2)}</b> of ${q.max}</div>`;
+    if (q.bts) h += bts(q.bts);
+    h += `</div>`;
+  }
+  $("out").innerHTML = `<div class="txtres">${h}</div>` + metaRow(res);
+  $("hist").classList.add("hidden");
+}
+
+function render(res, info){
+  if (res.error){ showErr(res.error); return; }
+  if (res.rejected){ renderGuard(res); $("hist").classList.add("hidden"); return; }
+  if (info && info.kind === "image") renderImage(res, info); else renderText(res);
+}
+
+function num(n){ return (n === null || n === undefined) ? "?" : Number(n).toLocaleString("en-US"); }
+function sci(p){ return (p === null || p === undefined) ? "?" : (p >= 0.001 ? p.toFixed(6) : p.toExponential(3)); }
+// yes/no candidates arrive as "True"/"False"; show them with the same labels as the bars.
+function optLabel(o){ return o === "True" ? "yes" : o === "False" ? "no" : o; }
+function hiTokens(text){
+  // escape, then mark Gemma 4 control tokens and the image placeholder
+  return esc(text)
+    .replace(/(\u27e8image:[^\u27e9]*\u27e9)/g, '<span class="img">$1</span>')
+    .replace(/(&lt;\|?[a-z_]+\|?&gt;)/g, '<span class="tok">$1</span>');
+}
+function stat(k, v, s){ return `<div class="stat"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div>${s ? `<div class="s">${esc(s)}</div>` : ""}</div>`; }
+function bts(b){
+  const t = b.tokens, p = b.prompt;
+  const split = t.image_tokens_approx ? `≈${num(t.image_tokens_approx)} image + ${num(t.text_tokens)} text` : (t.text_tokens != null ? `${num(t.text_tokens)} text, no image` : "");
+  const secs = t.wall_ms != null ? (t.wall_ms/1000).toFixed(2) + " s" : "?";
+  const pp = t.prompt_ms != null ? `prompt processing ${(t.prompt_ms/1000).toFixed(2)} s` : "";
+  const cand = b.candidates.map(c => c.token_count).join("/");
+  let h = `<details class="bts"><summary>Behind the scenes <span class="hint">exact prompt, token readout, raw request</span></summary><div class="in">`;
+  h += `<div class="strip">`+
+    stat("Prompt tokens", num(t.prompt_tokens), split)+
+    stat("Generated", num(t.generated_tokens), "not used by typevet")+
+    stat("Cached", num(t.tokens_cached), t.cache_prompt_requested === false ? "prompt cache off" : "")+
+    stat("Tokens per option", cand, "one token each = one read")+
+    stat("Model time", secs, pp)+
+    stat("Off-menu mass", sci(b.mass.off_menu), "probability outside the options")+
+    `</div>`;
+  h += `<h4><span class="n">1</span>Exact prompt sent to Gemma 4 <span class="sub">/completion</span></h4><pre class="prompt">${hiTokens(p.body)}<span class="tok">${esc(p.opener)}</span><span class="pf">${esc(p.prefill)}</span></pre>`;
+  h += `<div class="legend"><span><i style="background:var(--tok-soft);outline:1px solid var(--tok)"></i>Gemma 4 turn markers</span><span><i style="background:var(--img-soft);outline:1px dashed #c99700"></i>image placeholder</span><span><i style="background:var(--win-soft);outline:2px solid var(--win)"></i>prefill written by typevet</span></div>`;
+  h += `<h4><span class="n">2</span>Prefill</h4><div class="pfline"><span class="pf">${esc(p.prefill || "(none)")}</span><span class="pfnote">← ${esc(p.prefill_note)}</span></div>`;
+  h += `<div class="small">Written after the model-turn opener <span class="mono">${esc(p.opener.replace("\n","\\n"))}</span>. Source: <span class="mono">${esc(p.prefill_source)}</span>. typevet asks for <span class="mono">n_predict = 0</span> and reads the probability of the very next token; the server may still report 1 token sampled, which typevet does not use.</div>`;
+  h += `<h4><span class="n">3</span>Candidate readout</h4><div class="scroll"><table><tr><th>allowed option</th><th>token sent</th><th>token id</th><th>raw p (model)</th><th>normalized (bars)</th></tr>`;
+  for (const c of b.candidates){
+    h += `<tr><td title="candidate label ${esc(c.option)}">${esc(optLabel(c.option))}</td><td>${esc(JSON.stringify(c.control))}</td><td>${esc(c.token_ids.join(","))}</td><td>${sci(c.raw_p)}</td><td>${pct(c.normalized_p)}</td></tr>`;
+  }
+  h += `<tr class="tot"><td>allowed options</td><td></td><td></td><td>${sci(b.mass.on_menu)}</td><td>100%</td></tr>`;
+  h += `<tr class="off"><td>everything else (off-menu)</td><td></td><td></td><td>${sci(b.mass.off_menu)}</td><td>—</td></tr></table></div>`;
+  h += `<div class="small">Raw p = exp(logprob) typevet read from the model's next-token distribution (${num(t.n_probs_returned)} vocabulary entries returned). Normalized = raw p divided by the allowed-option total; this is what the bars show.</div>`;
+  if (b.top_tokens && b.top_tokens.length){
+    h += `<h4><span class="n">4</span>Model's top next tokens <span class="sub">whole vocabulary</span></h4><div class="scroll"><table><tr><th>token</th><th>id</th><th>p</th><th>allowed option?</th></tr>`;
+    for (const x of b.top_tokens) h += `<tr><td>${esc(JSON.stringify(x.token))}</td><td>${x.id}</td><td>${sci(x.p)}</td><td>${x.on_menu ? '<span class="yes">yes</span>' : "no"}</td></tr>`;
+    h += `</table></div>`;
+  }
+  h += `<h4><span class="n">5</span>Raw /completion request <span class="sub">${b.completion.ms} ms · HTTP ${b.completion.status}</span></h4><pre class="raw">${esc(JSON.stringify(b.completion.request, null, 2))}</pre>`;
+  h += `<h4><span class="n">6</span>Response <span class="sub">trimmed to top entries</span></h4><pre class="raw">${esc(JSON.stringify(b.completion.response, null, 2))}</pre>`;
+  h += `<h4><span class="n">7</span>All router calls for this ask</h4><div class="scroll"><table><tr><th>#</th><th style="text-align:left">call</th><th>status</th><th>ms</th><th style="text-align:left">detail</th></tr>`;
+  for (const c of b.calls) h += `<tr${c.i === b.completion_call_index ? ' class="bold"' : ""}><td>${c.i+1}</td><td style="text-align:left">${esc(c.method)} ${esc(c.path)}</td><td>${c.status}</td><td>${c.ms}</td><td style="text-align:left">${esc(c.note)}</td></tr>`;
+  h += `</table></div><div class="small">${esc(t.source)}.</div></div></details>`;
+  return h;
+}
+
+$("askImg").onclick = async () => {
+  if (busy) return;
+  const claim = $("claim").value.trim(); if (!claim){ showErr("Enter a claim to check."); return; }
+  const body = upload ? {upload: {name: upload.name, mime_type: upload.mime_type, data_b64: upload.data_b64}, claim} : {receipt_id: selected, claim};
+  const info = upload
+    ? {kind: "image", name: upload.name, short: "upload", thumb: upload.thumb, claim}
+    : {kind: "image", name: selected, short: selected, thumb: thumbUrl(selected), claim};
+  startWait(`Gemma 4 is reading ${info.name}…`, $("askImg"));
+  const res = await post("/api/image", body); stopWait();
+  render(res, info);
+};
+$("askTxt").onclick = async () => {
+  if (busy) return;
+  const message = $("msg").value.trim(); if (!message){ showErr("Enter a customer message."); return; }
+  startWait("Gemma 4 is answering three typed questions…", $("askTxt"));
+  $("hist").classList.add("hidden");
+  const res = await post("/api/text", {message}); stopWait();
+  render(res, {kind: "text"});
+};
+$("guar").onclick = async () => {
+  if (busy) return;
+  // A real 1x1 GIF. GIF is not an allowed image type, so the typed input rejects it.
+  const gif = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+  startWait("Submitting a GIF…", null);
+  const res = await post("/api/image", {upload:{name:"pixel.gif", mime_type:"image/gif", data_b64:gif}, claim:$("claim").value});
+  stopWait(); render(res, {kind: "guard"});
+};
+loadStatus();
+</script>
+</body>
+</html>

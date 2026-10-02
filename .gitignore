@@ -17,3 +17,9 @@ scratchpad/
 .claude/worktrees/
 .serena/
 .lavish/
+typevet-receipts/
+examples/live-demo/frames/
+examples/live-demo/frames-dry/
+examples/live-demo/profile-*/
+examples/live-demo/log*.json
+examples/live-demo/*.ffconcat
