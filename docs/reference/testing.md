@@ -73,6 +73,13 @@ There is no live llama.cpp judgment adapter in the default suite yet.
 
 Suite: [tests/contract/test_judgment_port.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/contract/test_judgment_port.py).
 
+Public
+[typevet.testing.ScriptedJudgmentFake](https://github.com/Alberto-Codes/typevet/blob/main/src/typevet/testing/judgment_fake.py)
+answers each question from a scripted distribution.
+It takes P(True) for a Noul, label weights for a Choice and level weights for a Score.
+[tests/contract/test_judgment_fake_agreement.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/contract/test_judgment_fake_agreement.py)
+proves that it agrees with `ContractJudgmentFake` on each success fixture.
+
 Scoring-backed judgment adapter fixtures live in
 [tests/fixtures/judgment_scoring_contract.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/fixtures/judgment_scoring_contract.py).
 Suite: [tests/contract/test_judgment_scoring_adapter.py](https://github.com/Alberto-Codes/typevet/blob/main/tests/contract/test_judgment_scoring_adapter.py).

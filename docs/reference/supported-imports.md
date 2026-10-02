@@ -273,6 +273,7 @@ Importing the package does not configure structlog. See
 |---|---|
 | `StaticGenerationFake` | Fixed-value port double without adapter imports |
 | `ScriptedScoringFake` | Scripted logprob double for `CandidateScoringPort` |
+| `ScriptedJudgmentFake` | Scripted distribution double for `JudgmentPort` |
 
 Use for fast unit doubles and offline typed-judgment tutorials from an installed
 wheel. Use `FakeGenerationAdapter` when tests must exercise schema validation
