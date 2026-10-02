@@ -1,9 +1,10 @@
 """Concurrency sweep and receipt for the finvet collections workload ([#236][i236]).
 
 ``run_throughput`` opens the sync judgment port with ``open_judgment`` and the
-``TYPEVET_VLLM__*`` settings, so the port masks the key and the client sends
-``TYPEVET_VLLM__USER_AGENT``. Each level runs every record once through a
-``ThreadPoolExecutor`` of that width. Every request passes
+``TYPEVET_VLLM__*`` settings. ``require_live_session`` refuses the offline
+``fake`` session, which has no client. With a live session, the port masks
+the key and the client sends ``TYPEVET_VLLM__USER_AGENT``. Each level runs
+every record once through a ``ThreadPoolExecutor`` of that width. Every request passes
 ``CountingTransport``, which enforces the call caps; the harness makes no
 retry. A level stops when its errors exceed 1% of its records, when a call
 cap is reached or when its time cap passes. Records not yet sent are then
@@ -63,6 +64,7 @@ from typevet.adapters.inbound.backend_settings import (
     load_vllm_settings,
     open_judgment,
 )
+from typevet.adapters.inbound.fake_backend import require_live_session
 from typevet.domain.errors import GenerationError
 from typevet.domain.judgment_questions import Choice, Noul
 from typevet_evals.throughput.collections_metrics import (
@@ -453,7 +455,8 @@ def run_throughput(
 
     Raises:
         TypeError: When a keyword is not a ``Scoring`` key.
-        ValueError: When the backend is not ``vllm`` or a setting is invalid.
+        ValueError: When the backend is not ``vllm`` or a setting is invalid,
+            or when ``require_live_session`` refuses a ``fake`` session.
     """
     unknown = sorted(set(scoring) - set(Scoring.__annotations__))
     if unknown:
@@ -472,7 +475,8 @@ def run_throughput(
     started = perf_counter()
     run_deadline = started + opts.run_seconds
     try:
-        with open_judgment(environ, transport=counter) as session:
+        with open_judgment(environ, transport=counter) as opened:
+            session = require_live_session(opened)
             receipt["pins"] = _pins(session.client, environ)
             run = _Run(
                 session.port,

@@ -1,7 +1,10 @@
 """Backend selection and vLLM settings for the composition root.
 
-``TYPEVET_BACKEND`` selects ``llama_cpp`` (the default) or ``vllm``. The vLLM
-branch reads ``TYPEVET_VLLM__*`` variables and builds one ``httpx.Client``
+``TYPEVET_BACKEND`` selects ``llama_cpp`` (the default), ``vllm`` or ``fake``.
+The ``fake`` backend is offline and serves judgment only: ``open_judgment``
+yields the ``FakeJudgmentSession`` from
+``typevet.adapters.inbound.fake_backend``, and ``generation_adapter`` refuses
+it. The vLLM branch reads ``TYPEVET_VLLM__*`` variables and builds one ``httpx.Client``
 that carries the base URL, timeout, optional key and gateway headers.
 ``TYPEVET_VLLM__MAX_CONCURRENCY`` sets ``VllmSettings.max_concurrency``, the
 POST limit for the ``AsyncVllmGenerationAdapter`` that
@@ -66,6 +69,7 @@ See Also:
     - [typevet.adapters.outbound.vllm.judgment_factory][]: vLLM judgment factory
     - [typevet.adapters.diagnostics.redaction][]: ``REDACTED`` (``***``) mask
     - [typevet.adapters.inbound.error_masking][]: Masked error copies
+    - [typevet.adapters.inbound.fake_backend][]: Offline ``fake`` judgment
     - docs/reference/configuration.md: Environment variable reference
 """
 
@@ -86,6 +90,10 @@ import httpx
 from typevet.adapters.diagnostics.redaction import REDACTED
 from typevet.adapters.inbound.error_masking import Needles as _Needles
 from typevet.adapters.inbound.error_masking import masked_error as _masked_error
+from typevet.adapters.inbound.fake_backend import (
+    FakeJudgmentSession,
+    open_fake_judgment,
+)
 from typevet.adapters.inbound.gateway_headers import (
     async_event_hooks,
     check_auth_scheme,
@@ -115,11 +123,11 @@ if TYPE_CHECKING:
     from typevet.domain.media import ImageInput
     from typevet.ports.judgment import JudgmentPort
 
-Backend = Literal["llama_cpp", "vllm"]
+Backend = Literal["llama_cpp", "vllm", "fake"]
 
 _DEFAULT_TIMEOUT = 300.0
 _ENV = "TYPEVET_VLLM__"
-_BACKENDS: tuple[Backend, ...] = ("llama_cpp", "vllm")
+_BACKENDS: tuple[Backend, ...] = ("llama_cpp", "vllm", "fake")
 MASK = REDACTED
 
 
@@ -449,7 +457,7 @@ def load_backend(environ: Mapping[str, str] | None = None) -> Backend:
         ``"llama_cpp"`` when unset or empty, else the named backend.
 
     Raises:
-        ValueError: When the value is not ``llama_cpp`` or ``vllm``.
+        ValueError: When the value is not ``llama_cpp``, ``vllm`` or ``fake``.
     """
     source = os.environ if environ is None else environ
     raw = source.get("TYPEVET_BACKEND", "").strip()
@@ -458,7 +466,7 @@ def load_backend(environ: Mapping[str, str] | None = None) -> Backend:
     for backend in _BACKENDS:
         if raw == backend:
             return backend
-    msg = "TYPEVET_BACKEND must be llama_cpp or vllm"
+    msg = "TYPEVET_BACKEND must be llama_cpp, vllm or fake"
     raise ValueError(msg)
 
 
@@ -564,10 +572,15 @@ def generation_adapter(
         and its errors never show the configured key.
 
     Raises:
-        ValueError: When a backend or vLLM variable is invalid.
+        ValueError: When a backend or vLLM variable is invalid, or when
+            ``TYPEVET_BACKEND`` is ``fake``, which has no generation adapter.
     """
     source = os.environ if environ is None else environ
-    if load_backend(source) == "llama_cpp":
+    backend = load_backend(source)
+    if backend == "fake":
+        msg = "TYPEVET_BACKEND=fake: the fake backend has no generation adapter"
+        raise ValueError(msg)
+    if backend == "llama_cpp":
         return llama_cpp_adapter(load_llama_settings(source))
     settings = load_vllm_settings(source)
     client = vllm_http_client(settings, transport=transport)
@@ -617,26 +630,33 @@ def open_judgment(
     environ: Mapping[str, str] | None = None,
     *,
     transport: httpx.BaseTransport | None = None,
-) -> Iterator[GemmaNativeVisionSession | VllmJudgmentSession]:
+) -> Iterator[GemmaNativeVisionSession | VllmJudgmentSession | FakeJudgmentSession]:
     """Open the judgment session that ``TYPEVET_BACKEND`` selects.
 
     Args:
         environ: Mapping to read. Defaults to ``os.environ``.
         transport: Optional transport for the vLLM client. The llama.cpp
-            branch ignores it.
+            and fake branches ignore it.
 
     Yields:
         A llama.cpp session from ``open_gemma_native_vision_judgment`` with
         ``load_llama_settings``, or a vLLM session from ``open_vllm_judgment``
         on the ``vllm_http_client``, so ``/tokenize`` and scoring carry the
         gateway headers. The vLLM client closes on exit, and judgment errors
-        never show the configured key or a header value.
+        never show the configured key or a header value. For ``fake``, an
+        offline ``FakeJudgmentSession`` with ``model`` ``"fake"`` whose port
+        answers from ``TYPEVET_FAKE__DISTRIBUTIONS`` or uniform distributions.
 
     Raises:
-        ValueError: When a backend or vLLM variable is invalid.
+        ValueError: When a backend, vLLM or ``TYPEVET_FAKE__DISTRIBUTIONS``
+            variable is invalid.
     """
     source = os.environ if environ is None else environ
-    if load_backend(source) == "llama_cpp":
+    backend = load_backend(source)
+    if backend == "fake":
+        yield open_fake_judgment(source)
+        return
+    if backend == "llama_cpp":
         with open_gemma_native_vision_judgment(
             settings=load_llama_settings(source)
         ) as llama_session:

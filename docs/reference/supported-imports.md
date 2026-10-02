@@ -133,9 +133,10 @@ Thin orchestration facades over domain, ports, and outbound adapters
 Scoring and `/tokenize` requests go to `base_url`, or to the client
 `base_url` when `base_url` is not set. The caller owns the client.
 
-`typevet.adapters.inbound.backend_settings.open_judgment` selects the session
-from `TYPEVET_BACKEND`: the Gemma native vision factory for `llama_cpp` (the
-default), or `open_vllm_judgment` on the `TYPEVET_VLLM__*` client for `vllm`.
+`typevet.adapters.inbound.open_judgment` selects the session from
+`TYPEVET_BACKEND`. `llama_cpp` (the default) gives the Gemma native vision
+factory. `vllm` gives `open_vllm_judgment` on the `TYPEVET_VLLM__*` client.
+`fake` gives an offline session with `port` and `model` fields.
 
 ## `typevet.adapters.inbound`
 
@@ -153,6 +154,7 @@ default), or `open_vllm_judgment` on the `TYPEVET_VLLM__*` client for `vllm`.
 | `async_vllm_generation_adapter` | Construct `AsyncVllmGenerationAdapter` from `VllmSettings` |
 | `load_backend` | Read `TYPEVET_BACKEND` |
 | `generation_adapter` | Construct the generation adapter that `TYPEVET_BACKEND` selects |
+| `open_judgment` | Context manager: the judgment session that `TYPEVET_BACKEND` selects, including the offline `fake` session |
 
 Environment names and CLI hookup notes live in
 [configuration.md](configuration.md).

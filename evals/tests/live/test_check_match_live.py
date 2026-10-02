@@ -72,6 +72,7 @@ from typevet.adapters.inbound.backend_settings import (
     load_vllm_settings,
     open_judgment,
 )
+from typevet.adapters.inbound.fake_backend import require_live_session
 from typevet.adapters.inbound.settings import load_llama_settings
 from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
     GemmaNativeVisionSession,
@@ -183,7 +184,7 @@ def _open_session(
     """
     if backend == "vllm":
         with open_judgment(environ) as vllm_session:
-            yield vllm_session
+            yield require_live_session(vllm_session)
         return
     settings = load_llama_settings(environ)
     with open_gemma_native_vision_judgment(settings=settings) as llama_session:

@@ -46,6 +46,7 @@ from judgevet import (
 
 from tests.live.gate import gate_live
 from typevet.adapters.inbound.backend_settings import load_vllm_settings, open_judgment
+from typevet.adapters.inbound.fake_backend import require_live_session
 from typevet.adapters.inbound.judgevet import JudgmentSession, provider_factory
 from typevet.adapters.inbound.settings import load_llama_settings
 from typevet.adapters.outbound.gemma import classify_served_template
@@ -197,7 +198,8 @@ def _vllm_backend() -> _Backend:
 
     @contextmanager
     def _open_vllm() -> Iterator[JudgmentSession]:
-        with open_judgment(environ) as session:
+        with open_judgment(environ) as opened:
+            session = require_live_session(opened)
             assert session.model == settings.model
             served_ids.extend(_served_ids(session.client))
             yield session

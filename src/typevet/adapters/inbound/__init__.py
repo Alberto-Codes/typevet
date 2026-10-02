@@ -34,6 +34,8 @@ Attributes:
     vllm_http_client (function): Build the shared vLLM ``httpx.Client``.
     generation_adapter (function): Build the adapter ``TYPEVET_BACKEND`` selects.
     async_vllm_generation_adapter (function): Build the async vLLM adapter.
+    open_judgment (function): Open the judgment session ``TYPEVET_BACKEND``
+        selects, including the offline ``fake`` session.
 """
 
 from typevet.adapters.inbound.api import generate
@@ -43,6 +45,7 @@ from typevet.adapters.inbound.backend_settings import (
     generation_adapter,
     load_backend,
     load_vllm_settings,
+    open_judgment,
     vllm_http_client,
 )
 from typevet.adapters.inbound.calibration_map import load_calibration_map
@@ -64,6 +67,7 @@ __all__ = [
     "load_calibration_map",
     "load_llama_settings",
     "load_vllm_settings",
+    "open_judgment",
     "run_sync",
     "vllm_http_client",
 ]

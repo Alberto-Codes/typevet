@@ -199,6 +199,7 @@ from typevet.adapters.inbound.backend_settings import (
     load_vllm_settings,
     open_judgment,
 )
+from typevet.adapters.inbound.fake_backend import require_live_session
 from typevet.adapters.inbound.judgevet import TypevetSystemOnePort
 from typevet.adapters.inbound.settings import load_llama_settings
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
@@ -1109,7 +1110,8 @@ def _held_out_session(
         The judgment port, the model id, the HTTP client and the template.
     """
     if backend == "vllm":
-        with open_judgment(environ) as vllm:
+        with open_judgment(environ) as opened:
+            vllm = require_live_session(opened)
             served = probe_vllm_template(vllm.client, vllm.model)
             require_native_template(served, environ)
             yield vllm.port, vllm.model, vllm.client, served.value

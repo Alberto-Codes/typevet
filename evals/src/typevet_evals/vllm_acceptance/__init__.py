@@ -2,7 +2,8 @@
 
 ``core`` holds the run, the gates and the receipt writer. ``sets`` holds the
 five pre-registered set runners and imports ``core``. ``transport`` holds the
-call caps, the counting transport and the ``/metrics`` read. The modules moved
+call caps, the counting transport and the ``/metrics`` read. ``masking`` holds
+the receipt masking helpers that ``core`` uses. The first three modules moved
 here from the library (#256).
 Module constants stay on their modules, except the two run tables below.
 

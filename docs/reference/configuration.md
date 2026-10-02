@@ -56,11 +56,31 @@ adapter.
 
 | Environment name | Values | Default | Notes |
 |---|---|---|---|
-| `TYPEVET_BACKEND` | `llama_cpp`, `vllm` | `llama_cpp` | Other values raise `ValueError` |
+| `TYPEVET_BACKEND` | `llama_cpp`, `vllm`, `fake` | `llama_cpp` | Other values raise `ValueError` |
+| `TYPEVET_FAKE__DISTRIBUTIONS` | Path to a JSON file, or empty | none | Read only when the backend is `fake`. Questions the file does not name are uniform |
 
 `llama_cpp` builds `llama_cpp_adapter(load_llama_settings())`. `vllm` builds a
 `VllmGenerationAdapter` on the [`vllm_http_client`][typevet.adapters.inbound.vllm_http_client] client. Closing that
-adapter closes its client.
+adapter closes its client. `fake` has no generation adapter, so
+`generation_adapter` raises `ValueError`.
+
+[`open_judgment`][typevet.adapters.inbound.open_judgment] reads the same variable and opens a judgment session.
+For `fake`, the session is offline and its `model` is `fake`. Its port builds a
+`ScriptedJudgmentFake` for each `judge` call.
+
+The `TYPEVET_FAKE__DISTRIBUTIONS` file is a JSON object keyed by question name.
+
+| Question | File value |
+|---|---|
+| `Noul` | A number, P(True) |
+| `Choice` | An object of label to weight |
+| `Score` | An object of level string, such as `"0"`, to weight |
+
+A question that the file does not name gets a uniform distribution. When the
+variable is unset or empty, all questions are uniform. A missing or invalid
+file raises `ValueError`. The message names the variable and holds no file
+content. An entry that parses but does not fit its question, such as a label
+outside the criteria, raises `JudgmentValidationError` at `judge` time.
 
 ## vLLM server
 
