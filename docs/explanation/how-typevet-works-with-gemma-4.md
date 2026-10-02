@@ -194,9 +194,10 @@ Three ports make the backends interchangeable:
   scoring adapter sends `enable_thinking: false`, so a vLLM framing needs no
   prefill text.
 
-`TYPEVET_BACKEND` selects `llama_cpp` (the default) or `vllm` for the
-composition root. The caller code that calls `judge` or `generate` does not
-change.
+`TYPEVET_BACKEND` selects the backend for the composition root.
+[Backend selection](../reference/configuration.md#backend-selection) lists
+the values; `llama_cpp` is the default. The caller code that calls `judge` or
+`generate` does not change.
 
 ## What the receipts prove
 

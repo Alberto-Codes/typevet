@@ -26,14 +26,16 @@ This page does not replace the design contract on #191 or add new live measureme
 | Generation path | `GenerationPort` with `LlamaCppGenerationAdapter` or `VllmGenerationAdapter` | llama.cpp uses `response_format`; vLLM uses `structured_outputs` |
 | Offline proof | `typevet.testing` fakes (`ScriptedScoringFake`, …) | Default CI pyramid |
 | Wheel consumer | Public imports only; no `tests.*` on install path | [#190](https://github.com/Alberto-Codes/typevet/issues/190) |
-| Backend selection | `TYPEVET_BACKEND` selects `llama_cpp` (the default) or `vllm` | Other values raise `ValueError`. See [Configuration](configuration.md) |
-| llama.cpp settings | `TYPEVET_LLAMA__*` via [`load_llama_settings`][typevet.adapters.inbound.load_llama_settings] | [Configuration](configuration.md) |
-| vLLM settings | `TYPEVET_VLLM__*` via [`load_vllm_settings`][typevet.adapters.inbound.load_vllm_settings] | `BASE_URL` and `MODEL` are required. See [Serve typevet on vLLM](../how-to/serve-typevet-on-vllm.md) |
+| Backend selection | `TYPEVET_BACKEND` selects the backend | [Backend selection](configuration.md#backend-selection) lists the accepted values and the default |
+| llama.cpp settings | `TYPEVET_LLAMA__*` via [`load_llama_settings`][typevet.adapters.inbound.load_llama_settings] | No key or header settings. See [Configuration](configuration.md#llamacpp-router) |
+| vLLM settings | `TYPEVET_VLLM__*` via [`load_vllm_settings`][typevet.adapters.inbound.load_vllm_settings] | `BASE_URL` and `MODEL` are required. Key and header settings exist for vLLM only. See [Serve typevet on vLLM](../how-to/serve-typevet-on-vllm.md) |
 
 Library callers pass explicit adapter arguments. Importing `typevet` does not
 read the environment.
 The composition-root helpers `generation_adapter` and `open_judgment` read `TYPEVET_BACKEND`.
-They build the llama.cpp or the vLLM adapter from it.
+For `llama_cpp` and `vllm`, they build that backend's adapter or session.
+For `fake`, `open_judgment` returns an offline `FakeJudgmentSession` and
+`generation_adapter` raises `ValueError`.
 
 ## Tested serving pins
 

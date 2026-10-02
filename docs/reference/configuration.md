@@ -36,6 +36,13 @@ the mapping below. [`llama_cpp_adapter`][typevet.adapters.inbound.llama_cpp_adap
 
 Nested names win when both nested and legacy names are set.
 
+The llama.cpp settings have no key or header fields. `LlamaSettings` holds
+`base_url`, `timeout`, `default_model` and `multimodal_model` only. The
+`API_KEY`, `AUTH_HEADER`, `AUTH_SCHEME`, `HEADERS`, `USER_AGENT` and
+`REQUEST_ID_HEADER` settings exist for [vLLM](#vllm-server) only.
+[#406](https://github.com/Alberto-Codes/typevet/issues/406) tracks the open
+decision about llama.cpp header parity.
+
 ### Future CLI hookup
 
 There is no shipped CLI yet (`pyproject.toml` optional extra `cli` only adds

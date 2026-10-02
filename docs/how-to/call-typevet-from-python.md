@@ -46,7 +46,11 @@ For live llama.cpp setup and Gemma 4 model ids, see
 
 ## Use-library shape (judgevet-style)
 
-1. Construct a port that implements `GenerationPort` (fake or llama.cpp).
+1. Construct a port that implements `GenerationPort`: the offline fake,
+   `LlamaCppGenerationAdapter` or `VllmGenerationAdapter`.
+   [Backend selection](../reference/configuration.md#backend-selection) lists
+   the `TYPEVET_BACKEND` values. `generation_adapter` refuses `fake` with a
+   `ValueError`, because the fake backend has no generation adapter.
 2. Call `port.generate(request)` or `generate(port, prompt=..., schema=..., model=...)`.
 3. Read `result.value` — a mapping that already passed JSON Schema validation.
 
