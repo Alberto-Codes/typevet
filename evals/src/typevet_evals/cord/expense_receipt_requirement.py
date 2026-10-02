@@ -4,6 +4,10 @@ When the smoke mode requires a receipt and the caller omits image bytes, the
 harness returns ``insufficient_evidence`` without a ``JudgmentPort`` call. That
 path is application validation, not model abstention.
 
+Every arm row carries ``off_option_mass`` and ``off_option_flag`` from the
+response off-option receipt ([#384][i384]). A deterministic row carries
+``None`` and ``False``.
+
 Examples:
     ```python
     from typevet_evals.cord.expense_receipt_requirement import (
@@ -21,6 +25,7 @@ See Also:
     - [evals.tests.live.test_cord_expense_smoke_live][]: live wiring
 
 [i183]: https://github.com/Alberto-Codes/typevet/issues/183
+[i384]: https://github.com/Alberto-Codes/typevet/issues/384
 """
 
 from __future__ import annotations
@@ -30,7 +35,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, Final, Protocol
 
-from typevet.domain.judgment_response import JudgmentResponse
+from typevet.domain.judgment_response import JudgmentResponse, OffOptionReceipt
 from typevet.domain.media import ImageInput
 from typevet_evals.datasets.cord_expense import (
     INSUFFICIENT_EVIDENCE,
@@ -148,7 +153,9 @@ def _row_from_outcome(
     tokens_evaluated: int | None,
     seconds: float,
     model_calls: int,
+    off_option: OffOptionReceipt | None = None,
 ) -> dict[str, object]:
+    receipt = OffOptionReceipt() if off_option is None else off_option
     return {
         "label": label,
         "probabilities": probabilities,
@@ -159,6 +166,8 @@ def _row_from_outcome(
         "routing": outcome.routing,
         "model_calls": model_calls,
         "deterministic_abstain": outcome.deterministic_abstain,
+        "off_option_mass": receipt.off_option_mass,
+        "off_option_flag": receipt.off_option_flag,
     }
 
 
@@ -185,7 +194,11 @@ def judge_cord_expense_arm(
             or ``None`` (the default) to turn the guard off.
 
     Returns:
-        Row dict with label, probabilities, usage metadata and provenance fields.
+        Row dict with label, probabilities, usage metadata, provenance
+        fields, ``off_option_mass`` and ``off_option_flag``. The two
+        off-option fields come from ``response.off_option[question_name]``;
+        a deterministic row or a response with no receipt carries ``None``
+        and ``False``.
     """
     gate = evaluate_receipt_requirement(application_mode, media)
     if gate.label is not None:
@@ -214,4 +227,5 @@ def judge_cord_expense_arm(
         tokens_evaluated=response.usage.input_tokens,
         seconds=round(time.perf_counter() - started, 3),
         model_calls=1,
+        off_option=response.off_option.get(question_name),
     )

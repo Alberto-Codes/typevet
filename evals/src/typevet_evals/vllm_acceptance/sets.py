@@ -7,6 +7,8 @@ schema with ``ValueError`` before any POST), PSAI (#180 rev2 visual Choice matri
 four text regressions), CORD (text, image-only and combined arms), order (the
 CORD combined arm with the label order reversed) and concurrency (8 generation
 calls, 4 in parallel, with a KV-cache read while calls are in flight).
+Each CORD arm sends ``CORD_OFF_OPTION_THRESHOLD`` and its row records
+``off_option_mass`` and ``off_option_flag`` ([#384][i384]).
 ``DEVIATIONS`` records how this wiring differs from the
 pre-registered protocol; the receipt keeps it.
 
@@ -25,6 +27,7 @@ See Also:
     - [typevet_evals.datasets.psai_vision_controls][]: image control matrix
 
 [i170]: https://github.com/Alberto-Codes/typevet/issues/170
+[i384]: https://github.com/Alberto-Codes/typevet/issues/384
 """
 
 from __future__ import annotations
@@ -126,7 +129,8 @@ def failed_row(started: float, exc: Exception) -> dict[str, Any]:
         exc: The raised error; its text is already key-masked.
 
     Returns:
-        Row with no label, empty probabilities and the error text.
+        Row with no label, empty probabilities, no off-option mass, a
+        ``False`` off-option flag and the error text.
     """
     return {
         "label": None,
@@ -134,6 +138,8 @@ def failed_row(started: float, exc: Exception) -> dict[str, Any]:
         "tokens_evaluated": None,
         "seconds": round(perf_counter() - started, 3),
         "error": f"{type(exc).__name__}: {exc}",
+        "off_option_mass": None,
+        "off_option_flag": False,
     }
 
 
@@ -160,6 +166,7 @@ IMAGE_ONLY_STATE: Final[str] = (
 CONCURRENT_CALLS: Final[int] = 8
 PARALLEL: Final[int] = 4
 KV_WAIT_SECONDS: Final[float] = 5.0
+CORD_OFF_OPTION_THRESHOLD: Final[float] = 0.25
 
 
 _CORD: Final[str] = "cord/expense_smoke"
@@ -295,7 +302,12 @@ def _arm(run: RunState, out: dict, state: str, media: tuple, mode: str) -> dict:
     started = perf_counter()
     try:
         row = judge_cord_expense_arm(
-            run.port, run.model, state, media, application_mode=mode
+            run.port,
+            run.model,
+            state,
+            media,
+            application_mode=mode,
+            off_option_threshold=CORD_OFF_OPTION_THRESHOLD,
         )
     except GenerationError as exc:
         row = failed_row(started, exc)
@@ -304,14 +316,8 @@ def _arm(run: RunState, out: dict, state: str, media: tuple, mode: str) -> dict:
 
 def _cord_set(run: RunState, out: dict[str, Any]) -> None:
     cases = _cord_cases(run)
-    out["cases"] = [
-        {
-            "claim_id": c.claim_id,
-            "receipt_id": c.receipt_id,
-            "expected_verdict": c.expected_verdict,
-        }
-        for c in cases
-    ]
+    keys = ("claim_id", "receipt_id", "expected_verdict")
+    out["cases"] = [{key: getattr(c, key) for key in keys} for c in cases]
     text_only, image_only, combined = (
         out.setdefault(arm, {}) for arm in ("text_only", "image_only", "combined")
     )
