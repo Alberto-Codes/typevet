@@ -53,8 +53,10 @@ async def _ask_noul() -> mcp.types.CallToolResult:
         args=["-m", "tests.fixtures.judgevet_mcp_app"],
         cwd=REPO_ROOT,
     )
+    # stdio_client binds its errlog default to sys.stderr at import time; an
+    # earlier in-process pytest session may have closed that stream since.
     async with (
-        mcp.stdio_client(server) as (read, write),
+        mcp.stdio_client(server, errlog=sys.stderr) as (read, write),
         mcp.ClientSession(read, write) as session,
     ):
         await session.initialize()
