@@ -3,7 +3,9 @@
 The bridge reads ``off_option_threshold`` from its keyword or from the
 judgevet ``provider_options`` mapping. It puts each typevet
 ``OffOptionReceipt`` into ``SystemOneResponse.receipts`` under the answer
-name. It refuses any other option key.
+name. It refuses any other option key. The async port takes the same
+``provider_options`` (#380). An invalid keyword or option threshold is
+refused before any backend call, and the message does not show the value.
 
 Examples:
     ```bash
@@ -16,6 +18,7 @@ See Also:
 
 from __future__ import annotations
 
+import asyncio
 import dataclasses
 import math
 from collections.abc import Mapping
@@ -26,6 +29,7 @@ from judgevet.domain.media import ImageAttachment, ImageEvidence, MediaCapabilit
 from judgevet.domain.questions import Noul as JevNoul
 from judgevet.media import judge_with_images
 from judgevet.ports.options import (
+    AsyncProviderOptionsSystemOnePort,
     ProviderOptionsMediaSystemOnePort,
     ProviderOptionsSystemOnePort,
 )
@@ -33,6 +37,7 @@ from judgevet.providers import ProviderCapabilityError, ProviderRequestError
 
 from tests.fixtures.judgevet_bridge import FAKE_MODEL, STATE, judgment_port
 from typevet.adapters.inbound.judgevet import (
+    AsyncTypevetSystemOnePort,
     TypevetMediaSystemOnePort,
     TypevetSystemOnePort,
 )
@@ -261,3 +266,55 @@ def test_bridge_satisfies_the_provider_options_ports() -> None:
         STATE, {"q": JevNoul()}, FAKE_MODEL, evidence=evidence, provider_options=options
     )
     assert text.receipts == media.receipts == {"q": _flagged(0.25)}
+
+
+def test_async_bridge_takes_provider_options() -> None:
+    port = AsyncTypevetSystemOnePort(_bridge())
+    response = asyncio.run(
+        port.system_one(
+            STATE,
+            {"q": JevNoul()},
+            FAKE_MODEL,
+            provider_options={"off_option_threshold": 0.25},
+        )
+    )
+    assert response.receipts == {"q": _flagged(0.25)}
+
+
+def test_async_bridge_satisfies_the_async_options_port() -> None:
+    port: AsyncProviderOptionsSystemOnePort = AsyncTypevetSystemOnePort(_bridge())
+    response = asyncio.run(
+        port.system_one(
+            STATE,
+            {"q": JevNoul()},
+            FAKE_MODEL,
+            provider_options={"off_option_threshold": 0.35},
+        )
+    )
+    assert response.receipts == {"q": _flagged(0.35)}
+
+
+@pytest.mark.parametrize("value", [1.5, -0.1, math.nan, 7.77])
+def test_invalid_keyword_threshold_is_refused_value_free(value: float) -> None:
+    inner = _CountingPort()
+    port = TypevetSystemOnePort(inner)
+    with pytest.raises(ProviderRequestError) as caught:
+        port.system_one(STATE, {"q": JevNoul()}, FAKE_MODEL, off_option_threshold=value)
+    assert inner.calls == 0
+    assert repr(value) not in str(caught.value)
+    assert caught.value.__cause__ is None
+
+
+def test_invalid_option_refused_when_keyword_wins() -> None:
+    inner = _CountingPort()
+    port = TypevetSystemOnePort(inner)
+    with pytest.raises(ProviderRequestError) as caught:
+        port.system_one(
+            STATE,
+            {"q": JevNoul()},
+            FAKE_MODEL,
+            off_option_threshold=0.35,
+            provider_options={"off_option_threshold": "secret-0.77"},
+        )
+    assert inner.calls == 0
+    assert "secret-0.77" not in str(caught.value)

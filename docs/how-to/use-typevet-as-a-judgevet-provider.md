@@ -32,7 +32,7 @@ pip install "typevet[judgevet]"
 ```
 
 A bare `typevet` install does not install or import judgevet.
-Only `typevet.adapters.inbound.judgevet` imports judgevet.
+Only the bridge, `typevet.adapters.inbound.judgevet`, and its mapping module, `typevet.adapters.inbound.judgevet_mapping`, import judgevet.
 Without the extra, that import raises `ImportError` and names `typevet[judgevet]`.
 
 ## Build the provider
@@ -165,6 +165,33 @@ typevet renders them from the question, so a caller cannot change them through j
 Issue [#364](https://github.com/Alberto-Codes/typevet/issues/364) tracks evolution of those parts.
 [Judgment text parts](../reference/judgment-text-parts.md#component-names) lists each part and its component name.
 Contract tests in `tests/contract/test_judgevet_bridge_evolved_wording.py` prove this on offline fakes.
+
+## Set the off-option threshold and read the receipts
+
+Pass `off_option_threshold` as a keyword, or as the `off_option_threshold` key of judgevet `provider_options`.
+The text, media and async ports take both.
+When the keyword is set, the keyword wins.
+
+```python
+response = port.system_one(
+    state,
+    questions,
+    model="gemma-4-31b",
+    provider_options={"off_option_threshold": 0.25},
+)
+receipt = response.receipts["q"]
+```
+
+The bridge reads no other option key. Any other key raises `ProviderCapabilityError` before any backend call.
+A threshold that is not `None` or a number from 0 to 1 raises `ProviderRequestError` before any backend call.
+This applies to the keyword and to the option value. The bridge checks the option value also when the keyword wins.
+The error message does not show the value.
+
+Each answer with a typevet off-option receipt has one entry in `response.receipts`, under the answer name.
+The entry has `off_option_mass`, `off_option_threshold` and `off_option_flag`.
+`off_option_mass` is the probability outside the option set.
+`off_option_flag` is `True` only when the mass is above the threshold.
+An answer with no receipt has no entry.
 
 ## Handle errors
 

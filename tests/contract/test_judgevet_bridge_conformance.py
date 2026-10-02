@@ -1,6 +1,6 @@
 """judgevet provider conformance kit over the typevet judgevet bridge (#290).
 
-judgevet 0.15.0 publishes ``judgevet.testing.conformance``. Each class below
+judgevet 0.17.0 publishes ``judgevet.testing.conformance``. Each class below
 subclasses a kit base class for one bridge port over offline typevet fakes:
 the sync text port, the media port and the async port. The module tests that
 follow check typevet behaviour the kit does not cover: each provider scope

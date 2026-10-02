@@ -169,10 +169,11 @@ in the `typevet-evals` workspace member. See [Not in the wheel](#not-in-the-whee
 
 ## judgevet bridge
 
-The `typevet[judgevet]` extra adds one module, `typevet.adapters.inbound.judgevet`.
+The `typevet[judgevet]` extra adds the bridge module, `typevet.adapters.inbound.judgevet`.
 No package `__init__` imports it, so `typevet.adapters.inbound` does not list it.
 Import it by module path.
-It is the only typevet module that imports judgevet (#284).
+The bridge and its mapping module, `typevet.adapters.inbound.judgevet_mapping`, are the only typevet modules that import judgevet (#284, #380).
+The mapping module holds the conversions and the error map for the bridge. Import the names in the table from the bridge.
 
 | Name | Role |
 |---|---|
@@ -184,7 +185,7 @@ It is the only typevet module that imports judgevet (#284).
 | `JudgmentSession` | Protocol for a typevet session with a `port` |
 | `DEFAULT_MAX_CHOICE_OPTIONS` | The default Choice option and Score level cap, `MAX_ENUM_CHOICES` (24) |
 
-Two import-linter contracts keep judgevet in this module.
+Two import-linter contracts keep judgevet in these two modules.
 The text, media and async ports pass the judgevet provider conformance kit (`judgevet.testing.conformance`, judgevet 0.17.0).
 See [use typevet as a judgevet provider](../how-to/use-typevet-as-a-judgevet-provider.md).
 

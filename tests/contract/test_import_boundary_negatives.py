@@ -130,6 +130,16 @@ _EDGES = (
         "from typevet.adapters.inbound import judgevet",
     ),
     _Edge(
+        "No typevet module imports the judgevet bridge",
+        "typevet/adapters/inbound/__init__.py",
+        "import typevet.adapters.inbound.judgevet_mapping",
+    ),
+    _Edge(
+        "No typevet module imports the judgevet bridge",
+        "typevet/adapters/inbound/judgevet_mapping.py",
+        "import typevet.adapters.inbound.judgevet",
+    ),
+    _Edge(
         "Evaluation families",
         "typevet_evals/datasets/boolq.py",
         "import typevet_evals.cord",

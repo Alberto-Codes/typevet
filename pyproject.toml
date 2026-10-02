@@ -193,20 +193,30 @@ source_modules = ["typevet"]
 forbidden_modules = ["typevet_evals"]
 
 [[tool.importlinter.contracts]]
-# The judgevet bridge (#284) is the one module that may import judgevet.
+# The judgevet bridge (#284) and its mapping sibling (#380) are the only modules that may import judgevet.
 name = "Only the judgevet bridge imports judgevet"
 type = "forbidden"
 source_modules = ["typevet", "typevet_evals"]
 forbidden_modules = ["judgevet"]
-ignore_imports = ["typevet.adapters.inbound.judgevet -> judgevet"]
+ignore_imports = [
+    "typevet.adapters.inbound.judgevet -> judgevet",
+    "typevet.adapters.inbound.judgevet_mapping -> judgevet",
+]
 
 [[tool.importlinter.contracts]]
-# No package init or other module imports the bridge, so bare typevet stays judgevet-free.
+# No package init or other module imports the bridge or its sibling, so bare typevet stays judgevet-free.
 name = "No typevet module imports the judgevet bridge"
 type = "forbidden"
 # Module by module: as packages, typevet.adapters.inbound would contain the bridge and be skipped.
 source_modules = ["typevet", "typevet.**", "typevet_evals", "typevet_evals.**"]
-forbidden_modules = ["typevet.adapters.inbound.judgevet"]
+forbidden_modules = [
+    "typevet.adapters.inbound.judgevet",
+    "typevet.adapters.inbound.judgevet_mapping",
+]
+# Only the bridge imports the sibling, after its judgevet import check.
+ignore_imports = [
+    "typevet.adapters.inbound.judgevet -> typevet.adapters.inbound.judgevet_mapping",
+]
 as_packages = false
 
 [[tool.importlinter.contracts]]
