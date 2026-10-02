@@ -63,7 +63,6 @@ import httpx
 import pytest
 
 from typevet.adapters.inbound.backend_settings import (
-    load_backend,
     load_vllm_settings,
     open_judgment,
 )
@@ -106,7 +105,7 @@ from typevet_evals.face_match import (
     run_face_match,
     served_weights_pins,
 )
-from typevet_evals.runner.live_gate import require_live_enabled
+from typevet_evals.runner.live_gate import live_backend, require_live_enabled
 from typevet_evals.serving_metrics import read_metrics
 from typevet_evals.throughput.server_args import (
     first_cache_config,
@@ -259,7 +258,10 @@ def test_face_match_live_receipt() -> None:
     """Judge the LFW slice once and write the key-free receipt."""
     path = _receipt_path()
     environ = _environ()
-    backend = load_backend(environ)
+    try:
+        backend = live_backend(environ)
+    except ValueError as exc:
+        pytest.fail(str(exc))
     secret = load_vllm_settings(environ).api_key if backend == "vllm" else None
     weights = served_weights_pins(backend, environ)
     per_class = int(environ.get(_PER_CLASS_ENV, str(DEFAULT_PER_CLASS)))

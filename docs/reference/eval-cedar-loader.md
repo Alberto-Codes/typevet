@@ -132,7 +132,7 @@ or a forensic score.
 |---|---|
 | `TYPEVET_SIGNATURE_MATCH_RECEIPT` | Receipt path. It must name a new file. The test skips when it is not set. |
 | `TYPEVET_CEDAR_CACHE` | Cache directory for the archive |
-| `TYPEVET_BACKEND` | `llama_cpp` (default) or `vllm`. The test opens the llama.cpp session for any other [accepted value](configuration.md#backend-selection) |
+| `TYPEVET_BACKEND` | `llama_cpp` (default) or `vllm`. Any other value, `fake` included, fails the test before any network call. See [backend selection](configuration.md#backend-selection). |
 | `TYPEVET_LLAMA__MULTIMODAL_MODEL` | llama.cpp model; the test default is `gemma-4-31b-kv9-q4km-mm` |
 | `TYPEVET_VLLM__BASE_URL`, `TYPEVET_VLLM__MODEL`, `TYPEVET_VLLM__API_KEY`, `TYPEVET_VLLM__USER_AGENT` | vLLM session |
 | `TYPEVET_VLLM_MODEL_REVISION` | Served weights revision. Required when `TYPEVET_BACKEND` is `vllm`. The test fails before any network call when it is not set. |

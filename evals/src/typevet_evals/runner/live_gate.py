@@ -1,5 +1,8 @@
 """Skip reasons for opt-in live eval when the router is unavailable (#98/#127).
 
+``live_backend`` reads ``TYPEVET_BACKEND`` for a live test and rejects ``fake``
+before any HTTP call (#407).
+
 Examples:
     ```python
     from typevet.adapters.inbound.settings import load_llama_settings
@@ -17,10 +20,15 @@ from __future__ import annotations
 
 import os
 from enum import Enum
+from typing import TYPE_CHECKING, Literal
 
 import httpx
 
+from typevet.adapters.inbound.backend_settings import load_backend
 from typevet.adapters.inbound.settings import LlamaSettings
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 TYPEVET_REQUIRE_LIVE_ENV = "TYPEVET_REQUIRE_LIVE"
 _TRUTHY = frozenset({"1", "true", "yes", "on"})
@@ -68,6 +76,36 @@ def live_gate_action(skip_reason: str | None) -> LiveGateAction:
     if require_live_enabled():
         return LiveGateAction.FAIL
     return LiveGateAction.SKIP
+
+
+def live_backend(environ: Mapping[str, str]) -> Literal["llama_cpp", "vllm"]:
+    """Read ``TYPEVET_BACKEND`` for a live test and reject ``fake`` (#407).
+
+    A live test needs a served model. The ``fake`` backend has none, so this
+    raises before the caller opens any session or makes any HTTP call.
+
+    Args:
+        environ: Mapping to read ``TYPEVET_BACKEND`` from.
+
+    Returns:
+        ``"llama_cpp"`` when unset or empty, else ``"llama_cpp"`` or ``"vllm"``.
+
+    Raises:
+        ValueError: When the value is ``fake``, or when ``load_backend``
+            rejects it.
+
+    Examples:
+        ```python
+        from typevet_evals.runner.live_gate import live_backend
+
+        assert live_backend({"TYPEVET_BACKEND": "vllm"}) == "vllm"
+        ```
+    """
+    backend = load_backend(environ)
+    if backend == "fake":
+        msg = "TYPEVET_BACKEND must be llama_cpp or vllm for a live test, not fake"
+        raise ValueError(msg)
+    return backend
 
 
 _CATALOG_INVALID = "llama.cpp router catalog invalid"

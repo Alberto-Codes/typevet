@@ -149,7 +149,7 @@ counterfeits.
 | `TYPEVET_CHECK_MATCH_SEED` | Generator seed, a non-negative integer. The default is 0, the #316 slice. The receipt records it as `generator_seed`. |
 | `TYPEVET_CHECK_MATCH_ROWS` | Register rows, 1 to 20, for a smoke run. Each row gives all 7 variants. |
 | `TYPEVET_REQUIRE_LIVE` | When true, a missing receipt path fails the test |
-| `TYPEVET_BACKEND` | `llama_cpp` (default) or `vllm`. The test opens the llama.cpp session for any other [accepted value](configuration.md#backend-selection) |
+| `TYPEVET_BACKEND` | `llama_cpp` (default) or `vllm`. Any other value, `fake` included, fails the test before any network call. See [backend selection](configuration.md#backend-selection). |
 | `TYPEVET_LLAMA__MULTIMODAL_MODEL` | llama.cpp model; the test default is `gemma-4-31b-kv9-q4km-mm` |
 | `TYPEVET_VLLM__BASE_URL`, `TYPEVET_VLLM__MODEL`, `TYPEVET_VLLM__API_KEY`, `TYPEVET_VLLM__USER_AGENT` | vLLM session |
 | `TYPEVET_VLLM_MODEL_REVISION` | Served weights revision. Required when `TYPEVET_BACKEND` is `vllm`. |
