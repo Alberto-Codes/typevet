@@ -216,6 +216,18 @@ def test_option_block_with_framing_still_requires_the_prefill() -> None:
         )
 
 
+def test_context_template_with_framing_still_requires_the_prefill() -> None:
+    fake = SequentialScoringFake(_logprobs())
+    with pytest.raises(GemmaTemplateError):
+        ScoringJudgmentAdapter(
+            fake,
+            tokenize_content=_tokenize,
+            framing=_Gemma4FramingWithoutPrefill(),
+            text_parts=TextParts(context_template=_CONTEXT_TEMPLATE),
+        ).judge(_STATE, _QUESTIONS, "fake-judgment")
+    assert fake.calls == []
+
+
 @pytest.mark.parametrize(
     ("framing", "start", "end"),
     [
