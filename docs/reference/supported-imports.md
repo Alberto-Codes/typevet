@@ -419,3 +419,15 @@ section on this page.
 Contract tests with `FakeGenerationAdapter` do not prove a live llama.cpp router
 behaves correctly. Live tests use the `live` pytest marker and opt-in runs.
 See [verification](../explanation/verification.md).
+
+## JevBench eval consumer
+
+The eval workspace directly depends on judgevet and the pinned JevBench source.
+These dependencies do not enter the library wheel.
+
+`typevet_evals.jevbench.SystemOneAdapter` borrows a judgevet `SystemOnePort`.
+`typevet_evals.jevbench_run` composes `open_judgment` and `TypevetSystemOnePort`.
+These exact consumer imports are exceptions in the import contracts.
+Other eval modules cannot import judgevet or the bridge through those exceptions.
+Bare library imports retain their optional judgevet boundary.
+See the [JevBench runner](eval-jevbench-runner.md) for commands and evidence fields.

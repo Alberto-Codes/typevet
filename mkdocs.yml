@@ -162,6 +162,7 @@ nav:
           - Partner data policy: reference/eval-partner-data-policy.md
           - Complementary manifest: reference/eval-complementary-manifest.md
           - Live runner: reference/eval-live-runner.md
+          - JevBench runner: reference/eval-jevbench-runner.md
           - TPJEP runner: reference/eval-tpjep-runner.md
           - TPJEP records: reference/eval-tpjep-records.md
           - Banking77 proxy and metrics: reference/banking77-proxy-and-metrics.md

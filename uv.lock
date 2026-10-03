@@ -1259,6 +1259,11 @@ wheels = [
 ]
 
 [[package]]
+name = "jevbench"
+version = "1.0.0"
+source = { git = "https://github.com/fstandhartinger/jevbench?rev=bb05a335bc809e61b20c0f745d25499a82b326fc#bb05a335bc809e61b20c0f745d25499a82b326fc" }
+
+[[package]]
 name = "jinja2"
 version = "3.1.6"
 source = { registry = "https://pypi.org/simple" }
@@ -3068,7 +3073,9 @@ source = { editable = "evals" }
 dependencies = [
     { name = "gepa-adk" },
     { name = "httpx" },
+    { name = "jevbench" },
     { name = "jsonschema" },
+    { name = "judgevet" },
     { name = "pillow" },
     { name = "typevet" },
 ]
@@ -3077,7 +3084,9 @@ dependencies = [
 requires-dist = [
     { name = "gepa-adk", specifier = ">=2.6,<3" },
     { name = "httpx", specifier = ">=0.28" },
+    { name = "jevbench", git = "https://github.com/fstandhartinger/jevbench?rev=bb05a335bc809e61b20c0f745d25499a82b326fc" },
     { name = "jsonschema", specifier = ">=4.26.0" },
+    { name = "judgevet", specifier = ">=0.17,<0.18" },
     { name = "pillow", specifier = ">=11.3" },
     { name = "typevet", editable = "." },
 ]

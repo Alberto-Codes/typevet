@@ -74,6 +74,26 @@ class _Edge:
 
 _EDGES = (
     _Edge(
+        "Only the judgevet bridge imports judgevet",
+        "typevet_evals/datasets/boolq.py",
+        "import judgevet",
+    ),
+    _Edge(
+        "No typevet module imports the judgevet bridge",
+        "typevet_evals/datasets/boolq.py",
+        "import typevet.adapters.inbound.judgevet",
+    ),
+    _Edge(
+        "No typevet module imports the judgevet bridge",
+        "typevet_evals/jevbench.py",
+        "import typevet.adapters.inbound.judgevet",
+    ),
+    _Edge(
+        "Only the judgevet bridge imports judgevet",
+        "typevet_evals/jevbench_run.py",
+        "import judgevet",
+    ),
+    _Edge(
         "Hexagonal layers",
         "typevet/domain/errors.py",
         "import typevet.adapters.outbound",

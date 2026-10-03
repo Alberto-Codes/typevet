@@ -124,6 +124,7 @@ answers a question, and a reference gives facts.
 - [Synthetic checks and the check-match run](reference/eval-synthetic-checks.md) (reference): seeded 20 × 7 generated checks, one-image judgment, metrics, key-free receipt, no renders stored.
 - [Receipt blocks shared by the image runs and the sweeps](reference/eval-receipt-blocks.md) (reference): serving-metrics `server` block and `server_args` block.
 - [Complementary eval manifest](reference/eval-complementary-manifest.md) (reference): JevBench-primary ranked open sets; see also `evals/`.
+- [JevBench runner](reference/eval-jevbench-runner.md) (reference): pinned tasks, provider mapping, commands and run evidence.
 - [TPJEP eight-task runner](reference/eval-tpjep-runner.md) (reference):
   eight vendored JevBench rows as native `Noul` / `Choice` / `Score` questions
   through `JudgmentPort`.
