@@ -56,7 +56,7 @@ The vLLM clients that typevet builds follow no redirect. A 3xx status raises
 [Use a vLLM server behind an API gateway](../how-to/use-a-vllm-server-behind-an-api-gateway.md)
 gives the gateway steps and the header rules.
 
-The llama.cpp adapters send no key.
+The llama.cpp clients send a key only when `TYPEVET_LLAMA__API_KEY` is set, and only sync errors mask it.
 
 typevet sets no TLS or proxy options on the clients that it builds. On those
 clients the httpx defaults apply. The client verifies certificates.

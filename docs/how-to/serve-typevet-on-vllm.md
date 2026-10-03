@@ -112,9 +112,9 @@ default and its validation rule. These rules apply most often:
 - `TYPEVET_VLLM__MAX_CONCURRENCY` sets the POST limit for one
   `AsyncVllmGenerationAdapter`. The default is 1.
 - `TYPEVET_VLLM__USER_AGENT` replaces the httpx default `User-Agent` header.
-- `TYPEVET_VLLM__API_KEY`, `AUTH_HEADER`, `AUTH_SCHEME`, `HEADERS`,
-  `USER_AGENT` and `REQUEST_ID_HEADER` exist for vLLM only. The llama.cpp
-  settings have none of them. See
+- `TYPEVET_VLLM__REQUEST_ID_HEADER` exists for vLLM only.
+  The llama.cpp settings take the other key and header fields as `TYPEVET_LLAMA__*`.
+  See
   [API gateway headers](../reference/configuration.md#api-gateway-headers).
 
 `generation_adapter` builds the sync adapter. That adapter does not read

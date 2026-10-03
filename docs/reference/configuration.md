@@ -31,17 +31,33 @@ the mapping below. [`llama_cpp_adapter`][typevet.adapters.inbound.llama_cpp_adap
 | `TYPEVET_LLAMA__TIMEOUT` | `timeout` | float, seconds | `300` | Must be positive |
 | `TYPEVET_LLAMA__DEFAULT_MODEL` | `default_model` | string or empty | none | Router model id for live pytest (any Gemma 4 GGUF alias); live skips when empty |
 | `TYPEVET_LLAMA__MULTIMODAL_MODEL` | `multimodal_model` | string | `gemma-3-4b-it-q4km-mm` | Router model id for the [image-conditioned live smoke](../how-to/run-a-multimodal-live-smoke.md); the id must declare `image` input |
+| `TYPEVET_LLAMA__API_KEY` | `api_key` | string or empty | none | Sent in `auth_header`; empty means no key; ASCII only; left out of `repr` |
+| `TYPEVET_LLAMA__AUTH_HEADER` | `auth_header` | header name | `Authorization` | Empty means `Authorization`; must be an HTTP token and not protected |
+| `TYPEVET_LLAMA__AUTH_SCHEME` | `auth_scheme` | token or empty | `Bearer` | Unset means `Bearer`; set but empty sends the key bare |
+| `TYPEVET_LLAMA__HEADERS` | `headers` | JSON object of strings | none | Literal extra headers on every request; read-only; left out of `repr` |
+| `TYPEVET_LLAMA__USER_AGENT` | `user_agent` | string or empty | httpx default | Empty means the httpx default |
 | `TYPEVET_LLAMA_URL` | `base_url` | URL string | (same) | Legacy alias when nested name unset |
 | `TYPEVET_GEMMA_MODEL` | `default_model` | string | (same) | Legacy alias when nested name unset |
 
 Nested names win when both nested and legacy names are set.
 
-The llama.cpp settings have no key or header fields. `LlamaSettings` holds
-`base_url`, `timeout`, `default_model` and `multimodal_model` only. The
-`API_KEY`, `AUTH_HEADER`, `AUTH_SCHEME`, `HEADERS`, `USER_AGENT` and
-`REQUEST_ID_HEADER` settings exist for [vLLM](#vllm-server) only.
-[#406](https://github.com/Alberto-Codes/typevet/issues/406) tracks the open
-decision about llama.cpp header parity.
+The key and header variables follow the [vLLM](#vllm-server) rules
+([#410](https://github.com/Alberto-Codes/typevet/issues/410)). The same header
+checks run when `LlamaSettings` is built. Error messages name the variable,
+never a value. These clients send the key and headers:
+
+- [`llama_cpp_adapter`][typevet.adapters.inbound.llama_cpp_adapter], which owns
+  its client and closes it.
+- The `llama_cpp` branches of `generation_adapter` and `open_judgment`.
+- `async_llama_http_client`, which the caller closes.
+
+With a key or extra headers, typevet masks each error from that adapter. It
+also masks each error from the `open_judgment` session open and its port. The
+masked error is a copy with each key and header value replaced by `***`. The
+copy has no cause or context. An adapter that a caller builds on
+`async_llama_http_client` does not mask its errors.
+`TYPEVET_LLAMA__REQUEST_ID_HEADER` does not exist: the request-id header is
+for vLLM only.
 
 ### Future CLI hookup
 

@@ -15,7 +15,7 @@ import json
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import httpx
 import pytest
@@ -23,7 +23,11 @@ import pytest
 import typevet.runtime
 from tests.fixtures.synthetic_images import solid_image
 from typevet.adapters.inbound import backend_settings
+from typevet.adapters.inbound.error_masking import KeyMaskingJudgmentPort
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
+from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
+    GemmaNativeVisionSession,
+)
 from typevet.adapters.outbound.vllm.scoring import ChatContentFraming
 from typevet.domain.candidate_scoring_request import CandidateScoringRequest
 from typevet.domain.candidate_scoring_response import CandidateScoringResult
@@ -312,21 +316,34 @@ def test_open_judgment_passes_keyless_errors_unchanged() -> None:
 def test_open_judgment_defaults_to_gemma_native_vision(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    seen: list[Any] = []
+    seen: list[tuple[Any, httpx.Client]] = []
+    inner_port: Any = object()
 
     @contextmanager
-    def fake_open(*, settings: Any) -> Iterator[str]:
-        seen.append(settings)
-        yield "llama-session"
+    def fake_open(
+        *, settings: Any, http_client: httpx.Client
+    ) -> Iterator[GemmaNativeVisionSession]:
+        seen.append((settings, http_client))
+        yield GemmaNativeVisionSession(
+            port=inner_port,
+            client=http_client,
+            model=settings.multimodal_model,
+            served=cast(Any, "served"),
+            capability=cast(Any, "capability"),
+        )
 
     monkeypatch.setattr(
         backend_settings, "open_gemma_native_vision_judgment", fake_open
     )
     env = {"TYPEVET_LLAMA__MULTIMODAL_MODEL": "mm-model"}
     with backend_settings.open_judgment(env) as session:
-        assert session == "llama-session"
-    [settings] = seen
+        assert isinstance(session, GemmaNativeVisionSession)
+        assert session.model == "mm-model"
+        assert isinstance(session.port, KeyMaskingJudgmentPort)
+        assert session.port._port is inner_port
+    [(settings, client)] = seen
     assert settings.multimodal_model == "mm-model"
+    assert client.is_closed
 
 
 def test_runtime_package_re_exports_vllm_judgment() -> None:

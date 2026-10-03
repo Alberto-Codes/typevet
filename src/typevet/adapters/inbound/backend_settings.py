@@ -18,8 +18,9 @@ A server behind an API gateway (#331) needs more. ``TYPEVET_VLLM__AUTH_HEADER``
 and ``TYPEVET_VLLM__AUTH_SCHEME`` set the header and scheme for the key,
 ``TYPEVET_VLLM__HEADERS`` adds literal headers from a JSON object, and
 ``TYPEVET_VLLM__REQUEST_ID_HEADER`` sends a fresh UUID4 hex value on each
-request. ``typevet.adapters.inbound.gateway_headers`` checks each rule when
-``VllmSettings`` is built. The clients follow no redirect: a redirect raises
+request. ``typevet.adapters.inbound.http_headers`` checks each rule when
+``VllmSettings`` is built, and ``typevet.adapters.inbound.gateway_headers``
+gives the event hooks. The clients follow no redirect: a redirect raises
 ``BackendHttpError`` without the ``Location`` header, and an HTML error body
 is withheld from the error.
 
@@ -75,34 +76,42 @@ See Also:
 
 from __future__ import annotations
 
-import json
 import math
 import os
-import re
 from collections.abc import Iterator, Mapping
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass, field, replace
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Literal
 
 import httpx
 
 from typevet.adapters.diagnostics.redaction import REDACTED
-from typevet.adapters.inbound.error_masking import Needles as _Needles
-from typevet.adapters.inbound.error_masking import masked_error as _masked_error
+from typevet.adapters.inbound.error_masking import (
+    KeyMaskingJudgmentPort as _KeyMaskingJudgmentPort,
+)
+from typevet.adapters.inbound.error_masking import enter_masked, key_needles
+from typevet.adapters.inbound.error_masking import masked_if_keyed as _masked_if_keyed
 from typevet.adapters.inbound.fake_backend import (
     FakeJudgmentSession,
     open_fake_judgment,
 )
 from typevet.adapters.inbound.gateway_headers import (
     async_event_hooks,
+    sync_event_hooks,
+)
+from typevet.adapters.inbound.http_headers import (
     check_auth_scheme,
     check_gateway_headers,
     check_header_name,
+    client_headers,
     parse_headers_json,
-    sync_event_hooks,
 )
-from typevet.adapters.inbound.settings import llama_cpp_adapter, load_llama_settings
+from typevet.adapters.inbound.settings import (
+    llama_cpp_adapter,
+    llama_http_client,
+    load_llama_settings,
+)
 from typevet.adapters.outbound.llama_cpp.gemma_native_vision_factory import (
     GemmaNativeVisionSession,
     open_gemma_native_vision_judgment,
@@ -116,12 +125,6 @@ from typevet.adapters.outbound.vllm.judgment_factory import (
 )
 from typevet.domain.errors import GenerationError
 from typevet.domain.models import GenerationRequest, GenerationResult
-
-if TYPE_CHECKING:
-    from typevet.domain.judgment_questions import Question
-    from typevet.domain.judgment_response import JudgmentResponse
-    from typevet.domain.media import ImageInput
-    from typevet.ports.judgment import JudgmentPort
 
 Backend = Literal["llama_cpp", "vllm", "fake"]
 
@@ -198,115 +201,12 @@ class VllmSettings:
                 raise ValueError(msg)
 
 
-_BOUND = "(?<![A-Za-z0-9]){}(?![A-Za-z0-9])"
-
-
-def _key_needles(settings: VllmSettings) -> _Needles:
-    """Return the masking patterns for the key and each extra header value.
-
-    The raw and JSON-escaped key match anywhere. A raw or JSON-escaped header
-    value matches only as a whole token, between characters that are not
-    ASCII letters or digits, so a value such as ``1`` leaves ``HTTP 401``
-    readable (#348). Longer forms come first.
-
-    Args:
-        settings: vLLM settings that hold the key and the extra headers.
-
-    Returns:
-        Compiled patterns, or an empty tuple without a key or header value.
-    """
-    key = settings.api_key
-    forms = {(k, False) for k in (key, json.dumps(key)[1:-1])} if key else set()
-    for value in filter(None, settings.headers.values()):
-        forms |= {(value, True), (json.dumps(value)[1:-1], True)}
-    ordered = sorted(forms, key=lambda form: len(form[0]), reverse=True)
-    return tuple(
-        re.compile(_BOUND.format(re.escape(text)) if whole else re.escape(text))
-        for text, whole in ordered
-    )
-
-
-def _masked_if_keyed(exc: GenerationError, needles: _Needles) -> GenerationError | None:
-    """Return a masked copy of ``exc`` when a key is configured.
-
-    The copy is made whether or not the key text appears in ``exc``. The
-    cause chain can hold the key where no text check sees it, for example in
-    the headers of an httpx request, so the copy drops the chain in all cases.
-
-    Args:
-        exc: Error raised by a vLLM adapter.
-        needles: Patterns from ``_key_needles``, or empty without a key.
-
-    Returns:
-        The masked copy, or ``None`` when no key is configured.
-    """
-    if not needles:
-        return None
-    return _masked_error(exc, needles)
-
-
-class _KeyMaskingJudgmentPort:
-    """``JudgmentPort`` wrapper that masks the configured key in errors.
-
-    Attributes:
-        _port (JudgmentPort): Wrapped vLLM judgment port.
-        _needles (_Needles): Patterns for the key and header values, or empty.
-
-    Examples:
-        ```python
-        _KeyMaskingJudgmentPort(session.port, _key_needles(settings))
-        ```
-    """
-
-    def __init__(self, port: JudgmentPort, needles: _Needles) -> None:
-        self._port = port
-        self._needles = needles
-
-    def judge(
-        self,
-        state: str | dict[str, Any] | list[Any],
-        questions: Mapping[str, Question | Mapping[str, Any]],
-        model: str,
-        *,
-        media: tuple[ImageInput, ...] | None = None,
-        off_option_threshold: float | None = None,
-    ) -> JudgmentResponse:
-        """Judge, and mask the configured key in any raised error.
-
-        Args:
-            state: Content under evaluation.
-            questions: Question names to typed or raw questions.
-            model: Served model name.
-            media: Images to condition every scored field on.
-            off_option_threshold: Forwarded to the wrapped port.
-
-        Returns:
-            The response from the wrapped port, unchanged.
-
-        Raises:
-            GenerationError: The port error, as a masked copy when a key is set.
-        """
-        try:
-            return self._port.judge(
-                state,
-                questions,
-                model,
-                media=media,
-                off_option_threshold=off_option_threshold,
-            )
-        except GenerationError as exc:
-            masked = _masked_if_keyed(exc, self._needles)
-            if masked is None:
-                raise
-        raise masked
-
-
 class _ClientOwningVllmAdapter(VllmGenerationAdapter):
     """vLLM adapter that owns its client and masks the key in errors.
 
     Attributes:
         _settings_client (httpx.Client): Client from ``vllm_http_client``.
-        _needles (_Needles): Patterns for the key and header values, or empty.
+        _needles (Needles): Patterns for the key and header values, or empty.
 
     Examples:
         ```python
@@ -318,7 +218,7 @@ class _ClientOwningVllmAdapter(VllmGenerationAdapter):
     def __init__(self, settings: VllmSettings, client: httpx.Client) -> None:
         super().__init__(settings.base_url, timeout=settings.timeout, client=client)
         self._settings_client = client
-        self._needles = _key_needles(settings)
+        self._needles = key_needles(settings.api_key, settings.headers)
 
     def generate(self, request: GenerationRequest) -> GenerationResult:
         """Generate, and mask the configured key in any raised error.
@@ -358,7 +258,7 @@ class _ClientOwningAsyncVllmAdapter(AsyncVllmGenerationAdapter):
     Attributes:
         _settings_client (httpx.AsyncClient): Client with the same base URL,
             timeout and headers as ``vllm_http_client``.
-        _needles (_Needles): Patterns for the key and header values, or empty.
+        _needles (Needles): Patterns for the key and header values, or empty.
 
     Examples:
         ```python
@@ -375,7 +275,7 @@ class _ClientOwningAsyncVllmAdapter(AsyncVllmGenerationAdapter):
             max_concurrency=settings.max_concurrency,
         )
         self._settings_client = client
-        self._needles = _key_needles(settings)
+        self._needles = key_needles(settings.api_key, settings.headers)
         self._binds_loop = True
 
     async def generate(self, request: GenerationRequest) -> GenerationResult:
@@ -524,11 +424,11 @@ def vllm_http_client(
         transport: Optional transport, for example ``httpx.MockTransport``.
 
     Returns:
-        A client with ``base_url`` and ``timeout`` set. It sends the extra
-        ``settings.headers``. When a key is set, the client also sends it in
-        ``settings.auth_header`` after ``settings.auth_scheme``, which by
-        default gives ``Authorization: Bearer <key>``. When a user agent is
-        set, the client sends it as ``User-Agent``. The event hooks from
+        A client with ``base_url`` and ``timeout`` set. ``client_headers``
+        gives its headers: the extra ``settings.headers``, the key in
+        ``settings.auth_header`` after ``settings.auth_scheme`` when a key is
+        set, which by default gives ``Authorization: Bearer <key>``, and the
+        ``User-Agent`` when a user agent is set. The event hooks from
         ``sync_event_hooks`` add the request id and refuse redirects. Nothing
         else changes, so environment proxy settings apply with or without a
         key. The async client from ``async_vllm_generation_adapter`` gets the
@@ -537,21 +437,10 @@ def vllm_http_client(
     return httpx.Client(
         base_url=settings.base_url,
         timeout=settings.timeout,
-        headers=_vllm_headers(settings),
+        headers=client_headers(settings),
         transport=transport,
         event_hooks=sync_event_hooks(settings.request_id_header),
     )
-
-
-def _vllm_headers(settings: VllmSettings) -> dict[str, str]:
-    headers = dict(settings.headers)
-    if settings.api_key is not None:
-        scheme = settings.auth_scheme
-        key = settings.api_key
-        headers[settings.auth_header] = f"{scheme} {key}" if scheme else key
-    if settings.user_agent is not None:
-        headers["User-Agent"] = settings.user_agent
-    return headers
 
 
 def generation_adapter(
@@ -563,13 +452,13 @@ def generation_adapter(
 
     Args:
         environ: Mapping to read. Defaults to ``os.environ``.
-        transport: Optional transport for the vLLM client. The llama.cpp
-            branch ignores it.
+        transport: Optional transport for the vLLM or llama.cpp client.
 
     Returns:
-        A llama.cpp adapter from ``load_llama_settings``, or a vLLM adapter on
-        the ``vllm_http_client``. Closing the vLLM adapter closes its client,
-        and its errors never show the configured key.
+        A llama.cpp adapter on the ``llama_http_client`` from
+        ``load_llama_settings``, or a vLLM adapter on the
+        ``vllm_http_client``. Closing either adapter closes its client, and
+        its errors never show the configured key.
 
     Raises:
         ValueError: When a backend or vLLM variable is invalid, or when
@@ -581,7 +470,7 @@ def generation_adapter(
         msg = "TYPEVET_BACKEND=fake: the fake backend has no generation adapter"
         raise ValueError(msg)
     if backend == "llama_cpp":
-        return llama_cpp_adapter(load_llama_settings(source))
+        return llama_cpp_adapter(load_llama_settings(source), transport=transport)
     settings = load_vllm_settings(source)
     client = vllm_http_client(settings, transport=transport)
     return _ClientOwningVllmAdapter(settings, client)
@@ -595,8 +484,8 @@ def async_vllm_generation_adapter(
     """Build the async vLLM generation adapter from ``TYPEVET_VLLM__*``.
 
     The adapter reads the vLLM settings whatever ``TYPEVET_BACKEND`` says. Its
-    ``httpx.AsyncClient`` has the same base URL, timeout, headers, event hooks
-    and proxy handling as ``vllm_http_client``, and ``TYPEVET_VLLM__MAX_CONCURRENCY``
+    ``httpx.AsyncClient`` has the same base URL, timeout, ``client_headers``,
+    event hooks and proxy handling as ``vllm_http_client``, and ``TYPEVET_VLLM__MAX_CONCURRENCY``
     sets its POST limit. That client binds to the first event loop that uses
     it, so build one adapter per event loop, for example per ``asyncio.run``.
     The adapter records the first running loop that calls ``generate``, and a
@@ -618,7 +507,7 @@ def async_vllm_generation_adapter(
     client = httpx.AsyncClient(
         base_url=settings.base_url,
         timeout=settings.timeout,
-        headers=_vllm_headers(settings),
+        headers=client_headers(settings),
         transport=transport,
         event_hooks=async_event_hooks(settings.request_id_header),
     )
@@ -635,12 +524,14 @@ def open_judgment(
 
     Args:
         environ: Mapping to read. Defaults to ``os.environ``.
-        transport: Optional transport for the vLLM client. The llama.cpp
-            and fake branches ignore it.
+        transport: Optional transport for the vLLM or llama.cpp client. The
+            fake branch ignores it.
 
     Yields:
         A llama.cpp session from ``open_gemma_native_vision_judgment`` with
-        ``load_llama_settings``, or a vLLM session from ``open_vllm_judgment``
+        ``load_llama_settings`` on the ``llama_http_client``, which closes on
+        exit; the session-open and judgment errors never show the configured
+        key or a header value. Or a vLLM session from ``open_vllm_judgment``
         on the ``vllm_http_client``, so ``/tokenize`` and scoring carry the
         gateway headers. The vLLM client closes on exit, and judgment errors
         never show the configured key or a header value. For ``fake``, an
@@ -657,10 +548,16 @@ def open_judgment(
         yield open_fake_judgment(source)
         return
     if backend == "llama_cpp":
-        with open_gemma_native_vision_judgment(
-            settings=load_llama_settings(source)
-        ) as llama_session:
-            yield llama_session
+        llama = load_llama_settings(source)
+        needles = key_needles(llama.api_key, llama.headers)
+        with (
+            llama_http_client(llama, transport=transport) as http,
+            ExitStack() as stack,
+        ):
+            opened = open_gemma_native_vision_judgment(settings=llama, http_client=http)
+            llama_session = enter_masked(stack, opened, needles)
+            port = _KeyMaskingJudgmentPort(llama_session.port, needles)
+            yield replace(llama_session, port=port)
         return
     settings = load_vllm_settings(source)
     with (
@@ -669,5 +566,6 @@ def open_judgment(
             client=client, model=settings.model, base_url=settings.base_url
         ) as session,
     ):
-        masked = _KeyMaskingJudgmentPort(session.port, _key_needles(settings))
+        needles = key_needles(settings.api_key, settings.headers)
+        masked = _KeyMaskingJudgmentPort(session.port, needles)
         yield replace(session, port=masked)

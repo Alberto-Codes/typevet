@@ -27,8 +27,8 @@ This page does not replace the design contract on #191 or add new live measureme
 | Offline proof | `typevet.testing` fakes (`ScriptedScoringFake`, …) | Default CI pyramid |
 | Wheel consumer | Public imports only; no `tests.*` on install path | [#190](https://github.com/Alberto-Codes/typevet/issues/190) |
 | Backend selection | `TYPEVET_BACKEND` selects the backend | [Backend selection](configuration.md#backend-selection) lists the accepted values and the default |
-| llama.cpp settings | `TYPEVET_LLAMA__*` via [`load_llama_settings`][typevet.adapters.inbound.load_llama_settings] | No key or header settings. See [Configuration](configuration.md#llamacpp-router) |
-| vLLM settings | `TYPEVET_VLLM__*` via [`load_vllm_settings`][typevet.adapters.inbound.load_vllm_settings] | `BASE_URL` and `MODEL` are required. Key and header settings exist for vLLM only. See [Serve typevet on vLLM](../how-to/serve-typevet-on-vllm.md) |
+| llama.cpp settings | `TYPEVET_LLAMA__*` via [`load_llama_settings`][typevet.adapters.inbound.load_llama_settings] | Key and header settings follow the vLLM rules; no request-id header. See [Configuration](configuration.md#llamacpp-router) |
+| vLLM settings | `TYPEVET_VLLM__*` via [`load_vllm_settings`][typevet.adapters.inbound.load_vllm_settings] | `BASE_URL` and `MODEL` are required. The request-id header exists for vLLM only. See [Serve typevet on vLLM](../how-to/serve-typevet-on-vllm.md) |
 
 Library callers pass explicit adapter arguments. Importing `typevet` does not
 read the environment.

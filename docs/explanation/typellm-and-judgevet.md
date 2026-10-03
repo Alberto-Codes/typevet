@@ -107,8 +107,8 @@ How typevet’s native questions map to decisions today:
   `VllmCandidateScoringAdapter`: pre-sampling candidate logprobs from
   llama.cpp `/completion` or vLLM `/v1/chat/completions`.
 - Backend choice: [Backend selection](../reference/configuration.md#backend-selection)
-  lists the `TYPEVET_BACKEND` values. Key and gateway header settings exist
-  for vLLM only.
+  lists the `TYPEVET_BACKEND` values.
+  Both backends take a key and extra headers; the request-id header is vLLM only.
 - `JudgmentPort` with `Noul`, `Choice`, and `Score` questions, and
   `ScoringJudgmentAdapter`, which answers them from candidate scoring
   (judgevet-aligned vocabulary; the core library has no judgevet dependency).
