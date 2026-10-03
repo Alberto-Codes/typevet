@@ -7,8 +7,10 @@ schema with ``ValueError`` before any POST), PSAI (#180 rev2 visual Choice matri
 four text regressions), CORD (text, image-only and combined arms), order (the
 CORD combined arm with the label order reversed) and concurrency (8 generation
 calls, 4 in parallel, with a KV-cache read while calls are in flight).
-Each CORD arm sends ``CORD_OFF_OPTION_THRESHOLD`` and its row records
-``off_option_mass`` and ``off_option_flag`` ([#384][i384]).
+Each CORD arm and the order set's CORD rerun send
+``CORD_OFF_OPTION_THRESHOLD``. Every scored row in the PSAI, CORD and order
+sets records ``off_option_mass`` and ``off_option_flag`` ([#384][i384],
+[#409][i409]).
 ``DEVIATIONS`` records how this wiring differs from the
 pre-registered protocol; the receipt keeps it.
 
@@ -28,6 +30,7 @@ See Also:
 
 [i170]: https://github.com/Alberto-Codes/typevet/issues/170
 [i384]: https://github.com/Alberto-Codes/typevet/issues/384
+[i409]: https://github.com/Alberto-Codes/typevet/issues/409
 """
 
 from __future__ import annotations
@@ -42,6 +45,7 @@ from typing import Any, Final
 from typevet.domain.errors import GenerationError
 from typevet.domain.judgment_answers import NoulAnswer
 from typevet.domain.judgment_questions import Choice, Question
+from typevet.domain.judgment_response import OffOptionReceipt
 from typevet.domain.media import MEDIA_MARKER, ImageInput
 from typevet.domain.models import GenerationRequest
 from typevet_evals.cord.expense_receipt_requirement import judge_cord_expense_arm
@@ -129,18 +133,23 @@ def failed_row(started: float, exc: Exception) -> dict[str, Any]:
         exc: The raised error; its text is already key-masked.
 
     Returns:
-        Row with no label, empty probabilities, no off-option mass, a
-        ``False`` off-option flag and the error text.
+        Row with the keys of a scored row: no label, empty probabilities,
+        no off-option mass, a ``False`` off-option flag and the error text.
     """
+    return _row(started, None, error=f"{type(exc).__name__}: {exc}")
+
+
+def _row(started: float, receipt: OffOptionReceipt | None, **fields: Any) -> dict:
+    receipt = receipt or OffOptionReceipt()
     return {
         "label": None,
         "probabilities": {},
         "tokens_evaluated": None,
         "seconds": round(perf_counter() - started, 3),
-        "error": f"{type(exc).__name__}: {exc}",
-        "off_option_mass": None,
-        "off_option_flag": False,
-    }
+        "error": None,
+        "off_option_mass": receipt.off_option_mass,
+        "off_option_flag": receipt.off_option_flag,
+    } | fields
 
 
 TEXT_PROMPT: Final[str] = (
@@ -173,11 +182,11 @@ _CORD: Final[str] = "cord/expense_smoke"
 
 
 def _score(
-    run: RunState, out: dict, state: Any, name: str, question: Question, media: tuple
+    run: RunState, out: dict, state: Any, name: str, question: Question, **judge: Any
 ) -> dict[str, Any]:
     started = perf_counter()
     try:
-        response = run.port.judge(state, {name: question}, run.model, media=media)
+        response = run.port.judge(state, {name: question}, run.model, **judge)
     except GenerationError as exc:
         return record_call(out, failed_row(started, exc))
     answer = response.answers[name]
@@ -186,14 +195,9 @@ def _score(
         probs = {"true": answer.noul, "false": 1.0 - answer.noul}
     else:
         label, probs = answer.choice, dict(answer.probabilities)
-    row = {
-        "label": label,
-        "probabilities": probs,
-        "tokens_evaluated": response.usage.input_tokens,
-        "seconds": round(perf_counter() - started, 3),
-        "error": None,
-    }
-    return record_call(out, row)
+    tokens, receipt = response.usage.input_tokens, response.off_option.get(name)
+    fields = {"label": label, "probabilities": probs, "tokens_evaluated": tokens}
+    return record_call(out, _row(started, receipt, **fields))
 
 
 def _generate(run: RunState, out: dict, request: GenerationRequest) -> dict[str, Any]:
@@ -270,7 +274,7 @@ def _psai_set(run: RunState, out: dict[str, Any]) -> None:
         if image_uid is not None:
             example = examples[image_uid]
             media = (example_image_input(example, lambda f: (folder / f).read_bytes()),)
-        row = _score(run, out, state, name, question, media)
+        row = _score(run, out, state, name, question, media=media)
         rows.append(
             {
                 "call_id": o["call_id"],
@@ -345,11 +349,12 @@ def _order_set(run: RunState, out: dict[str, Any]) -> None:
     cord = run.sets["cord"]
     out.update(label_order=list(reversed_order), record_only=True)
     combined = out.setdefault("combined", {})
+    guard = {"off_option_threshold": CORD_OFF_OPTION_THRESHOLD}
     for case in _cord_cases(run):
         statement = case.model_inputs()["statement"]
         media = _cord_image(run, case)
         combined[case.claim_id] = _score(
-            run, out, statement, "expense", question, media
+            run, out, statement, "expense", question, media=media, **guard
         )
     out.update(cord_acceptance(cord["cases"], combined))
     out["flips"] = sum(

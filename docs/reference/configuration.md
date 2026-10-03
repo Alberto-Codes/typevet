@@ -181,10 +181,13 @@ network call.
 | `TYPEVET_VLLM_POD_NOTES` | `unknown` | Free text for the receipt, such as GPU, flags and Hugging Face revision; never put the key here |
 
 The CORD set sends an off-option threshold of `0.25` with each scored call.
+The order set uses the same value when it runs the CORD combined arm again.
 This value is the constant `CORD_OFF_OPTION_THRESHOLD` in
-`typevet_evals.vllm_acceptance.sets`. No variable changes it. Each CORD row in
-the receipt records `off_option_mass` and `off_option_flag`. A row with no
-model call, or a call that failed, records `null` and `false`. The vLLM
+`typevet_evals.vllm_acceptance.sets`. No variable changes it. Each scored row
+in the PSAI, CORD and order sets records `off_option_mass` and
+`off_option_flag`. The PSAI set sends no threshold, so its flag stays `false`.
+A row with no off-option receipt, no model call, or a call that failed,
+records `null` and `false`. The vLLM
 scorer always reports the mass as `null`, so the flag stays `false` on vLLM.
 
 ## Diagnostic logging
