@@ -226,3 +226,50 @@ def test_llama_settings_repr_omits_key_and_header_values() -> None:
 def test_llama_settings_rejects_non_mapping_headers_by_name() -> None:
     with pytest.raises(TypeError, match="TYPEVET_LLAMA__HEADERS"):
         LlamaSettings(headers=cast(Any, [("X-Tenant", _TENANT)]))
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [(None, None), ("", None), ("   ", None), ("  X-Request-Id ", "X-Request-Id")],
+    ids=["unset", "empty", "blank", "padded"],
+)
+def test_load_llama_settings_reads_request_id_header(
+    raw: str | None, expected: str | None
+) -> None:
+    env = {} if raw is None else {"TYPEVET_LLAMA__REQUEST_ID_HEADER": raw}
+    assert load_llama_settings(env).request_id_header == expected
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "env",
+    [
+        {"TYPEVET_LLAMA__REQUEST_ID_HEADER": "Connection"},
+        {"TYPEVET_LLAMA__REQUEST_ID_HEADER": "Bad Name"},
+        {"TYPEVET_LLAMA__REQUEST_ID_HEADER": "Content-Type"},
+        {"TYPEVET_LLAMA__REQUEST_ID_HEADER": "authorization"},
+        {
+            "TYPEVET_LLAMA__REQUEST_ID_HEADER": "X-Api-Key",
+            "TYPEVET_LLAMA__AUTH_HEADER": "x-api-key",
+        },
+        {
+            "TYPEVET_LLAMA__REQUEST_ID_HEADER": "X-Request-Id",
+            "TYPEVET_LLAMA__HEADERS": json.dumps({"x-request-id": _TENANT}),
+        },
+    ],
+    ids=["hop-by-hop", "not-token", "client-owned", "auth", "custom-auth", "extra"],
+)
+def test_load_llama_settings_rejects_bad_request_id_header_by_name(
+    env: dict[str, str],
+) -> None:
+    with pytest.raises(ValueError, match="TYPEVET_LLAMA__REQUEST_ID_HEADER") as info:
+        load_llama_settings(env)
+    assert _TENANT not in str(info.value)
+
+
+@pytest.mark.unit
+def test_llama_settings_checks_request_id_header_by_field() -> None:
+    with pytest.raises(ValueError, match="request_id_header"):
+        LlamaSettings(request_id_header="Host")
+    assert LlamaSettings().request_id_header is None

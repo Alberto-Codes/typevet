@@ -36,6 +36,7 @@ the mapping below. [`llama_cpp_adapter`][typevet.adapters.inbound.llama_cpp_adap
 | `TYPEVET_LLAMA__AUTH_SCHEME` | `auth_scheme` | token or empty | `Bearer` | Unset means `Bearer`; set but empty sends the key bare |
 | `TYPEVET_LLAMA__HEADERS` | `headers` | JSON object of strings | none | Literal extra headers on every request; read-only; left out of `repr` |
 | `TYPEVET_LLAMA__USER_AGENT` | `user_agent` | string or empty | httpx default | Empty means the httpx default |
+| `TYPEVET_LLAMA__REQUEST_ID_HEADER` | `request_id_header` | header name or empty | none | When set, each request gets a new UUID4 hex value in this header; empty means none |
 | `TYPEVET_LLAMA_URL` | `base_url` | URL string | (same) | Legacy alias when nested name unset |
 | `TYPEVET_GEMMA_MODEL` | `default_model` | string | (same) | Legacy alias when nested name unset |
 
@@ -56,8 +57,16 @@ also masks each error from the `open_judgment` session open and its port. The
 masked error is a copy with each key and header value replaced by `***`. The
 copy has no cause or context. An adapter that a caller builds on
 `async_llama_http_client` does not mask its errors.
-`TYPEVET_LLAMA__REQUEST_ID_HEADER` does not exist: the request-id header is
-for vLLM only.
+
+`TYPEVET_LLAMA__REQUEST_ID_HEADER` follows the vLLM `request_id_header` rules
+([#411](https://github.com/Alberto-Codes/typevet/issues/411)). The same
+clients set a new UUID4 hex value in that header on each request that does
+not have one. A value that the caller sets is kept. The clients get no
+response hook: the vLLM redirect and HTML-body rules do not apply. A
+judgment response from `open_judgment` maps each question name to the id of
+its `/completion` request in `request_ids`. Without the header, no request
+carries it and `request_ids` is empty. A llama.cpp error keeps
+`request_id` as `None`. typevet never logs the id.
 
 ### Future CLI hookup
 

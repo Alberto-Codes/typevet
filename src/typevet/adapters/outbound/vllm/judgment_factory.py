@@ -35,7 +35,7 @@ See Also:
     - [typevet.adapters.outbound.vllm.scoring][]: Scoring adapter and framing
     - [typevet.adapters.outbound.judgment_scoring][]: ``ScoringJudgmentAdapter``
     - [typevet.adapters.outbound.vllm.http_mapping][]: Error mapping
-    - [typevet.adapters.outbound.vllm.request_ids][]: Request id per question
+    - [typevet.adapters.outbound.request_ids][]: Request id per question
     - [typevet.runtime][]: Public re-exports for library callers
 
 [i169]: https://github.com/Alberto-Codes/typevet/issues/169
@@ -50,11 +50,11 @@ from dataclasses import dataclass
 import httpx
 
 from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
-from typevet.adapters.outbound.vllm.http_mapping import post_json
-from typevet.adapters.outbound.vllm.request_ids import (
+from typevet.adapters.outbound.request_ids import (
     RequestIdJudgmentPort,
     RequestIdScoringPort,
 )
+from typevet.adapters.outbound.vllm.http_mapping import post_json
 from typevet.adapters.outbound.vllm.scoring import (
     ChatContentFraming,
     VllmCandidateScoringAdapter,

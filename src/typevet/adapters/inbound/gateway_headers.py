@@ -5,10 +5,10 @@ both backends share (#410). This module re-exports them, so callers that
 import ``check_gateway_headers`` or a ``MAX_*`` limit from here still work.
 
 The hooks go on each client that the composition root builds. The request
-hook sets a fresh UUID4 hex value in the request-id header when the request
-does not have one. It records the sent value in ``request.extensions``, so
-results and errors can carry it (#356); typevet never logs it. The response
-hook refuses each redirect, because the
+hook calls ``stamp_request_id``, which sets a fresh UUID4 hex value in the
+request-id header when the request does not have one. It records the sent
+value in ``request.extensions``, so results and errors can carry it (#356);
+typevet never logs it. The response hook refuses each redirect, because the
 clients do not follow redirects, and withholds an HTML error body. Neither
 error holds the ``Location`` header or the body. Both errors keep the
 ``Retry-After`` wait and the rate-limit headers (#355).
@@ -34,11 +34,11 @@ See Also:
     - [typevet.adapters.inbound.backend_settings][]: ``VllmSettings`` and clients
     - [typevet.domain.errors][]: ``BackendHttpError``
     - [typevet.adapters.outbound.vllm.http_mapping][]: ``backend_http_error``
+    - [typevet.adapters.outbound.request_ids][]: ``stamp_request_id``
 """
 
 from __future__ import annotations
 
-import uuid
 from collections.abc import Awaitable, Callable
 from typing import Any, Final
 
@@ -55,10 +55,8 @@ from typevet.adapters.inbound.http_headers import (
     check_header_name,
     parse_headers_json,
 )
-from typevet.adapters.outbound.vllm.http_mapping import (
-    REQUEST_ID_EXTENSION,
-    backend_http_error,
-)
+from typevet.adapters.outbound.request_ids import stamp_request_id
+from typevet.adapters.outbound.vllm.http_mapping import backend_http_error
 
 __all__ = [
     "MAX_HEADER_FIELDS",
@@ -76,14 +74,6 @@ __all__ = [
 
 _REDIRECT: Final = range(300, 400)
 _ERROR_STATUS: Final[int] = 400
-
-
-def _stamp(request: httpx.Request, name: str | None) -> None:
-    if name is None:
-        return
-    if name not in request.headers:
-        request.headers[name] = uuid.uuid4().hex
-    request.extensions[REQUEST_ID_EXTENSION] = request.headers[name]
 
 
 def _guard(response: httpx.Response) -> None:
@@ -114,12 +104,13 @@ def sync_event_hooks(
     def stamp(request: httpx.Request) -> None:
         """Set the request-id header when it is configured and absent.
 
-        The sent value is recorded in ``request.extensions``.
+        ``stamp_request_id`` records the sent value in
+        ``request.extensions``.
 
         Args:
             request: Outgoing request.
         """
-        _stamp(request, request_id_header)
+        stamp_request_id(request, request_id_header)
 
     def guard(response: httpx.Response) -> None:
         """Read a redirect or error body, then apply the response rules.
@@ -152,12 +143,13 @@ def async_event_hooks(
     async def stamp(request: httpx.Request) -> None:
         """Set the request-id header when it is configured and absent.
 
-        The sent value is recorded in ``request.extensions``.
+        ``stamp_request_id`` records the sent value in
+        ``request.extensions``.
 
         Args:
             request: Outgoing request.
         """
-        _stamp(request, request_id_header)
+        stamp_request_id(request, request_id_header)
 
     async def guard(response: httpx.Response) -> None:
         """Read a redirect or error body, then apply the response rules.

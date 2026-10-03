@@ -8,7 +8,8 @@ characters of the server's own response body, so it holds
 whatever the server returns.
 
 The request hook of ``gateway_headers`` puts the request id that it sends in
-``request.extensions`` under ``REQUEST_ID_EXTENSION`` (#356).
+``request.extensions`` under ``REQUEST_ID_EXTENSION`` of
+[typevet.adapters.outbound.request_ids][] (#356, #411).
 ``BackendHttpError`` and ``TransportError`` get that id as ``request_id``,
 and ``post_json_traced`` returns it with the reply. Without a configured
 request-id header, the id is ``None``. No message holds the id.
@@ -24,7 +25,6 @@ and verbatim values. A name that the request sent, or ``Authorization``, is
 never copied. This module makes no retry.
 
 Attributes:
-    REQUEST_ID_EXTENSION (str): ``request.extensions`` key of the request id.
     RATE_LIMIT_PREFIXES (tuple[str, ...]): Lowercase rate-limit name prefixes.
     MAX_RETRY_AFTER_SECONDS (float): Largest wait kept; one year.
 
@@ -55,23 +55,8 @@ from typing import Any, Final
 import httpx
 
 from typevet.adapters.outbound.http_errors import HTTP_ERROR_STATUS, body_snippet
+from typevet.adapters.outbound.request_ids import request_id_of
 from typevet.domain.errors import BackendHttpError, GenerationError, TransportError
-
-REQUEST_ID_EXTENSION: Final[str] = "typevet.request_id"
-
-
-def request_id_of(request: httpx.Request) -> str | None:
-    """Return the request id that the request hook recorded on ``request``.
-
-    Args:
-        request: Outgoing request.
-
-    Returns:
-        The id under ``REQUEST_ID_EXTENSION``, or ``None`` when no hook set
-        one.
-    """
-    value = request.extensions.get(REQUEST_ID_EXTENSION)
-    return value if isinstance(value, str) else None
 
 
 def map_transport_error(exc: httpx.HTTPError) -> TransportError:

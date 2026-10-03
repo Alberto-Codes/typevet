@@ -9,8 +9,9 @@ generated position. A request with images sends the content as a list of
 holds at most ``MAX_LOGPROB_TOKEN_IDS`` ids, not the full distribution, so the
 result reports ``off_option_mass`` as ``None`` (unavailable). An adapter
 without a caller client creates one client on first use, safely across
-threads. Each POST gives its request id to ``record_request_id``, so a
-vLLM judgment response can name it (#356).
+threads. Each POST gives its request id to ``record_request_id`` of
+[typevet.adapters.outbound.request_ids][], so a vLLM judgment response can
+name it (#356, #411).
 
 Examples:
     ```python
@@ -34,6 +35,7 @@ Examples:
 See Also:
     - [typevet.adapters.outbound.llama_cpp.scoring][]: llama.cpp counterpart
     - [typevet.adapters.outbound.vllm.content][]: Image content blocks
+    - [typevet.adapters.outbound.request_ids][]: Request id per question
     - [typevet.domain.candidate_scoring_validate][]: Fail-closed result assembly
     - [typevet.ports.framing][]: ModelFramingPort protocol
     - [typevet.ports.scoring][]: CandidateScoringPort protocol
@@ -52,9 +54,9 @@ from urllib.parse import urljoin
 
 import httpx
 
+from typevet.adapters.outbound.request_ids import record_request_id
 from typevet.adapters.outbound.vllm.content import content_blocks
 from typevet.adapters.outbound.vllm.http_mapping import post_json_traced
-from typevet.adapters.outbound.vllm.request_ids import record_request_id
 from typevet.domain.candidate_scoring_validate import build_and_validate_result
 from typevet.domain.errors import (
     GenerationError,

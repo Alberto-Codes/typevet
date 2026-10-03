@@ -7,7 +7,9 @@ caller gives ``n_vocab``. It keeps a known size and makes at most 3 reads per
 model.
 A media request that fails to tokenize after a router model reload reads the
 new media marker once and sends the request once more (#322). A refresh that
-finds no image support is not cached (#323).
+finds no image support is not cached (#323). After the last ``/completion``
+POST of a call, the adapter gives its request id to ``record_request_id``, so
+a llama.cpp judgment response can name it (#411).
 
 Examples:
     ```python
@@ -33,6 +35,7 @@ See Also:
       mapping and the one-retry send for idempotent requests
     - [typevet.adapters.outbound.llama_cpp.multimodal][]: Media probe and shaping
     - [typevet.adapters.outbound.llama_cpp.vocabulary][]: Model vocabulary read
+    - [typevet.adapters.outbound.request_ids][]: Request id per question
     - [typevet.domain.candidate_scoring_validate][]: Fail-closed result assembly
     - [typevet.ports.scoring][]: CandidateScoringPort protocol
 
@@ -63,6 +66,7 @@ from typevet.adapters.outbound.llama_cpp.multimodal import (
     media_prompt_field,
 )
 from typevet.adapters.outbound.llama_cpp.vocabulary import fetch_model_n_vocab
+from typevet.adapters.outbound.request_ids import record_request_id, request_id_of
 from typevet.domain.candidate_scoring_request import CandidateScoringRequest
 from typevet.domain.candidate_scoring_response import CandidateScoringResult
 from typevet.domain.candidate_scoring_validate import build_and_validate_result
@@ -207,6 +211,10 @@ class LlamaCppCandidateScoringAdapter:
         When that ``/props`` read fails, the adapter raises the original
         tokenize 400 with the probe error as ``__cause__`` (#323).
 
+        The request id of the last ``/completion`` POST goes to
+        ``record_request_id`` before the status check, so the open judgment
+        slot holds it (#411). Without a request-id hook the id is ``None``.
+
         Args:
             request: Model id, prefix, ordered single-token candidates, stage,
                 and optional images.
@@ -247,6 +255,7 @@ class LlamaCppCandidateScoringAdapter:
         if request.media and _is_tokenize_failure(response):
             capability = self._refresh_after_tokenize_failure(request.model, response)
             response = self._post_completion(request, capability)
+        record_request_id(request_id_of(response.request))
         ensure_success_status(response)
         payload = parse_json_response(response)
         # Validates the root is an object, which _extract_usage then assumes.

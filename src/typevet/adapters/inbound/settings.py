@@ -15,6 +15,13 @@ adapter from ``llama_cpp_adapter`` owns its client, and with a key or extra
 headers each error it raises is a masked copy with no cause or context, as
 in [typevet.adapters.inbound.error_masking][].
 
+``TYPEVET_LLAMA__REQUEST_ID_HEADER`` names a header that gets a fresh UUID4
+hex value on each request, as ``TYPEVET_VLLM__REQUEST_ID_HEADER`` does
+(#411). The same name rules apply. The clients get one request hook that
+calls ``stamp_request_id`` of [typevet.adapters.outbound.request_ids][]; they
+get no response hook. A judgment response maps each question name to the id
+of its ``/completion`` request in ``request_ids``. typevet never logs the id.
+
 Diagnostic log settings live in [typevet.adapters.diagnostics.settings][].
 
 Examples:
@@ -34,6 +41,7 @@ See Also:
       adapter lives in its ``generation`` module
     - [typevet.adapters.diagnostics.settings][]: ``TYPEVET_LOG__*`` settings
     - [typevet.adapters.inbound.http_headers][]: Shared header rules
+    - [typevet.adapters.outbound.request_ids][]: Request id hook and receipt
     - docs/reference/configuration.md: Environment variable reference
     - docs/how-to/run-a-multimodal-live-smoke.md: ``multimodal_model`` consumer
 """
@@ -41,7 +49,7 @@ See Also:
 from __future__ import annotations
 
 import os
-from collections.abc import Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
 
@@ -56,6 +64,7 @@ from typevet.adapters.inbound.http_headers import (
     parse_headers_json,
 )
 from typevet.adapters.outbound.llama_cpp.generation import LlamaCppGenerationAdapter
+from typevet.adapters.outbound.request_ids import stamp_request_id
 from typevet.domain.errors import GenerationError
 from typevet.domain.models import GenerationRequest, GenerationResult
 
@@ -83,6 +92,8 @@ class LlamaSettings:
         auth_scheme (str): Scheme before the key; empty sends the key bare.
         user_agent (str | None): ``User-Agent`` header value, or ``None`` for
             the httpx default.
+        request_id_header (str | None): Header that gets a fresh UUID4 hex
+            value on each request, or ``None`` to send none.
 
     Examples:
         ```python
@@ -101,15 +112,20 @@ class LlamaSettings:
     auth_header: str = "Authorization"
     auth_scheme: str = "Bearer"
     user_agent: str | None = None
+    request_id_header: str | None = None
 
     def __post_init__(self) -> None:
         """Copy ``headers`` read-only and check the header rules.
 
+        ``request_id_header`` follows the name rules and must not name the
+        auth header or an extra header (#411).
+
         Raises:
             TypeError: When ``headers`` is not a mapping.
             ValueError: When a header field breaks a rule of
-                ``typevet.adapters.inbound.http_headers``. The message names
-                the field and never holds a value.
+                ``typevet.adapters.inbound.http_headers``, or
+                ``request_id_header`` names a header that is already set. The
+                message names the field and never holds a value.
         """
         if not isinstance(self.headers, Mapping):
             msg = f"headers ({_ENV}HEADERS) must be a mapping of header values"
@@ -120,6 +136,13 @@ class LlamaSettings:
         check_gateway_headers(
             self.headers, auth_header=self.auth_header, field=f"headers ({_ENV}HEADERS)"
         )
+        if self.request_id_header is not None:
+            label = f"request_id_header ({_ENV}REQUEST_ID_HEADER)"
+            name = check_header_name(self.request_id_header, label).lower()
+            taken = {self.auth_header.lower(), *(k.lower() for k in self.headers)}
+            if name in taken:
+                msg = f"{label} names a header that is already set"
+                raise ValueError(msg)
 
 
 def _read_base_url(source: Mapping[str, str]) -> str:
@@ -189,11 +212,14 @@ def load_llama_settings(
         ``Authorization``. An unset ``TYPEVET_LLAMA__AUTH_SCHEME`` gives
         ``Bearer``; a set but empty one sends the key bare.
         ``TYPEVET_LLAMA__HEADERS`` is a JSON object of literal string values.
+        An empty ``TYPEVET_LLAMA__REQUEST_ID_HEADER`` gives ``None``.
 
     Raises:
         ValueError: When ``TYPEVET_LLAMA__TIMEOUT`` is not a positive number,
             ``TYPEVET_LLAMA__API_KEY`` holds a non-ASCII character, or a
             header variable breaks a header rule. No message holds a value.
+            ``TYPEVET_LLAMA__REQUEST_ID_HEADER`` also must not name the auth
+            header or an extra header.
     """
     source = os.environ if environ is None else environ
     scheme = source.get(f"{_ENV}AUTH_SCHEME")
@@ -207,7 +233,42 @@ def load_llama_settings(
         auth_header=source.get(f"{_ENV}AUTH_HEADER", "").strip() or "Authorization",
         auth_scheme="Bearer" if scheme is None else scheme.strip(),
         user_agent=source.get(f"{_ENV}USER_AGENT", "").strip() or None,
+        request_id_header=source.get(f"{_ENV}REQUEST_ID_HEADER", "").strip() or None,
     )
+
+
+def _sync_request_hooks(
+    header: str | None,
+) -> dict[str, list[Callable[[httpx.Request], None]]]:
+    def stamp(request: httpx.Request) -> None:
+        """Set the request-id header when it is configured and absent.
+
+        ``stamp_request_id`` records the sent value in
+        ``request.extensions``.
+
+        Args:
+            request: Outgoing request.
+        """
+        stamp_request_id(request, header)
+
+    return {"request": [stamp], "response": []}
+
+
+def _async_request_hooks(
+    header: str | None,
+) -> dict[str, list[Callable[[httpx.Request], Awaitable[None]]]]:
+    async def stamp(request: httpx.Request) -> None:
+        """Set the request-id header when it is configured and absent.
+
+        ``stamp_request_id`` records the sent value in
+        ``request.extensions``.
+
+        Args:
+            request: Outgoing request.
+        """
+        stamp_request_id(request, header)
+
+    return {"request": [stamp], "response": []}
 
 
 def llama_http_client(
@@ -227,12 +288,16 @@ def llama_http_client(
         ``settings.auth_header`` after ``settings.auth_scheme`` when a key is
         set, and the ``User-Agent`` when a user agent is set. Without a key or
         headers it sends the httpx defaults. Environment proxy settings apply.
+        Its one request hook sets a fresh UUID4 hex value in
+        ``settings.request_id_header`` when that is set and the request has
+        none; it has no response hook.
     """
     return httpx.Client(
         base_url=settings.base_url,
         timeout=settings.timeout,
         headers=client_headers(settings),
         transport=transport,
+        event_hooks=_sync_request_hooks(settings.request_id_header),
     )
 
 
@@ -252,14 +317,15 @@ def async_llama_http_client(
             ``httpx.MockTransport``.
 
     Returns:
-        An ``httpx.AsyncClient`` with the base URL, timeout and headers of
-        ``llama_http_client``.
+        An ``httpx.AsyncClient`` with the base URL, timeout, headers and
+        request-id hook of ``llama_http_client``.
     """
     return httpx.AsyncClient(
         base_url=settings.base_url,
         timeout=settings.timeout,
         headers=client_headers(settings),
         transport=transport,
+        event_hooks=_async_request_hooks(settings.request_id_header),
     )
 
 

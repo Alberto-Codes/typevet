@@ -25,9 +25,12 @@ that is not JSON, or that has no ``tokens`` list of integers, raises
 The ``/apply-template`` probe uses the same mapping and retry. A 200 body that
 is not JSON, or that has no ``prompt`` string, raises ``GenerationError``
 ([#311][i311]).
+The port sets ``JudgmentResponse.request_ids`` from the request id of each
+question's ``/completion`` request when the client stamps one ([#411][i411]).
 
 See Also:
     - [typevet.adapters.outbound.judgment_scoring][]: ``ScoringJudgmentAdapter``
+    - [typevet.adapters.outbound.request_ids][]: Request id per question
     - [typevet.runtime][]: public re-exports for library callers
     - [docs.how-to.connect-gemma4-native-vision-judgment][]: Composition how-to
 
@@ -38,6 +41,7 @@ See Also:
 [i310]: https://github.com/Alberto-Codes/typevet/issues/310
 [i311]: https://github.com/Alberto-Codes/typevet/issues/311
 [i373]: https://github.com/Alberto-Codes/typevet/issues/373
+[i411]: https://github.com/Alberto-Codes/typevet/issues/411
 """
 
 from __future__ import annotations
@@ -66,6 +70,10 @@ from typevet.adapters.outbound.llama_cpp.multimodal import (
 from typevet.adapters.outbound.llama_cpp.scoring import (
     DEFAULT_N_VOCAB,
     LlamaCppCandidateScoringAdapter,
+)
+from typevet.adapters.outbound.request_ids import (
+    RequestIdJudgmentPort,
+    RequestIdScoringPort,
 )
 from typevet.domain.errors import GenerationError
 from typevet.domain.text_parts import TextParts
@@ -291,6 +299,8 @@ def open_gemma_native_vision_judgment(
 
     Yields:
         A session holding the configured ``JudgmentPort`` and probe metadata.
+        Its responses map each question name to the ``/completion`` request
+        id in ``request_ids``, or keep it empty when no id was sent.
 
     Raises:
         ValueError: When vision is unavailable or the template is unsupported.
@@ -323,13 +333,14 @@ def open_gemma_native_vision_judgment(
         scoring_port: CandidateScoringPort = scoring
         if scoring_port_wrapper is not None:
             scoring_port = scoring_port_wrapper(scoring)
-        port: JudgmentPort = ScoringJudgmentAdapter(
-            scoring_port,
+        adapter = ScoringJudgmentAdapter(
+            RequestIdScoringPort(scoring_port),
             tokenize_content=tokenize,
             served_template=served,
             pinned_model=model_id,
             text_parts=hooks.get("text_parts"),
         )
+        port: JudgmentPort = RequestIdJudgmentPort(adapter)
         try:
             yield GemmaNativeVisionSession(
                 port=port,

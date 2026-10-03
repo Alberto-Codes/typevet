@@ -43,7 +43,7 @@ from typevet.adapters.inbound.judgevet import (
     TypevetSystemOnePort,
 )
 from typevet.adapters.inbound.settings import LlamaSettings
-from typevet.adapters.outbound.vllm.request_ids import RequestIdJudgmentPort
+from typevet.adapters.outbound.request_ids import RequestIdJudgmentPort
 from typevet.domain.errors import JudgmentError
 from typevet.domain.judgment_questions import Noul, Question
 from typevet.domain.judgment_response import JudgmentResponse
