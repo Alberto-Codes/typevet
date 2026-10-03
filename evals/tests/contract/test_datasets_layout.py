@@ -46,6 +46,7 @@ _DATASET_MODULES = (
     "psai_vision",
     "psai_vision_controls",
     "pubmedqa",
+    "quickdraw",
 )
 _DATA_FILES = ("clinc_domains.json", "clinc_plus_intent_names.json")
 

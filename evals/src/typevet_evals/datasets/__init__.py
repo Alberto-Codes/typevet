@@ -30,6 +30,7 @@ See Also:
     - [typevet_evals.datasets.psai_vision][]: PSAI screenshot fixtures
     - [typevet_evals.datasets.psai_vision_controls][]: image control matrix
     - [typevet_evals.datasets.pubmedqa][]: PubMedQA labeled subset
+    - [typevet_evals.datasets.quickdraw][]: Quick, Draw! first-N doodles
     - [typevet_evals.datasets.partner_guard][]: Partner data path guard
 
 Attributes:
@@ -57,6 +58,7 @@ Attributes:
     psai_vision (module): PSAI screenshot fixtures.
     psai_vision_controls (module): PSAI image control matrix.
     pubmedqa (module): PubMedQA loader.
+    quickdraw (module): Quick, Draw! first-N doodles and cache.
 """
 
 from typevet_evals.datasets import (
@@ -84,6 +86,7 @@ from typevet_evals.datasets import (
     psai_vision,
     psai_vision_controls,
     pubmedqa,
+    quickdraw,
 )
 
 __all__ = [
@@ -111,4 +114,5 @@ __all__ = [
     "psai_vision",
     "psai_vision_controls",
     "pubmedqa",
+    "quickdraw",
 ]
