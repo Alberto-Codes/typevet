@@ -39,6 +39,17 @@ and [Serve Gemma 4 31B on a rented H100](https://alberto-codes.github.io/typevet
 A valid structure does not prove accuracy or calibration.
 The receipts are small samples.
 
+## See it run
+
+https://github.com/user-attachments/assets/4d6dd426-a3a1-4e3e-9e93-17e3513fe333
+
+This recording is from 2026-10-02: model `gemma-4-31b-kv9-q4km-mm`, llama.cpp build `b11347-5fc4f3c8c`, one NVIDIA GeForce RTX 4090.
+It shows four live cases, each with its receipt.
+Three image cases return a `Choice` label. One text case asks a `Noul`, a `Choice` and a `Score` question.
+The type system refuses the GIF upload before typevet calls the router.
+The recording shows typed answers and receipts. It does not prove accuracy.
+To run the live demo, follow [Stand up the live demo](https://github.com/Alberto-Codes/typevet/blob/main/docs/how-to/stand-up-the-live-demo.md).
+
 ## Quickstart
 
 Get one offline typed judgment from a scripted fake. This step needs no model.
