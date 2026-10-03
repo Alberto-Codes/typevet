@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import httpx
 import pytest
 
 from typevet_evals.cli import doodle_duel
@@ -14,6 +15,7 @@ from typevet_evals.doodle_duel import DOODLE_CATEGORIES
 pytestmark = pytest.mark.unit
 
 PER_CATEGORY = 5
+REAL_CLIENT = httpx.Client
 ROW_KEYS = {
     "key_id",
     "true_label",
@@ -115,3 +117,62 @@ def test_cli_refuses_existing_receipt(
     assert receipt_path.read_text(encoding="utf-8") == "keep"
     assert not (tmp_path / "empty").exists()
     assert "exists" in capsys.readouterr().err
+
+
+@pytest.mark.usefixtures("offline")
+def test_cli_refuses_duplicate_categories(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    cache = tmp_path / "cache"
+    _fill_cache(cache)
+    receipt_path = tmp_path / "receipt.json"
+
+    code = doodle_duel.main(
+        [
+            "--receipt",
+            str(receipt_path),
+            "--categories",
+            "cat,cat,moon",
+            "--cache-dir",
+            str(cache),
+        ]
+    )
+
+    assert code == 2
+    assert not receipt_path.exists()
+    assert "repeats: ['cat']" in capsys.readouterr().err
+
+
+def _failing_client() -> httpx.Client:
+    def handler(request: httpx.Request) -> httpx.Response:
+        msg = "no route"
+        raise httpx.ConnectError(msg, request=request)
+
+    return REAL_CLIENT(transport=httpx.MockTransport(handler))
+
+
+def test_cli_refuses_http_error_on_cache_miss(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setenv("TYPEVET_BACKEND", "fake")
+    monkeypatch.setattr(quickdraw.httpx, "Client", _failing_client)
+    receipt_path = tmp_path / "receipt.json"
+
+    code = doodle_duel.main(
+        [
+            "--receipt",
+            str(receipt_path),
+            "--categories",
+            "cat,moon",
+            "--per-category",
+            "1",
+            "--cache-dir",
+            str(tmp_path / "empty"),
+        ]
+    )
+
+    assert code == 1
+    assert not receipt_path.exists()
+    assert "refused:" in capsys.readouterr().err

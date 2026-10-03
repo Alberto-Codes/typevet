@@ -14,7 +14,8 @@ existing receipt path before any request.
 ``TYPEVET_IMAGE_CONCURRENCY`` sets the judgments in flight.
 ``TYPEVET_GIT_STATUS_PORCELAIN`` carries the porcelain status text for the
 working-tree fingerprint. Exit codes: ``0`` when every doodle ran, ``1`` on a
-refusal or a stopped run, ``2`` on a usage error.
+refusal (a failed download on a cache miss included) or a stopped run, ``2``
+on a usage error (a repeated ``--categories`` name included).
 
 Examples:
     ```console
@@ -38,6 +39,8 @@ from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+import httpx
 
 from typevet.adapters.inbound.backend_settings import (
     load_backend,
@@ -93,7 +96,12 @@ _CODE_PATHS = {
 def _categories(raw: str | None) -> tuple[str, ...]:
     if raw is None:
         return DOODLE_CATEGORIES
-    asked = {name.strip() for name in raw.split(",") if name.strip()}
+    names = [name.strip() for name in raw.split(",") if name.strip()]
+    repeated = sorted({name for name in names if names.count(name) > 1})
+    if repeated:
+        msg = f"--categories repeats: {repeated}"
+        raise argparse.ArgumentTypeError(msg)
+    asked = set(names)
     unknown = sorted(asked - set(DOODLE_CATEGORIES))
     if unknown or len(asked) < _MIN_CATEGORIES:
         msg = f"--categories needs 2 or more of DOODLE_CATEGORIES; unknown: {unknown}"
@@ -237,8 +245,9 @@ def main(argv: list[str] | None = None) -> int:
 
     Returns:
         ``0`` when every doodle ran; ``1`` when the receipt path exists, the
-        backend or environment is refused, or the run stopped at a backend
-        failure; ``2`` on a usage error.
+        backend or environment is refused, a cache miss fails to download,
+        or the run stopped at a backend failure; ``2`` on a usage error,
+        such as a repeated ``--categories`` name.
     """
     parser = _build_parser()
     try:
@@ -252,7 +261,7 @@ def main(argv: list[str] | None = None) -> int:
         return _EXIT_REFUSED
     try:
         receipt = _run(args, dict(os.environ))
-    except (ValueError, OSError) as exc:
+    except (ValueError, OSError, httpx.HTTPError) as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return _EXIT_REFUSED
     print(f"receipt {args.receipt}")

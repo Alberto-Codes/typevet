@@ -297,7 +297,7 @@ classifier is `Private :: Do Not Upload`. The library wheel holds only
 
 | Module | Contents |
 |---|---|
-| `typevet_evals.cli` | Module entries `eval_runner`, `cord_semantic_acceptance`, `check_sheets` and `doodle_duel` |
+| `typevet_evals.cli` | Module entries `eval_runner`, `cord_semantic_acceptance`, `check_sheets`, `doodle_duel` and `doodle_duel_play` |
 | `typevet_evals.datasets` | Dataset loaders, download helpers and the partner guard |
 | `typevet_evals.runner`, `typevet_evals.tpjep` | Eval runner and TPJEP records, loader and runner |
 | `typevet_evals.cord`, `typevet_evals.psai_vision_consumer`, `typevet_evals.instruction_variant`, `typevet_evals.face_match`, `typevet_evals.signature_match`, `typevet_evals.check_match`, `typevet_evals.doodle_duel` | Evaluation harness families |
