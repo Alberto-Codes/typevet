@@ -2,6 +2,8 @@
 
 Kind: reference. This command evaluates public JevBench tasks through the existing judgevet provider bridge.
 
+The [Gemma 4 public baseline](../explanation/jevbench-public-baseline.md) records one complete live run and its limits.
+
 ## Source identity
 
 The eval workspace pins [JevBench commit bb05a335](https://github.com/fstandhartinger/jevbench/tree/bb05a335bc809e61b20c0f745d25499a82b326fc).

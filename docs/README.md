@@ -15,6 +15,8 @@ answers a question, and a reference gives facts.
 
 ## Explanation
 
+- [Gemma 4 on the JevBench public original split](explanation/jevbench-public-baseline.md): Results and limits from 72 public tasks.
+
 - [How typevet works with Gemma 4](explanation/how-typevet-works-with-gemma-4.md):
   typed judgment and schema-bound generation on llama.cpp and vLLM, with receipts.
 - [TypeLLM, Jev and judgevet](explanation/typellm-and-judgevet.md): why

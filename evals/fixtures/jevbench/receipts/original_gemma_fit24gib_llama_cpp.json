@@ -1,0 +1,176 @@
+{
+  "issue": "https://github.com/Alberto-Codes/typevet/issues/420",
+  "run_date": "2026-10-03",
+  "typevet_revision": "5e33f81c8d7420fed2714bc0c3c53448c4dc1793",
+  "scope": "All 72 tasks in the public original split; one run, no tuning or calibration fitting.",
+  "manifest": {
+    "upstream_commit": "bb05a335bc809e61b20c0f745d25499a82b326fc",
+    "requested_model": "gemma-4-31b-kv9-q4km-mm",
+    "resolved_models": [
+      "gemma-4-31b-kv9-q4km-mm"
+    ],
+    "requested_count": 72,
+    "attempted_count": 72,
+    "settings": {
+      "limit": null,
+      "cap_usd": 15.0,
+      "reserve_usd": 0.02,
+      "backend": "llama_cpp"
+    },
+    "cost_basis": "unknown",
+    "dataset_sha256": "5c2414edb3006b8bfcb70fda433f0f9ca015759433849f8d3104328a1f7c4180",
+    "dataset_count": 72,
+    "session_model": "gemma-4-31b-kv9-q4km-mm",
+    "exit_code": 0
+  },
+  "model": {
+    "repository": "Alberto-Codes/gemma-4-31B-it-fit24gib-GGUF",
+    "revision": "43db4293a8fdf444c0325b0fe6063592ccd1522d",
+    "quantization": "Custom vramfit mixed precision: Q2_K base with per-layer overrides. The base header alone does not describe the pack.",
+    "identity_evidence": "https://github.com/Alberto-Codes/typevet/issues/420#issuecomment-5970381747",
+    "decoder": {
+      "published_filename": "gemma-4-31B-it-fit24gib.gguf",
+      "loaded_filename": "gemma-4-31b-24gib-kv9-decoder.gguf",
+      "sha256": "2a7bd7a7be6979c858258618ab576db573a7b671b45ee5e9785247341b8c3b1e"
+    },
+    "projector": {
+      "published_filename": "gemma-4-31B-it-mmproj-q4km.gguf",
+      "loaded_filename": "mmproj-gemma-4-31B-it-q4km.gguf",
+      "sha256": "4a03ccaeaaa49cde65a97addac0b2ccd07df4617858aac1472048589ab672033"
+    }
+  },
+  "serving": {
+    "backend": "llama_cpp",
+    "location": "localhost",
+    "alias": "gemma-4-31b-kv9-q4km-mm",
+    "context_tokens": 4096,
+    "cache_type_k": "q8_0",
+    "cache_type_v": "q8_0",
+    "parallel_slots": 1,
+    "batch_size": 2048,
+    "ubatch_size": 2048,
+    "n_gpu_layers": 999,
+    "flash_attention": "on",
+    "jinja": true,
+    "template_filename": "google-gemma-4-31B-it.jinja",
+    "framing_probe": {
+      "ok": true,
+      "model": "gemma-4-31b-kv9-q4km-mm",
+      "served": "native_gemma4_turn",
+      "vision": true
+    }
+  },
+  "metrics": {
+    "complete": true,
+    "n_planned": 72,
+    "n_attempted": 72,
+    "n_correct": 71,
+    "n_valid": 72,
+    "n_scorable": 72,
+    "n_renormalized": 0,
+    "accuracy": 0.9861111111111112,
+    "macro_accuracy": 0.9861111111111112,
+    "coverage": 1.0,
+    "operational_success": 1.0,
+    "schema_validity": 1.0,
+    "schema_validity_strict": 1.0,
+    "calibration_n": 72,
+    "brier_mean": 0.0074286811421344755,
+    "ordinal_mae": 6.022334884438154e-07,
+    "latency": {
+      "n": 72,
+      "p50_s": 1.1784270810021553,
+      "p95_s": 1.3458143505471525
+    },
+    "paraphrase_consistency": {
+      "agree": 35,
+      "agreement": 0.9722222222222222,
+      "both_correct_rate_all_pairs": 0.9722222222222222,
+      "both_valid": 36,
+      "pairs": 36
+    },
+    "probability_sources": [
+      "native"
+    ],
+    "n_strict_valid": 72,
+    "provider_failures": 0,
+    "ece_top_label_10_bins": 0.007961159645308644,
+    "ordinal_n": 12
+  },
+  "per_family": {
+    "adequacy": {
+      "n_attempted": 12,
+      "n_correct": 12,
+      "accuracy": 1.0,
+      "brier_mean": 0.000542753674450468
+    },
+    "extraction": {
+      "n_attempted": 12,
+      "n_correct": 12,
+      "accuracy": 1.0,
+      "brier_mean": 2.3285749297715995e-12
+    },
+    "intent": {
+      "n_attempted": 12,
+      "n_correct": 12,
+      "accuracy": 1.0,
+      "brier_mean": 1.5193755088407347e-12
+    },
+    "ordinal": {
+      "n_attempted": 12,
+      "n_correct": 12,
+      "accuracy": 1.0,
+      "brier_mean": 8.179618023443956e-13
+    },
+    "policy": {
+      "n_attempted": 12,
+      "n_correct": 11,
+      "accuracy": 0.9166666666666666,
+      "brier_mean": 0.0440293331668169
+    },
+    "routing": {
+      "n_attempted": 12,
+      "n_correct": 12,
+      "accuracy": 1.0,
+      "brier_mean": 6.873580212443397e-12
+    }
+  },
+  "sole_incorrect_task": {
+    "task_id": "original-policy-06-1",
+    "gold": "yes",
+    "predicted": "no",
+    "probs": {
+      "no": 0.5139805432935973,
+      "yes": 0.4860194567064026
+    }
+  },
+  "cost": {
+    "cost_usd": null,
+    "cost_basis": "unknown",
+    "price_per_1000_decisions_usd": null,
+    "ledger_charged_usd": 1.44,
+    "ledger_note": "Reservation settlement, not measured spend."
+  },
+  "evidence_sha256": {
+    "framing.json": "877641aae37c8abee84a382b9fce6b5de258a9513e35e666bce5eba93b3e2772",
+    "ledger.jsonl": "5a9dd90b76eb7ae37977cc1cefd21cf9eaccb516a22458e17bab4b5cb2a36218",
+    "manifest.json": "5de64018aea696252cfd84ab82c800b51ca525758e4e36374987151bf5b796b3",
+    "results.jsonl": "61a1da43004652ee10f0d3798a7e3a79cd4f3818a3c5340ece6284c8e0a50178",
+    "run.log": "c1065b7441d2e376eabdd95eb917d99fa598d4c6944f85c79e333ab505afad0c",
+    "served-model.json": "f18d8f09ae1a20964f264e288a8891b598a870d607a187b42d64acc8a5c4af4a",
+    "summary.json": "7af77b98db94d8a7f9d2414fce5fe72c09fc2f5c2ad96212da300746d2cda605",
+    "evidence-hashes.json": "85bf9c2b7088ec85a0e62f672bce9fbe7481d53485e788630a75f838f403b874"
+  },
+  "verification": [
+    "Supervisor verified all 72 raw hashes and unique task coverage.",
+    "Supervisor verified request allowlists and absence of gold metadata in requests.",
+    "Supervisor recomputed multiclass Brier from retained distributions and matched the upstream summary."
+  ],
+  "limits": [
+    "Public original split only; no easy, hard or sealed evaluation.",
+    "No official composite or parity claim with named leaderboard models.",
+    "This exact custom pack and serving configuration define the result.",
+    "Small public-set calibration metrics do not establish general calibration quality.",
+    "Raw logs and per-task results remain local; this compact receipt does not permit independent score recomputation."
+  ]
+}

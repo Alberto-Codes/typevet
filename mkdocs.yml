@@ -124,6 +124,7 @@ nav:
       - How typevet works with Gemma 4: explanation/how-typevet-works-with-gemma-4.md
       - Check images against a synthetic register: explanation/check-register-matching.md
       - Gemma 4 and Jev on DIFrauD: explanation/gemma-and-jev-difraud.md
+      - Gemma 4 on the JevBench public original split: explanation/jevbench-public-baseline.md
       - Gemma 4 multimodal judgments: explanation/gemma-4-multimodal-judgments.md
       - Image judgment throughput on one H100: explanation/image-throughput-h100.md
       - Library-first architecture: explanation/library-first-architecture.md
