@@ -1,5 +1,58 @@
 # Changelog
 
+## [0.8.0](https://github.com/Alberto-Codes/typevet/compare/v0.7.0...v0.8.0) (2026-10-03)
+
+
+### Features
+
+* **adapters:** add TYPEVET_BACKEND=fake to open_judgment and export it from the inbound package ([436b01f](https://github.com/Alberto-Codes/typevet/commit/436b01f94e8816667c381e752bf33acfe4b88f99)), closes [#388](https://github.com/Alberto-Codes/typevet/issues/388) [#385](https://github.com/Alberto-Codes/typevet/issues/385)
+* **adapters:** carry the off-option receipt over the judgevet bridge ([5298ddb](https://github.com/Alberto-Codes/typevet/commit/5298ddbefe157f972afac2753c01393b0f98099d)), closes [#370](https://github.com/Alberto-Codes/typevet/issues/370)
+* **adapters:** give the llama.cpp settings the vLLM key and header fields and mask the key in sync errors ([d89510b](https://github.com/Alberto-Codes/typevet/commit/d89510b86f7ac75ac8c6153717c9906dad86d17a)), closes [#410](https://github.com/Alberto-Codes/typevet/issues/410) [#406](https://github.com/Alberto-Codes/typevet/issues/406)
+* **adapters:** record request ids for llama.cpp calls through TYPEVET_LLAMA__REQUEST_ID_HEADER ([08d4ec7](https://github.com/Alberto-Codes/typevet/commit/08d4ec7ec9b77add79a0ddbf174c9108b759e497)), closes [#411](https://github.com/Alberto-Codes/typevet/issues/411) [#406](https://github.com/Alberto-Codes/typevet/issues/406)
+* **domain:** refuse channel tokens in templates and apply context_template under a framing ([1341d6e](https://github.com/Alberto-Codes/typevet/commit/1341d6e4b1cef40b2daf0c84fd7360c09f4eabac)), closes [#373](https://github.com/Alberto-Codes/typevet/issues/373) [#360](https://github.com/Alberto-Codes/typevet/issues/360)
+* **domain:** refuse turn markers in text-part templates and require the answer rule ([0597c96](https://github.com/Alberto-Codes/typevet/commit/0597c96e586de6ff88ea5124db8aa4c263604d78))
+* **evals:** add the doodle duel play mode that scores a human and the model with Brier and a reliability table ([040253c](https://github.com/Alberto-Codes/typevet/commit/040253c0316f6f4d76d5428958ed6e7cb0812f44)), closes [#412](https://github.com/Alberto-Codes/typevet/issues/412)
+* **evals:** add the doodle duel Quick, Draw! loader, render and Choice run with a live receipt ([a267d3f](https://github.com/Alberto-Codes/typevet/commit/a267d3f670a76b5ea8ff40a368370125e4a9b5b2)), closes [#412](https://github.com/Alberto-Codes/typevet/issues/412)
+* **evals:** bridge pinned JevBench through judgevet ([5e33f81](https://github.com/Alberto-Codes/typevet/commit/5e33f81c8d7420fed2714bc0c3c53448c4dc1793)), closes [#419](https://github.com/Alberto-Codes/typevet/issues/419) [#418](https://github.com/Alberto-Codes/typevet/issues/418)
+* **evals:** evolve and score a Choice seed in the wording runner ([394d599](https://github.com/Alberto-Codes/typevet/commit/394d59945088736960d654acbd76fa4516dde4d2)), closes [#369](https://github.com/Alberto-Codes/typevet/issues/369) [#360](https://github.com/Alberto-Codes/typevet/issues/360)
+* **evals:** name the criteria parts of Choice and Score seeds ([c2baab9](https://github.com/Alberto-Codes/typevet/commit/c2baab9005d3ad5d85e4060cba0dcf698d4ad860))
+* **evals:** pass an off-option threshold through the CORD acceptance arm and record the receipt per row ([04e0b7d](https://github.com/Alberto-Codes/typevet/commit/04e0b7d487f6518a725c6f1cb0a500e0da084924)), closes [#384](https://github.com/Alberto-Codes/typevet/issues/384) [#370](https://github.com/Alberto-Codes/typevet/issues/370)
+* **evals:** pass the off-option threshold on the order set's CORD rerun and give every scored row the receipt fields ([e61e24a](https://github.com/Alberto-Codes/typevet/commit/e61e24ade32d26bec91ff760cb86f3904cb8c3b2)), closes [#409](https://github.com/Alberto-Codes/typevet/issues/409) [#384](https://github.com/Alberto-Codes/typevet/issues/384)
+* **examples:** add the check_register and calibrate examples ([60b3309](https://github.com/Alberto-Codes/typevet/commit/60b33099a096b058ccea44cb780896b8581e86af)), closes [#396](https://github.com/Alberto-Codes/typevet/issues/396) [#385](https://github.com/Alberto-Codes/typevet/issues/385)
+* **examples:** add the face_pair and signature_pair examples with user-supplied images ([26b303d](https://github.com/Alberto-Codes/typevet/commit/26b303d9e094cffcae431a066c745fb346f91472)), closes [#397](https://github.com/Alberto-Codes/typevet/issues/397) [#385](https://github.com/Alberto-Codes/typevet/issues/385)
+* **examples:** add the receipt_claim example and the contract test that runs every example offline ([996e3a6](https://github.com/Alberto-Codes/typevet/commit/996e3a6f433178b04ccb1c37cd7c5f781be1e069)), closes [#395](https://github.com/Alberto-Codes/typevet/issues/395)
+* **examples:** add the screenshot_ui and scam_message examples ([c6856a8](https://github.com/Alberto-Codes/typevet/commit/c6856a83c2467870ed12af373377be060dd11b0a)), closes [#398](https://github.com/Alberto-Codes/typevet/issues/398)
+* **testing:** add a public ScriptedJudgmentFake with per-question distributions ([de4963b](https://github.com/Alberto-Codes/typevet/commit/de4963b30c14264ea313f548e9521b379c7f7ea3)), closes [#387](https://github.com/Alberto-Codes/typevet/issues/387) [#385](https://github.com/Alberto-Codes/typevet/issues/385)
+
+
+### Fixes
+
+* **testing:** give the ScriptedJudgmentFake Score answer the expected rubric level ([2066651](https://github.com/Alberto-Codes/typevet/commit/206665174e720b94ea480fc52be69e3f73095550)), closes [#400](https://github.com/Alberto-Codes/typevet/issues/400)
+
+
+### Refactoring
+
+* **adapters:** split the judgevet bridge mapping into a sibling and give the async port provider_options ([45220bc](https://github.com/Alberto-Codes/typevet/commit/45220bcaf864b56d32e21da20740e832fa792b8d)), closes [#380](https://github.com/Alberto-Codes/typevet/issues/380) [#370](https://github.com/Alberto-Codes/typevet/issues/370)
+* **evals:** refuse a non-text Choice label in the wording parts path and keep row text out of the split refusal ([70d9a9d](https://github.com/Alberto-Codes/typevet/commit/70d9a9d48eb6562cc4ae8243791473f00bbb21b6)), closes [#378](https://github.com/Alberto-Codes/typevet/issues/378) [#360](https://github.com/Alberto-Codes/typevet/issues/360)
+* **evals:** take WordingParts on score_held_out and rename key to question_name ([7068af6](https://github.com/Alberto-Codes/typevet/commit/7068af66405110b4785ded6302c7ac7fa92048a5)), closes [#372](https://github.com/Alberto-Codes/typevet/issues/372) [#363](https://github.com/Alberto-Codes/typevet/issues/363)
+* **examples:** give terminal-demo a winner last line and bring it under the line cap ([4bc380f](https://github.com/Alberto-Codes/typevet/commit/4bc380f9ceda3bb7390d47837fcf3b1ef610348d)), closes [#401](https://github.com/Alberto-Codes/typevet/issues/401)
+* **examples:** split the live demo into flat siblings and bring examples under the check_loc gate ([8a2485b](https://github.com/Alberto-Codes/typevet/commit/8a2485b4832b20d645ae2eadc017164d578bec19)), closes [#403](https://github.com/Alberto-Codes/typevet/issues/403) [#385](https://github.com/Alberto-Codes/typevet/issues/385)
+
+
+### Documentation
+
+* **evals:** record the public JevBench Gemma baseline ([dd6fe4a](https://github.com/Alberto-Codes/typevet/commit/dd6fe4a1c50b0595b6ad3509cfe9d5fff2771e24)), closes [#420](https://github.com/Alberto-Codes/typevet/issues/420) [#418](https://github.com/Alberto-Codes/typevet/issues/418)
+* **explanation:** record one seed-0 checks run on the Gemma 4 QAT Q4_0 pin ([17eae9f](https://github.com/Alberto-Codes/typevet/commit/17eae9f49fd953e9da0af3aba5f678b9f91d5de6)), closes [#358](https://github.com/Alberto-Codes/typevet/issues/358)
+* **explanation:** record the [#333](https://github.com/Alberto-Codes/typevet/issues/333) nimble judge run beside the [#252](https://github.com/Alberto-Codes/typevet/issues/252) judges ([be0feb5](https://github.com/Alberto-Codes/typevet/commit/be0feb5f1c71785210f5fe454fea7c1d4b0503c4))
+* **explanation:** record the [#365](https://github.com/Alberto-Codes/typevet/issues/365) criteria-evolution result beside the [#252](https://github.com/Alberto-Codes/typevet/issues/252) study ([c0920a7](https://github.com/Alberto-Codes/typevet/commit/c0920a72731f7cb0d753fd337acb50a9bf4957e5)), closes [#360](https://github.com/Alberto-Codes/typevet/issues/360)
+* **explanation:** record the [#376](https://github.com/Alberto-Codes/typevet/issues/376) arm C result beside the [#365](https://github.com/Alberto-Codes/typevet/issues/365) arms ([fda7369](https://github.com/Alberto-Codes/typevet/commit/fda73699edc5624241e5ba07a4d0616bab72e404))
+* **explanation:** record the endpoints typevet does not score on ([3cb1205](https://github.com/Alberto-Codes/typevet/commit/3cb12051c14b95c4c3bfedbd8096fd857d8bf346)), closes [#405](https://github.com/Alberto-Codes/typevet/issues/405)
+* **explanation:** split nine sentences over the 20-word limit on three image pages ([d1cc0a9](https://github.com/Alberto-Codes/typevet/commit/d1cc0a9a7754d9f3ef508042a9e6ff2471590f21)), closes [#375](https://github.com/Alberto-Codes/typevet/issues/375)
+* **how-to:** stand up the live demo, with screenshots under docs/assets/live-demo ([af3921b](https://github.com/Alberto-Codes/typevet/commit/af3921b374409f9b6348ce51a77eee59976e2796)), closes [#393](https://github.com/Alberto-Codes/typevet/issues/393) [#385](https://github.com/Alberto-Codes/typevet/issues/385)
+* **readme:** link the live demo recording in a "See it run" section ([67737b1](https://github.com/Alberto-Codes/typevet/commit/67737b1a8813435c8d929d9b741c1800b33c2c71)), closes [#394](https://github.com/Alberto-Codes/typevet/issues/394) [#385](https://github.com/Alberto-Codes/typevet/issues/385)
+* **reference:** make the backend pages match the code on TYPEVET_BACKEND and vLLM coverage ([ee630b2](https://github.com/Alberto-Codes/typevet/commit/ee630b2720f0fce27d7d0d42cf4e8058ed1704f3)), closes [#404](https://github.com/Alberto-Codes/typevet/issues/404)
+* **site:** enable pymdownx.snippets with path checking and marker ranges ([c40fb09](https://github.com/Alberto-Codes/typevet/commit/c40fb091e1e0720c3333ce37e861fddd99de6ef1)), closes [#390](https://github.com/Alberto-Codes/typevet/issues/390) [#385](https://github.com/Alberto-Codes/typevet/issues/385)
+
 ## [0.7.0](https://github.com/Alberto-Codes/typevet/compare/v0.6.0...v0.7.0) (2026-10-01)
 
 
