@@ -21,6 +21,8 @@ Measure each judge model on your own task before you trust its numbers.
   `open_judgment` and the bridge probe this variable, not `TYPEVET_LLAMA__DEFAULT_MODEL`.
   It must name a Gemma 4 model whose template renders `<|turn>`.
   The default, `gemma-3-4b-it-q4km-mm`, is a Gemma 3 id and fails this check with `ValueError`.
+  The model can be text-only, with no image projector.
+  Text judgments then work, and an image judgment raises `ProviderCapabilityError` before any backend call.
 
   ```bash
   export TYPEVET_BACKEND=llama_cpp
@@ -156,6 +158,7 @@ Questions with no images go as one text judgment.
 The port merges the answers into one response and adds up the token counts.
 If the groups report different model ids, the port raises `ProviderResponseError`.
 An image type outside the declared `MediaCapabilities` raises `ProviderCapabilityError` before any backend call.
+If `TYPEVET_LLAMA__MULTIMODAL_MODEL` names a text-only model, an image judgment also raises `ProviderCapabilityError` before any backend call.
 
 ## Evolved wording over the bridge
 

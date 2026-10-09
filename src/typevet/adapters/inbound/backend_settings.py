@@ -530,8 +530,11 @@ def open_judgment(
     Yields:
         A llama.cpp session from ``open_gemma_native_vision_judgment`` with
         ``load_llama_settings`` on the ``llama_http_client``, which closes on
-        exit; the session-open and judgment errors never show the configured
-        key or a header value. Or a vLLM session from ``open_vllm_judgment``
+        exit. The model may be text-only: the session then records
+        ``capability.vision`` as ``False`` and refuses an image judgment with
+        ``ScoringUnsupportedCapabilityError`` before any request (#438).
+        The session-open and judgment errors never show the configured key or
+        a header value. Or a vLLM session from ``open_vllm_judgment``
         on the ``vllm_http_client``, so ``/tokenize`` and scoring carry the
         gateway headers. The vLLM client closes on exit, and judgment errors
         never show the configured key or a header value. For ``fake``, an
@@ -554,7 +557,9 @@ def open_judgment(
             llama_http_client(llama, transport=transport) as http,
             ExitStack() as stack,
         ):
-            opened = open_gemma_native_vision_judgment(settings=llama, http_client=http)
+            opened = open_gemma_native_vision_judgment(
+                settings=llama, http_client=http, require_vision=False
+            )
             llama_session = enter_masked(stack, opened, needles)
             port = _KeyMaskingJudgmentPort(llama_session.port, needles)
             yield replace(llama_session, port=port)

@@ -316,14 +316,14 @@ def test_open_judgment_passes_keyless_errors_unchanged() -> None:
 def test_open_judgment_defaults_to_gemma_native_vision(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    seen: list[tuple[Any, httpx.Client]] = []
+    seen: list[tuple[Any, httpx.Client, bool]] = []
     inner_port: Any = object()
 
     @contextmanager
     def fake_open(
-        *, settings: Any, http_client: httpx.Client
+        *, settings: Any, http_client: httpx.Client, require_vision: bool = True
     ) -> Iterator[GemmaNativeVisionSession]:
-        seen.append((settings, http_client))
+        seen.append((settings, http_client, require_vision))
         yield GemmaNativeVisionSession(
             port=inner_port,
             client=http_client,
@@ -341,9 +341,10 @@ def test_open_judgment_defaults_to_gemma_native_vision(
         assert session.model == "mm-model"
         assert isinstance(session.port, KeyMaskingJudgmentPort)
         assert session.port._port is inner_port
-    [(settings, client)] = seen
+    [(settings, client, require_vision)] = seen
     assert settings.multimodal_model == "mm-model"
     assert client.is_closed
+    assert require_vision is False
 
 
 def test_runtime_package_re_exports_vllm_judgment() -> None:

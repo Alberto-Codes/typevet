@@ -30,6 +30,12 @@ When Gemma 4 is required and the probe renders another family, the
 ``settings.multimodal_model`` (``TYPEVET_LLAMA__MULTIMODAL_MODEL``) ([#425][i425]).
 The port sets ``JudgmentResponse.request_ids`` from the request id of each
 question's ``/completion`` request when the client stamps one ([#411][i411]).
+With ``require_vision=False`` the factory and the probe accept a model whose
+``/props`` reports text-only input. That session records
+``capability.vision is False``, and its port raises
+``ScoringUnsupportedCapabilityError`` for an image judgment before any request
+([#438][i438]). The default stays ``True``, so vision smokes still fail fast on
+a text-only model.
 
 See Also:
     - [typevet.adapters.outbound.judgment_scoring][]: ``ScoringJudgmentAdapter``
@@ -46,11 +52,12 @@ See Also:
 [i373]: https://github.com/Alberto-Codes/typevet/issues/373
 [i411]: https://github.com/Alberto-Codes/typevet/issues/411
 [i425]: https://github.com/Alberto-Codes/typevet/issues/425
+[i438]: https://github.com/Alberto-Codes/typevet/issues/438
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any, Protocol, TypedDict, Unpack
@@ -79,7 +86,10 @@ from typevet.adapters.outbound.request_ids import (
     RequestIdJudgmentPort,
     RequestIdScoringPort,
 )
-from typevet.domain.errors import GenerationError
+from typevet.domain.errors import GenerationError, ScoringUnsupportedCapabilityError
+from typevet.domain.judgment_questions import Question
+from typevet.domain.judgment_response import JudgmentResponse
+from typevet.domain.media import ImageInput
 from typevet.domain.text_parts import TextParts
 from typevet.ports.judgment import JudgmentPort
 from typevet.ports.scoring import CandidateScoringPort
@@ -192,6 +202,74 @@ def _classify_native_template(
     return family
 
 
+def _check_vision(capability: MediaCapability, *, require_vision: bool) -> None:
+    """Refuse a text-only model when the caller requires image input.
+
+    Args:
+        capability: Media capability that ``/props`` reports for the model.
+        require_vision: When true, a model without image input is refused.
+
+    Raises:
+        ValueError: When ``require_vision`` is true and the model is text-only.
+    """
+    if require_vision and not capability.vision:
+        msg = "model reports text-only input modalities"
+        raise ValueError(msg)
+
+
+class _TextOnlyJudgmentPort:
+    """Judgment port that refuses images for a text-only model (#438).
+
+    Attributes:
+        _inner (JudgmentPort): Port that serves text judgments.
+        _model (str): Text-only model id, named in the refusal.
+
+    Examples:
+        ```python
+        port = _TextOnlyJudgmentPort(inner, "gemma-4-31b-kv9-text")
+        port.judge("Hello", questions, "gemma-4-31b-kv9-text")
+        ```
+    """
+
+    def __init__(self, inner: JudgmentPort, model: str) -> None:
+        self._inner = inner
+        self._model = model
+
+    def judge(
+        self,
+        state: str | dict[str, Any] | list[Any],
+        questions: Mapping[str, Question | Mapping[str, Any]],
+        model: str,
+        *,
+        media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
+    ) -> JudgmentResponse:
+        """Refuse images, else forward the text judgment to the inner port.
+
+        Args:
+            state: Content under evaluation.
+            questions: Question names to typed questions or wire dictionaries.
+            model: Backend model id.
+            media: Images; a non-empty tuple is refused.
+            off_option_threshold: Forwarded to the inner port.
+
+        Returns:
+            The inner port's response.
+
+        Raises:
+            ScoringUnsupportedCapabilityError: When ``media`` holds an image.
+        """
+        if media:
+            msg = (
+                f"llama.cpp model {self._model!r} reports text-only input; "
+                "an image judgment is refused"
+            )
+            raise ScoringUnsupportedCapabilityError(msg)
+        return self._inner.judge(
+            state, questions, model, off_option_threshold=off_option_threshold
+        )
+
+
 def _model_source(model: str | None) -> str:
     """Name what chose the probed model id for error messages (#425).
 
@@ -281,11 +359,14 @@ class _JudgmentHooks(TypedDict, total=False):
             ``JudgmentPort`` wiring.
         text_parts (TextParts | None): Option block and context templates;
             default ``None`` (#373).
+        require_vision (bool): When false, accept a text-only model; default
+            ``True`` (#438).
     """
 
     tokenize_content: Callable[[str], Sequence[int]] | None
     scoring_port_wrapper: Callable[[CandidateScoringPort], CandidateScoringPort] | None
     text_parts: TextParts | None
+    require_vision: bool
 
 
 @contextmanager
@@ -301,8 +382,9 @@ def open_gemma_native_vision_judgment(
     """Open a judgment port for Gemma native-turn vision on a llama.cpp router.
 
     Probes ``/apply-template`` and media capability before the first ``judge``
-    call. Unsupported template families or text-only models raise ``ValueError``
-    before scoring dispatch.
+    call. Unsupported template families raise ``ValueError`` before scoring
+    dispatch. A text-only model raises ``ValueError`` unless
+    ``require_vision=False``; its port then refuses images (#438).
 
     Args:
         settings: Router connection options from the composition root.
@@ -320,6 +402,9 @@ def open_gemma_native_vision_judgment(
             before ``JudgmentPort`` wiring.
         text_parts (TextParts | None): Option block and context templates, or
             ``None`` for the defaults (#373).
+        require_vision (bool): When ``False``, accept a text-only model. The
+            port then raises ``ScoringUnsupportedCapabilityError`` for an
+            image judgment before any request (#438). Default ``True``.
 
     Yields:
         A session holding the configured ``JudgmentPort`` and probe metadata.
@@ -327,8 +412,8 @@ def open_gemma_native_vision_judgment(
         id in ``request_ids``, or keep it empty when no id was sent.
 
     Raises:
-        ValueError: When vision is unavailable or the template is unsupported.
-            A Gemma 4 mismatch names the model id and whether the ``model``
+        ValueError: When vision is required and unavailable, or the template is
+            unsupported. A Gemma 4 mismatch names the model id and whether the ``model``
             argument or ``settings.multimodal_model`` chose it.
         TransportError: When a probe fails before a response.
         BackendHttpError: When a probe returns status 400 or higher.
@@ -343,9 +428,7 @@ def open_gemma_native_vision_judgment(
 
     def _session(client: httpx.Client) -> Iterator[GemmaNativeVisionSession]:
         capability = fetch_media_capability(client, f"{base}/", model_id)
-        if not capability.vision:
-            msg = "model reports text-only input modalities"
-            raise ValueError(msg)
+        _check_vision(capability, require_vision=hooks.get("require_vision", True))
         served = _classify_native_template(
             client, model_id, require_gemma4=require_gemma4, source=source
         )
@@ -368,6 +451,8 @@ def open_gemma_native_vision_judgment(
             text_parts=hooks.get("text_parts"),
         )
         port: JudgmentPort = RequestIdJudgmentPort(adapter)
+        if not capability.vision:
+            port = _TextOnlyJudgmentPort(port, model_id)
         try:
             yield GemmaNativeVisionSession(
                 port=port,
@@ -391,6 +476,7 @@ def probe_gemma_native_vision_support(
     settings: GemmaVisionSettings,
     model: str | None = None,
     require_gemma4: bool = True,
+    require_vision: bool = True,
     http_client: httpx.Client | None = None,
 ) -> dict[str, Any]:
     """Return probe metadata without constructing a long-lived judgment port.
@@ -399,6 +485,9 @@ def probe_gemma_native_vision_support(
         settings: Router connection options.
         model: Model id; defaults to ``settings.multimodal_model``.
         require_gemma4: When true, require ``NATIVE_GEMMA4_TURN``.
+        require_vision: When true (the default), refuse a text-only model, as
+            vision smokes need. When false, report ``vision`` as ``False``
+            for a text-only model (#438).
         http_client: Optional pre-built client (for tests).
 
     Returns:
@@ -418,9 +507,7 @@ def probe_gemma_native_vision_support(
 
     def _probe(client: httpx.Client) -> dict[str, Any]:
         capability = fetch_media_capability(client, f"{base}/", model_id)
-        if not capability.vision:
-            msg = "model reports text-only input modalities"
-            raise ValueError(msg)
+        _check_vision(capability, require_vision=require_vision)
         served = _classify_native_template(
             client, model_id, require_gemma4=require_gemma4, source=source
         )

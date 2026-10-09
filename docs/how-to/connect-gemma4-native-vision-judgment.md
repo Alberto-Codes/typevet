@@ -39,6 +39,11 @@ Unsupported routers raise `ValueError` before the first `judge` call when:
 - `/props` reports text-only modalities, or
 - `/apply-template` is not a supported native Gemma turn family.
 
+Pass `require_vision=False` to accept a text-only model.
+The session then has `capability.vision` set to `False`.
+Its port raises `ScoringUnsupportedCapabilityError` for an image judgment before any request.
+`open_judgment` passes `require_vision=False`.
+
 ## Probe without holding a port
 
 ```python
