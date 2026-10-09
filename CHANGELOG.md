@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.2](https://github.com/Alberto-Codes/typevet/compare/v0.8.1...v0.8.2) (2026-10-09)
+
+
+### Chores
+
+* release 0.8.2 for the judgevet 0.19 extra ([fa6e4a4](https://github.com/Alberto-Codes/typevet/commit/fa6e4a43ab316855d505e7e732aa9c69c3f1fbdf))
+
 ## [0.8.1](https://github.com/Alberto-Codes/typevet/compare/v0.8.0...v0.8.1) (2026-10-09)
 
 
