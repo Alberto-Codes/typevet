@@ -115,7 +115,7 @@ How typevet’s native questions map to decisions today:
 - The optional judgevet bridge, `typevet.adapters.inbound.judgevet`, which
   makes typevet a judgevet provider. Offline tests prove it on typevet fakes
   through judgevet's command line and MCP server. Its text, media and async
-  ports pass the judgevet provider conformance kit (judgevet 0.17.0 and 0.18.0). One live run per backend
+  ports pass the judgevet provider conformance kit (judgevet 0.17.0, 0.18.0 and 0.19.0). One live run per backend
   (llama.cpp and vLLM) returned typed answers through the bridge (#289); it
   is not a quality claim.
 - Evaluation harnesses: loader eval runner and TPJEP eight-task runner.
