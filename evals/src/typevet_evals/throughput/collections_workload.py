@@ -1,11 +1,11 @@
-"""finvet collections workload: record mapping, seed questions and parity ([#236][i236]).
+"""Partner collections workload: record mapping, seed questions and parity ([#236][i236]).
 
-The finvet collections next-best-action split and its outcome seed stay in the
-finvet checkout. This module reads them by path at run time and copies neither.
+A private partner project's collections next-best-action split and its outcome
+seed stay in the partner checkout. This module reads them by path at run time and copies neither.
 Only ``state`` plus the logged action, as ``proposed_action``, reaches the
 judgment port. The record ``id``, ``meta`` and ``logged.outcome`` never do.
 
-ECE follows finvet ``calibration.py``: equal-width bins, bin index
+ECE follows the partner project's calibration: equal-width bins, bin index
 ``min(int(p * n_bins), n_bins - 1)``, and the count-weighted gap divided by the
 number of records with a probability. A failed record goes in no bin.
 
@@ -14,10 +14,10 @@ Attributes:
     QUESTIONS_ENV (str): Env var for the outcome seed file path.
     ENGAGED (str): Label of an engaged record.
     NOT_ENGAGED (str): Label of a record that did not engage.
-    BASELINE_ECE (float): finvet #5 validation ECE.
-    BASELINE_BASE_RATE (float): finvet #5 validation engaged base rate.
+    BASELINE_ECE (float): Partner baseline validation ECE.
+    BASELINE_BASE_RATE (float): Partner baseline validation engaged base rate.
     PARITY_MAX_ECE (float): Highest validation ECE that keeps parity.
-    COLLECTIONS_BASELINE (Baseline): The three finvet #5 values above.
+    COLLECTIONS_BASELINE (Baseline): The three partner baseline values above.
 
 Examples:
     ```python
@@ -45,8 +45,8 @@ from typing import Any, Final
 from typevet.domain.judgment_questions import Choice, Noul
 from typevet.ports.judgment import JudgmentPort
 
-JEV_DIR_ENV: Final[str] = "TYPEVET_FINVET_JEV_DIR"
-QUESTIONS_ENV: Final[str] = "TYPEVET_FINVET_QUESTIONS"
+JEV_DIR_ENV: Final[str] = "TYPEVET_PARTNER_JEV_DIR"
+QUESTIONS_ENV: Final[str] = "TYPEVET_PARTNER_QUESTIONS"
 ENGAGED: Final[str] = "engaged"
 NOT_ENGAGED: Final[str] = "not_engaged"
 BASELINE_ECE: Final[float] = 0.1423
@@ -147,7 +147,7 @@ class Bin:
 
 
 def map_record(record: Mapping[str, Any]) -> CollectionsRecord:
-    """Map one finvet split record without changing it.
+    """Map one partner split record without changing it.
 
     Args:
         record: One parsed jsonl record.
@@ -302,7 +302,7 @@ def _ece_from_bins(bins: Sequence[Bin], total: int) -> float:
 
 
 def ece(probs: Sequence[float], labels: Sequence[bool], n_bins: int = 10) -> float:
-    """Return expected calibration error as finvet computes it.
+    """Return expected calibration error as the partner project computes it.
 
     Args:
         probs: P(engaged) values in [0, 1].

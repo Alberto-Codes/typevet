@@ -64,7 +64,7 @@ def _data_dir(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def test_banking77_maps_text_state_fraud_positive_and_finvet_questions() -> None:
+def test_banking77_maps_text_state_fraud_positive_and_partner_questions() -> None:
     rows = banking77.load_test_split(csv_text=_CSV)
     work = banking77_workload(rows)
     assert [r.state for r in work.records] == [r.text for r in rows]

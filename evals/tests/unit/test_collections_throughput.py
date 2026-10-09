@@ -4,7 +4,7 @@ The mock server answers scoring calls with the redacted vLLM v0.30.0 probe
 ``image_three_way`` and ``/tokenize`` with ``tokenize_ordinals``. ``/version``,
 ``/v1/models`` and ``/metrics`` replies are synthetic. A record whose state
 holds ``FAIL_MARK`` gets an HTTP 500 on every scoring call. Records are
-synthetic and use finvet field names only.
+synthetic and use partner field names only.
 
 Examples:
     ```bash

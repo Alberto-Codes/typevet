@@ -4,7 +4,7 @@ Three tests, each gated by its own variable. Each skips when its variable is
 unset and fails when ``TYPEVET_REQUIRE_LIVE`` is truthy and it is unset.
 
 **Evolution** (``TYPEVET_WORDING_ARTIFACT`` names a new JSON file). gepa-adk
-evolves the finvet-matching ``is_scam`` instructions on the local llama.cpp
+evolves the partner-matching ``is_scam`` instructions on the local llama.cpp
 router. The judge is ``gemma-4-31b-kv9-q4km-mm`` through
 ``TypevetSystemOnePort`` over a text-only scoring session. That alias serves
 the native Gemma 4 template; the decoder alias
@@ -67,8 +67,8 @@ and a gepa-adk stopper ends the run when the cap is spent. The requested
 model is ``TYPEVET_WORDING_JUDGE`` or ``JEV_API__DEFAULT_MODEL``
 (``jev-latest``); each call records the model id Jev reports. The adapter
 retries a 429 or a 5xx under ``JEV_API__MAX_ATTEMPTS`` (3), and every attempt
-counts against the cap. The default concurrency is 1, as in finvet's Jev
-evolutions, because Jev states no rate limit. The artifact adds the spend,
+counts against the cap. The default concurrency is 1, as in the partner
+project's Jev evolutions, because Jev states no rate limit. The artifact adds the spend,
 the stop reason and the judge identity, and passes the key-free check.
 A call the cap refuses scores its row 0 and can reject a better candidate, so
 the artifact counts ``budget_refusals`` and sets ``valid`` false when any

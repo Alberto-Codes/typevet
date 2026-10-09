@@ -8,7 +8,7 @@ sentence rules and the one-term-per-concept rule. It takes neither the
 controlled dictionary nor the approved-verb list. The repo follows a **local
 adaptation**, not the standard. It does not claim ASD-STE100 compliance.
 
-Sister projects (automarket, judgevet, finvet, gepa-adk) use the same idea.
+Sister projects (automarket, judgevet, gepa-adk) use the same idea.
 Short, active, glossary-bound prose helps every model, every harness and every
 human reader.
 

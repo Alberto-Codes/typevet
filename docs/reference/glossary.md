@@ -11,15 +11,15 @@ in alphabetical order.
 **acceptance review.** An independent check of the submitted diff, accepted contract and parent consumer outcome.
 The reviewer preserves submitted files and may use explicitly assigned scratch permissions.
 
-**Banking77 proxy label.** In typevet/finvet evals, PolyAI Banking77 intents
-collapsed via finvet’s six `FRAUD_INTENTS` into binary fraud / not_fraud for
+**Banking77 proxy label.** PolyAI Banking77 intents collapsed via the
+partner project’s six `FRAUD_INTENTS` into binary fraud / not_fraud for
 Noul-primary metrics. See
 [Banking77 proxy and metrics](banking77-proxy-and-metrics.md).
 
 **CLINC domain shard.** One of ten topical domains in CLINC150 OOS eval
 (`domains.json`). Each shard exposes exactly **15** intent slugs as a single
 **Choice** task (≤24 labels). Shards do **not** map to Banking77 categories or
-finvet **`FRAUD_INTENTS`**. See
+the partner **`FRAUD_INTENTS`**. See
 [CLINC150 domain shard map](eval-clinc-shard-map.md).
 
 **composition root.** The process or module that reads configuration,

@@ -6,10 +6,10 @@ This page lists **measured** small live judgment runs. Each row links primary
 evidence on GitHub. Do not copy numbers into product claims without the same
 pins.
 
-## finvet-derived six-row receipt (post-#152)
+## Partner-derived six-row receipt (post-#152)
 
 Source comment:
-[#133 post-#152 frozen finvet-6 live receipt](https://github.com/Alberto-Codes/typevet/issues/133#issuecomment-5843131304).
+[#133 post-#152 frozen partner-6 live receipt](https://github.com/Alberto-Codes/typevet/issues/133#issuecomment-5843131304).
 
 | Pin | Value |
 |---|---|
@@ -18,7 +18,7 @@ Source comment:
 | Model | `gemma-4-31b-24gib-kv11-decoder` |
 | Server build | `b11176-f805c57a2` (as recorded on #133) |
 | Template | Degraded ChatML + Control→label mapping |
-| Sample | 6 finvet-style rows + 2 predeclared semantic controls |
+| Sample | 6 partner-style rows + 2 predeclared semantic controls |
 | Elapsed | 29.849 s (24 scored fields total) |
 
 ### Outcome summary
@@ -37,8 +37,7 @@ Source comment:
 | neg_ordinary | True | `not_fraud`, noul ≈ 0.010 |
 
 Per-row Choice, unauthorized noul, urgency, and broad flags are in the #133
-comment table. Full probability maps were stored in
-`scratchpad/finvet6/post152_receipt.json` (gitignored).
+comment table. Full probability maps were stored in a gitignored scratchpad file.
 
 ### What this receipt does not prove
 

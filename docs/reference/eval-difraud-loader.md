@@ -13,7 +13,7 @@ loader issue [#59](https://github.com/Alberto-Codes/typevet/issues/59).
 | Versioned JSON Schema | `evals/fixtures/difraud_is_scam_noul_schema_v1.json` |
 | CI JSONL subset | `tests/fixtures/difraud/sms_test_subset.jsonl` |
 
-DIFrauD is the **natural** binary Noul fit among finvet public sets ([#53](https://github.com/Alberto-Codes/typevet/issues/53)).
+DIFrauD is the **natural** binary Noul fit among the partner public sets ([#53](https://github.com/Alberto-Codes/typevet/issues/53)).
 Banking77 stays proxy-binary on `reports_unauthorized`; do not ask bank-fraud
 questions on DIFrauD rows.
 
@@ -79,7 +79,7 @@ Held-out records keep `split="test"`, the upstream file name.
 
 ## Question wording
 
-The `is_scam` Noul instructions match finvet `SCAM_QUESTIONS["is_scam"]`: the
+The `is_scam` Noul instructions match the partner `SCAM_QUESTIONS["is_scam"]`: the
 user message **is** the suspect text, not a customer describing fraud elsewhere.
 
 ## License and policy

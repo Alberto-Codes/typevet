@@ -3,7 +3,7 @@
 Kind: how-to.
 
 Run one **bounded** live check after the router and Gemma 4 weights work. Pick
-**TPJEP eight** (in-repo pytest) or read the **frozen finvet-6** receipt on
+**TPJEP eight** (in-repo pytest) or read the **frozen partner-6** receipt on
 [#133](https://github.com/Alberto-Codes/typevet/issues/133). Both use
 `ScoringJudgmentAdapter` and local candidate scoring.
 
@@ -35,9 +35,9 @@ uv run pytest evals/tests/live/test_tpjep_smoke_live.py -m live -q
 Artifacts land under `scratchpad/tpjep/` (gitignored). Details:
 [TPJEP v0 eight-task runner](../reference/eval-tpjep-runner.md).
 
-## Option B — frozen finvet-6 receipt (read-only)
+## Option B — frozen partner-6 receipt (read-only)
 
-typevet does **not** ship a finvet-6 pytest yet. The supervisor recorded a
+typevet does **not** ship a partner-6 pytest yet. The supervisor recorded a
 **post-#152** live receipt on
 [#133](https://github.com/Alberto-Codes/typevet/issues/133#issuecomment-5843131304).
 

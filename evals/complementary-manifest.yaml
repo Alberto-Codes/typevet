@@ -138,10 +138,10 @@ ranked_complementary:
       - "Pair state JSON convention (#54 open question 3)"
 
 out_of_manifest:
-  - scope: finvet_public_eval_sets
+  - scope: partner_public_eval_sets
     issue: 53
     policy: >
-      Not re-ranked in #54; adoption and mapping live under finvet research.
+      Not re-ranked in #54; adoption and mapping live under partner research.
       Cross-link public sets (Banking77, DIFrauD, …) via partner-safe policy.
     cross_reference: docs/reference/eval-partner-data-policy.md
     examples_not_in_complementary_rank:

@@ -1,7 +1,9 @@
 """Guardrails: collections NBA partner paths must not ship in public typevet.
 
-The finvet collections NBA split is partner-only and git-ignored in finvet.
-typevet eval bundles and wheels must never vendor those paths or jsonl.
+A private partner project keeps a collections NBA split that is partner-only
+and git-ignored there. typevet eval bundles and wheels must never vendor those
+paths or jsonl. The import rule names no package: it refuses any dotted module
+path that ends in ``.data.collections_nba``, the partner loader's shape.
 The packaging scan reads the root ``pyproject.toml``, ``MANIFEST.in`` and the
 ``evals/pyproject.toml`` of the ``typevet-evals`` workspace member.
 
@@ -22,6 +24,7 @@ See Also:
 
 from __future__ import annotations
 
+import re
 import subprocess
 from pathlib import Path
 
@@ -31,7 +34,10 @@ FORBIDDEN_PATH_MARKERS: tuple[str, ...] = (
     "collections/nba",
 )
 
-FORBIDDEN_IMPORT_MARKERS: tuple[str, ...] = ("finvet.data.collections_nba",)
+# Any dotted module path ending in the partner loader, whatever its package.
+FORBIDDEN_IMPORT_PATTERN: re.Pattern[str] = re.compile(
+    r"\b[a-z_][\w.]*\.data\.collections_nba\b(?!\w)", re.IGNORECASE
+)
 
 # Source roots whose files must not import partner modules: the library and the
 # evals member. Tests are left out; ``CONTENT_ALLOWLIST`` covers the guard test.
@@ -68,6 +74,15 @@ def path_is_forbidden(relative_path: str) -> bool:
     """
     norm = normalize_posix(relative_path)
     return any(marker in norm for marker in FORBIDDEN_PATH_MARKERS)
+
+
+def text_imports_partner_module(text: str) -> bool:
+    """Return True when ``text`` names a partner collections NBA loader module.
+
+    Returns:
+        True when any dotted path ending in ``.data.collections_nba`` appears.
+    """
+    return FORBIDDEN_IMPORT_PATTERN.search(text) is not None
 
 
 def packaging_line_is_forbidden(line: str) -> bool:
@@ -125,8 +140,8 @@ def scan_tracked_paths(repo_root: Path) -> list[str]:
 def scan_tracked_content(repo_root: Path) -> list[str]:
     """List tracked files whose text mentions forbidden markers outside allowlist.
 
-    Path markers apply to every tracked file. Import markers apply to files
-    under ``IMPORT_SCAN_ROOTS``.
+    Path markers apply to every tracked file. ``FORBIDDEN_IMPORT_PATTERN``
+    applies to files under ``IMPORT_SCAN_ROOTS``.
 
     Returns:
         Sorted repo-relative paths whose UTF-8 text violates content policy.
@@ -152,8 +167,8 @@ def scan_tracked_content(repo_root: Path) -> list[str]:
             continue
         lower = text.lower()
         path_hit = any(marker in lower for marker in FORBIDDEN_PATH_MARKERS)
-        import_hit = rel.startswith(IMPORT_SCAN_ROOTS) and any(
-            marker in lower for marker in FORBIDDEN_IMPORT_MARKERS
+        import_hit = rel.startswith(IMPORT_SCAN_ROOTS) and (
+            text_imports_partner_module(text)
         )
         if path_hit or import_hit:
             hits.append(rel)

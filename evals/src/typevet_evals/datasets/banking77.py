@@ -1,7 +1,7 @@
-"""Banking77 test-split loader with finvet six-intent fraud proxy collapse.
+"""Banking77 test-split loader with the partner six-intent fraud proxy collapse.
 
 PolyAI Banking77 (CC BY 4.0) assigns one of 77 intent names per query. typevet
-maps finvet's six ``FRAUD_INTENTS`` to proxy ``fraud``; every other intent is
+maps the partner project's six ``FRAUD_INTENTS`` to proxy ``fraud``; every other intent is
 ``not_fraud``. Primary v1 Noul is ``reports_unauthorized`` (see fixture schema).
 
 Examples:
@@ -68,7 +68,7 @@ SOURCE: Final[str] = "banking77"
 SPLIT: Final[str] = "test"
 PRIMARY_NOUL_NAME: Final[str] = "reports_unauthorized"
 
-# Same six intents as finvet ``FRAUD_INTENTS`` (finvet ``data/banking77.py``).
+# Same six intents as the partner project's ``FRAUD_INTENTS``.
 FRAUD_INTENTS: Final[tuple[str, ...]] = (
     "card_payment_not_recognised",
     "cash_withdrawal_not_recognised",
@@ -95,7 +95,7 @@ REPORTS_UNAUTHORIZED_NOUL_SCHEMA: Final[dict[str, Any]] = {
 
 @dataclass(frozen=True, slots=True)
 class Banking77Example:
-    """One Banking77 test row with finvet proxy label.
+    """One Banking77 test row with the partner proxy label.
 
     Attributes:
         text (str): Customer banking query.
@@ -122,7 +122,7 @@ class Banking77Example:
 
 
 def proxy_label_for_intent(intent_name: str) -> str:
-    """Collapse one Banking77 intent to finvet's binary proxy label.
+    """Collapse one Banking77 intent to the partner binary proxy label.
 
     Args:
         intent_name: Banking77 ``category`` value.
@@ -191,7 +191,7 @@ def balanced_sample(
     limit: int | None,
     seed: int,
 ) -> list[Banking77Example]:
-    """Return equal fraud and not_fraud counts (finvet ``balance`` semantics).
+    """Return equal fraud and not_fraud counts (the partner ``balance`` semantics).
 
     Args:
         examples: Full mapped test split.
@@ -253,7 +253,7 @@ def load_test_split(
         limit: Row cap. With ``balanced=True``, total rows (half fraud, half
             not_fraud). Without balance, first ``limit`` rows in CSV order.
         seed: Seed for deterministic ordering when ``balanced=True``.
-        balanced: When ``True``, apply finvet-style class balance before return.
+        balanced: When ``True``, apply the partner class balance before return.
         csv_text: Pre-fetched CSV (CI fixtures). When ``None``, downloads
             ``TEST_CSV_URL``.
         client: Optional HTTP client when downloading.

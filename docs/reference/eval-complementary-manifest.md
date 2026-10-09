@@ -33,7 +33,7 @@ accepted #54:
 - CLINC uses **domain shards** only ([#66](https://github.com/Alberto-Codes/typevet/issues/66) accepted):
   [CLINC150 domain shard map](eval-clinc-shard-map.md). **Separate loaders** from
   Banking77 ([#58](https://github.com/Alberto-Codes/typevet/issues/58)); do not
-  reuse Banking77 intent maps or finvet **`FRAUD_INTENTS`** ([#53](https://github.com/Alberto-Codes/typevet/issues/53)).
+  reuse Banking77 intent maps or the partner **`FRAUD_INTENTS`** ([#53](https://github.com/Alberto-Codes/typevet/issues/53)).
 
 | Rank | Dataset | License | Decision |
 |---:|---|---|---|
@@ -52,7 +52,7 @@ Edit ranks in the YAML when research accepts a new revision; bump
 
 | Scope | Issue | Where |
 |---|---|---|
-| finvet public sets (Banking77, DIFrauD, CFPB, ABCD, UCI SMS, …) | [#53](https://github.com/Alberto-Codes/typevet/issues/53) | [Eval partner data policy](eval-partner-data-policy.md) |
+| Partner public sets (Banking77, DIFrauD, CFPB, ABCD, UCI SMS, …) | [#53](https://github.com/Alberto-Codes/typevet/issues/53) | [Eval partner data policy](eval-partner-data-policy.md) |
 | PSAI computer-use (multimodal deferred) | [#52](https://github.com/Alberto-Codes/typevet/issues/52) | YAML `out_of_manifest.psai_computer_use` |
 | collections NBA partner data | [#61](https://github.com/Alberto-Codes/typevet/issues/61) | [Eval partner data policy](eval-partner-data-policy.md) |
 | OSWorld-class GUI | — | Deferred with PSAI; not #54-ranked |

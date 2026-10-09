@@ -1,7 +1,8 @@
 # Eval partner data policy
 
-Kind: reference. This page states which finvet datasets typevet may ship in public
-artifacts and which paths CI must reject.
+Kind: reference. A private partner project owns some eval datasets. This page
+states which of them typevet may ship in public artifacts and which paths CI
+must reject.
 
 Parent non-goals: [#51](https://github.com/Alberto-Codes/typevet/issues/51),
 [#53](https://github.com/Alberto-Codes/typevet/issues/53). Guard issue:
@@ -9,7 +10,7 @@ Parent non-goals: [#51](https://github.com/Alberto-Codes/typevet/issues/51),
 
 ## Public eval datasets (v1 direction)
 
-typevet may adopt **public** finvet loaders and fixtures when a child issue
+typevet may adopt **public** partner loaders and fixtures when a child issue
 accepts them. Examples from the #53 research return:
 
 | Dataset | License | typevet role |
@@ -23,7 +24,7 @@ UCI SMS stay parked until a later scan adopts them.
 
 ## Other public eval datasets
 
-These datasets do not come from finvet. Issue
+These datasets do not come from the partner project. Issue
 [#292](https://github.com/Alberto-Codes/typevet/issues/292) adopts LFW.
 Issue [#304](https://github.com/Alberto-Codes/typevet/issues/304) adopts
 CEDAR.
@@ -36,19 +37,19 @@ CEDAR.
 
 ## Collections NBA — never in public typevet
 
-**collections NBA** is finvet’s partner next-best-action split. finvet keeps it
-**local only** under git-ignored `data/collections_nba/`. The license is
-partner data; finvet does **not** redistribute it
-([finvet datasets](https://github.com/Alberto-Codes/finvet/blob/main/docs/reference/datasets.md)).
+**collections NBA** is the partner project’s next-best-action split. The
+partner project keeps it **local only** under git-ignored
+`data/collections_nba/`. The license is partner data; the partner project does
+**not** redistribute it.
 
 typevet must **not**:
 
 - commit, bundle, or publish partner jsonl or derived shards;
 - add wheel/sdist paths that include `collections_nba` or `data/collections_nba`;
-- vendor finvet’s `collections_nba` loader or partner `nba` reward package;
+- vendor the partner project’s `collections_nba` loader or partner `nba` reward package;
 - document a “download this split” path for collections NBA in typevet artifacts.
 
-Developers may still run finvet locally with their own partner copy. That
+Developers may still run the partner project locally with their own partner copy. That
 workflow stays outside this repo.
 
 ## Forbidden markers (machine check)
@@ -59,10 +60,10 @@ the allowlisted guard and policy files named in that module.
 
 | Marker | Meaning |
 |---|---|
-| `collections_nba` | finvet dataset id and directory name |
+| `collections_nba` | partner dataset id and directory name |
 | `data/collections_nba` | default local partner tree |
 | `collections/nba` | alternate path spelling |
-| `finvet.data.collections_nba` | partner loader import |
+| any dotted module path ending in `.data.collections_nba` | partner loader import, refused in `src/` and `evals/src/` |
 
 ## When eval loaders land
 

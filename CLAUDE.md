@@ -29,7 +29,6 @@ Kind: reference and how-to, for agents. Guidance for coding agents. `AGENTS.md` 
 [TypeLLM](https://github.com/TypeLLM/TypeLLM). The product surface is still
 forming. Sister projects that share this worker pattern:
 [judgevet](https://github.com/Alberto-Codes/judgevet),
-[finvet](https://github.com/Alberto-Codes/finvet),
 [gepa-adk](https://github.com/Alberto-Codes/gepa-adk),
 [automarket](https://github.com/Alberto-Codes/automarket) and
 [docvet](https://github.com/Alberto-Codes/docvet).
@@ -73,7 +72,7 @@ that prove it — follow one supervised path. **Do not implement them in the mai
 supervisor session** unless the accepted contract explicitly assigns that role
 to the supervisor (rare; docs-only and policy slices only).
 
-Required order (sister projects: judgevet, finvet, automarket, gepa-adk):
+Required order (sister projects: judgevet, automarket, gepa-adk):
 
 1. **Groomed issue** — classified, sized, parent linked when needed; see
    [groom worker issues](docs/maintainers/groom-worker-issues.md).

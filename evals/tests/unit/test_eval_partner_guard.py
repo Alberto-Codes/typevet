@@ -15,6 +15,7 @@ from typevet_evals.datasets.partner_guard import (
     scan_tracked_content,
     scan_tracked_paths,
     scan_tree_paths,
+    text_imports_partner_module,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -108,7 +109,7 @@ def test_import_marker_is_flagged_in_library_and_evals_sources(
 ) -> None:
     # Isolate the import rule: with no path markers, only it can report a file.
     monkeypatch.setattr(partner_guard, "FORBIDDEN_PATH_MARKERS", ())
-    bad = "import finvet.data.collections_nba\n"
+    bad = "import partner.data.collections_nba\n"
     _fake_tracked_files(
         monkeypatch,
         tmp_path,
@@ -124,3 +125,14 @@ def test_import_marker_is_flagged_in_library_and_evals_sources(
         "evals/src/typevet_evals/bad.py",
         "src/typevet/bad.py",
     ]
+
+
+@pytest.mark.unit
+def test_import_rule_refuses_any_package_partner_loader() -> None:
+    # The rule names no package: any dotted path ending in the loader refuses.
+    assert text_imports_partner_module("import partner.data.collections_nba\n")
+    assert text_imports_partner_module("from acme.data.collections_nba import load\n")
+    assert text_imports_partner_module("from Partner.Data.Collections_NBA import x\n")
+    assert not text_imports_partner_module("import partner.data.banking77\n")
+    assert not text_imports_partner_module("import json\n")
+    assert not text_imports_partner_module("partner.data.collections_nba_notes = 1\n")

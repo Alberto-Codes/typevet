@@ -215,6 +215,21 @@ A row with no off-option receipt, no model call, or a call that failed,
 records `null` and `false`. The vLLM
 scorer always reports the mass as `null`, so the flag stays `false` on vLLM.
 
+### Partner collections throughput run
+
+The opt-in test `evals/tests/live/test_collections_throughput_live.py` reads
+the vLLM variables above and these two. It reads a private partner project's
+collections split and outcome seed by path and copies neither.
+
+| Environment name | Default | Notes |
+|---|---|---|
+| `TYPEVET_PARTNER_JEV_DIR` | none | Required; the directory with `train.jsonl`, `val.jsonl` and `test.jsonl` |
+| `TYPEVET_PARTNER_QUESTIONS` | none | Required; the outcome seed JSON file |
+
+These names replace two earlier names under the same `TYPEVET_` prefix. The
+evals workspace is marked `Private :: Do Not Upload` and is not published. The
+rename breaks only local runs that still export the earlier names.
+
 ## Diagnostic logging
 
 See [Diagnostic events](diagnostic-events.md) for `TYPEVET_LOG__FORMAT`,

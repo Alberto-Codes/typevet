@@ -3,7 +3,7 @@
 Kind: reference. This page states the **10×15** domain shard map for
 [`clinc/clinc_oos`](https://huggingface.co/datasets/clinc/clinc_oos), the
 **CC BY 3.0** license posture, and why CLINC Choice labels **do not** map to
-Banking77 intents or finvet **`FRAUD_INTENTS`**.
+Banking77 intents or the partner **`FRAUD_INTENTS`**.
 
 Parent epic: [#51](https://github.com/Alberto-Codes/typevet/issues/51).
 Research baseline: [#66](https://github.com/Alberto-Codes/typevet/issues/66)
@@ -27,7 +27,7 @@ this page documents **in-domain** shards only unless noted.
 | Loader module | **Not implemented** — tracked on [#58](https://github.com/Alberto-Codes/typevet/issues/58) |
 
 CLINC is **complementary** stress for multi-class Choice within a domain. It
-does **not** replace JevBench or finvet Banking77 regression ([#53](https://github.com/Alberto-Codes/typevet/issues/53)).
+does **not** replace JevBench or the partner Banking77 regression ([#53](https://github.com/Alberto-Codes/typevet/issues/53)).
 
 ## License
 
@@ -268,7 +268,7 @@ Keep **`credit_cards`** as its own shard.
 
 Accepted on [#66](https://github.com/Alberto-Codes/typevet/issues/66#issuecomment-5842004703):
 
-| Topic | CLINC150 | Banking77 / finvet |
+| Topic | CLINC150 | Banking77 / partner |
 |---|---|---|
 | Label ontology | **15** slug intents **per domain** | **77** PolyAI intent names |
 | typevet Decision on corpus | **Choice** (in-domain) | **Noul-primary** proxy on `reports_unauthorized` ([#53](https://github.com/Alberto-Codes/typevet/issues/53)) |
@@ -279,10 +279,10 @@ Accepted on [#66](https://github.com/Alberto-Codes/typevet/issues/66#issuecommen
 
 Concrete anti-patterns (forbidden unless a future judgment issue overrides):
 
-- Collapsing CLINC `report_fraud` into finvet **`FRAUD_INTENTS`** or the Banking77 proxy label.
+- Collapsing CLINC `report_fraud` into the partner **`FRAUD_INTENTS`** or the Banking77 proxy label.
 - Building one Choice enum that mixes CLINC banking intents with Banking77’s 77 categories.
 - Treating CLINC **`banking`** Choice accuracy as a substitute for Banking77 Noul agreement.
-- Reusing finvet **`fraud_type`** Choice labels as the CLINC in-domain gold schema.
+- Reusing the partner **`fraud_type`** Choice labels as the CLINC in-domain gold schema.
 
 When both corpora appear in eval docs, state **which loader**, **which primitive**, and **which label set** applied to each row.
 

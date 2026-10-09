@@ -66,7 +66,7 @@ answers a question, and a reference gives facts.
   llama.cpp adapters, `generate()` vs port injection; link to Gemma howto.
 
 - [Run a small live judgment eval](how-to/run-a-small-live-judgment-eval.md):
-  frozen six-message finvet workload, semantic controls, receipt paths (#133).
+  frozen six-message partner workload, semantic controls, receipt paths (#133).
 
 - [Run the image-conditioned live smoke](how-to/run-a-multimodal-live-smoke.md):
   opt-in vision check, `media=` calls, and the llama.cpp nested prompt shape.

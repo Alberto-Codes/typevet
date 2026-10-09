@@ -1,4 +1,4 @@
-"""Concurrency sweep and receipt for the finvet collections workload ([#236][i236]).
+"""Concurrency sweep and receipt for the partner collections workload ([#236][i236]).
 
 ``run_throughput`` opens the sync judgment port with ``open_judgment`` and the
 ``TYPEVET_VLLM__*`` settings. ``require_live_session`` refuses the offline

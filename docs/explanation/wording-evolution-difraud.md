@@ -19,9 +19,9 @@ Its ECE was 0.158, which is high. The model was often confident and wrong
 ([#133](https://github.com/Alberto-Codes/typevet/issues/133),
 [#236](https://github.com/Alberto-Codes/typevet/issues/236)).
 
-finvet had the same kind of problem. It evolved the wording of one `Noul`
+A private partner project had the same kind of problem. It evolved the wording of one `Noul`
 question with gepa-adk, and its held-out ECE moved from about 0.143 to 0.104
-(finvet #8 and #14, as the
+(partner issues #8 and #14, as the
 [#259 plan](https://github.com/Alberto-Codes/typevet/issues/259#issuecomment-5904177183) reports).
 The #259 plan asked whether the same method helps typevet. This page is the
 answer for one run.
@@ -75,7 +75,7 @@ The run has three guards against overfitting:
   the upstream SMS test split minus every row that #236 scored. No held-out
   row is in the selection set.
 - **The #236 rows are out.** The earlier 500 rows cannot leak into the check.
-- **The length cap is in the reflection prompt.** finvet found that gains
+- **The length cap is in the reflection prompt.** The partner project found that gains
   followed text length. The prompt states "at most 94 characters". Without
   that line, the first proposal had 542 characters and was refused.
 
@@ -181,12 +181,12 @@ The evolved wording can fit one weight set or one framing and not transfer
 to the other. One run on each backend cannot separate those causes. Together
 with the gap above, this limits what the vLLM fail says about the wording.
 
-## Compared with finvet
+## Compared with the partner project
 
-finvet reported a held-out ECE drop of about 0.04 (0.143 to 0.104). The
+The partner project reported a held-out ECE drop of about 0.04 (0.143 to 0.104). The
 typevet vLLM drop is 0.012, and the llama.cpp drop is 0.030. The two projects
 differ in data, model and backend, so this is not a like-for-like comparison.
-The typevet result does not confirm the finvet result, and it does not
+The typevet result does not confirm the partner result, and it does not
 contradict it.
 
 ## What this result does not say

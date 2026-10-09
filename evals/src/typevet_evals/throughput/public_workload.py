@@ -1,8 +1,8 @@
 """Public-dataset workloads for the throughput runner ([#236][i236]).
 
 Banking77 (CC BY 4.0, PolyAI) and DIFrauD SMS (MIT) become text records with a
-``positive`` label, the finvet questions and a parity baseline. The question
-text is verbatim from finvet ``src/finvet/questions.py`` at ``de50a60``. The
+``positive`` label, the partner questions and a parity baseline. The question
+text is verbatim from the partner project's question set at a pinned commit. The
 data is not in the repository. ``fetch_public_data`` downloads the two test
 files with the typevet loaders into one directory, and
 ``load_public_workloads`` reads them from that directory offline.
@@ -15,8 +15,8 @@ Attributes:
         typevet's ``MAX_ENUM_CHOICES`` (24, #296).
     DIFRAUD_LIMIT (int): DIFrauD SMS rows in the parity set.
     SEED (int): Seed for the loaders' hash-based order.
-    BANKING77_BASELINE (Baseline): finvet ECE 0.17 on the balanced 480 rows.
-    DIFRAUD_BASELINE (Baseline): finvet ECE 0.07 on 500 SMS rows, 98 scam.
+    BANKING77_BASELINE (Baseline): Partner ECE 0.17 on the balanced 480 rows.
+    DIFRAUD_BASELINE (Baseline): Partner ECE 0.07 on 500 SMS rows, 98 scam.
 
 Examples:
     ```python

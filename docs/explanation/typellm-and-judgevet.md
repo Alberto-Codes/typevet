@@ -124,7 +124,7 @@ See [supported imports](../reference/supported-imports.md) for paths and
 [native typed judgments](native-typed-judgments.md) for scope.
 
 Live evidence is limited to recorded runs. The
-[#133 finvet-derived receipt](../reference/judgment-live-receipts.md) records
+[#133 partner-derived receipt](../reference/judgment-live-receipts.md) records
 probability-bearing Choice and Noul answers from a local llama.cpp router on
 six rows plus two semantic controls. That is one small exploratory sample.
 typevet does **not** yet prove:

@@ -1,7 +1,7 @@
 """Contract tests: a collections record reaches a JudgmentPort ([#236][i236]).
 
 A recording fake port stands in for the scoring adapter. The record and the
-seed are synthetic and use finvet field names only.
+seed are synthetic and use partner field names only.
 
 Examples:
     ```bash

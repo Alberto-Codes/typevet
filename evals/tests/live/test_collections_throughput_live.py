@@ -2,8 +2,8 @@ r"""Opt-in paid vLLM collections throughput run ([#236][i236]).
 
 Skips unless ``TYPEVET_REQUIRE_LIVE=1``. With it set, **fails** before any
 network call when ``TYPEVET_BACKEND=vllm``, the ``TYPEVET_VLLM__*`` settings,
-``TYPEVET_VLLM_RECEIPT``, ``TYPEVET_FINVET_JEV_DIR`` or
-``TYPEVET_FINVET_QUESTIONS`` are missing or invalid. The run sweeps levels 1,
+``TYPEVET_VLLM_RECEIPT``, ``TYPEVET_PARTNER_JEV_DIR`` or
+``TYPEVET_PARTNER_QUESTIONS`` are missing or invalid. The run sweeps levels 1,
 8, 32 and 64 on ``val``, then runs train, val and test once at the best level
 with the call caps and the part of the 2,700 s run budget that the sweep
 left. One receipt with both runs is written
@@ -15,8 +15,8 @@ Examples:
       TYPEVET_VLLM__BASE_URL=https://<pod>-8000.proxy.runpod.net \
       TYPEVET_VLLM__MODEL=google/gemma-4-31B-it \
       TYPEVET_VLLM_RECEIPT=scratchpad/vllm/236-receipt.json \
-      TYPEVET_FINVET_JEV_DIR=<finvet JEV split directory> \
-      TYPEVET_FINVET_QUESTIONS=<seed>.json \
+      TYPEVET_PARTNER_JEV_DIR=<partner JEV split directory> \
+      TYPEVET_PARTNER_QUESTIONS=<seed>.json \
       uv run pytest evals/tests/live/test_collections_throughput_live.py -m live -q -s
     ```
 
@@ -66,7 +66,7 @@ def _gate_reason(environ: Mapping[str, str]) -> str | None:
     except ValueError as exc:
         return str(exc)
     missing = [p.name for p in paths if not p.is_file()]
-    return f"finvet files not found: {missing}" if missing else None
+    return f"partner files not found: {missing}" if missing else None
 
 
 def _left(used: Mapping[str, int]) -> CallCaps:

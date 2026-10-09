@@ -1,6 +1,6 @@
-"""Unit tests: finvet collections workload mapping and parity ([#236][i236]).
+"""Unit tests: partner collections workload mapping and parity ([#236][i236]).
 
-Every record and seed here is synthetic and uses finvet field names only.
+Every record and seed here is synthetic and uses partner field names only.
 
 Examples:
     ```bash
@@ -167,6 +167,12 @@ def test_load_questions_rejects_bad_seed(tmp_path: Path, seed: Any) -> None:
     path.write_text(json.dumps(seed), encoding="utf-8")
     with pytest.raises(ValueError, match="seed"):
         load_questions(path)
+
+
+@pytest.mark.unit
+def test_workload_env_vars_use_the_partner_names() -> None:
+    assert JEV_DIR_ENV == "TYPEVET_PARTNER_JEV_DIR"
+    assert QUESTIONS_ENV == "TYPEVET_PARTNER_QUESTIONS"
 
 
 @pytest.mark.unit

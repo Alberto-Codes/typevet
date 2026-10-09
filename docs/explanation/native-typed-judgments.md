@@ -26,7 +26,7 @@ judgment is the spine judgevet-shaped callers need later. See
 | `JudgmentPort` + offline fakes | Yes — tutorial and contract fixtures |
 | `ScoringJudgmentAdapter` over `CandidateScoringPort` | Yes — offline and llama.cpp scoring |
 | TPJEP v0 eight-task smoke | Yes — offline runner + opt-in live pytest |
-| finvet-derived six-message exploratory receipt | Documented on [#133](https://github.com/Alberto-Codes/typevet/issues/133); not a shipped CLI |
+| Partner-derived six-message exploratory receipt | Documented on [#133](https://github.com/Alberto-Codes/typevet/issues/133); not a shipped CLI |
 | Public calibration or ECE headline | No — see limitations |
 
 ## Where to start
@@ -34,7 +34,7 @@ judgment is the spine judgevet-shaped callers need later. See
 1. [First typed judgment offline](../tutorials/first-typed-judgment-offline.md)
    — wire `ScriptedScoringFake` and `ScoringJudgmentAdapter` with no model.
 2. [Run a small live judgment eval](../how-to/run-a-small-live-judgment-eval.md)
-   — TPJEP eight or read the frozen finvet-6 receipt.
+   — TPJEP eight or read the frozen partner-6 receipt.
 3. [Judgment live receipts](../reference/judgment-live-receipts.md) — measured
    numbers and pins, with links to issue comments.
 4. [Judgment text parts](../reference/judgment-text-parts.md) — each text part
@@ -68,7 +68,7 @@ its own chat template, and typevet does not classify it
 Receipts must name the template class. Do not treat a degraded template as
 silent equivalence to hosted Jev.
 
-**Small samples.** The finvet-derived six-row receipt on
+**Small samples.** The partner-derived six-row receipt on
 [#133](https://github.com/Alberto-Codes/typevet/issues/133#issuecomment-5843131304)
 is exploratory. It does not close the broader #133 quality study.
 

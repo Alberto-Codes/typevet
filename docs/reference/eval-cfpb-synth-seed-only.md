@@ -1,19 +1,20 @@
 # CFPB and synth collections — seed-only (no public gold intent)
 
-Kind: reference. This page states how typevet may use CFPB narratives and
-finvet’s synthetic collections intent data in public eval work.
+Kind: reference. This page states how typevet may use CFPB narratives in public
+eval work. It also covers a private partner project’s synthetic collections
+intent data.
 
 Parent: [#51](https://github.com/Alberto-Codes/typevet/issues/51). Baseline:
 [#53](https://github.com/Alberto-Codes/typevet/issues/53) research return.
 Public eval direction: [eval partner data policy](eval-partner-data-policy.md).
 
-## What finvet uses them for
+## What the partner project uses them for
 
 **CFPB Consumer Complaint Database** (US public record, debt-collection
-product filter) supplies **unlabelled** complaint narratives. finvet reads a
+product filter) supplies **unlabelled** complaint narratives. The partner project reads a
 local CSV export. The loader does not attach collections intent labels.
 
-**Synthetic collections intent** data is **derived**. finvet builds it from
+**Synthetic collections intent** data is **derived**. The partner project builds it from
 CFPB seeds plus a rewriter and Jev filtering. It is not a fixed public
 corpus with stable gold labels unless a separate regen or publish spec
 accepts one.
@@ -26,7 +27,7 @@ claims:
 | Path | Allowed in typevet public artifacts | Allowed eval claim |
 |---|---|---|
 | CFPB CSV (local, operator-owned) | No checked-in CFPB bulk in this repo | **No** “CFPB eval” or gold-intent benchmark |
-| finvet synth collections output | Only if a later issue accepts fixtures | **No** public gold intent without regen/publish spec |
+| Partner synth collections output | Only if a later issue accepts fixtures | **No** public gold intent without regen/publish spec |
 | Optional contract fixtures from synth | Yes, when an eval issue adds them | Must follow fixture labeling below |
 
 Adopt **Banking77** and **DIFrauD** for shippable public eval direction per
@@ -57,5 +58,5 @@ Do not write or imply:
 
 A child issue under #51 may accept a **regen spec** (how to rebuild synth) or a
 **publish spec** (how to freeze and name a public fixture set). Until then,
-seed-only stands. This page does not document the finvet synthesis pipeline;
-see finvet `docs/reference/datasets.md` for that workflow.
+seed-only stands. This page does not document the partner synthesis pipeline;
+the partner project documents that workflow.

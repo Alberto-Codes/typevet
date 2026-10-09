@@ -26,14 +26,14 @@ Attributes:
     CollectionsRecord (type): One mapped collections record.
     Baseline (type): Reference values that one parity check compares against.
     Bin (type): One reliability bin.
-    map_record (function): Map one finvet split record without changing it.
+    map_record (function): Map one partner split record without changing it.
     load_records (function): Read and map a jsonl split in file order.
     workload_paths (function): Resolve the split file and the seed file from
         the environment.
     load_questions (function): Read the outcome seed into typed questions.
     judge_record (function): Send one record with both questions in one call.
     reliability (function): Bin probabilities against labels.
-    ece (function): Expected calibration error as finvet computes it.
+    ece (function): Expected calibration error as the partner project computes it.
     parity (function): Build the quality parity record for answered records.
     PublicRecord (type): One public record: the text sent and its label.
     PublicWorkload (type): Records, questions, scored Noul name and baseline

@@ -50,7 +50,7 @@ Loader reference pages (Python modules under `src/typevet_evals/datasets/`):
 ## Rules
 
 - Manifests record **metadata only**. No corpus download scripts here.
-- Partner-only finvet data stays out; see
+- Partner-only data stays out; see
   [Eval partner data policy](../docs/reference/eval-partner-data-policy.md).
 - Primary typed-decision bench remains **JevBench** ([#24](https://github.com/Alberto-Codes/typevet/issues/24));
   complementary sets are stress/regression only ([#54](https://github.com/Alberto-Codes/typevet/issues/54)).

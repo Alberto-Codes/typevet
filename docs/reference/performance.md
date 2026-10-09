@@ -109,13 +109,13 @@ The mean prompt is 89.0 tokens per record, and the longest is 150 tokens.
 |---|---|---|---|---|---|---|---|
 | 64 | 500 | 4.88 | 102.46 | 102.46 | 0.592 / 0.880 / 1.122 | ≤0.8 | 0 |
 
-## Calibration against finvet
+## Calibration against the partner baseline
 
-The contract compares the expected calibration error (ECE) of each set with a finvet Jev baseline.
+The contract compares the expected calibration error (ECE) of each set with a Jev baseline from a private partner project.
 ECE uses 10 equal-width probability bins.
-The pass threshold adds 0.03 to the finvet value.
+The pass threshold adds 0.03 to the partner value.
 
-| Set | Answered | ECE | finvet Jev ECE | Threshold | Base rate (typevet / finvet) | Result |
+| Set | Answered | ECE | Partner Jev ECE | Threshold | Base rate (typevet / partner) | Result |
 |---|---|---|---|---|---|---|
 | Banking77-480 | 480 of 480 at each level | 0.0892 to 0.0905 | 0.17 | 0.20 | 0.500 / 0.50 | Pass |
 | DIFrauD SMS-500 | 500 of 500 | 0.1578 | 0.07 | 0.10 | 0.184 / 0.196 | Fail, no parity |
@@ -127,9 +127,9 @@ DIFrauD fails parity because the model is overconfident on "scam".
 Only 55.4% of those 166 records are scam.
 About 74 records that are not scam get a high "scam" probability.
 
-The typevet rows differ from the finvet rows.
-finvet samples rows differently from the typevet hash seed.
-The finvet baselines have two decimals and came from the Jev service `jev-1.13.0`.
+The typevet rows differ from the partner rows.
+The partner project samples rows differently from the typevet hash seed.
+The partner baselines have two decimals and came from the Jev service `jev-1.13.0`.
 The Jev backend and hardware are unknown.
 
 ## Cold start and cost
@@ -155,7 +155,7 @@ It excludes cold start, idle time and the proxy.
   Only 144 calls were left for 3,080 new texts, so the runner stopped before the first scoring call.
   This is a harness limit, not a limit of typevet or vLLM.
   No throughput, latency or ECE exists for this set.
-- **The finvet collections workload.** One question has 13 options.
+- **The partner collections workload.** One question has 13 options.
   At the time of this run, native Choice supported 10 options.
   This run did not measure that workload.
 - **GPU memory.** The vLLM `/metrics` endpoint does not show it.
