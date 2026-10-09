@@ -45,6 +45,11 @@ The adapter sends standard OpenAI `/v1/chat/completions` with nested
    export TYPEVET_LLAMA__DEFAULT_MODEL='<your-gemma-4-model-id>'
    ```
 
+   `TYPEVET_LLAMA__DEFAULT_MODEL` does not select the judgment model.
+   `open_judgment` and the judgevet bridge probe `TYPEVET_LLAMA__MULTIMODAL_MODEL`,
+   so set it to a Gemma 4 model whose template renders `<|turn>`; see
+   [Use typevet as a judgevet provider](use-typevet-as-a-judgevet-provider.md).
+
 Wire shape must stay **nested** OpenAI form (typevet already does this):
 
 ```json

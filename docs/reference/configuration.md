@@ -30,7 +30,7 @@ the mapping below. [`llama_cpp_adapter`][typevet.adapters.inbound.llama_cpp_adap
 | `TYPEVET_LLAMA__BASE_URL` | `base_url` | URL string | `http://127.0.0.1:8090` | Trailing slash stripped |
 | `TYPEVET_LLAMA__TIMEOUT` | `timeout` | float, seconds | `300` | Must be positive |
 | `TYPEVET_LLAMA__DEFAULT_MODEL` | `default_model` | string or empty | none | Router model id for live pytest (any Gemma 4 GGUF alias); live skips when empty |
-| `TYPEVET_LLAMA__MULTIMODAL_MODEL` | `multimodal_model` | string | `gemma-3-4b-it-q4km-mm` | Router model id for the [image-conditioned live smoke](../how-to/run-a-multimodal-live-smoke.md); the id must declare `image` input |
+| `TYPEVET_LLAMA__MULTIMODAL_MODEL` | `multimodal_model` | string | `gemma-3-4b-it-q4km-mm` | Router model id that `open_judgment` and the [judgevet bridge](../how-to/use-typevet-as-a-judgevet-provider.md) judge with, and the id for the [image-conditioned live smoke](../how-to/run-a-multimodal-live-smoke.md). The id must declare `image` input. For `open_judgment`, it must name a Gemma 4 model whose template renders `<\|turn>`; the default is a Gemma 3 id and fails that check with `ValueError` |
 | `TYPEVET_LLAMA__API_KEY` | `api_key` | string or empty | none | Sent in `auth_header`; empty means no key; ASCII only; left out of `repr` |
 | `TYPEVET_LLAMA__AUTH_HEADER` | `auth_header` | header name | `Authorization` | Empty means `Authorization`; must be an HTTP token and not protected |
 | `TYPEVET_LLAMA__AUTH_SCHEME` | `auth_scheme` | token or empty | `Bearer` | Unset means `Bearer`; set but empty sends the key bare |

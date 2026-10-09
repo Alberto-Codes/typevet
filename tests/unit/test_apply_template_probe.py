@@ -204,7 +204,7 @@ def test_gemma3_template_raises_when_gemma4_is_required(
     state.raw = ("application/json", json.dumps({"prompt": _GEMMA3_RENDERED}).encode())
     with pytest.raises(ValueError, match=r"^expected NATIVE_GEMMA4_TURN, got") as info:
         _open(base_url)
-    assert str(info.value).endswith("native_gemma3_turn")
+    assert "got native_gemma3_turn for model" in str(info.value)
     assert state.requests[_PATH] == 1
 
 

@@ -17,6 +17,16 @@ Measure each judge model on your own task before you trust its numbers.
   See [Run Gemma 4 on llama.cpp](run-gemma4-llamacpp.md) or [Serve typevet on vLLM](serve-typevet-on-vllm.md).
 - The `TYPEVET_BACKEND` and backend settings in the environment.
   See [configuration](../reference/configuration.md).
+- For llama.cpp, `TYPEVET_LLAMA__MULTIMODAL_MODEL` set to the judgment model.
+  `open_judgment` and the bridge probe this variable, not `TYPEVET_LLAMA__DEFAULT_MODEL`.
+  It must name a Gemma 4 model whose template renders `<|turn>`.
+  The default, `gemma-3-4b-it-q4km-mm`, is a Gemma 3 id and fails this check with `ValueError`.
+
+  ```bash
+  export TYPEVET_BACKEND=llama_cpp
+  export TYPEVET_LLAMA__MULTIMODAL_MODEL='<your-gemma-4-multimodal-model-id>'
+  ```
+
 - judgevet 0.17 or 0.18. The `judgevet` extra pins `judgevet>=0.17,<0.19`.
 
 ## Install the extra

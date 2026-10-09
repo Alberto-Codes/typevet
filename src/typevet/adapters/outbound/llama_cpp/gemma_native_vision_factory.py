@@ -25,6 +25,9 @@ that is not JSON, or that has no ``tokens`` list of integers, raises
 The ``/apply-template`` probe uses the same mapping and retry. A 200 body that
 is not JSON, or that has no ``prompt`` string, raises ``GenerationError``
 ([#311][i311]).
+When Gemma 4 is required and the probe renders another family, the
+``ValueError`` names the model id and what chose it: the ``model`` argument or
+``settings.multimodal_model`` (``TYPEVET_LLAMA__MULTIMODAL_MODEL``) ([#425][i425]).
 The port sets ``JudgmentResponse.request_ids`` from the request id of each
 question's ``/completion`` request when the client stamps one ([#411][i411]).
 
@@ -42,6 +45,7 @@ See Also:
 [i311]: https://github.com/Alberto-Codes/typevet/issues/311
 [i373]: https://github.com/Alberto-Codes/typevet/issues/373
 [i411]: https://github.com/Alberto-Codes/typevet/issues/411
+[i425]: https://github.com/Alberto-Codes/typevet/issues/425
 """
 
 from __future__ import annotations
@@ -109,6 +113,7 @@ class GemmaVisionSettings(Protocol):
         ...
 
 
+_SETTINGS_SOURCE = "settings.multimodal_model (TYPEVET_LLAMA__MULTIMODAL_MODEL)"
 _SUPPORTED_NATIVE = frozenset(
     {
         ServedTemplateClass.NATIVE_GEMMA3_TURN,
@@ -150,10 +155,12 @@ def _classify_native_template(
     model: str,
     *,
     require_gemma4: bool,
+    source: str,
 ) -> ServedTemplateClass:
     """Render one probe turn through ``/apply-template`` and classify it.
 
-    The probe changes no server state, so an early close gets one retry.
+    The probe changes no server state, so an early close gets one retry. A
+    Gemma 4 mismatch names ``model`` and the ``source`` that chose it (#425).
 
     Returns:
         The served template family.
@@ -174,12 +181,29 @@ def _classify_native_template(
     ensure_success_status(response)
     family = classify_served_template(_rendered_prompt(parse_json_response(response)))
     if require_gemma4 and family is not ServedTemplateClass.NATIVE_GEMMA4_TURN:
-        msg = f"expected NATIVE_GEMMA4_TURN, got {family.value}"
+        msg = (
+            f"expected NATIVE_GEMMA4_TURN, got {family.value} for model {model!r}"
+            f" from {source}; name a Gemma 4 model whose template renders <|turn>"
+        )
         raise ValueError(msg)
     if family not in _SUPPORTED_NATIVE:
         msg = f"unsupported served template for native vision: {family.value}"
         raise ValueError(msg)
     return family
+
+
+def _model_source(model: str | None) -> str:
+    """Name what chose the probed model id for error messages (#425).
+
+    Args:
+        model: The explicit ``model`` argument, or ``None``.
+
+    Returns:
+        ``"the model argument"`` for an explicit id, else
+        ``settings.multimodal_model``, which ``load_llama_settings`` reads
+        from ``TYPEVET_LLAMA__MULTIMODAL_MODEL``.
+    """
+    return "the model argument" if model else _SETTINGS_SOURCE
 
 
 def _rendered_prompt(payload: Any) -> str:
@@ -304,12 +328,15 @@ def open_gemma_native_vision_judgment(
 
     Raises:
         ValueError: When vision is unavailable or the template is unsupported.
+            A Gemma 4 mismatch names the model id and whether the ``model``
+            argument or ``settings.multimodal_model`` chose it.
         TransportError: When a probe fails before a response.
         BackendHttpError: When a probe returns status 400 or higher.
         GenerationError: When the ``/apply-template`` body has no ``prompt``
             string.
     """
     model_id = model or settings.multimodal_model
+    source = _model_source(model)
     base = settings.base_url.rstrip("/")
     tokenize_content = hooks.get("tokenize_content")
     scoring_port_wrapper = hooks.get("scoring_port_wrapper")
@@ -320,7 +347,7 @@ def open_gemma_native_vision_judgment(
             msg = "model reports text-only input modalities"
             raise ValueError(msg)
         served = _classify_native_template(
-            client, model_id, require_gemma4=require_gemma4
+            client, model_id, require_gemma4=require_gemma4, source=source
         )
         tokenize = tokenize_content or _tokenize_factory(client, model_id)
         scoring = LlamaCppCandidateScoringAdapter(
@@ -378,13 +405,15 @@ def probe_gemma_native_vision_support(
         Mapping with ``ok``, ``model``, ``served``, and ``vision`` keys.
 
     Raises:
-        ValueError: When the router rejects the probe (same rules as open).
+        ValueError: When the router rejects the probe (same rules as open,
+            including the model id and its source in a Gemma 4 mismatch).
         TransportError: When the probe fails before a response.
         BackendHttpError: When the probe returns status 400 or higher.
         GenerationError: When the ``/apply-template`` body has no ``prompt``
             string.
     """
     model_id = model or settings.multimodal_model
+    source = _model_source(model)
     base = settings.base_url.rstrip("/")
 
     def _probe(client: httpx.Client) -> dict[str, Any]:
@@ -393,7 +422,7 @@ def probe_gemma_native_vision_support(
             msg = "model reports text-only input modalities"
             raise ValueError(msg)
         served = _classify_native_template(
-            client, model_id, require_gemma4=require_gemma4
+            client, model_id, require_gemma4=require_gemma4, source=source
         )
         return {
             "ok": True,
