@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.3](https://github.com/Alberto-Codes/typevet/compare/v0.8.2...v0.8.3) (2026-10-09)
+
+
+### Build
+
+* **deps:** widen the judgevet extra to &lt;1.0 and test against the newest judgevet ([982d43a](https://github.com/Alberto-Codes/typevet/commit/982d43a5efa478bfafc962d1e016c85af3d6e882)), closes [#434](https://github.com/Alberto-Codes/typevet/issues/434)
+
 ## [0.8.2](https://github.com/Alberto-Codes/typevet/compare/v0.8.1...v0.8.2) (2026-10-09)
 
 
