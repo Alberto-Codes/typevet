@@ -27,9 +27,10 @@ Measure each judge model on your own task before you trust its numbers.
   export TYPEVET_LLAMA__MULTIMODAL_MODEL='<your-gemma-4-multimodal-model-id>'
   ```
 
-- judgevet 0.17 to 0.19. The `judgevet` extra pins `judgevet>=0.17,<0.20`.
+- judgevet 0.17 or later, below 1.0. The `judgevet` extra pins `judgevet>=0.17,<1.0`.
   judgevet is pre-1.0, so a minor release can break the provider port.
-  typevet widens the upper bound one release at a time, after the bridge tests pass on that release.
+  A daily CI job runs the bridge and conformance tests against the newest judgevet release.
+  A breaking judgevet release gets a typevet fix or a cap in a patch release.
 
 ## Install the extra
 
@@ -225,7 +226,7 @@ Other exceptions keep their type.
 ## Evidence limits
 
 Offline tests prove the bridge on typevet fakes.
-The text, media and async ports pass the judgevet provider conformance kit, `judgevet.testing.conformance` from judgevet 0.17.0, 0.18.0 and 0.19.0.
+The text, media and async ports pass the judgevet provider conformance kit, `judgevet.testing.conformance` from judgevet 0.17.0, 0.18.0, 0.19.0 and 0.20.0.
 The tests also run judgevet's command line and MCP server on the bridge.
 They prove no live model behaviour.
 One live run per backend (llama.cpp and vLLM) asked one Noul, one Choice and one Score through the bridge and returned typed answers; see [#289](https://github.com/Alberto-Codes/typevet/issues/289). This is not a quality claim.

@@ -1420,7 +1420,7 @@ wheels = [
 
 [[package]]
 name = "judgevet"
-version = "0.19.0"
+version = "0.20.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -1428,9 +1428,9 @@ dependencies = [
     { name = "structlog" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7c/fd/80ed2231faae2fabcb16026e3fa16703493b245e3361eea7743b61f9c476/judgevet-0.19.0.tar.gz", hash = "sha256:36eae1df646be550ef53707110325241397146e515eff101963c28d6773e6706", size = 143159, upload-time = "2026-10-09T20:22:51.161Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/67/61/bba5b50c3e30c8fb2250f014e1d08f2d559bff281f431c0c6277d3ac5ee8/judgevet-0.20.0.tar.gz", hash = "sha256:645f39836db147422b6d4607d85b89d7c5b842dc30c45fe5399d42c4c218a1be", size = 143595, upload-time = "2026-10-09T22:02:00.268Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/24/ee/76eadefc5afa2cf571d072f6c75d9d28e42c8803058a7151fcd29492f3ee/judgevet-0.19.0-py3-none-any.whl", hash = "sha256:e515aa4dc9d294219b63688aa409041d6ad253681a2b46f317737d87d4c49a52", size = 178503, upload-time = "2026-10-09T20:22:49.784Z" },
+    { url = "https://files.pythonhosted.org/packages/3e/cf/3f0e1e627ce7ca3e49f43f02bf7c228a5e703ea22dd562f46d9423611007/judgevet-0.20.0-py3-none-any.whl", hash = "sha256:a6150b6dd9e776c2508801d5be45108ca5730375658dcc1eb9fe3b3ff7b07f7a", size = 178993, upload-time = "2026-10-09T22:01:58.878Z" },
 ]
 
 [package.optional-dependencies]
@@ -3041,7 +3041,7 @@ docs = [
 requires-dist = [
     { name = "httpx", specifier = ">=0.28" },
     { name = "jsonschema", specifier = ">=4.26.0" },
-    { name = "judgevet", marker = "extra == 'judgevet'", specifier = ">=0.17,<0.20" },
+    { name = "judgevet", marker = "extra == 'judgevet'", specifier = ">=0.17,<1.0" },
     { name = "structlog", specifier = ">=24.1" },
     { name = "typer", marker = "extra == 'cli'", specifier = ">=0.12" },
 ]
@@ -3051,7 +3051,7 @@ provides-extras = ["cli", "judgevet"]
 dev = [
     { name = "docvet", extras = ["griffe"], specifier = ">=1.16.0" },
     { name = "import-linter", specifier = ">=2.15" },
-    { name = "judgevet", extras = ["mcp", "conformance"], specifier = ">=0.17,<0.20" },
+    { name = "judgevet", extras = ["mcp", "conformance"], specifier = ">=0.17,<1.0" },
     { name = "pre-commit", specifier = ">=4.6.2" },
     { name = "pytest", specifier = ">=9.1.1" },
     { name = "pytest-cov", specifier = ">=7.1.0" },
@@ -3086,7 +3086,7 @@ requires-dist = [
     { name = "httpx", specifier = ">=0.28" },
     { name = "jevbench", git = "https://github.com/fstandhartinger/jevbench?rev=bb05a335bc809e61b20c0f745d25499a82b326fc" },
     { name = "jsonschema", specifier = ">=4.26.0" },
-    { name = "judgevet", specifier = ">=0.17,<0.20" },
+    { name = "judgevet", specifier = ">=0.17,<1.0" },
     { name = "pillow", specifier = ">=11.3" },
     { name = "typevet", editable = "." },
 ]

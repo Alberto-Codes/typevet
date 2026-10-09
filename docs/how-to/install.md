@@ -76,7 +76,7 @@ typevet does not yet ship a console script, so the extra adds no command.
 uv add "typevet[cli]"
 ```
 
-The `judgevet` extra installs `judgevet>=0.17,<0.20`.
+The `judgevet` extra installs `judgevet>=0.17,<1.0`.
 It lets judgevet use typevet as its judgment provider.
 See [use typevet as a judgevet provider](use-typevet-as-a-judgevet-provider.md).
 

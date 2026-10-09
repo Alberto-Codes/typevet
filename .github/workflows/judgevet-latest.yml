@@ -1,0 +1,56 @@
+---
+name: judgevet latest
+
+# typevet accepts judgevet below 1.0 (#434). This job runs the bridge and
+# conformance tests against the newest judgevet on PyPI, not the locked one,
+# so a breaking judgevet release fails here before a user meets it.
+
+"on":
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  judgevet-latest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: true
+
+      - name: Install Python 3.12
+        run: uv python install 3.12
+
+      - name: Sync locked dependencies
+        run: uv sync --locked --all-groups
+
+      - name: Upgrade judgevet to the newest release
+        run: >-
+          uv pip install --upgrade-package judgevet --refresh-package judgevet
+          'judgevet[mcp,conformance]'
+
+      - name: Print the resolved judgevet
+        run: >-
+          uv run --no-sync python -c
+          'import judgevet; print(judgevet.__version__, judgevet.__file__)'
+
+      - name: Bridge and conformance tests
+        run: >-
+          uv run --no-sync python -m pytest -q -k judgevet -m "not live"
+
+      - name: Prune uv cache
+        if: always()
+        continue-on-error: true
+        run: uv cache prune --ci
