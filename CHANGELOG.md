@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/Alberto-Codes/typevet/compare/v0.8.0...v0.8.1) (2026-10-09)
+
+
+### Fixes
+
+* **llama:** name the model and its source when the judgment template is not Gemma 4 ([0e089d1](https://github.com/Alberto-Codes/typevet/commit/0e089d1b8e3f884da58ae6a2bbe9faa0846d885d)), closes [#425](https://github.com/Alberto-Codes/typevet/issues/425)
+
 ## [0.8.0](https://github.com/Alberto-Codes/typevet/compare/v0.7.0...v0.8.0) (2026-10-03)
 
 
