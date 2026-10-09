@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.4](https://github.com/Alberto-Codes/typevet/compare/v0.8.3...v0.8.4) (2026-10-09)
+
+
+### Fixes
+
+* **llama:** neutralize media markers in caller text before rendering the scoring prefix ([bb7f835](https://github.com/Alberto-Codes/typevet/commit/bb7f8356b23124209addc38a7b378fa0402b6998)), closes [#433](https://github.com/Alberto-Codes/typevet/issues/433)
+
 ## [0.8.3](https://github.com/Alberto-Codes/typevet/compare/v0.8.2...v0.8.3) (2026-10-09)
 
 
