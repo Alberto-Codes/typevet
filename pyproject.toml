@@ -1,6 +1,6 @@
 [project]
 name = "typevet"
-version = "0.8.1"
+version = "0.8.2"
 description = "Typed answers from model next-token probabilities, on llama.cpp and vLLM"
 readme = "README.md"
 license = "MIT"
