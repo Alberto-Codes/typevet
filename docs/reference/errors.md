@@ -82,6 +82,10 @@ request, so no request is sent. The check runs once for each distinct schema.
 | A `media` item is not an `ImageInput` | `TypeError` | `media[N] must be ImageInput, got TYPE` |
 | Blank `model`, empty `prefix`, no candidates, a duplicate label or token-id sequence, or a `MEDIA_MARKER` count that differs from `len(media)` | `ScoringValidationError` | Names the failed rule |
 
+The marker-count message names both counts and does not quote the prefix.
+The judgment adapter neutralizes a `<__media__>` in caller text (#433). A
+state, instructions or criteria that hold the marker do not raise this error.
+
 Fix the request; do not treat these as retryable generation failures.
 
 ### Event loop misuse (not a generation error)

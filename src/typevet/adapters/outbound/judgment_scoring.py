@@ -11,7 +11,9 @@ whose off-option mass is above it and keeps one ``OffOptionReceipt`` per
 answer on the response (#353). Optional ``option_block`` and
 ``context_template`` templates change the words around the control lines and
 the context; the control mapping and the prefill stay the same, and
-``text_parts`` pins both (#364).
+``text_parts`` pins both (#364). A media marker in the state, the
+instructions or the criteria is neutralized before the adapter adds one real
+marker per image, so caller text cannot bind or demand an image (#433).
 
 Examples:
     ```python
@@ -70,7 +72,12 @@ from typevet.domain.judgment_response import (
     OffOptionReceipt,
     TokenUsage,
 )
-from typevet.domain.media import MEDIA_MARKER, ImageInput, count_media_markers
+from typevet.domain.media import (
+    MEDIA_MARKER,
+    ImageInput,
+    count_media_markers,
+    neutralize_media_markers,
+)
 from typevet.domain.text_parts import TextParts, render_context
 from typevet.ports.framing import ModelFramingPort
 from typevet.ports.scoring import CandidateScoringPort
@@ -181,9 +188,16 @@ def _field_criteria(question: Question) -> Mapping[str, str] | None:
 
 
 def _state_context(state: str | dict[str, Any] | list[Any]) -> str:
-    if isinstance(state, str):
-        return state
-    return json.dumps(state, ensure_ascii=False)
+    """Render the state as text with every caller media marker neutralized.
+
+    Args:
+        state: Content under evaluation.
+
+    Returns:
+        State text that holds no ``MEDIA_MARKER`` (#433).
+    """
+    text = state if isinstance(state, str) else json.dumps(state, ensure_ascii=False)
+    return neutralize_media_markers(text)
 
 
 def _media_context(
@@ -277,14 +291,16 @@ class ScoringJudgmentAdapter:
             question: Native question supplying criteria and label order.
 
         Returns:
-            Field instructions that map each control to its label.
+            Field instructions that map each control to its label, with every
+            caller media marker neutralized (#433).
         """
-        return render_field_instructions(
+        block = render_field_instructions(
             decision,
             choice_criteria=_field_criteria(question),
             original_labels=judgment_original_labels(question),
             option_block=self._text_parts.option_block,
         )
+        return neutralize_media_markers(block)
 
     def _field_prefix(
         self, context: str, field_block: str, media: tuple[ImageInput, ...]

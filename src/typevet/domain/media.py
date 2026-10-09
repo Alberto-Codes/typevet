@@ -6,6 +6,16 @@ builds randomize the marker per server instance, so an adapter may substitute
 the router-reported marker at the edge; the domain contract always counts the
 documented constant.
 
+Caller text must not add a marker, or an image request would arrive with no
+image (#433). A git diff, a log or a fetched page can hold the literal
+``<__media__>``. ``neutralize_media_markers`` rewrites each such sequence to
+``NEUTRALIZED_MEDIA_MARKER`` before the adapter adds the real markers. The
+rewrite escapes the underscores, so the model still reads the original
+characters. The router marker from ``GET /props`` is substituted only for the
+documented constant, so neutralized text keeps no marker on either backend.
+Escaping was chosen over a private marker value because the llama.cpp mtmd
+default and the vLLM split both key on the documented constant.
+
 Examples:
     ```python
     from typevet.domain.media import MEDIA_MARKER, ImageInput
@@ -21,6 +31,8 @@ See Also:
 
 Attributes:
     MEDIA_MARKER (str): Documented media placeholder ``<__media__>``.
+    NEUTRALIZED_MEDIA_MARKER (str): The marker with a backslash before each
+        underscore; it replaces a marker found in caller text.
     SUPPORTED_IMAGE_MIME_TYPES (frozenset[str]): Accepted v1 image mime types.
 """
 
@@ -31,6 +43,8 @@ from dataclasses import dataclass
 from typevet.domain.errors import ScoringValidationError
 
 MEDIA_MARKER = "<__media__>"
+
+NEUTRALIZED_MEDIA_MARKER = r"<\_\_media\_\_>"
 
 SUPPORTED_IMAGE_MIME_TYPES: frozenset[str] = frozenset(
     {
@@ -99,3 +113,25 @@ def count_media_markers(text: str) -> int:
         ```
     """
     return text.count(MEDIA_MARKER)
+
+
+def neutralize_media_markers(text: str) -> str:
+    """Rewrite each ``MEDIA_MARKER`` in caller text so it binds no image.
+
+    The result holds no marker. The marker has one ``<`` and one ``>``, so
+    no marker can start or end inside the escaped form.
+
+    Args:
+        text: Caller text such as a state, instructions or criteria.
+
+    Returns:
+        ``text`` with every marker replaced by ``NEUTRALIZED_MEDIA_MARKER``.
+
+    Examples:
+        ```python
+        from typevet.domain.media import MEDIA_MARKER, neutralize_media_markers
+
+        assert MEDIA_MARKER not in neutralize_media_markers(f"diff {MEDIA_MARKER}")
+        ```
+    """
+    return text.replace(MEDIA_MARKER, NEUTRALIZED_MEDIA_MARKER)

@@ -32,6 +32,10 @@ The caller passes images through the keyword-only `media` argument of
 `JudgmentPort.judge`. `None` or an empty tuple is the text path. The judgment
 adapter puts one `MEDIA_MARKER` (`<__media__>`) per image in front of the
 rendered state, one marker per line. The marker order is the image order.
+Caller text can hold the literal `<__media__>`, for example in a git diff or
+a fetched page. The adapter neutralizes that text in the state, the
+instructions and the criteria to `<\_\_media\_\_>` before it adds the real
+markers. Caller text therefore cannot bind or demand an image (#433).
 
 Two request types enforce a count check. `CandidateScoringRequest` and
 `GenerationRequest` each count the markers in the prefix or prompt. When that
