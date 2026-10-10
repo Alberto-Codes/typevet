@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.5](https://github.com/Alberto-Codes/typevet/compare/v0.8.4...v0.8.5) (2026-10-09)
+
+
+### Features
+
+* **llama:** let open_judgment serve a text-only model and refuse only image inputs ([86cebde](https://github.com/Alberto-Codes/typevet/commit/86cebdeeb88c3e357fc172eb6e970c4ab5b63a6f)), closes [#438](https://github.com/Alberto-Codes/typevet/issues/438)
+
 ## [0.8.4](https://github.com/Alberto-Codes/typevet/compare/v0.8.3...v0.8.4) (2026-10-09)
 
 
