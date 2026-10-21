@@ -4,8 +4,18 @@ name: quality gates
 "on":
   pull_request:
     branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+      - "_bmad-output/**"
+      - "mkdocs.yml"
   push:
     branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+      - "_bmad-output/**"
+      - "mkdocs.yml"
 
 permissions:
   contents: read
@@ -34,6 +44,11 @@ jobs:
         run: uv sync --locked --all-groups
 
       - name: pre-commit (commit stage)
+        # The push-stage step runs the pytest-cov hook on the same tree, a
+        # superset of the pytest hook, so CI runs the suite once. Local hooks
+        # keep both stages; this skips nothing the next step does not re-run.
+        env:
+          SKIP: pytest
         run: >-
           uv run pre-commit run --all-files --show-diff-on-failure
           --hook-stage pre-commit

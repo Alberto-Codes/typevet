@@ -4,6 +4,16 @@ name: documentation
 "on":
   push:
     branches: [main]
+    # Inputs that mkdocs build --strict reads. mkdocstrings reads src/ and
+    # a snippet includes scripts/check_loc.py.
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - "src/**"
+      - "scripts/check_loc.py"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/docs.yml"
   workflow_dispatch:
 
 permissions:

@@ -3,11 +3,10 @@ name: judgevet latest
 
 # typevet accepts judgevet below 1.0 (#434). This job runs the bridge and
 # conformance tests against the newest judgevet on PyPI, not the locked one,
-# so a breaking judgevet release fails here before a user meets it.
+# so a breaking judgevet release fails here before a user meets it. It runs
+# daily and on demand, not on push.
 
 "on":
-  push:
-    branches: [main]
   schedule:
     - cron: "17 6 * * *"
   workflow_dispatch:
@@ -20,6 +19,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # The daily run carries the advisory signal for main now that fewer pushes
+  # run quality gates (#455). A separate job, so a published advisory and a
+  # breaking judgevet release each fail on their own. uv audit reads uv.lock
+  # and needs no synced environment.
+  dependency-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: true
+
+      - name: Install Python 3.12
+        run: uv python install 3.12
+
+      - name: Dependency audit (current lockfile)
+        run: uv audit --locked --preview-features audit-command
+
   judgevet-latest:
     runs-on: ubuntu-latest
     timeout-minutes: 15
