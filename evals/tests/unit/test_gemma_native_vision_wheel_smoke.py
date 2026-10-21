@@ -44,12 +44,20 @@ def test_smoke_rejects_judgment_input_loss(
         model: str,
         *,
         media: tuple[ImageInput, ...] | None = None,
+        off_option_threshold: float | None = None,
     ) -> JudgmentResponse:
         if mutation == "images":
             media = None
         else:
             questions = {"q": Noul(instructions="Replacement")}
-        return original(self, state, questions, model, media=media)
+        return original(
+            self,
+            state,
+            questions,
+            model,
+            media=media,
+            off_option_threshold=off_option_threshold,
+        )
 
     monkeypatch.setattr(ScoringJudgmentAdapter, "judge", altered)
     assert run_wheel_smoke() == 1
