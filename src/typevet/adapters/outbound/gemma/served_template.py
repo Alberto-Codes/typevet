@@ -2,6 +2,8 @@ r"""Classify llama.cpp ``/apply-template`` families for Gemma judgment scoring.
 
 Recognized families are native Gemma 4 ``<|turn>``, native Gemma 3
 ``<start_of_turn>`` and degraded ChatML. Mixed markers are unsupported.
+``CHATML_EMPTY_THINK_PREFILLS`` holds the known empty think blocks for a
+ChatML thinking model (#443).
 
 Examples:
     ```python
@@ -28,6 +30,10 @@ GEMMA4_NO_THINKING_PREFILL: Final[str] = "<|channel>thought\n<channel|>"
 CHATML_IM_START: Final[str] = "<|im_start|>"
 CHATML_IM_END: Final[str] = "<|" + "im_end|>"
 CHATML_ASSISTANT_HEADER: Final[str] = f"{CHATML_IM_START}assistant\n"
+CHATML_EMPTY_THINK_PREFILLS: Final[tuple[str, ...]] = (
+    "<think>\n\n</think>\n\n",
+    "<think></think>",
+)
 GEMMA4_CHANNEL_CLOSE: Final[str] = "<channel|>"
 GEMMA4_TOOL_RESPONSE: Final[str] = "<|tool_response>"
 GEMMA4_THINK_TRIGGER: Final[str] = "<|think|>"

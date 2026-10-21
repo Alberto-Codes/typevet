@@ -242,6 +242,8 @@ classification and answer-binding helpers. It imports no serving backend.
 | Name | Role |
 |---|---|
 | `CHATML_ASSISTANT_HEADER`, `CHATML_IM_START`, `CHATML_IM_END` | ChatML turn control strings |
+| `CHATML_EMPTY_THINK_PREFILLS` | Known ChatML empty think blocks for a thinking model |
+| `ChatMLThinkingFraming` | Text-only ChatML framing that ends with an empty think block |
 | `GEMMA3_START_OF_TURN`, `GEMMA3_END_OF_TURN`, `GEMMA3_MODEL_TURN_HEADER` | Gemma 3 turn control strings |
 | `GEMMA4_TURN_OPEN`, `GEMMA4_TURN_CLOSE`, `GEMMA4_MODEL_TURN_HEADER` | Gemma 4 turn control strings |
 | `GEMMA4_CHANNEL_CLOSE`, `GEMMA4_THINK_TRIGGER`, `GEMMA4_NO_THINKING_PREFILL`, `GEMMA4_TOOL_RESPONSE` | Gemma 4 channel, thinking and tool control strings |
@@ -254,7 +256,7 @@ classification and answer-binding helpers. It imports no serving backend.
 | `bind_enum_label`, `bind_enum_labels` | Bind enum labels to exact token ids and `CandidateTokenSpec` rows |
 | `termination_kind` | Classify how an assistant completion ends |
 | `compose_scoring_prefix`, `compose_media_scoring_prefix` | Scoring prefix text: degraded ChatML, or native turns with media |
-| `require_no_thinking_prefill` | Refuse a rendered Gemma 4 prefix that does not end with the no-thinking prefill |
+| `require_no_thinking_prefill` | Refuse a rendered Gemma 4 or ChatML prefix that does not end with a known no-thinking prefill |
 
 ## `typevet.adapters.diagnostics`
 

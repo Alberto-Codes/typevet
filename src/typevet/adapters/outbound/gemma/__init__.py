@@ -11,17 +11,22 @@ Examples:
 
 See Also:
     - [typevet.adapters.outbound.gemma.served_template][]: Template classification
+    - [typevet.adapters.outbound.gemma.chatml_framing][]: ChatML thinking framing
     - [typevet.adapters.outbound.gemma.answer_binding][]: Answer anchors and
       enum binding
 
 Attributes:
     CHATML_ASSISTANT_HEADER (str): ChatML assistant turn header constant.
+    CHATML_EMPTY_THINK_PREFILLS (tuple[str, ...]): Known ChatML empty think
+        blocks.
+    ChatMLThinkingFraming (type): ChatML framing that ends with an empty
+        think block.
     ServedTemplateClass (type): Served-template family enum.
     ThinkingDisposition (type): Thinking-channel disposition enum.
     classify_served_template (callable): Classify ``/apply-template`` output.
     compose_media_scoring_prefix (callable): Native-turn prefix for media scoring.
-    require_no_thinking_prefill (callable): Refuse a Gemma 4 prefix without
-        the no-thinking prefill.
+    require_no_thinking_prefill (callable): Refuse a Gemma 4 or ChatML prefix
+        without its no-thinking prefill.
     resolve_answer_anchor (callable): Locate pre-candidate answer boundary.
 """
 
@@ -33,6 +38,7 @@ from typevet.adapters.outbound.gemma.answer_binding import (
     resolve_answer_anchor,
     termination_kind,
 )
+from typevet.adapters.outbound.gemma.chatml_framing import ChatMLThinkingFraming
 from typevet.adapters.outbound.gemma.scoring_prefix import (
     compose_media_scoring_prefix,
     compose_scoring_prefix,
@@ -40,6 +46,7 @@ from typevet.adapters.outbound.gemma.scoring_prefix import (
 )
 from typevet.adapters.outbound.gemma.served_template import (
     CHATML_ASSISTANT_HEADER,
+    CHATML_EMPTY_THINK_PREFILLS,
     CHATML_IM_END,
     CHATML_IM_START,
     GEMMA3_END_OF_TURN,
@@ -60,6 +67,7 @@ from typevet.adapters.outbound.gemma.served_template import (
 
 __all__ = [
     "CHATML_ASSISTANT_HEADER",
+    "CHATML_EMPTY_THINK_PREFILLS",
     "CHATML_IM_END",
     "CHATML_IM_START",
     "GEMMA3_END_OF_TURN",
@@ -73,6 +81,7 @@ __all__ = [
     "GEMMA4_TURN_CLOSE",
     "GEMMA4_TURN_OPEN",
     "AnswerAnchor",
+    "ChatMLThinkingFraming",
     "ServedTemplateClass",
     "ThinkingDisposition",
     "bind_enum_label",

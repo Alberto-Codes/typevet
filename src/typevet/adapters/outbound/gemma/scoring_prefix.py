@@ -4,6 +4,8 @@ Text-only scoring uses degraded ChatML. Media scoring uses the served native
 turn family: Gemma 3 ``<start_of_turn>`` or Gemma 4 ``<|turn>`` with
 no-thinking prefill after the model header. A caller framing whose last turn
 is a Gemma 4 model turn must end with that prefill (#354). A caller
+framing whose last turn is a ChatML assistant turn must end with one known
+empty think block (#443). A caller
 ``context_template`` places the context and the field block in the user
 text; the turn markers and the prefill stay the same (#364).
 
@@ -25,6 +27,7 @@ from typing import TYPE_CHECKING, Final
 
 from typevet.adapters.outbound.gemma.served_template import (
     CHATML_ASSISTANT_HEADER,
+    CHATML_EMPTY_THINK_PREFILLS,
     CHATML_IM_END,
     CHATML_IM_START,
     GEMMA3_END_OF_TURN,
@@ -54,6 +57,16 @@ _NATIVE_TURN_WRAPPERS: Final[dict[ServedTemplateClass, tuple[str, str, str]]] = 
         GEMMA4_MODEL_TURN_HEADER,
     ),
 }
+_THINKING_PREFILLS: Final[dict[str, tuple[tuple[str, ...], str]]] = {
+    GEMMA4_MODEL_TURN_HEADER: (
+        (GEMMA4_NO_THINKING_PREFILL,),
+        "a Gemma 4 model turn without the no-thinking prefill",
+    ),
+    CHATML_ASSISTANT_HEADER: (
+        CHATML_EMPTY_THINK_PREFILLS,
+        "a ChatML assistant turn without an empty think block",
+    ),
+}
 _TURN_OPENERS: Final[tuple[str, ...]] = (
     CHATML_IM_START,
     GEMMA3_START_OF_TURN,
@@ -64,16 +77,18 @@ _TURN_OPENERS: Final[tuple[str, ...]] = (
 def require_no_thinking_prefill(
     prefix: str, *, field_block: str, framing_class: str
 ) -> None:
-    """Refuse a rendered Gemma 4 prefix that lacks the no-thinking prefill.
+    """Refuse a rendered prefix whose answer turn lacks its no-thinking prefill.
 
     The check reads the rendered text, not the framing object. It reads only
     the tail after the last copy of ``field_block``. typevet renders that
     block; the state text before it is caller data, so the check never reads
-    it. The tail is on the Gemma 4 path when its last turn opener starts the
-    Gemma 4 model header. That family declares ``GEMMA4_NO_THINKING_PREFILL``;
-    the tail must end with it. Other families declare no prefill, so this
-    check allows them. A prefix that does not hold ``field_block`` has no
-    framing-owned tail, so the check allows it.
+    it. One table maps each answer-turn header to its known prefills. When
+    the tail's last turn opener starts a header in that table, the tail must
+    end with one of its prefills. The Gemma 4 model header declares
+    ``GEMMA4_NO_THINKING_PREFILL``. The ChatML assistant header declares
+    ``CHATML_EMPTY_THINK_PREFILLS``. Other families declare no prefill, so
+    this check allows them. A prefix that does not hold ``field_block`` has
+    no framing-owned tail, so the check allows it.
 
     Args:
         prefix: Rendered scoring prefix from one framing.
@@ -81,24 +96,24 @@ def require_no_thinking_prefill(
         framing_class: Framing class name; the error names it.
 
     Raises:
-        GemmaTemplateError: The tail's last turn is a Gemma 4 model turn and
-            the prefix does not end with the no-thinking prefill. The message
-            holds no prompt text.
+        GemmaTemplateError: The tail's last turn is a Gemma 4 model turn or a
+            ChatML assistant turn, and the prefix does not end with a known
+            prefill for that header. The message holds no prompt text.
     """
     block_at = prefix.rfind(field_block)
     if block_at < 0:
         return
     tail = prefix[block_at + len(field_block) :]
     last_turn = max(tail.rfind(opener) for opener in _TURN_OPENERS)
-    if last_turn < 0 or not tail.startswith(GEMMA4_MODEL_TURN_HEADER, last_turn):
+    if last_turn < 0:
         return
-    if tail.endswith(GEMMA4_NO_THINKING_PREFILL):
-        return
-    msg = (
-        f"framing {framing_class} renders a Gemma 4 model turn without the "
-        "no-thinking prefill"
-    )
-    raise GemmaTemplateError(msg)
+    for header, (prefills, missing) in _THINKING_PREFILLS.items():
+        if not tail.startswith(header, last_turn):
+            continue
+        if tail.endswith(prefills):
+            return
+        msg = f"framing {framing_class} renders {missing}"
+        raise GemmaTemplateError(msg)
 
 
 def compose_scoring_prefix(

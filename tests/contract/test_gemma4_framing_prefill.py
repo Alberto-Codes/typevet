@@ -22,6 +22,7 @@ import pytest
 from tests.fixtures.judgment_scoring_contract import SequentialScoringFake
 from typevet.adapters.outbound.gemma import (
     CHATML_ASSISTANT_HEADER,
+    CHATML_EMPTY_THINK_PREFILLS,
     CHATML_IM_END,
     CHATML_IM_START,
     GEMMA3_END_OF_TURN,
@@ -110,12 +111,14 @@ class ChatMLFraming:
         """Return a ChatML prefix whose context holds Gemma 4 marker text.
 
         Returns:
-            Prefix that ends with the ChatML assistant header.
+            Prefix that ends with the ChatML assistant header and the Qwen
+            empty think block.
         """
         del media
         return (
             f"{CHATML_IM_START}user\n{GEMMA4_MODEL_TURN_HEADER}{user_text}"
             f"{CHATML_IM_END}\n{CHATML_ASSISTANT_HEADER}"
+            f"{CHATML_EMPTY_THINK_PREFILLS[0]}"
         )
 
 
