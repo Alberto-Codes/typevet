@@ -100,6 +100,7 @@ uv run pytest -q
 
 The default test run skips live tests.
 Pull requests and pushes to `main` run the hook stages in
-[the CI workflow](https://github.com/Alberto-Codes/typevet/blob/main/.github/workflows/ci.yml).
+[the CI workflow](https://github.com/Alberto-Codes/typevet/blob/main/.github/workflows/ci.yml),
+except changes that touch only documentation.
 [The writing system](https://github.com/Alberto-Codes/typevet/blob/main/docs/reference/writing-system.md) and
 [the commit rules](https://github.com/Alberto-Codes/typevet/blob/main/docs/reference/commits.md) apply to every change.

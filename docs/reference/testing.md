@@ -112,6 +112,16 @@ uv run mkdocs build --strict   # site build; also a unit test
 Pre-commit runs unit and contract via the configured pytest hook. Import-linter
 contracts in `pyproject.toml` are unrelated to pytest ``contract`` markers.
 
+## CI triggers
+
+The `quality gates` workflow runs both hook stages on a pull request and on a
+push to `main`. It skips a change that touches only `docs/**`, Markdown files,
+`_bmad-output/**` or `mkdocs.yml`. In CI the commit stage sets `SKIP=pytest`.
+The push stage runs the same suite with the coverage floor on the same tree.
+Local hooks keep both stages. The `documentation` workflow runs on a push
+that changes an input the site reads. The `judgevet latest` workflow runs daily
+and on demand, and carries the dependency audit as its own job.
+
 ## Related pages
 
 - [Glossary — testing pyramid](glossary.md#terms)
