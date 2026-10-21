@@ -46,9 +46,23 @@ typevet records receipt-backed harness use. The
   `.claude/agents/`.
 - **Cursor CLI** runs Cursor-pool models in print mode, guarded by
   `.cursor/cli.json`. Cursor `auto` / Task `inherit` is allowed.
+  `scripts/harness_build.sh` launches a Cursor builder slice.
+- **Codex CLI** (`codex exec`) runs a named model and effort.
+  `scripts/harness_build.sh` launches a Codex builder slice.
 - **GitHub Copilot CLI** (`copilot`, 1.0.86 here) is present. **Workers
   must pass `--model auto` only.** Do not request named Copilot models
   (including Fable). `--auto-tier` may be set; the model id stays `auto`.
+
+**Route by pool headroom.** Read every pool with the `quota` skill before an external dispatch.
+Route only to a pool with headroom, never to a pool ahead of its clock.
+Only a mechanical, gate-checked builder slice can leave Claude Code.
+It needs an accepted contract and size S or M.
+The specifier and the acceptance reviewer stay on Claude Code.
+Every judgment and every undecided or size-L slice also stay there.
+Route to Cursor first.
+Route to pi only when every pool is ahead of its clock, or the slice is size S and offline-only.
+Record the pool ratios in the assignment receipt.
+The `delegate-to-harness` skill holds the commands.
 
 The Claude definitions are `builder.md`, `acceptance-reviewer.md` and
 `specifier.md`. They load the shared roles. Other harnesses load those roles directly.

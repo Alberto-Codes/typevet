@@ -116,9 +116,9 @@ configure a harness.
 |---|---|
 | pi | Installed version. Provider and model. Effective `--thinking` setting. Instruction loading. Tool permissions. Session identifier |
 | Claude sub agent | Requested alias (`haiku`, `sonnet` or `opus` only — never Fable). Resolved model ID from the agent's return, or `unknown`. Effort. Allowed tools. Agent definition name |
-| Cursor CLI | Installed version. Requested model ID (`auto` allowed). Identity that the worker reports, or `unknown`. `session_id` and usage from the JSON receipt. `.cursor/cli.json` deny list |
+| Cursor CLI | Installed version. Requested model ID (`auto` allowed). Identity that the worker reports, or `unknown`. `session_id` and usage from the JSON receipt. `.cursor/cli.json` deny list and the receipt path |
 | Copilot CLI | Installed version. Requested model **must be `auto`**. `--auto-tier` if set. Resolved identity if shown, else `unknown`. Print-mode flags (`-p`) |
-| Native Codex agent | Loaded instructions and context source. Available tool permissions. Session identifier. Requested and resolved identity, or `unknown`. Effort and usage when available |
+| Codex CLI (`codex exec`) or native Codex agent | Loaded instructions and context source. Available tool permissions. Session identifier. Requested and resolved identity, or `unknown`. Effort and usage when available. Receipt path |
 | Any other harness | The same role, context, isolation, observation and return requirements |
 
 Also record the intended **weight** class for the job, even when the harness
@@ -129,20 +129,16 @@ command. Do not copy flags, approval modes or token limits between harnesses.
 Keep planning and review read-only for submitted files. Apply explicit scratch permissions from the shared roles.
 Give implementation only the permissions that its assigned edits and checks need.
 
-Launch a Cursor worker from the checkout root, with the brief as the prompt.
-Keep `brief.md` and `receipt.json` under `scratchpad/` or outside the
-checkout:
-
-```bash
-cursor-agent -p --force --trust --output-format json \
-  --model cursor-grok-4.6-medium "$(cat brief.md)" > receipt.json
-```
-
-`--force` applies edits without a prompt. Thus `.cursor/cli.json` is the only
-guard. It denies `git`, `gh`, `rm`, the policy files and the credential files.
-Pass only `cursor-grok-*`, `grok-*`, `composer-*` or `gemini-*` IDs. Other IDs
-and `auto` bill the Anthropic and OpenAI pool instead. A `resource_exhausted`
-error before any edit is a service failure. Retry once.
+The Cursor and Codex launch commands live in `scripts/harness_build.sh`.
+The `delegate-to-harness` skill holds the procedure.
+The runner works on an isolated worktree under a refusing `pre-commit` hook.
+It writes a receipt under `${XDG_STATE_HOME:-$HOME/.local/state}/typevet/harness/`.
+`.cursor/cli.json` denies `git`, `gh`, `rm`, the policy files and the credential files.
+Cursor `auto` is the default model.
+It bills the Cursor plan pool at the routed model's list price.
+`cursor-grok-*` ids bill the separate `grok_bot` pool.
+Choose them when the Cursor plan pool is ahead of its clock.
+A `resource_exhausted` error before any edit is a service failure. Retry once.
 
 A requested alias such as `opus` is not a resolved model identity. Record
 both the requested alias and the resolved identity that the agent reports. If
@@ -161,6 +157,10 @@ Never use `Co-Authored-By` for a model or harness.
   `Specified-By: <resolved model id> (via Claude Code Agent tool, specifier)`.
 - A Cursor worker commit carries
   `Generated-By: <requested model id> (via Cursor CLI <version>, print mode)`.
+- A Cursor `auto` worker commit carries
+  `Generated-By: auto (via Cursor CLI <version>, print mode; routed model unnamed)`.
+- A Codex CLI worker commit carries
+  `Generated-By: <model> (via Codex CLI <version>, exec, effort <level>)`.
 - The supervisor's own commits carry no worker trailer.
 - Never invent a resolved ID. The ID comes from the agent's return, never from
   the requested alias.

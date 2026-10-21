@@ -55,6 +55,7 @@ The supervisor harness is independent of the worker harness. Preserve any
 user-selected supervisor. Choose the worker independently.
 
 typevet has receipt-backed worker use through native Codex agents, pi, Claude Code sub agents and Cursor CLI.
+The `delegate-to-harness` skill and `scripts/harness_build.sh` run a Cursor or Codex builder slice when its quota pool has headroom.
 pi uses the `delegate-to-pi` skill. Claude uses the Agent tool and definitions in `.claude/agents/`.
 Cursor uses print mode, guarded by `.cursor/cli.json`. Any other worker harness meets the same role, isolation
 and evidence bar in
