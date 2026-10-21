@@ -218,9 +218,13 @@ def test_llama_clients_get_the_request_hook_only() -> None:
     with llama_http_client(settings) as client:
         assert len(client.event_hooks["request"]) == 1
         assert client.event_hooks["response"] == []
-    hooks = async_llama_http_client(settings).event_hooks
-    assert len(hooks["request"]) == 1
-    assert hooks["response"] == []
+
+    async def run() -> None:
+        async with async_llama_http_client(settings) as client:
+            assert len(client.event_hooks["request"]) == 1
+            assert client.event_hooks["response"] == []
+
+    asyncio.run(run())
 
 
 def test_redirect_is_not_refused_by_a_vllm_guard() -> None:

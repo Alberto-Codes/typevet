@@ -186,21 +186,24 @@ class RequestIdJudgmentPort:
             questions: Named native questions.
             model: Served model name.
             media: Images to condition every scored field on, in order.
-            off_option_threshold: Forwarded to the wrapped adapter only when
-                set, so a wrapped ``judge`` without that keyword still works.
+            off_option_threshold: Off-option mass limit, forwarded to the
+                wrapped adapter unchanged.
 
         Returns:
             The wrapped response. Its ``request_ids`` maps each question name
             to the last id that its scoring sent. It stays empty when no
             question sent an id.
         """
-        options: dict[str, Any] = {"media": media}
-        if off_option_threshold is not None:
-            options["off_option_threshold"] = off_option_threshold
         slots: _Slots = []
         token = _SLOTS.set(slots)
         try:
-            response = self._port.judge(state, questions, model, **options)
+            response = self._port.judge(
+                state,
+                questions,
+                model,
+                media=media,
+                off_option_threshold=off_option_threshold,
+            )
         finally:
             _SLOTS.reset(token)
         ids = [slot[-1] if slot else None for slot in slots]
