@@ -5,6 +5,8 @@ Measured on router build ``b11176-f805c57a2`` with ``gemma-3-4b-it-q4km-mm``:
 - ``GET /props?model=<id>`` reports ``modalities.vision`` and a ``media_marker``
   that the server **randomizes per instance**, so the documented
   ``MEDIA_MARKER`` must be substituted before the POST.
+- Caller text that already holds that router-reported marker is neutralized
+  before the substitute, so it binds no extra image (#436).
 - Only the nested object prompt ``{"prompt_string": …, "multimodal_data": […]}``
   attaches the image. A top-level ``multimodal_data`` sibling of a string
   ``prompt`` returns HTTP 200 and **silently drops** the image.
@@ -46,7 +48,7 @@ from typevet.adapters.outbound.llama_cpp.http_mapping import (
     send_idempotent,
 )
 from typevet.domain.errors import GenerationError
-from typevet.domain.media import MEDIA_MARKER, ImageInput
+from typevet.domain.media import MEDIA_MARKER, ImageInput, neutralize_marker
 
 
 @dataclass(frozen=True, slots=True)
@@ -130,6 +132,11 @@ def media_prompt_field(
 ) -> dict[str, Any]:
     """Build the nested ``prompt`` object that attaches images.
 
+    When ``marker`` differs from ``MEDIA_MARKER``, any copy of ``marker`` in
+    ``prefix`` is neutralized first so caller text cannot bind an image. The
+    documented markers are then replaced by ``marker``. The result must hold
+    exactly one marker per image.
+
     Args:
         prefix: Rendered prefix holding one ``MEDIA_MARKER`` per image.
         media: Images in prefix-marker order.
@@ -137,9 +144,37 @@ def media_prompt_field(
 
     Returns:
         Object prompt with the substituted marker and raw base64 payloads.
+
+    Raises:
+        GenerationError: When the prompt holds a marker count that does not
+            match ``len(media)`` after neutralization and substitution.
+
+    Examples:
+        ```python
+        from typevet.adapters.outbound.llama_cpp.multimodal import media_prompt_field
+        from typevet.domain.media import MEDIA_MARKER, ImageInput
+
+        image = ImageInput(data=png_bytes, mime_type="image/png")
+        field = media_prompt_field(
+            f"{MEDIA_MARKER}Answer:",
+            (image,),
+            marker="<__media__>",
+        )
+        assert field["multimodal_data"]
+        ```
     """
+    prompt = prefix
+    if marker != MEDIA_MARKER:
+        prompt = neutralize_marker(prompt, marker)
+    prompt_string = prompt.replace(MEDIA_MARKER, marker)
+    if prompt_string.count(marker) != len(media):
+        msg = (
+            f"llama.cpp prompt holds {prompt_string.count(marker)} media "
+            f"marker(s) but {len(media)} image(s) were supplied"
+        )
+        raise GenerationError(msg)
     return {
-        "prompt_string": prefix.replace(MEDIA_MARKER, marker),
+        "prompt_string": prompt_string,
         "multimodal_data": [
             base64.b64encode(image.data).decode("ascii") for image in media
         ],

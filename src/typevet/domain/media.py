@@ -11,10 +11,10 @@ image (#433). A git diff, a log or a fetched page can hold the literal
 ``<__media__>``. ``neutralize_media_markers`` rewrites each such sequence to
 ``NEUTRALIZED_MEDIA_MARKER`` before the adapter adds the real markers. The
 rewrite escapes the underscores, so the model still reads the original
-characters. The router marker from ``GET /props`` is substituted only for the
-documented constant, so neutralized text keeps no marker on either backend.
-Escaping was chosen over a private marker value because the llama.cpp mtmd
-default and the vLLM split both key on the documented constant.
+characters. The llama.cpp adapter also neutralizes the router-reported marker
+from ``GET /props`` when that marker appears in caller text (#436). Escaping
+was chosen over a private marker value because the llama.cpp mtmd default and
+the vLLM split both key on the documented constant.
 
 Examples:
     ```python
@@ -115,11 +115,37 @@ def count_media_markers(text: str) -> int:
     return text.count(MEDIA_MARKER)
 
 
+def neutralize_marker(text: str, marker: str) -> str:
+    """Rewrite each ``marker`` in ``text`` so it binds no image.
+
+    Escapes every underscore in ``marker`` with a backslash. The model still
+    reads the original characters. A marker with no underscore is unchanged.
+
+    Args:
+        text: Caller text that may hold ``marker``.
+        marker: Exact media marker sequence to neutralize.
+
+    Returns:
+        ``text`` with every ``marker`` replaced by its escaped form.
+
+    Examples:
+        ```python
+        from typevet.domain.media import MEDIA_MARKER, neutralize_marker
+
+        assert MEDIA_MARKER not in neutralize_marker(
+            f"diff {MEDIA_MARKER}", MEDIA_MARKER
+        )
+        ```
+    """
+    return text.replace(marker, marker.replace("_", "\\_"))
+
+
 def neutralize_media_markers(text: str) -> str:
     """Rewrite each ``MEDIA_MARKER`` in caller text so it binds no image.
 
-    The result holds no marker. The marker has one ``<`` and one ``>``, so
-    no marker can start or end inside the escaped form.
+    Delegates to ``neutralize_marker`` with ``MEDIA_MARKER``. The result holds
+    no marker. The marker has one ``<`` and one ``>``, so no marker can start
+    or end inside the escaped form.
 
     Args:
         text: Caller text such as a state, instructions or criteria.
@@ -134,4 +160,4 @@ def neutralize_media_markers(text: str) -> str:
         assert MEDIA_MARKER not in neutralize_media_markers(f"diff {MEDIA_MARKER}")
         ```
     """
-    return text.replace(MEDIA_MARKER, NEUTRALIZED_MEDIA_MARKER)
+    return neutralize_marker(text, MEDIA_MARKER)
