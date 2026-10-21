@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.9.0](https://github.com/Alberto-Codes/typevet/compare/v0.8.5...v0.9.0) (2026-10-21)
+
+
+### Features
+
+* **judgment:** add a ChatML thinking framing with the empty think prefill and refuse a ChatML prefix without it ([ab75c4d](https://github.com/Alberto-Codes/typevet/commit/ab75c4d22cf4a892a0f522fdea120b34c859a1e5)), closes [#443](https://github.com/Alberto-Codes/typevet/issues/443) [#442](https://github.com/Alberto-Codes/typevet/issues/442)
+
+
+### Fixes
+
+* **llama:** neutralize the router-reported media marker in caller text too ([9060c52](https://github.com/Alberto-Codes/typevet/commit/9060c525d2a51f4382d415c256cedd528037c0c3)), closes [#436](https://github.com/Alberto-Codes/typevet/issues/436)
+
+
+### Documentation
+
+* **reference:** state the CI trigger policy on the testing page and README ([0fe166a](https://github.com/Alberto-Codes/typevet/commit/0fe166a0052b438a3569a4cee05964ab102540da)), closes [#455](https://github.com/Alberto-Codes/typevet/issues/455)
+
 ## [0.8.5](https://github.com/Alberto-Codes/typevet/compare/v0.8.4...v0.8.5) (2026-10-09)
 
 
