@@ -17,6 +17,10 @@ before tokenization. Optional ``tokenize_content`` and ``scoring_port_wrapper``
 hooks support consumer dispatch ledgers without importing ``typevet_evals``.
 An optional ``text_parts`` keyword passes caller templates to the scoring
 adapter ([#373][i373]).
+An optional ``framing`` keyword passes a ``ModelFramingPort`` without a
+served template. Framing requires ``DEGRADED_CHATML`` and
+``require_vision=False``, and the port refuses images before scoring
+([#444][i444]).
 The default ``/tokenize`` hook maps an httpx failure to ``TransportError`` and
 a status of 400 or above to ``BackendHttpError`` ([#298][i298]). A 200 body
 that is not JSON, or that has no ``tokens`` list of integers, raises
@@ -53,6 +57,7 @@ See Also:
 [i411]: https://github.com/Alberto-Codes/typevet/issues/411
 [i425]: https://github.com/Alberto-Codes/typevet/issues/425
 [i438]: https://github.com/Alberto-Codes/typevet/issues/438
+[i444]: https://github.com/Alberto-Codes/typevet/issues/444
 """
 
 from __future__ import annotations
@@ -68,29 +73,28 @@ from typevet.adapters.outbound.gemma import (
     ServedTemplateClass,
     classify_served_template,
 )
-from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
 from typevet.adapters.outbound.llama_cpp.http_mapping import (
     ensure_success_status,
     parse_json_response,
     send_idempotent,
 )
+from typevet.adapters.outbound.llama_cpp.judgment_factory_options import (
+    ScoringWireInputs,
+    build_scoring_judgment_port,
+    check_framing_requires_no_vision,
+    check_framing_served_family,
+)
 from typevet.adapters.outbound.llama_cpp.multimodal import (
     MediaCapability,
     fetch_media_capability,
 )
-from typevet.adapters.outbound.llama_cpp.scoring import (
-    DEFAULT_N_VOCAB,
-    LlamaCppCandidateScoringAdapter,
-)
-from typevet.adapters.outbound.request_ids import (
-    RequestIdJudgmentPort,
-    RequestIdScoringPort,
-)
+from typevet.adapters.outbound.llama_cpp.scoring import DEFAULT_N_VOCAB
 from typevet.domain.errors import GenerationError, ScoringUnsupportedCapabilityError
 from typevet.domain.judgment_questions import Question
 from typevet.domain.judgment_response import JudgmentResponse
 from typevet.domain.media import ImageInput
 from typevet.domain.text_parts import TextParts
+from typevet.ports.framing import ModelFramingPort
 from typevet.ports.judgment import JudgmentPort
 from typevet.ports.scoring import CandidateScoringPort
 
@@ -160,23 +164,15 @@ class GemmaNativeVisionSession:
     capability: MediaCapability
 
 
-def _classify_native_template(
-    client: httpx.Client,
-    model: str,
-    *,
-    require_gemma4: bool,
-    source: str,
-) -> ServedTemplateClass:
+def _probe_served_template(client: httpx.Client, model: str) -> ServedTemplateClass:
     """Render one probe turn through ``/apply-template`` and classify it.
 
-    The probe changes no server state, so an early close gets one retry. A
-    Gemma 4 mismatch names ``model`` and the ``source`` that chose it (#425).
+    The probe changes no server state, so an early close gets one retry.
 
     Returns:
         The served template family.
 
     Raises:
-        ValueError: When the family is unsupported or not the one required.
         TransportError: When the probe fails before a response.
         BackendHttpError: When the probe returns status 400 or higher.
         GenerationError: When the ``/apply-template`` body has no ``prompt``
@@ -189,7 +185,31 @@ def _classify_native_template(
     }
     response = send_idempotent(lambda: client.post("/apply-template", json=body))
     ensure_success_status(response)
-    family = classify_served_template(_rendered_prompt(parse_json_response(response)))
+    return classify_served_template(_rendered_prompt(parse_json_response(response)))
+
+
+def _classify_native_template(
+    client: httpx.Client,
+    model: str,
+    *,
+    require_gemma4: bool,
+    source: str,
+) -> ServedTemplateClass:
+    """Probe the served family and require a native Gemma turn.
+
+    A Gemma 4 mismatch names ``model`` and the ``source`` that chose it (#425).
+
+    Returns:
+        The served template family.
+
+    Raises:
+        ValueError: When the family is unsupported or not the one required.
+        TransportError: When the probe fails before a response.
+        BackendHttpError: When the probe returns status 400 or higher.
+        GenerationError: When the ``/apply-template`` body has no ``prompt``
+            string.
+    """
+    family = _probe_served_template(client, model)
     if require_gemma4 and family is not ServedTemplateClass.NATIVE_GEMMA4_TURN:
         msg = (
             f"expected NATIVE_GEMMA4_TURN, got {family.value} for model {model!r}"
@@ -361,12 +381,118 @@ class _JudgmentHooks(TypedDict, total=False):
             default ``None`` (#373).
         require_vision (bool): When false, accept a text-only model; default
             ``True`` (#438).
+        framing (ModelFramingPort | None): Model framing without a served
+            template; requires ``DEGRADED_CHATML`` and ``require_vision=False``
+            (#444).
     """
 
     tokenize_content: Callable[[str], Sequence[int]] | None
     scoring_port_wrapper: Callable[[CandidateScoringPort], CandidateScoringPort] | None
     text_parts: TextParts | None
     require_vision: bool
+    framing: ModelFramingPort | None
+
+
+@dataclass(frozen=True, slots=True)
+class _SessionConfig:
+    """Resolved open options for one judgment session.
+
+    Attributes:
+        settings (GemmaVisionSettings): Router connection options.
+        model_id (str): Probed model id.
+        source (str): Label for who chose the model id.
+        base (str): Router base URL without a trailing slash.
+        require_gemma4 (bool): Native Gemma 4 requirement when not framing.
+        n_vocab (int | None): Vocabulary size for the scoring adapter.
+        tokenize_content (Callable | None): Optional tokenizer hook.
+        scoring_port_wrapper (Callable | None): Optional scoring wrapper.
+        text_parts (TextParts | None): Option block and context templates.
+        framing (ModelFramingPort | None): Optional ChatML framing.
+        require_vision (bool): Whether the model must accept images.
+
+    Examples:
+        ```python
+        assert _SessionConfig.__dataclass_fields__
+        ```
+    """
+
+    settings: GemmaVisionSettings
+    model_id: str
+    source: str
+    base: str
+    require_gemma4: bool
+    n_vocab: int | None
+    tokenize_content: Callable[[str], Sequence[int]] | None
+    scoring_port_wrapper: Callable[[CandidateScoringPort], CandidateScoringPort] | None
+    text_parts: TextParts | None
+    framing: ModelFramingPort | None
+    require_vision: bool
+
+
+def _iter_judgment_session(
+    client: httpx.Client,
+    cfg: _SessionConfig,
+) -> Iterator[GemmaNativeVisionSession]:
+    """Probe, wire the judgment port and yield one session.
+
+    Args:
+        client: Shared HTTP client for the router.
+        cfg: Resolved open options.
+
+    Yields:
+        One ``GemmaNativeVisionSession`` with probe metadata.
+
+    Raises:
+        ValueError: Vision, template or framing rules fail.
+        TransportError: When a probe fails before a response.
+        BackendHttpError: When a probe returns status 400 or higher.
+        GenerationError: When the ``/apply-template`` body has no ``prompt``
+            string.
+    """
+    capability = fetch_media_capability(client, f"{cfg.base}/", cfg.model_id)
+    _check_vision(capability, require_vision=cfg.require_vision)
+    if cfg.framing is not None:
+        served = _probe_served_template(client, cfg.model_id)
+        check_framing_served_family(served)
+        wire_served: ServedTemplateClass | None = None
+        refuse_images = True
+    else:
+        served = _classify_native_template(
+            client,
+            cfg.model_id,
+            require_gemma4=cfg.require_gemma4,
+            source=cfg.source,
+        )
+        wire_served = served
+        refuse_images = not capability.vision
+    tokenize = cfg.tokenize_content or _tokenize_factory(client, cfg.model_id)
+    port, scoring = build_scoring_judgment_port(
+        ScoringWireInputs(
+            client=client,
+            base_url=cfg.base,
+            timeout=cfg.settings.timeout,
+            model_id=cfg.model_id,
+            n_vocab=cfg.n_vocab,
+            capability=capability,
+            tokenize=tokenize,
+            scoring_port_wrapper=cfg.scoring_port_wrapper,
+            text_parts=cfg.text_parts,
+            served=wire_served,
+            framing=cfg.framing,
+        )
+    )
+    if refuse_images:
+        port = _TextOnlyJudgmentPort(port, cfg.model_id)
+    try:
+        yield GemmaNativeVisionSession(
+            port=port,
+            client=client,
+            model=cfg.model_id,
+            served=served,
+            capability=capability,
+        )
+    finally:
+        scoring.close()
 
 
 @contextmanager
@@ -384,12 +510,15 @@ def open_gemma_native_vision_judgment(
     Probes ``/apply-template`` and media capability before the first ``judge``
     call. Unsupported template families raise ``ValueError`` before scoring
     dispatch. A text-only model raises ``ValueError`` unless
-    ``require_vision=False``; its port then refuses images (#438).
+    ``require_vision=False``; its port then refuses images (#438). An optional
+    ``framing`` requires ``DEGRADED_CHATML`` and ``require_vision=False``, and
+    the port then refuses images even when the server reports vision (#444).
 
     Args:
         settings: Router connection options from the composition root.
         model: Model id; defaults to ``settings.multimodal_model``.
-        require_gemma4: When true, require ``NATIVE_GEMMA4_TURN``.
+        require_gemma4: When true, require ``NATIVE_GEMMA4_TURN``. Ignored when
+            ``framing`` is set; framing requires ``DEGRADED_CHATML`` instead.
         n_vocab: Model vocabulary size. The default is the Gemma 4 class
             size, so the session sends no ``/v1/models`` request. ``None``
             lets the scoring adapter read it from ``/v1/models`` (#321).
@@ -404,7 +533,11 @@ def open_gemma_native_vision_judgment(
             ``None`` for the defaults (#373).
         require_vision (bool): When ``False``, accept a text-only model. The
             port then raises ``ScoringUnsupportedCapabilityError`` for an
-            image judgment before any request (#438). Default ``True``.
+            image judgment before any request (#438). Default ``True``. Framing
+            requires ``False`` (#444).
+        framing (ModelFramingPort | None): Composes every scoring prefix
+            without ``served_template``. Requires a served ``DEGRADED_CHATML``
+            family (#444).
 
     Yields:
         A session holding the configured ``JudgmentPort`` and probe metadata.
@@ -412,63 +545,37 @@ def open_gemma_native_vision_judgment(
         id in ``request_ids``, or keep it empty when no id was sent.
 
     Raises:
-        ValueError: When vision is required and unavailable, or the template is
-            unsupported. A Gemma 4 mismatch names the model id and whether the ``model``
-            argument or ``settings.multimodal_model`` chose it.
+        ValueError: When vision is required and unavailable, the template is
+            unsupported, framing is set with ``require_vision=True``, or
+            framing is set without ``DEGRADED_CHATML``. A Gemma 4 mismatch
+            names the model id and whether the ``model`` argument or
+            ``settings.multimodal_model`` chose it.
         TransportError: When a probe fails before a response.
         BackendHttpError: When a probe returns status 400 or higher.
         GenerationError: When the ``/apply-template`` body has no ``prompt``
             string.
     """
-    model_id = model or settings.multimodal_model
-    source = _model_source(model)
-    base = settings.base_url.rstrip("/")
-    tokenize_content = hooks.get("tokenize_content")
-    scoring_port_wrapper = hooks.get("scoring_port_wrapper")
-
-    def _session(client: httpx.Client) -> Iterator[GemmaNativeVisionSession]:
-        capability = fetch_media_capability(client, f"{base}/", model_id)
-        _check_vision(capability, require_vision=hooks.get("require_vision", True))
-        served = _classify_native_template(
-            client, model_id, require_gemma4=require_gemma4, source=source
-        )
-        tokenize = tokenize_content or _tokenize_factory(client, model_id)
-        scoring = LlamaCppCandidateScoringAdapter(
-            base_url=base,
-            timeout=settings.timeout,
-            client=client,
-            n_vocab=n_vocab,
-            media_capabilities={model_id: capability},
-        )
-        scoring_port: CandidateScoringPort = scoring
-        if scoring_port_wrapper is not None:
-            scoring_port = scoring_port_wrapper(scoring)
-        adapter = ScoringJudgmentAdapter(
-            RequestIdScoringPort(scoring_port),
-            tokenize_content=tokenize,
-            served_template=served,
-            pinned_model=model_id,
-            text_parts=hooks.get("text_parts"),
-        )
-        port: JudgmentPort = RequestIdJudgmentPort(adapter)
-        if not capability.vision:
-            port = _TextOnlyJudgmentPort(port, model_id)
-        try:
-            yield GemmaNativeVisionSession(
-                port=port,
-                client=client,
-                model=model_id,
-                served=served,
-                capability=capability,
-            )
-        finally:
-            scoring.close()
-
+    framing = hooks.get("framing")
+    require_vision = hooks.get("require_vision", True)
+    check_framing_requires_no_vision(framing, require_vision=require_vision)
+    cfg = _SessionConfig(
+        settings=settings,
+        model_id=model or settings.multimodal_model,
+        source=_model_source(model),
+        base=settings.base_url.rstrip("/"),
+        require_gemma4=require_gemma4,
+        n_vocab=n_vocab,
+        tokenize_content=hooks.get("tokenize_content"),
+        scoring_port_wrapper=hooks.get("scoring_port_wrapper"),
+        text_parts=hooks.get("text_parts"),
+        framing=framing,
+        require_vision=require_vision,
+    )
     if http_client is not None:
-        yield from _session(http_client)
+        yield from _iter_judgment_session(http_client, cfg)
         return
-    with httpx.Client(base_url=base, timeout=settings.timeout) as owned:
-        yield from _session(owned)
+    with httpx.Client(base_url=cfg.base, timeout=settings.timeout) as owned:
+        yield from _iter_judgment_session(owned, cfg)
 
 
 def probe_gemma_native_vision_support(
@@ -509,7 +616,10 @@ def probe_gemma_native_vision_support(
         capability = fetch_media_capability(client, f"{base}/", model_id)
         _check_vision(capability, require_vision=require_vision)
         served = _classify_native_template(
-            client, model_id, require_gemma4=require_gemma4, source=source
+            client,
+            model_id,
+            require_gemma4=require_gemma4,
+            source=source,
         )
         return {
             "ok": True,

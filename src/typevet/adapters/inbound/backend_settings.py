@@ -4,7 +4,9 @@
 The ``fake`` backend is offline and serves judgment only: ``open_judgment``
 yields the ``FakeJudgmentSession`` from
 ``typevet.adapters.inbound.fake_backend``, and ``generation_adapter`` refuses
-it. The vLLM branch reads ``TYPEVET_VLLM__*`` variables and builds one ``httpx.Client``
+it. ``open_judgment`` accepts an optional ``framing`` keyword on the
+``llama_cpp`` branch only; fake and vLLM refuse it (#444). The vLLM branch
+reads ``TYPEVET_VLLM__*`` variables and builds one ``httpx.Client``
 that carries the base URL, timeout, optional key and gateway headers.
 ``TYPEVET_VLLM__MAX_CONCURRENCY`` sets ``VllmSettings.max_concurrency``, the
 POST limit for the ``AsyncVllmGenerationAdapter`` that
@@ -125,6 +127,7 @@ from typevet.adapters.outbound.vllm.judgment_factory import (
 )
 from typevet.domain.errors import GenerationError
 from typevet.domain.models import GenerationRequest, GenerationResult
+from typevet.ports.framing import ModelFramingPort
 
 Backend = Literal["llama_cpp", "vllm", "fake"]
 
@@ -519,6 +522,7 @@ def open_judgment(
     environ: Mapping[str, str] | None = None,
     *,
     transport: httpx.BaseTransport | None = None,
+    framing: ModelFramingPort | None = None,
 ) -> Iterator[GemmaNativeVisionSession | VllmJudgmentSession | FakeJudgmentSession]:
     """Open the judgment session that ``TYPEVET_BACKEND`` selects.
 
@@ -526,6 +530,10 @@ def open_judgment(
         environ: Mapping to read. Defaults to ``os.environ``.
         transport: Optional transport for the vLLM or llama.cpp client. The
             fake branch ignores it.
+        framing: Optional model framing for the llama.cpp branch. Requires a
+            served ``DEGRADED_CHATML`` family. The factory passes
+            ``require_vision=False``. Fake and vLLM refuse this keyword
+            (#444).
 
     Yields:
         A llama.cpp session from ``open_gemma_native_vision_judgment`` with
@@ -533,6 +541,8 @@ def open_judgment(
         exit. The model may be text-only: the session then records
         ``capability.vision`` as ``False`` and refuses an image judgment with
         ``ScoringUnsupportedCapabilityError`` before any request (#438).
+        With ``framing``, the session keeps the probed served family and
+        scores through that framing without ``served_template`` (#444).
         The session-open and judgment errors never show the configured key or
         a header value. Or a vLLM session from ``open_vllm_judgment``
         on the ``vllm_http_client``, so ``/tokenize`` and scoring carry the
@@ -543,10 +553,14 @@ def open_judgment(
 
     Raises:
         ValueError: When a backend, vLLM or ``TYPEVET_FAKE__DISTRIBUTIONS``
-            variable is invalid.
+            variable is invalid, or when ``framing`` is set for ``fake`` or
+            ``vllm``.
     """
     source = os.environ if environ is None else environ
     backend = load_backend(source)
+    if framing is not None and backend != "llama_cpp":
+        msg = "framing is supported only when TYPEVET_BACKEND is llama_cpp"
+        raise ValueError(msg)
     if backend == "fake":
         yield open_fake_judgment(source)
         return
@@ -557,9 +571,19 @@ def open_judgment(
             llama_http_client(llama, transport=transport) as http,
             ExitStack() as stack,
         ):
-            opened = open_gemma_native_vision_judgment(
-                settings=llama, http_client=http, require_vision=False
-            )
+            if framing is None:
+                opened = open_gemma_native_vision_judgment(
+                    settings=llama,
+                    http_client=http,
+                    require_vision=False,
+                )
+            else:
+                opened = open_gemma_native_vision_judgment(
+                    settings=llama,
+                    http_client=http,
+                    require_vision=False,
+                    framing=framing,
+                )
             llama_session = enter_masked(stack, opened, needles)
             port = _KeyMaskingJudgmentPort(llama_session.port, needles)
             yield replace(llama_session, port=port)
