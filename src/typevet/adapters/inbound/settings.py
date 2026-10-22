@@ -11,9 +11,10 @@ A router behind an API gateway needs a key and extra headers (#410).
 [typevet.adapters.inbound.http_headers][] checks them when ``LlamaSettings``
 is built. ``llama_http_client`` and ``async_llama_http_client`` send them.
 ``LlamaSettings`` leaves the key and the header values out of ``repr``. The
-adapter from ``llama_cpp_adapter`` owns its client, and with a key or extra
-headers each error it raises is a masked copy with no cause or context, as
-in [typevet.adapters.inbound.error_masking][].
+adapters from ``llama_cpp_adapter`` and ``async_llama_cpp_adapter`` own their
+clients, and with a key or extra headers each error they raise is a masked
+copy with no cause or context, as in
+[typevet.adapters.inbound.error_masking][].
 
 ``TYPEVET_LLAMA__REQUEST_ID_HEADER`` names a header that gets a fresh UUID4
 hex value on each request, as ``TYPEVET_VLLM__REQUEST_ID_HEADER`` does
@@ -27,6 +28,7 @@ Diagnostic log settings live in [typevet.adapters.diagnostics.settings][].
 Examples:
     ```python
     from typevet.adapters.inbound.settings import (
+        async_llama_cpp_adapter,
         llama_cpp_adapter,
         load_llama_settings,
     )
@@ -34,11 +36,13 @@ Examples:
     settings = load_llama_settings()
     with llama_cpp_adapter(settings) as port:
         pass  # port.generate(...)
+    # await async_llama_cpp_adapter(settings).generate(...)
     ```
 
 See Also:
     - [typevet.adapters.outbound.llama_cpp][]: llama.cpp adapter package; the sync
       adapter lives in its ``generation`` module
+    - [typevet.adapters.outbound.llama_cpp.generation_async][]: Async adapter
     - [typevet.adapters.diagnostics.settings][]: ``TYPEVET_LOG__*`` settings
     - [typevet.adapters.inbound.http_headers][]: Shared header rules
     - [typevet.adapters.outbound.request_ids][]: Request id hook and receipt
@@ -64,6 +68,9 @@ from typevet.adapters.inbound.http_headers import (
     parse_headers_json,
 )
 from typevet.adapters.outbound.llama_cpp.generation import LlamaCppGenerationAdapter
+from typevet.adapters.outbound.llama_cpp.generation_async import (
+    AsyncLlamaCppGenerationAdapter,
+)
 from typevet.adapters.outbound.request_ids import stamp_request_id
 from typevet.domain.errors import GenerationError
 from typevet.domain.models import GenerationRequest, GenerationResult
@@ -308,8 +315,9 @@ def async_llama_http_client(
 ) -> httpx.AsyncClient:
     """Build a llama.cpp async HTTP client with the same headers.
 
-    The caller owns the client and closes it. Errors that an adapter raises
-    on it are not masked here.
+    The caller owns the client and closes it. Prefer
+    ``async_llama_cpp_adapter`` when the composition root should mask errors.
+    An adapter that a caller builds on this client does not mask its errors.
 
     Args:
         settings: llama.cpp connection settings.
@@ -417,3 +425,94 @@ def llama_cpp_adapter(
     """
     client = llama_http_client(settings, transport=transport)
     return _ClientOwningLlamaAdapter(settings, client)
+
+
+class _ClientOwningAsyncLlamaAdapter(AsyncLlamaCppGenerationAdapter):
+    """Async llama.cpp adapter that owns its client and masks the key in errors.
+
+    Attributes:
+        _settings_client (httpx.AsyncClient): Client from
+            ``async_llama_http_client``.
+        _needles (Needles): Patterns for the key and header values, or empty.
+
+    Examples:
+        ```python
+        settings = LlamaSettings(base_url="http://127.0.0.1:8090")
+        _ClientOwningAsyncLlamaAdapter(settings, async_llama_http_client(settings))
+        ```
+    """
+
+    def __init__(self, settings: LlamaSettings, client: httpx.AsyncClient) -> None:
+        """Wrap ``client`` with the base URL and timeout of ``settings``.
+
+        Args:
+            settings: llama.cpp settings that hold the key and headers.
+            client: Client from ``async_llama_http_client``; closed by
+                ``close``.
+        """
+        super().__init__(settings.base_url, timeout=settings.timeout, client=client)
+        self._settings_client = client
+        self._needles = key_needles(settings.api_key, settings.headers)
+
+    async def generate(self, request: GenerationRequest) -> GenerationResult:
+        """Generate, and mask the configured key in any raised error.
+
+        A successful result is returned unchanged. Masking follows
+        ``_ClientOwningLlamaAdapter.generate``: with a key or extra headers,
+        each error is a copy of the same type with each match replaced by
+        ``***`` and with no cause or context.
+
+        Args:
+            request: Prompt, schema and model alias on the router.
+
+        Returns:
+            The result from ``AsyncLlamaCppGenerationAdapter.generate``.
+
+        Raises:
+            GenerationError: The adapter error, as a masked copy when a key or
+                header value is set.
+        """
+        try:
+            return await super().generate(request)
+        except GenerationError as exc:
+            masked = masked_if_keyed(exc, self._needles)
+            if masked is None:
+                raise
+        raise masked
+
+    async def close(self) -> None:
+        """Close the composition-root client."""
+        await super().close()
+        await self._settings_client.aclose()
+
+
+def async_llama_cpp_adapter(
+    settings: LlamaSettings,
+    *,
+    transport: httpx.AsyncBaseTransport | None = None,
+) -> AsyncLlamaCppGenerationAdapter:
+    """Build an async llama.cpp adapter from composition-root settings.
+
+    Args:
+        settings: Values read from the environment or constructed in tests.
+        transport: Optional async transport for the client, for example
+            ``httpx.MockTransport``.
+
+    Returns:
+        An adapter on the ``async_llama_http_client`` that does not read
+        ``os.environ`` itself. Closing it closes the client. With a key or
+        extra headers, its errors are masked copies with no cause or context.
+
+    Examples:
+        ```python
+        from typevet.adapters.inbound.settings import (
+            async_llama_cpp_adapter,
+            load_llama_settings,
+        )
+
+        adapter = async_llama_cpp_adapter(load_llama_settings())
+        # await adapter.generate(...); await adapter.close()
+        ```
+    """
+    client = async_llama_http_client(settings, transport=transport)
+    return _ClientOwningAsyncLlamaAdapter(settings, client)

@@ -148,6 +148,7 @@ factory. `vllm` gives `open_vllm_judgment` on the `TYPEVET_VLLM__*` client.
 | `LlamaSettings` | Frozen llama.cpp connection settings for composition roots |
 | `load_llama_settings` | Read `TYPEVET_LLAMA__*` (and legacy aliases) from the environment |
 | `llama_cpp_adapter` | Construct `LlamaCppGenerationAdapter` from `LlamaSettings` |
+| `async_llama_cpp_adapter` | Construct the async llama.cpp adapter from `LlamaSettings`; owns its client and masks the key in errors |
 | `VllmSettings` | Frozen vLLM connection settings; `api_key` is not in `repr` |
 | `load_vllm_settings` | Read `TYPEVET_VLLM__*` from the environment |
 | `vllm_http_client` | Build the shared vLLM `httpx.Client` |

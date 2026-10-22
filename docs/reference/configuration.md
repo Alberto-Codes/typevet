@@ -49,10 +49,12 @@ never a value. These clients send the key and headers:
 
 - [`llama_cpp_adapter`][typevet.adapters.inbound.llama_cpp_adapter], which owns
   its client and closes it.
+- [`async_llama_cpp_adapter`][typevet.adapters.inbound.async_llama_cpp_adapter],
+  which owns its async client and closes it.
 - The `llama_cpp` branches of `generation_adapter` and `open_judgment`.
 - `async_llama_http_client`, which the caller closes.
 
-With a key or extra headers, typevet masks each error from that adapter. It
+With a key or extra headers, typevet masks each error from those adapters. It
 also masks each error from the `open_judgment` session open and its port. The
 masked error is a copy with each key and header value replaced by `***`. The
 copy has no cause or context. An adapter that a caller builds on

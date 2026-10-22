@@ -1,7 +1,7 @@
 """Contract tests: llama.cpp clients send the key and gateway headers (#410).
 
 The composition-root clients from ``generation_adapter``,
-``async_llama_http_client`` and ``open_judgment`` run the real llama.cpp
+``async_llama_cpp_adapter`` and ``open_judgment`` run the real llama.cpp
 adapters over ``httpx.MockTransport``. The mock plays a router behind a
 gateway: it records each request and answers each llama.cpp route. The tests
 prove the default Bearer key, a bare key in a custom header, the extra
@@ -23,6 +23,7 @@ import pytest
 
 from typevet.adapters.inbound.backend_settings import generation_adapter, open_judgment
 from typevet.adapters.inbound.settings import (
+    async_llama_cpp_adapter,
     async_llama_http_client,
     load_llama_settings,
 )
@@ -31,7 +32,7 @@ from typevet.adapters.outbound.llama_cpp.generation_async import (
 )
 from typevet.domain.errors import GenerationError
 from typevet.domain.judgment_questions import Noul
-from typevet.domain.models import GenerationRequest
+from typevet.domain.models import GenerationRequest, GenerationResult
 
 pytestmark = pytest.mark.contract
 
@@ -78,12 +79,18 @@ class _Router:
             A canned response for a known path, else HTTP 404.
 
         Raises:
-            httpx.ConnectError: On ``fail_path``; the text holds the key.
+            httpx.ConnectError: On ``fail_path``; the text holds the
+                ``X-Tenant`` header value when present, else the key.
         """
         self.requests.append(request)
         path = request.url.path
         if path == self.fail_path:
-            msg = f"proxy refused credential {_KEY}"
+            tenant = request.headers.get("X-Tenant")
+            msg = (
+                f"proxy refused tenant {tenant}"
+                if tenant
+                else f"proxy refused credential {_KEY}"
+            )
             raise httpx.ConnectError(msg, request=request)
         if path == "/v1/chat/completions":
             reply = {"choices": [{"message": {"content": '{"ok": true}'}}]}
@@ -122,14 +129,14 @@ def _judge(env: dict[str, str], router: _Router) -> None:
 
 def _generate_async(env: dict[str, str], router: _Router) -> None:
     settings = load_llama_settings(env)
+    transport = httpx.MockTransport(router.handle)
+    adapter = async_llama_cpp_adapter(settings, transport=transport)
 
     async def run() -> None:
-        transport = httpx.MockTransport(router.handle)
-        async with async_llama_http_client(settings, transport=transport) as client:
-            adapter = AsyncLlamaCppGenerationAdapter(
-                settings.base_url, timeout=settings.timeout, client=client
-            )
+        try:
             await adapter.generate(_REQUEST)
+        finally:
+            await adapter.close()
 
     asyncio.run(run())
 
@@ -138,7 +145,7 @@ Drive = Callable[[dict[str, str], _Router], None]
 _CLIENTS = pytest.mark.parametrize(
     "drive",
     [_generate, _judge, _generate_async],
-    ids=["generation_adapter", "open_judgment", "async_llama_http_client"],
+    ids=["generation_adapter", "open_judgment", "async_llama_cpp_adapter"],
 )
 
 
@@ -213,10 +220,11 @@ def _leaks(link: BaseException) -> list[str]:
     ("drive", "fail_path"),
     [
         (_generate, "/v1/chat/completions"),
+        (_generate_async, "/v1/chat/completions"),
         (_judge, "/props"),
         (_judge, "/completion"),
     ],
-    ids=["generate", "judgment-open", "judge"],
+    ids=["generate", "generate-async", "judgment-open", "judge"],
 )
 def test_transport_error_chain_never_holds_the_key(
     drive: Drive, fail_path: str
@@ -231,8 +239,12 @@ def test_transport_error_chain_never_holds_the_key(
 
 @pytest.mark.parametrize(
     ("drive", "fail_path"),
-    [(_generate, "/v1/chat/completions"), (_judge, "/props")],
-    ids=["generate", "judgment-open"],
+    [
+        (_generate, "/v1/chat/completions"),
+        (_generate_async, "/v1/chat/completions"),
+        (_judge, "/props"),
+    ],
+    ids=["generate", "generate-async", "judgment-open"],
 )
 def test_keyless_transport_error_keeps_its_cause(drive: Drive, fail_path: str) -> None:
     with pytest.raises(GenerationError) as info:
@@ -248,3 +260,110 @@ def test_generation_adapter_close_closes_its_client() -> None:
     assert not client.is_closed
     adapter.close()
     assert client.is_closed
+
+
+def test_async_llama_cpp_adapter_close_closes_its_client() -> None:
+    settings = load_llama_settings(_env())
+    transport = httpx.MockTransport(_Router().handle)
+    adapter = async_llama_cpp_adapter(settings, transport=transport)
+    client = adapter._client
+    assert isinstance(client, httpx.AsyncClient)
+    assert not client.is_closed
+
+    async def run() -> None:
+        await adapter.close()
+
+    asyncio.run(run())
+    assert client.is_closed
+
+
+def test_async_llama_cpp_adapter_closes_client_after_error() -> None:
+    settings = load_llama_settings(_env(TYPEVET_LLAMA__API_KEY=_KEY))
+    router = _Router(fail_path="/v1/chat/completions")
+    transport = httpx.MockTransport(router.handle)
+    adapter = async_llama_cpp_adapter(settings, transport=transport)
+    client = adapter._client
+    assert isinstance(client, httpx.AsyncClient)
+
+    async def run() -> None:
+        try:
+            await adapter.generate(_REQUEST)
+        finally:
+            await adapter.close()
+
+    with pytest.raises(GenerationError):
+        asyncio.run(run())
+    assert client.is_closed
+
+
+def test_async_llama_cpp_adapter_success_matches_unmasked_path() -> None:
+    settings = load_llama_settings(_env(TYPEVET_LLAMA__API_KEY=_KEY))
+    transport = httpx.MockTransport(_Router().handle)
+
+    async def via_factory() -> GenerationResult:
+        adapter = async_llama_cpp_adapter(settings, transport=transport)
+        client = adapter._client
+        assert isinstance(client, httpx.AsyncClient)
+        try:
+            return await adapter.generate(_REQUEST)
+        finally:
+            await adapter.close()
+            assert client.is_closed
+
+    async def via_raw_client() -> GenerationResult:
+        async with async_llama_http_client(settings, transport=transport) as client:
+            adapter = AsyncLlamaCppGenerationAdapter(
+                settings.base_url, timeout=settings.timeout, client=client
+            )
+            return await adapter.generate(_REQUEST)
+
+    factory_result = asyncio.run(via_factory())
+    raw_result = asyncio.run(via_raw_client())
+    assert factory_result == raw_result
+    assert factory_result.value == {"ok": True}
+    assert factory_result.model == _REQUEST.model
+    assert factory_result.raw_text
+    assert factory_result.raw_text == raw_result.raw_text
+
+
+def _tenant_leaks(link: BaseException) -> list[str]:
+    texts = [str(link), repr(link), repr(link.args), repr(vars(link))]
+    return [text for text in texts if _TENANT in text]
+
+
+def test_async_llama_cpp_adapter_masks_extra_header_values() -> None:
+    settings = load_llama_settings(
+        _env(TYPEVET_LLAMA__HEADERS=json.dumps({"X-Tenant": _TENANT}))
+    )
+
+    async def via_raw() -> None:
+        router = _Router(fail_path="/v1/chat/completions")
+        transport = httpx.MockTransport(router.handle)
+        async with async_llama_http_client(settings, transport=transport) as client:
+            adapter = AsyncLlamaCppGenerationAdapter(
+                settings.base_url, timeout=settings.timeout, client=client
+            )
+            await adapter.generate(_REQUEST)
+
+    with pytest.raises(GenerationError) as raw_info:
+        asyncio.run(via_raw())
+    assert _tenant_leaks(raw_info.value), "positive control: raw path must echo header"
+    assert raw_info.value.__cause__ is not None
+    assert _tenant_leaks(raw_info.value.__cause__)
+
+    router = _Router(fail_path="/v1/chat/completions")
+    transport = httpx.MockTransport(router.handle)
+    adapter = async_llama_cpp_adapter(settings, transport=transport)
+
+    async def run() -> None:
+        try:
+            await adapter.generate(_REQUEST)
+        finally:
+            await adapter.close()
+
+    with pytest.raises(GenerationError) as info:
+        asyncio.run(run())
+    for link in _chain(info.value):
+        assert _tenant_leaks(link) == [], type(link).__name__
+    assert info.value.__cause__ is None
+    assert info.value.__context__ is None

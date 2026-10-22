@@ -27,6 +27,8 @@ Attributes:
     LlamaSettings (type): llama.cpp connection settings for composition roots.
     load_llama_settings (function): Read ``TYPEVET_LLAMA__*`` from the environment.
     llama_cpp_adapter (function): Build ``LlamaCppGenerationAdapter`` from settings.
+    async_llama_cpp_adapter (function): Build the async llama.cpp adapter from
+        settings; owns its client and masks the key in errors.
     VllmSettings (type): vLLM connection and API gateway settings; ``api_key``
         and ``headers`` are not in ``repr``.
     load_backend (function): Read ``TYPEVET_BACKEND``.
@@ -52,6 +54,7 @@ from typevet.adapters.inbound.calibration_map import load_calibration_map
 from typevet.adapters.inbound.helpers import run_sync
 from typevet.adapters.inbound.settings import (
     LlamaSettings,
+    async_llama_cpp_adapter,
     llama_cpp_adapter,
     load_llama_settings,
 )
@@ -59,6 +62,7 @@ from typevet.adapters.inbound.settings import (
 __all__ = [
     "LlamaSettings",
     "VllmSettings",
+    "async_llama_cpp_adapter",
     "async_vllm_generation_adapter",
     "generate",
     "generation_adapter",
