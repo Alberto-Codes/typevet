@@ -20,7 +20,8 @@ adapter ([#373][i373]).
 An optional ``framing`` keyword passes a ``ModelFramingPort`` without a
 served template. Framing requires ``DEGRADED_CHATML`` and
 ``require_vision=False``, and the port refuses images before scoring
-([#444][i444]).
+([#444][i444]). With framing, an omitted ``n_vocab`` resolves to a catalog
+lookup; without framing the Gemma class size stays the default.
 The default ``/tokenize`` hook maps an httpx failure to ``TransportError`` and
 a status of 400 or above to ``BackendHttpError`` ([#298][i298]). A 200 body
 that is not JSON, or that has no ``tokens`` list of integers, raises
@@ -79,16 +80,18 @@ from typevet.adapters.outbound.llama_cpp.http_mapping import (
     send_idempotent,
 )
 from typevet.adapters.outbound.llama_cpp.judgment_factory_options import (
+    OMITTED_N_VOCAB,
+    OmittedNVocab,
     ScoringWireInputs,
     build_scoring_judgment_port,
     check_framing_requires_no_vision,
     check_framing_served_family,
+    resolve_factory_n_vocab,
 )
 from typevet.adapters.outbound.llama_cpp.multimodal import (
     MediaCapability,
     fetch_media_capability,
 )
-from typevet.adapters.outbound.llama_cpp.scoring import DEFAULT_N_VOCAB
 from typevet.domain.errors import GenerationError, ScoringUnsupportedCapabilityError
 from typevet.domain.judgment_questions import Question
 from typevet.domain.judgment_response import JudgmentResponse
@@ -501,7 +504,7 @@ def open_gemma_native_vision_judgment(
     settings: GemmaVisionSettings,
     model: str | None = None,
     require_gemma4: bool = True,
-    n_vocab: int | None = DEFAULT_N_VOCAB,
+    n_vocab: int | OmittedNVocab | None = OMITTED_N_VOCAB,
     http_client: httpx.Client | None = None,
     **hooks: Unpack[_JudgmentHooks],
 ) -> Iterator[GemmaNativeVisionSession]:
@@ -519,9 +522,10 @@ def open_gemma_native_vision_judgment(
         model: Model id; defaults to ``settings.multimodal_model``.
         require_gemma4: When true, require ``NATIVE_GEMMA4_TURN``. Ignored when
             ``framing`` is set; framing requires ``DEGRADED_CHATML`` instead.
-        n_vocab: Model vocabulary size. The default is the Gemma 4 class
-            size, so the session sends no ``/v1/models`` request. ``None``
-            lets the scoring adapter read it from ``/v1/models`` (#321).
+        n_vocab: Model vocabulary size. When omitted, framing defaults to a
+            catalog read (``None``) and the Gemma path keeps the class size
+            so the session sends no ``/v1/models`` request. An explicit value,
+            including ``None``, wins (#321, #444).
         http_client: Optional pre-built client (for tests); not closed on exit.
 
     Other Parameters:
@@ -564,7 +568,7 @@ def open_gemma_native_vision_judgment(
         source=_model_source(model),
         base=settings.base_url.rstrip("/"),
         require_gemma4=require_gemma4,
-        n_vocab=n_vocab,
+        n_vocab=resolve_factory_n_vocab(n_vocab, framing=framing),
         tokenize_content=hooks.get("tokenize_content"),
         scoring_port_wrapper=hooks.get("scoring_port_wrapper"),
         text_parts=hooks.get("text_parts"),
