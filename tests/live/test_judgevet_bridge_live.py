@@ -1,13 +1,15 @@
-"""Live judgevet bridge receipts, one per typevet backend (#289).
+"""Live judgevet bridge receipts, one per typevet backend (#289, #445).
 
 judgevet's ``SystemOnePort`` drives a real typevet session through
-``provider_factory`` and asks one ``Noul``, one ``Choice`` and one ``Score``
-in a single ``system_one`` call. Each backend is one parametrized case:
+``provider_factory`` / public ``open_judgment`` and asks one ``Noul``, one
+``Choice`` and one ``Score`` in a single ``system_one`` call. Each backend is
+one parametrized case:
 
-- ``llama_cpp`` runs when ``TYPEVET_LLAMA__BASE_URL`` is set. It builds a
-  text-only session (``ScoringJudgmentAdapter`` over
-  ``LlamaCppCandidateScoringAdapter``) on the pinned Gemma 4 router model,
-  because ``open_judgment`` on llama.cpp opens the vision session.
+- ``llama_cpp`` runs when ``TYPEVET_LLAMA__BASE_URL`` is set. Model selection
+  uses ``TYPEVET_LLAMA__DEFAULT_MODEL`` (or legacy ``TYPEVET_GEMMA_MODEL``),
+  with the historical Gemma pin only when unframed and unset. Explicit
+  ``TYPEVET_LIVE_LLAMA_FRAMING=chatml`` selects ``ChatMLThinkingFraming`` and
+  the empty-think control replay (#445).
 - ``vllm`` runs when ``TYPEVET_VLLM__BASE_URL`` is set. It opens
   ``open_judgment`` with ``TYPEVET_BACKEND=vllm`` and the
   ``TYPEVET_VLLM__*`` settings.
@@ -26,18 +28,16 @@ import json
 import math
 import os
 import time
-from collections.abc import Callable, Iterator, Mapping
-from contextlib import AbstractContextManager, contextmanager
-from dataclasses import dataclass, field, replace
+from collections.abc import Iterator, Mapping
+from contextlib import contextmanager
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import httpx
 import pytest
 from judgevet import (
-    Choice,
     ChoiceAnswer,
-    Noul,
     NoulAnswer,
     Score,
     ScoreAnswer,
@@ -45,47 +45,25 @@ from judgevet import (
 )
 
 from tests.live.gate import gate_live
+from tests.live.judgevet_llama_receipt import (
+    HISTORICAL_GEMMA_FALLBACK,
+    QUESTIONS,
+    STATE,
+    RecordingTransport,
+    run_llama_bridge_receipt,
+    scrub_secrets,
+)
 from typevet.adapters.inbound.backend_settings import load_vllm_settings, open_judgment
 from typevet.adapters.inbound.fake_backend import require_live_session
 from typevet.adapters.inbound.judgevet import JudgmentSession, provider_factory
 from typevet.adapters.inbound.settings import load_llama_settings
-from typevet.adapters.outbound.gemma import classify_served_template
-from typevet.adapters.outbound.judgment_scoring import ScoringJudgmentAdapter
-from typevet.adapters.outbound.llama_cpp.scoring import LlamaCppCandidateScoringAdapter
-from typevet.ports.judgment import JudgmentPort
 from typevet_evals.runner.live_gate import require_live_enabled
 
-_PINNED_LLAMA_MODEL = "gemma-4-31b-24gib-kv11-decoder"
-_N_VOCAB = 262144
+_HISTORICAL_GEMMA = HISTORICAL_GEMMA_FALLBACK
+_STATE = STATE
+_QUESTIONS = QUESTIONS
 _TOLERANCE = 1e-6
-_STATE = (
-    "Support ticket: I was charged twice for my March subscription. "
-    "Please refund the duplicate payment as soon as possible."
-)
-_URGENCY_LEVELS = (
-    "Not urgent",
-    "Slightly urgent",
-    "Moderately urgent",
-    "Very urgent",
-    "Critical",
-)
-_QUESTIONS = {
-    "duplicate_charge": Noul(
-        instructions="Does the ticket report a duplicate charge?",
-    ),
-    "route": Choice(
-        instructions="Which team should handle this ticket?",
-        criteria={
-            "billing": "Payments, refunds and invoices.",
-            "technical": "Faults, errors and outages.",
-            "sales": "New plans, upgrades and quotes.",
-        },
-    ),
-    "urgency": Score(
-        instructions="How urgent is this ticket?",
-        criteria=_URGENCY_LEVELS,
-    ),
-}
+_BACKEND_NAMES = ("llama_cpp", "vllm")
 
 
 @dataclass
@@ -103,21 +81,10 @@ class _Backend:
 
     name: str
     model: str
-    open_session: Callable[[], AbstractContextManager[JudgmentSession]]
+    open_session: Any
     served: list[dict[str, object]]
     facts: dict[str, object] = field(default_factory=dict)
     secret: str | None = None
-
-
-@dataclass(frozen=True)
-class _TextSession:
-    """Text-only llama.cpp session with the ``port`` the bridge reads.
-
-    Attributes:
-        port (JudgmentPort): Scoring-backed judgment pinned to one model.
-    """
-
-    port: JudgmentPort
 
 
 def _served_ids(client: httpx.Client) -> list[dict[str, object]]:
@@ -135,59 +102,6 @@ def _require_env(name: str) -> None:
     if require_live_enabled():
         pytest.fail(reason)
     pytest.skip(reason)
-
-
-def _llama_backend() -> _Backend:
-    _require_env("TYPEVET_LLAMA__BASE_URL")
-    settings = replace(load_llama_settings(), default_model=_PINNED_LLAMA_MODEL)
-    gate_live(settings)
-    base = settings.base_url.rstrip("/")
-    timeout = max(settings.timeout, 600.0)
-    model = _PINNED_LLAMA_MODEL
-    served_ids: list[dict[str, object]] = []
-    facts: dict[str, object] = {}
-
-    @contextmanager
-    def _open_llama() -> Iterator[JudgmentSession]:
-        with httpx.Client(base_url=base, timeout=timeout) as client:
-            served_ids.extend(e for e in _served_ids(client) if e["id"] == model)
-            props = client.get("/props", params={"model": model})
-            props_body = props.raise_for_status().json()
-            facts["model_alias"] = props_body.get("model_alias")
-            facts["build_info"] = props_body.get("build_info")
-            rendered = client.post(
-                "/apply-template",
-                json={
-                    "model": model,
-                    "messages": [{"role": "user", "content": "hello"}],
-                    "add_generation_prompt": True,
-                },
-            )
-            served = classify_served_template(
-                rendered.raise_for_status().json()["prompt"]
-            )
-            facts["served_template_class"] = served.value
-
-            def tokenize(text: str) -> tuple[int, ...]:
-                body = client.post(
-                    "/tokenize",
-                    json={"model": model, "content": text, "add_special": False},
-                )
-                return tuple(body.raise_for_status().json()["tokens"])
-
-            with LlamaCppCandidateScoringAdapter(
-                base_url=base, timeout=timeout, client=client, n_vocab=_N_VOCAB
-            ) as scorer:
-                yield _TextSession(
-                    ScoringJudgmentAdapter(
-                        scorer,
-                        tokenize_content=tokenize,
-                        served_template=served,
-                        pinned_model=model,
-                    )
-                )
-
-    return _Backend("llama_cpp", model, _open_llama, served_ids, facts)
 
 
 def _vllm_backend() -> _Backend:
@@ -214,12 +128,6 @@ def _vllm_backend() -> _Backend:
     )
 
 
-_BACKENDS: dict[str, Callable[[], _Backend]] = {
-    "llama_cpp": _llama_backend,
-    "vllm": _vllm_backend,
-}
-
-
 def _answers_summary(response: SystemOneResponse) -> dict[str, object]:
     noul = response.answers["duplicate_charge"]
     choice = response.answers["route"]
@@ -227,8 +135,13 @@ def _answers_summary(response: SystemOneResponse) -> dict[str, object]:
     assert isinstance(noul, NoulAnswer)
     assert isinstance(choice, ChoiceAnswer)
     assert isinstance(score, ScoreAnswer)
+    true_p = float(noul.noul)
     return {
-        "duplicate_charge": {"type": "noul", "noul": noul.noul},
+        "duplicate_charge": {
+            "type": "noul",
+            "noul": noul.noul,
+            "probabilities": {"0": 1.0 - true_p, "1": true_p},
+        },
         "route": {
             "type": "choice",
             "choice": choice.choice,
@@ -239,6 +152,7 @@ def _answers_summary(response: SystemOneResponse) -> dict[str, object]:
             "type": "score",
             "score": score.score,
             "confidence": score.confidence,
+            "legend": {str(k): v for k, v in score.legend.items()},
             "probabilities": {str(k): v for k, v in score.probabilities.items()},
         },
     }
@@ -260,11 +174,112 @@ def _write_receipt(name: str, text: str) -> None:
     path.write_text(text + "\n", encoding="utf-8")
 
 
-@pytest.mark.live
-@pytest.mark.parametrize("backend_name", sorted(_BACKENDS))
-def test_judgevet_bridge_live_receipt(backend_name: str) -> None:
-    """One judgevet ``system_one`` call returns typed answers on a real backend."""
-    backend = _BACKENDS[backend_name]()
+def _stdout_receipt(receipt: dict[str, object]) -> dict[str, object]:
+    """Return a receipt copy safe for stdout (no full top-N dump)."""
+    summary = dict(receipt)
+    first_top = summary.pop("first_top_n", None)
+    if isinstance(first_top, list):
+        summary["first_top_n_count"] = len(first_top)
+    control = summary.get("control")
+    if isinstance(control, dict):
+        control_summary = dict(control)
+        control_summary.pop("response", None)
+        control_summary.pop("request", None)
+        summary["control"] = control_summary
+    return summary
+
+
+def _receipt_text(receipt: Mapping[str, object], *, secret: str | None) -> str:
+    """Serialize a receipt after scrubbing configured secrets."""
+    secrets = (secret,) if secret else ()
+    cleaned = scrub_secrets(dict(receipt), secrets)
+    text = json.dumps(cleaned, indent=2, sort_keys=True)
+    if secret:
+        assert secret not in text
+    return text
+
+
+def _assert_llama_receipt(receipt: dict[str, object], *, secret: str | None) -> None:
+    """Assert structure on a llama.cpp harness receipt."""
+    view = scrub_secrets(receipt, (secret,) if secret else ())
+    assert isinstance(view, dict)
+    if secret:
+        assert secret not in json.dumps(view)
+    assert view["model"] == view["requested_model"]
+    served = view["served"]
+    assert isinstance(served, list)
+    served_ids = {entry["id"] for entry in served}
+    assert view["model"] in served_ids
+    answers = view["answers"]
+    assert isinstance(answers, dict)
+    assert set(answers) == set(_QUESTIONS)
+    noul = answers["duplicate_charge"]
+    choice = answers["route"]
+    score = answers["urgency"]
+    assert isinstance(noul, dict)
+    assert isinstance(choice, dict)
+    assert isinstance(score, dict)
+    assert math.isfinite(float(noul["noul"])) and 0.0 <= float(noul["noul"]) <= 1.0
+    _assert_distribution(noul["probabilities"], {"0", "1"})
+    assert noul["probabilities"]["1"] == pytest.approx(
+        float(noul["noul"]), abs=_TOLERANCE
+    )
+    _assert_distribution(choice["probabilities"], {"billing", "technical", "sales"})
+    assert choice["choice"] in choice["probabilities"]
+    urgency = _QUESTIONS["urgency"]
+    assert isinstance(urgency, Score)
+    assert len(score["legend"]) == len(urgency.criteria)
+    _assert_distribution(score["probabilities"], set(score["legend"]))
+    levels = sorted(int(level) for level in score["probabilities"])
+    assert (
+        math.isfinite(float(score["score"]))
+        and levels[0] <= float(score["score"]) <= levels[-1]
+    )
+
+
+def _run_llama_live_case(
+    *,
+    transport: httpx.BaseTransport | None = None,
+) -> dict[str, object]:
+    """Run the llama.cpp live harness and assert the receipt."""
+    _require_env("TYPEVET_LLAMA__BASE_URL")
+    settings = load_llama_settings()
+    gate_live(settings)
+    recorder = (
+        transport
+        if isinstance(transport, RecordingTransport)
+        else RecordingTransport(
+            transport or httpx.HTTPTransport(retries=0),
+            max_completions=4,
+        )
+    )
+    receipt: dict[str, object] = {}
+    try:
+        run_llama_bridge_receipt(os.environ, transport=recorder, receipt=receipt)
+        _assert_llama_receipt(receipt, secret=settings.api_key)
+    except BaseException as exc:
+        if receipt and "failure" not in receipt:
+            receipt["failure"] = {
+                "type": type(exc).__name__,
+                "reason": str(exc),
+                "completion_attempts": recorder.completion_attempts,
+            }
+        raise
+    finally:
+        if receipt:
+            text = _receipt_text(receipt, secret=settings.api_key)
+            _write_receipt("llama_cpp", text)
+            stdout = scrub_secrets(
+                _stdout_receipt(receipt),
+                (settings.api_key,) if settings.api_key else (),
+            )
+            print(json.dumps(stdout, indent=2, sort_keys=True))
+    return receipt
+
+
+def _run_vllm_live_case() -> None:
+    """Run the vLLM live path and assert the receipt."""
+    backend = _vllm_backend()
     factory = provider_factory(backend.open_session)
     with factory() as port:
         started = time.perf_counter()
@@ -272,7 +287,7 @@ def test_judgevet_bridge_live_receipt(backend_name: str) -> None:
         wall_seconds = time.perf_counter() - started
 
     answers = _answers_summary(response)
-    receipt: dict[str, object] = {
+    receipt = {
         "issue": 289,
         "backend": backend.name,
         "requested_model": backend.model,
@@ -284,11 +299,10 @@ def test_judgevet_bridge_live_receipt(backend_name: str) -> None:
             "output_tokens": response.usage.output_tokens,
         },
         "answers": answers,
+        "receipts": dict(response.receipts),
         "wall_seconds": round(wall_seconds, 3),
     }
-    text = json.dumps(receipt, indent=2, sort_keys=True)
-    if backend.secret:
-        assert backend.secret not in text
+    text = _receipt_text(receipt, secret=backend.secret)
     _write_receipt(backend.name, text)
     print(text)
 
@@ -296,16 +310,31 @@ def test_judgevet_bridge_live_receipt(backend_name: str) -> None:
     assert response.model == backend.model
     assert response.model in served_ids
     assert set(response.answers) == set(_QUESTIONS)
-    noul = response.answers["duplicate_charge"]
-    choice = response.answers["route"]
-    score = response.answers["urgency"]
-    assert isinstance(noul, NoulAnswer)
-    assert isinstance(choice, ChoiceAnswer)
-    assert isinstance(score, ScoreAnswer)
-    assert math.isfinite(noul.noul) and 0.0 <= noul.noul <= 1.0
-    _assert_distribution(choice.probabilities, {"billing", "technical", "sales"})
-    assert choice.choice in choice.probabilities
-    assert len(score.legend) == len(_URGENCY_LEVELS)
-    _assert_distribution(score.probabilities, set(score.legend))
-    levels = sorted(score.legend)
-    assert math.isfinite(score.score) and levels[0] <= score.score <= levels[-1]
+    noul_answer = response.answers["duplicate_charge"]
+    choice_answer = response.answers["route"]
+    score_answer = response.answers["urgency"]
+    assert isinstance(noul_answer, NoulAnswer)
+    assert isinstance(choice_answer, ChoiceAnswer)
+    assert isinstance(score_answer, ScoreAnswer)
+    assert math.isfinite(noul_answer.noul) and 0.0 <= noul_answer.noul <= 1.0
+    _assert_distribution(choice_answer.probabilities, {"billing", "technical", "sales"})
+    assert choice_answer.choice in choice_answer.probabilities
+    urgency = _QUESTIONS["urgency"]
+    assert isinstance(urgency, Score)
+    assert len(score_answer.legend) == len(urgency.criteria)
+    _assert_distribution(score_answer.probabilities, set(score_answer.legend))
+    levels = sorted(score_answer.legend)
+    assert (
+        math.isfinite(score_answer.score)
+        and levels[0] <= score_answer.score <= levels[-1]
+    )
+
+
+@pytest.mark.live
+@pytest.mark.parametrize("backend_name", _BACKEND_NAMES)
+def test_judgevet_bridge_live_receipt(backend_name: str) -> None:
+    """One judgevet ``system_one`` call returns typed answers on a real backend."""
+    if backend_name == "llama_cpp":
+        _run_llama_live_case()
+        return
+    _run_vllm_live_case()
