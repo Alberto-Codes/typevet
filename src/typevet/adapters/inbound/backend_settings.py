@@ -5,9 +5,13 @@ The ``fake`` backend is offline and serves judgment only: ``open_judgment``
 yields the ``FakeJudgmentSession`` from
 ``typevet.adapters.inbound.fake_backend``, and ``generation_adapter`` refuses
 it. ``open_judgment`` accepts an optional ``framing`` keyword on the
-``llama_cpp`` branch only; fake and vLLM refuse it (#444). The vLLM branch
-reads ``TYPEVET_VLLM__*`` variables and builds one ``httpx.Client``
-that carries the base URL, timeout, optional key and gateway headers.
+``llama_cpp`` branch only; fake and vLLM refuse it (#444). With framing, the
+session pins ``settings.default_model`` (``TYPEVET_LLAMA__DEFAULT_MODEL``,
+including the legacy ``TYPEVET_GEMMA_MODEL`` fallback) and refuses a missing
+value before any request; without framing it keeps
+``settings.multimodal_model``. The vLLM branch reads ``TYPEVET_VLLM__*``
+variables and builds one ``httpx.Client`` that carries the base URL, timeout,
+optional key and gateway headers.
 ``TYPEVET_VLLM__MAX_CONCURRENCY`` sets ``VllmSettings.max_concurrency``, the
 POST limit for the ``AsyncVllmGenerationAdapter`` that
 ``async_vllm_generation_adapter`` builds on an ``httpx.AsyncClient`` with the
@@ -110,6 +114,7 @@ from typevet.adapters.inbound.http_headers import (
     parse_headers_json,
 )
 from typevet.adapters.inbound.settings import (
+    LlamaSettings,
     llama_cpp_adapter,
     llama_http_client,
     load_llama_settings,
@@ -518,6 +523,63 @@ def async_vllm_generation_adapter(
 
 
 @contextmanager
+def _open_llama_judgment(
+    llama: LlamaSettings,
+    *,
+    transport: httpx.BaseTransport | None,
+    framing: ModelFramingPort | None,
+) -> Iterator[GemmaNativeVisionSession]:
+    """Open a masked llama.cpp judgment session for ``open_judgment``.
+
+    Without ``framing``, the lower factory keeps ``settings.multimodal_model``.
+    With ``framing``, a non-empty ``settings.default_model`` is required and
+    pinned before any request (#444).
+
+    Args:
+        llama: Loaded llama.cpp settings.
+        transport: Optional transport for the HTTP client.
+        framing: Optional ChatML framing port.
+
+    Yields:
+        A key-masked ``GemmaNativeVisionSession``.
+
+    Raises:
+        ValueError: When ``framing`` is set without ``settings.default_model``.
+    """
+    needles = key_needles(llama.api_key, llama.headers)
+    text_model: str | None = None
+    if framing is not None:
+        text_model = llama.default_model
+        if not text_model:
+            msg = (
+                "settings.default_model (TYPEVET_LLAMA__DEFAULT_MODEL) "
+                "is required when framing is set"
+            )
+            raise ValueError(msg)
+    with (
+        llama_http_client(llama, transport=transport) as http,
+        ExitStack() as stack,
+    ):
+        if framing is None:
+            opened = open_gemma_native_vision_judgment(
+                settings=llama,
+                http_client=http,
+                require_vision=False,
+            )
+        else:
+            opened = open_gemma_native_vision_judgment(
+                settings=llama,
+                http_client=http,
+                require_vision=False,
+                framing=framing,
+                model=text_model,
+            )
+        llama_session = enter_masked(stack, opened, needles)
+        port = _KeyMaskingJudgmentPort(llama_session.port, needles)
+        yield replace(llama_session, port=port)
+
+
+@contextmanager
 def open_judgment(
     environ: Mapping[str, str] | None = None,
     *,
@@ -531,9 +593,11 @@ def open_judgment(
         transport: Optional transport for the vLLM or llama.cpp client. The
             fake branch ignores it.
         framing: Optional model framing for the llama.cpp branch. Requires a
-            served ``DEGRADED_CHATML`` family. The factory passes
-            ``require_vision=False``. Fake and vLLM refuse this keyword
-            (#444).
+            served ``DEGRADED_CHATML`` family and a non-empty
+            ``settings.default_model`` (``TYPEVET_LLAMA__DEFAULT_MODEL``, or
+            legacy ``TYPEVET_GEMMA_MODEL``). The factory passes
+            ``require_vision=False`` and pins that text model. Fake and vLLM
+            refuse this keyword (#444).
 
     Yields:
         A llama.cpp session from ``open_gemma_native_vision_judgment`` with
@@ -541,20 +605,23 @@ def open_judgment(
         exit. The model may be text-only: the session then records
         ``capability.vision`` as ``False`` and refuses an image judgment with
         ``ScoringUnsupportedCapabilityError`` before any request (#438).
-        With ``framing``, the session keeps the probed served family and
-        scores through that framing without ``served_template`` (#444).
-        The session-open and judgment errors never show the configured key or
-        a header value. Or a vLLM session from ``open_vllm_judgment``
-        on the ``vllm_http_client``, so ``/tokenize`` and scoring carry the
-        gateway headers. The vLLM client closes on exit, and judgment errors
-        never show the configured key or a header value. For ``fake``, an
-        offline ``FakeJudgmentSession`` with ``model`` ``"fake"`` whose port
-        answers from ``TYPEVET_FAKE__DISTRIBUTIONS`` or uniform distributions.
+        With ``framing``, the session pins ``settings.default_model``, keeps
+        the probed served family and scores through that framing without
+        ``served_template`` (#444). Without ``framing``, the session keeps
+        ``settings.multimodal_model``. The session-open and judgment errors
+        never show the configured key or a header value. Or a vLLM session
+        from ``open_vllm_judgment`` on the ``vllm_http_client``, so
+        ``/tokenize`` and scoring carry the gateway headers. The vLLM
+        client closes on exit, and judgment errors never show the configured
+        key or a header value. For ``fake``, an offline
+        ``FakeJudgmentSession`` with ``model`` ``"fake"`` whose port answers
+        from ``TYPEVET_FAKE__DISTRIBUTIONS`` or uniform distributions.
 
     Raises:
         ValueError: When a backend, vLLM or ``TYPEVET_FAKE__DISTRIBUTIONS``
-            variable is invalid, or when ``framing`` is set for ``fake`` or
-            ``vllm``.
+            variable is invalid, when ``framing`` is set for ``fake`` or
+            ``vllm``, or when ``framing`` is set without
+            ``settings.default_model``.
     """
     source = os.environ if environ is None else environ
     backend = load_backend(source)
@@ -565,28 +632,12 @@ def open_judgment(
         yield open_fake_judgment(source)
         return
     if backend == "llama_cpp":
-        llama = load_llama_settings(source)
-        needles = key_needles(llama.api_key, llama.headers)
-        with (
-            llama_http_client(llama, transport=transport) as http,
-            ExitStack() as stack,
-        ):
-            if framing is None:
-                opened = open_gemma_native_vision_judgment(
-                    settings=llama,
-                    http_client=http,
-                    require_vision=False,
-                )
-            else:
-                opened = open_gemma_native_vision_judgment(
-                    settings=llama,
-                    http_client=http,
-                    require_vision=False,
-                    framing=framing,
-                )
-            llama_session = enter_masked(stack, opened, needles)
-            port = _KeyMaskingJudgmentPort(llama_session.port, needles)
-            yield replace(llama_session, port=port)
+        with _open_llama_judgment(
+            load_llama_settings(source),
+            transport=transport,
+            framing=framing,
+        ) as session:
+            yield session
         return
     settings = load_vllm_settings(source)
     with (

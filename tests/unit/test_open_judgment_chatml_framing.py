@@ -56,7 +56,11 @@ from typevet.domain.media import ImageInput
 pytestmark = pytest.mark.unit
 
 _MODEL = "qwen-chatml-text"
-_ENVIRON = {"TYPEVET_BACKEND": "llama_cpp", "TYPEVET_LLAMA__MULTIMODAL_MODEL": _MODEL}
+_ENVIRON = {
+    "TYPEVET_BACKEND": "llama_cpp",
+    "TYPEVET_LLAMA__MULTIMODAL_MODEL": _MODEL,
+    "TYPEVET_LLAMA__DEFAULT_MODEL": _MODEL,
+}
 _CHATML_RENDERED = degraded_chatml_rendered("hello")
 _GEMMA4_RENDERED = native_gemma4_rendered("hello")
 _MIXED_RENDERED = _CHATML_RENDERED + "<|turn>"

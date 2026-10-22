@@ -49,6 +49,7 @@ _GEMMA = "gemma-4-31b-kv9-text"
 _QWEN_ENV = {
     "TYPEVET_BACKEND": "llama_cpp",
     "TYPEVET_LLAMA__MULTIMODAL_MODEL": _QWEN,
+    "TYPEVET_LLAMA__DEFAULT_MODEL": _QWEN,
 }
 _GEMMA_ENV = {
     "TYPEVET_BACKEND": "llama_cpp",
