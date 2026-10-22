@@ -116,10 +116,19 @@ before any schema check.
 **Native turn template.** Gemma 4 marks turns with `<|turn>` and `<turn|>`. On
 llama.cpp, the judgment session renders one message through `/apply-template`.
 It then classifies the served template as native Gemma 4, native Gemma 3,
-degraded ChatML or unsupported. The llama.cpp judgment session accepts only a
-native Gemma 3 or Gemma 4 family. It also requires a model that declares image
-input. typevet then writes the prefix in that
-family's turn markers itself, because `/completion` takes raw text. On vLLM,
+degraded ChatML or unsupported. By default, the factory requires native Gemma 4
+([#444](https://github.com/Alberto-Codes/typevet/issues/444)).
+The public `open_judgment` also accepts text-only Gemma models
+([#438](https://github.com/Alberto-Codes/typevet/issues/438)).
+Explicit `ChatMLThinkingFraming` selects a text-only path for `degraded_chatml`
+and pins `TYPEVET_LLAMA__DEFAULT_MODEL`
+([#444](https://github.com/Alberto-Codes/typevet/issues/444)).
+That path requires the empty-think prefill from
+[#443](https://github.com/Alberto-Codes/typevet/issues/443).
+The Qwen3.8 smoke exercised it on llama.cpp, without an image or vLLM claim
+([#445 receipt](https://github.com/Alberto-Codes/typevet/issues/445#issuecomment-6344021995)).
+typevet writes each selected prefix itself because `/completion` takes raw text
+([#444](https://github.com/Alberto-Codes/typevet/issues/444)). On vLLM,
 the server applies the served chat template. typevet sends the prefix as plain
 user content.
 

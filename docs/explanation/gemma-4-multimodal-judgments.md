@@ -100,6 +100,15 @@ renders one turn through `POST /apply-template` and classifies the result. By
 default it requires `native_gemma4_turn`. A ChatML render, a Gemma 3 render or
 a mixed render raises `ValueError` before the first `judge` call.
 
+Explicit `ChatMLThinkingFraming` allows `degraded_chatml` for text-only
+judgments and refuses images, even when the server advertises vision
+([#444](https://github.com/Alberto-Codes/typevet/issues/444)).
+This path requires an empty-think block before the scored answer token
+([#443](https://github.com/Alberto-Codes/typevet/issues/443)).
+The Qwen3.8 receipt covers this text path on llama.cpp, without an image or
+vLLM support claim
+([#445 receipt](https://github.com/Alberto-Codes/typevet/issues/445#issuecomment-6344021995)).
+
 The judgment adapter also fails closed. With a native Gemma 3 or Gemma 4
 family, it wraps every prefix in that turn, with or without images. An imaged
 prefix and an image-omitted prefix then differ only in the media markers.

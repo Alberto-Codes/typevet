@@ -54,6 +54,15 @@ broad-agreement rules.
 served template through `/apply-template`. By default it accepts only native
 Gemma 4 turns and fails before scoring on any other family
 ([Gemma 4 page](how-typevet-works-with-gemma-4.md#what-is-specific-to-gemma-4)).
+Explicit `ChatMLThinkingFraming` accepts `degraded_chatml` for text-only
+judgments and pins `TYPEVET_LLAMA__DEFAULT_MODEL`
+([#444](https://github.com/Alberto-Codes/typevet/issues/444)).
+It adds the required empty-think block before the scored answer token
+([#443](https://github.com/Alberto-Codes/typevet/issues/443)).
+The local Qwen3.8 smoke exercised this path and its no-prefill control
+([#445 receipt](https://github.com/Alberto-Codes/typevet/issues/445#issuecomment-6344021995)).
+That receipt establishes no Qwen image, vLLM or calibration claim
+([#445](https://github.com/Alberto-Codes/typevet/issues/445)).
 The classifier reads the markers in the rendered output, not the template
 source. The recorded llama.cpp [receipt](https://github.com/Alberto-Codes/typevet/issues/203#issuecomment-5882379255) used a `--chat-template-file` override
 ([#233](https://github.com/Alberto-Codes/typevet/issues/233)). Thus
