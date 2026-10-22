@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.10.0](https://github.com/Alberto-Codes/typevet/compare/v0.9.0...v0.10.0) (2026-10-22)
+
+
+### Features
+
+* **llama:** accept explicit ChatML framing for text judgments ([9e08cb7](https://github.com/Alberto-Codes/typevet/commit/9e08cb7269748dddf24507d649ca4097d4d9f1ae)), closes [#444](https://github.com/Alberto-Codes/typevet/issues/444)
+* **llama:** pin explicit framing to the text model ([f463caa](https://github.com/Alberto-Codes/typevet/commit/f463caa87f297eb814339ffa830bb7247f1bb7fd)), closes [#444](https://github.com/Alberto-Codes/typevet/issues/444)
+* **llama:** read catalog vocabulary for framed judgments ([42f47aa](https://github.com/Alberto-Codes/typevet/commit/42f47aafa9dc4e922600e09e5f9d747b746a9c36)), closes [#444](https://github.com/Alberto-Codes/typevet/issues/444)
+
+
+### Fixes
+
+* **adapters:** mask async llama.cpp generation errors ([ad87c59](https://github.com/Alberto-Codes/typevet/commit/ad87c59b1f83c84717ebbfbb6751c5342ae71e9d)), closes [#413](https://github.com/Alberto-Codes/typevet/issues/413)
+
+
+### Documentation
+
+* **judgment:** record the tested Qwen text path ([4df719b](https://github.com/Alberto-Codes/typevet/commit/4df719b06ae88afb132c002e3cc5e541cd5d3cbe)), closes [#447](https://github.com/Alberto-Codes/typevet/issues/447) [#445](https://github.com/Alberto-Codes/typevet/issues/445)
+
 ## [0.9.0](https://github.com/Alberto-Codes/typevet/compare/v0.8.5...v0.9.0) (2026-10-21)
 
 
