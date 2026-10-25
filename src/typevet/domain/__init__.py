@@ -27,6 +27,7 @@ See Also:
 
 Attributes:
     Decision (type): One compiled TypeLLM field from JSON Schema.
+    BackendBusyError (type): llama.cpp router busy with another model.
     BackendHttpError (type): llama.cpp HTTP status 400 or above.
     CandidateScoringRequest (type): Prompt and candidate tokens to score.
     CALIBRATION_CLIP (float): Clip bound for calibration map inputs and outputs.
@@ -116,6 +117,7 @@ from typevet.domain.decisions import (
     dependency_layers,
 )
 from typevet.domain.errors import (
+    BackendBusyError,
     BackendHttpError,
     CalibrationDigestError,
     CalibrationMapError,
@@ -191,6 +193,7 @@ __all__ = [
     "MEDIA_MARKER",
     "SUPPORTED_IMAGE_MIME_TYPES",
     "Answer",
+    "BackendBusyError",
     "BackendHttpError",
     "CalibrationDigestError",
     "CalibrationMap",

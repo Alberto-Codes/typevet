@@ -26,6 +26,7 @@ See Also:
     - [typevet.runtime][]: Source of the ``decide_categorical`` re-export
 
 Attributes:
+    BackendBusyError (type): llama.cpp router busy with another model.
     BackendHttpError (type): llama.cpp HTTP error status with body snippet.
     GenerationError (type): Base failure for a generation call.
     TransportError (type): HTTP client failure before a response.
@@ -43,6 +44,7 @@ Attributes:
 
 from typevet._version import __version__
 from typevet.domain.errors import (
+    BackendBusyError,
     BackendHttpError,
     GenerationError,
     SchemaValidationError,
@@ -55,6 +57,7 @@ from typevet.runtime.categorical import decide_categorical
 
 __all__ = [
     "AsyncGenerationPort",
+    "BackendBusyError",
     "BackendHttpError",
     "GenerationError",
     "GenerationPort",

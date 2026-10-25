@@ -13,6 +13,8 @@ See Also:
     - [typevet.adapters.outbound.llama_cpp.http_mapping][]: httpx to domain error mapping
 
 Attributes:
+    BackendBusyError (type): llama.cpp HTTP 400 ``model is not loaded`` while
+        another model holds the router; the adapter did not load the model.
     BackendHttpError (type): Backend HTTP status 400 or above, or a redirect,
         with the ``Retry-After`` wait, rate-limit headers and request id.
     GenerationError (type): Base failure for a generation call.
@@ -143,6 +145,30 @@ class BackendHttpError(GenerationError):
         self.retry_after_seconds = retry_after_seconds
         self.rate_limit: Mapping[str, str] = MappingProxyType(dict(rate_limit or {}))
         self.request_id = request_id
+
+
+class BackendBusyError(BackendHttpError):
+    """A llama.cpp router refused to load the model while another model runs.
+
+    With ``autoload`` off, the router answers HTTP 400 ``model is not
+    loaded``. The adapter raises this error when another model holds a router
+    slot and no slot is free, so it does not evict that model (#461).
+
+    Attributes:
+        status_code (int): HTTP status from the router, 400.
+        body_snippet (str): Truncated response body text for diagnostics.
+
+    Examples:
+        ```python
+        from typevet.domain.errors import BackendBusyError
+
+        raise BackendBusyError(
+            "llama.cpp HTTP 400: model is not loaded",
+            status_code=400,
+            body_snippet="model is not loaded",
+        )
+        ```
+    """
 
 
 class JudgmentError(GenerationError):

@@ -127,6 +127,8 @@ class ScoringWireInputs:
         served (ServedTemplateClass | None): Served family, or ``None`` with
             framing.
         framing (ModelFramingPort | None): Framing, or ``None`` with served.
+        autoload (bool): When ``False``, scoring sends ``?autoload=false``
+            (#461). Default ``True``.
 
     Examples:
         ```python
@@ -149,6 +151,7 @@ class ScoringWireInputs:
     text_parts: TextParts | None
     served: ServedTemplateClass | None
     framing: ModelFramingPort | None
+    autoload: bool = True
 
 
 def check_framing_requires_no_vision(
@@ -189,6 +192,7 @@ def build_scoring_judgment_port(
 ) -> tuple[JudgmentPort, LlamaCppCandidateScoringAdapter]:
     """Build the scoring adapter, request-id wrappers and judgment port.
 
+    The scoring adapter takes ``inputs.autoload`` (#461).
     Pass ``framing`` or ``served`` on ``inputs``, not both. The factory still
     stores the probed family on the session when the adapter takes framing.
 
@@ -208,6 +212,7 @@ def build_scoring_judgment_port(
         client=inputs.client,
         n_vocab=inputs.n_vocab,
         media_capabilities={inputs.model_id: inputs.capability},
+        autoload=inputs.autoload,
     )
     scoring_port: CandidateScoringPort = scoring
     if inputs.scoring_port_wrapper is not None:

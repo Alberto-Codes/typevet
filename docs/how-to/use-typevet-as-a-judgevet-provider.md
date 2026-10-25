@@ -29,7 +29,17 @@ Measure each judge model on your own task before you trust its numbers.
   export TYPEVET_LLAMA__MULTIMODAL_MODEL='<your-gemma-4-multimodal-model-id>'
   ```
 
-- judgevet 0.17 or later, below 1.0. The `judgevet` extra pins `judgevet>=0.17,<1.0`.
+- For a llama.cpp router that other callers share, `TYPEVET_LLAMA__AUTOLOAD=false`.
+  A hook timeout alone cannot tell a slow judgment from a backend that another model holds.
+  With `TYPEVET_LLAMA__AUTOLOAD=false`, the second case raises `ProviderBusyError`, and the bridge does not unload the other model.
+  `TYPEVET_LLAMA__TIMEOUT` still limits each HTTP request.
+
+  ```bash
+  export TYPEVET_LLAMA__AUTOLOAD=false
+  ```
+
+- judgevet 0.23 or later, below 1.0. The `judgevet` extra pins `judgevet>=0.23,<1.0`.
+  judgevet 0.23 adds `ProviderBusyError`.
   judgevet is pre-1.0, so a minor release can break the provider port.
   A daily CI job runs the bridge and conformance tests against the newest judgevet release.
   A breaking judgevet release gets a typevet fix or a cap in a patch release.
@@ -214,10 +224,12 @@ An answer with no receipt has no entry.
 The bridge maps each typevet error to a judgevet `ProviderError` subclass.
 The judgevet error keeps the typevet message.
 Its `__cause__` is the typevet error.
+The map also applies when the session opens, so a busy router raises `ProviderBusyError` from the provider scope.
 
 | typevet error | judgevet error |
 |---|---|
 | `TransportError` | `ProviderTransportError` |
+| `BackendBusyError` | `ProviderBusyError` |
 | `BackendHttpError`, status 400 to 499 | `ProviderRequestError` |
 | `BackendHttpError`, other status | `ProviderTransportError` |
 | `GenerationUnsupportedCapabilityError`, `ScoringUnsupportedCapabilityError`, `GemmaTemplateError` | `ProviderCapabilityError` |

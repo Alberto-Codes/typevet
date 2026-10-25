@@ -3,6 +3,9 @@
 Before the request, ``chat_completion.check_request_schema`` rejects a
 malformed schema with ``ValueError``; no request is sent.
 
+With ``autoload=False``, the request carries ``?autoload=false``, and a router
+that another model holds raises ``BackendBusyError`` (#461).
+
 Examples:
     ```python
     from typevet.adapters.outbound.llama_cpp.generation_async import (
@@ -24,6 +27,7 @@ See Also:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any, Self
 from urllib.parse import urljoin
 
@@ -34,6 +38,7 @@ from typevet.adapters.outbound.chat_completion import (
     extract_content,
     validated_value,
 )
+from typevet.adapters.outbound.llama_cpp.autoload import send_with_autoload_async
 from typevet.adapters.outbound.llama_cpp.generation import LlamaCppGenerationAdapter
 from typevet.adapters.outbound.llama_cpp.http_mapping import (
     ensure_success_status,
@@ -51,6 +56,7 @@ class AsyncLlamaCppGenerationAdapter:
         _timeout (float): HTTP timeout in seconds.
         _client (httpx.AsyncClient | None): Shared or owned HTTP client.
         _owns_client (bool): Whether ``close`` should close the client.
+        _autoload (bool): Whether the router may load the model freely.
 
     Examples:
         ```python
@@ -68,6 +74,7 @@ class AsyncLlamaCppGenerationAdapter:
         *,
         timeout: float = 300.0,
         client: httpx.AsyncClient | None = None,
+        autoload: bool = True,
     ) -> None:
         """Create the adapter.
 
@@ -75,11 +82,14 @@ class AsyncLlamaCppGenerationAdapter:
             base_url: llama.cpp OpenAI-compat base URL.
             timeout: Request timeout in seconds.
             client: Optional shared httpx async client (tests inject a fake).
+            autoload: When ``False``, send ``?autoload=false`` and raise
+                ``BackendBusyError`` rather than evict another model (#461).
         """
         self._base_url = base_url.rstrip("/") + "/"
         self._timeout = timeout
         self._client = client
         self._owns_client = client is None
+        self._autoload = autoload
 
     async def close(self) -> None:
         """Close the owned HTTP client when the adapter created it."""
@@ -113,6 +123,8 @@ class AsyncLlamaCppGenerationAdapter:
         Raises:
             TransportError: When the HTTP client fails before a response.
             BackendHttpError: When llama.cpp returns HTTP status 400 or above.
+            BackendBusyError: With ``autoload`` off, when another model holds
+                the last router slot.
             GenerationError: On other parse or response-shape failure.
             GenerationUnsupportedCapabilityError: When the request carries
                 images; no HTTP call is made.
@@ -143,10 +155,28 @@ class AsyncLlamaCppGenerationAdapter:
         }
         url = urljoin(self._base_url, "v1/chat/completions")
         client = await self._ensure_client()
-        try:
-            response = await client.post(url, json=body)
-        except httpx.HTTPError as exc:
-            raise map_transport_error(exc) from exc
+
+        async def send(params: Mapping[str, str]) -> httpx.Response:
+            """POST the body once with ``params`` as extra query parameters.
+
+            Returns:
+                The router response, with any status.
+
+            Raises:
+                TransportError: When the HTTP client fails before a response.
+            """
+            try:
+                return await client.post(url, json=body, params=params)
+            except httpx.HTTPError as exc:
+                raise map_transport_error(exc) from exc
+
+        response = await send_with_autoload_async(
+            send,
+            client=client,
+            base_url=self._base_url,
+            model=request.model,
+            autoload=self._autoload,
+        )
 
         ensure_success_status(response)
         payload = parse_json_response(response)

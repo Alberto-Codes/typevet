@@ -17,6 +17,7 @@ from judgevet.domain.questions import Choice, Noul, Score
 from judgevet.domain.usage import Usage
 from judgevet.media import judge_with_images
 from judgevet.providers import (
+    ProviderBusyError,
     ProviderCapabilityError,
     ProviderError,
     ProviderRequestError,
@@ -44,6 +45,7 @@ from typevet.adapters.inbound.judgevet import (
 )
 from typevet.domain.decisions import MAX_ENUM_CHOICES
 from typevet.domain.errors import (
+    BackendBusyError,
     BackendHttpError,
     DecisionExecutionError,
     GemmaTemplateError,
@@ -158,6 +160,14 @@ def test_resolved_model_and_usage_come_from_typevet() -> None:
         (
             BackendHttpError("HTTP 400", status_code=400, body_snippet=""),
             ProviderRequestError,
+        ),
+        (
+            BackendBusyError(
+                "HTTP 400: model is not loaded",
+                status_code=400,
+                body_snippet="model is not loaded",
+            ),
+            ProviderBusyError,
         ),
         (GenerationUnsupportedCapabilityError("no images"), ProviderCapabilityError),
         (ScoringUnsupportedCapabilityError("no logprobs"), ProviderCapabilityError),

@@ -9,7 +9,9 @@ A media request that fails to tokenize after a router model reload reads the
 new media marker once and sends the request once more (#322). A refresh that
 finds no image support is not cached (#323). After the last ``/completion``
 POST of a call, the adapter gives its request id to ``record_request_id``, so
-a llama.cpp judgment response can name it (#411).
+a llama.cpp judgment response can name it (#411). With ``autoload=False``,
+``/completion`` and ``/props?model=`` go through
+[typevet.adapters.outbound.llama_cpp.autoload][] (#461).
 
 Examples:
     ```python
@@ -54,6 +56,7 @@ from urllib.parse import urljoin
 
 import httpx
 
+from typevet.adapters.outbound.llama_cpp.autoload import send_with_autoload
 from typevet.adapters.outbound.llama_cpp.http_mapping import (
     ensure_success_status,
     map_http_status,
@@ -123,6 +126,7 @@ class LlamaCppCandidateScoringAdapter:
             support (#323).
         _media_lock (threading.Lock): Guards ``_media_capabilities`` for
             callers on worker threads.
+        _autoload (bool): Whether the router may load the model freely.
 
     Examples:
         ```python
@@ -138,6 +142,7 @@ class LlamaCppCandidateScoringAdapter:
         client: httpx.Client | None = None,
         n_vocab: int | None = None,
         media_capabilities: Mapping[str, MediaCapability] | None = None,
+        autoload: bool = True,
     ) -> None:
         """Create the scoring adapter and its locks.
 
@@ -154,6 +159,8 @@ class LlamaCppCandidateScoringAdapter:
                 completeness count and does not read ``/v1/models``. ``None``
                 reads ``meta.n_vocab`` from ``/v1/models``. The adapter keeps
                 a known size and makes at most 3 reads per model.
+            autoload: When ``False``, send ``?autoload=false`` and raise
+                ``BackendBusyError`` rather than evict another model (#461).
         """
         self._base_url = base_url.rstrip("/") + "/"
         self._timeout = timeout
@@ -168,6 +175,7 @@ class LlamaCppCandidateScoringAdapter:
             media_capabilities or {}
         )
         self._media_lock = threading.Lock()
+        self._autoload = autoload
 
     def close(self) -> None:
         """Close the owned HTTP client when the adapter created it.
@@ -235,6 +243,8 @@ class LlamaCppCandidateScoringAdapter:
             BackendHttpError: When llama.cpp returns HTTP status 400 or above,
                 including a second tokenize failure after the marker refresh
                 and the tokenize failure whose marker refresh failed.
+            BackendBusyError: With ``autoload`` off, when another model holds
+                the last router slot.
             GenerationError: When the JSON body shape is not usable.
         """
         if request.stage is not ScoreStage.PRE_SAMPLING:
@@ -338,6 +348,9 @@ class LlamaCppCandidateScoringAdapter:
     ) -> httpx.Response:
         """Build the ``/completion`` body and send it with the early-close retry.
 
+        The send goes through ``send_with_autoload``, which adds the
+        ``autoload`` query parameter when the setting is off (#461).
+
         Args:
             request: The scoring ask, with or without images.
             capability: Media capability to use, or ``None`` to use the cache.
@@ -359,7 +372,15 @@ class LlamaCppCandidateScoringAdapter:
         }
         url = urljoin(self._base_url, "completion")
         client = self._ensure_client()
-        return send_idempotent(lambda: client.post(url, json=body))
+        return send_with_autoload(
+            lambda params: send_idempotent(
+                lambda: client.post(url, json=body, params=params)
+            ),
+            client=client,
+            base_url=self._base_url,
+            model=request.model,
+            autoload=self._autoload,
+        )
 
     def _prompt_field(
         self,
@@ -439,7 +460,7 @@ class LlamaCppCandidateScoringAdapter:
 
         A capability without image support is not cached, and the old entry
         is removed: the router can load a vision model again, so the next
-        image request probes again (#323).
+        image request probes again (#323). The probe follows ``_autoload``.
 
         Args:
             model: Router model id.
@@ -448,7 +469,7 @@ class LlamaCppCandidateScoringAdapter:
             The capability the router declares now.
         """
         capability = fetch_media_capability(
-            self._ensure_client(), self._base_url, model
+            self._ensure_client(), self._base_url, model, autoload=self._autoload
         )
         with self._media_lock:
             if capability.vision:

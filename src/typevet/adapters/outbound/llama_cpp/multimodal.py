@@ -28,6 +28,8 @@ Examples:
 
 See Also:
     - [typevet.adapters.outbound.llama_cpp.scoring][]: Caller of this module
+    - [typevet.adapters.outbound.llama_cpp.autoload][]: ``?autoload=false``
+      send for the ``/props?model=`` probe (#461)
     - [typevet.adapters.outbound.llama_cpp.http_mapping][]: One-retry send
       that the ``/props`` probe uses (#305)
     - [typevet.domain.media][]: ``ImageInput`` and the documented marker
@@ -42,6 +44,7 @@ from urllib.parse import urljoin
 
 import httpx
 
+from typevet.adapters.outbound.llama_cpp.autoload import send_with_autoload
 from typevet.adapters.outbound.llama_cpp.http_mapping import (
     ensure_success_status,
     parse_json_response,
@@ -100,15 +103,20 @@ def fetch_media_capability(
     client: httpx.Client,
     base_url: str,
     model: str,
+    *,
+    autoload: bool = True,
 ) -> MediaCapability:
     """Probe ``GET /props?model=<model>`` for image support and the marker.
 
     An early close on a new or reused connection gets one retry (#305).
+    With ``autoload`` off, the probe goes through ``send_with_autoload`` (#461).
 
     Args:
         client: Open HTTP client for the router.
         base_url: Router root with a trailing slash.
         model: Router model id to probe.
+        autoload: When ``False``, send ``?autoload=false`` and load the model
+            only into a free router slot.
 
     Returns:
         The model's declared ``MediaCapability``.
@@ -116,10 +124,20 @@ def fetch_media_capability(
     Raises:
         TransportError: When the HTTP client fails before a response.
         BackendHttpError: When the router returns HTTP status 400 or above.
+        BackendBusyError: With ``autoload`` off, when another model holds the
+            last router slot.
         GenerationError: When the props body shape is not usable.
     """
     url = urljoin(base_url, "props")
-    response = send_idempotent(lambda: client.get(url, params={"model": model}))
+    response = send_with_autoload(
+        lambda params: send_idempotent(
+            lambda: client.get(url, params={"model": model, **params})
+        ),
+        client=client,
+        base_url=base_url,
+        model=model,
+        autoload=autoload,
+    )
     ensure_success_status(response)
     return _capability_from_props(parse_json_response(response))
 

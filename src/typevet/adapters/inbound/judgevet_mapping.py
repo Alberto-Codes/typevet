@@ -2,7 +2,8 @@
 
 The judgevet bridge imports this module after its judgevet import check. This
 module holds the conversions, the error map, the off-option threshold rule and
-the media grouping. It holds no port and never imports the bridge. With the
+the media grouping. It holds no port and never imports the bridge. The error
+map sends ``BackendBusyError`` to ``ProviderBusyError`` (#461). With the
 bridge, it is one of the two typevet modules that import judgevet, and no
 package ``__init__`` imports it. Install the ``typevet[judgevet]`` extra to
 use it.
@@ -51,6 +52,7 @@ from judgevet.domain.questions import Question as JevQuestion
 from judgevet.domain.questions import Score as JevScore
 from judgevet.media import ImageEvidence
 from judgevet.providers import (
+    ProviderBusyError,
     ProviderCapabilityError,
     ProviderError,
     ProviderRequestError,
@@ -60,6 +62,7 @@ from judgevet.providers import (
 
 from typevet.domain.decision_execute import check_off_option_threshold
 from typevet.domain.errors import (
+    BackendBusyError,
     BackendHttpError,
     DecisionExecutionError,
     GemmaTemplateError,
@@ -100,6 +103,7 @@ _CLIENT_ERRORS = range(400, 500)
 _WIRE_FIELDS = frozenset({"type", "instructions", "criteria"})
 
 ERROR_MAP: tuple[tuple[type[GenerationError], type[ProviderError]], ...] = (
+    (BackendBusyError, ProviderBusyError),
     (TransportError, ProviderTransportError),
     (GenerationUnsupportedCapabilityError, ProviderCapabilityError),
     (ScoringUnsupportedCapabilityError, ProviderCapabilityError),
@@ -118,13 +122,16 @@ Options = Mapping[str, object] | None
 def provider_error(error: GenerationError) -> ProviderError:
     """Map one typevet failure to the judgevet provider error class.
 
+    ``BackendBusyError`` maps to ``ProviderBusyError`` before the status rule
+    for another ``BackendHttpError`` (#461).
+
     Args:
         error: The typevet failure.
 
     Returns:
         A judgevet error that carries the typevet message.
     """
-    if isinstance(error, BackendHttpError):
+    if isinstance(error, BackendHttpError) and not isinstance(error, BackendBusyError):
         client_side = _CLIENT_ERRORS.start <= error.status_code < _CLIENT_ERRORS.stop
         target = ProviderRequestError if client_side else ProviderTransportError
     else:

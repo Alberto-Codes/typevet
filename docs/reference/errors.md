@@ -44,6 +44,7 @@ The package root `typevet` exports only the first four types.
 |---|---|---|
 | `GenerationError` | `Exception` | A generation call failed before a valid `GenerationResult` existed (parse, shape, or empty fake). |
 | `TransportError` | `GenerationError` | The HTTP client failed before a usable response (`status_code` and `body_snippet` are `None`). |
+| `BackendBusyError` | `BackendHttpError` | With `TYPEVET_LLAMA__AUTOLOAD=false`, the llama.cpp router answered HTTP 400 `model is not loaded` and another model holds the last router slot. typevet did not load the model. See [llama.cpp autoload](configuration.md#llamacpp-autoload). |
 | `BackendHttpError` | `GenerationError` | llama.cpp or vLLM returned HTTP status 400 or above; carries `status_code` and truncated `body_snippet` (500 chars max). From vLLM it also carries `retry_after_seconds` and `rate_limit`; see [retry boundaries](#retry-and-exception-boundaries). |
 | `SchemaValidationError` | `GenerationError` | Parsed output failed JSON Schema validation. Optional `payload` holds the rejected value. |
 | `GenerationUnsupportedCapabilityError` | `GenerationError` | The adapter cannot send a part of the request, such as images. Raised before any HTTP call. Import from `typevet.domain` or `typevet.domain.errors`. |
@@ -133,6 +134,7 @@ POSTs to `v1/chat/completions` with `response_format` `json_schema`. HTTP status
 | Request has `media` (images) | `GenerationUnsupportedCapabilityError` | `llama.cpp generation adapters do not send images` (no HTTP call) |
 | `httpx.HTTPError` on POST | `TransportError` | `llama.cpp request failed:` |
 | HTTP status ≥ 400 | `BackendHttpError` | `llama.cpp HTTP {status}:` (`body_snippet` truncated to 500 chars) |
+| `autoload` off, HTTP 400 `model is not loaded`, and another model holds the last router slot, a `/models` or `/props` read fails, or the one retry with `autoload=true` answers the same 400 | `BackendBusyError` | `llama.cpp HTTP 400: model is not loaded` |
 | Response body is not JSON | `GenerationError` | `llama.cpp returned non-JSON HTTP body` |
 | Missing or empty `choices[0].message.content` | `GenerationError` | `llama.cpp response missing…` or `empty message content` |
 | Message content is not valid JSON | `GenerationError` | `model content was not valid JSON` |

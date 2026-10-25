@@ -23,6 +23,10 @@ calls ``stamp_request_id`` of [typevet.adapters.outbound.request_ids][]; they
 get no response hook. A judgment response maps each question name to the id
 of its ``/completion`` request in ``request_ids``. typevet never logs the id.
 
+``TYPEVET_LLAMA__AUTOLOAD=false`` sets ``LlamaSettings.autoload`` to
+``False``. The adapters then send ``?autoload=false`` on each model request,
+and a router that another model holds raises ``BackendBusyError`` (#461).
+
 Diagnostic log settings live in [typevet.adapters.diagnostics.settings][].
 
 Examples:
@@ -101,6 +105,10 @@ class LlamaSettings:
             the httpx default.
         request_id_header (str | None): Header that gets a fresh UUID4 hex
             value on each request, or ``None`` to send none.
+        autoload (bool): When ``False``, each model request carries
+            ``?autoload=false``, and a router that another model holds
+            raises ``BackendBusyError`` instead of evicting that model
+            (#461). Default ``True``.
 
     Examples:
         ```python
@@ -120,6 +128,7 @@ class LlamaSettings:
     auth_scheme: str = "Bearer"
     user_agent: str | None = None
     request_id_header: str | None = None
+    autoload: bool = True
 
     def __post_init__(self) -> None:
         """Copy ``headers`` read-only and check the header rules.
@@ -190,6 +199,16 @@ def _read_timeout(source: Mapping[str, str]) -> float:
     return timeout
 
 
+def _read_autoload(source: Mapping[str, str]) -> bool:
+    raw = source.get(f"{_ENV}AUTOLOAD", "").strip().lower()
+    if raw in ("", "true", "1"):
+        return True
+    if raw in ("false", "0"):
+        return False
+    msg = f"{_ENV}AUTOLOAD must be true, false, 1 or 0"
+    raise ValueError(msg)
+
+
 def _read_api_key(source: Mapping[str, str]) -> str | None:
     api_key = source.get(f"{_ENV}API_KEY", "").strip()
     if not api_key.isascii():
@@ -220,9 +239,13 @@ def load_llama_settings(
         ``Bearer``; a set but empty one sends the key bare.
         ``TYPEVET_LLAMA__HEADERS`` is a JSON object of literal string values.
         An empty ``TYPEVET_LLAMA__REQUEST_ID_HEADER`` gives ``None``.
+        ``TYPEVET_LLAMA__AUTOLOAD`` gives ``autoload``: unset, empty,
+        ``true`` or ``1`` gives ``True``; ``false`` or ``0`` gives ``False``.
+        Case and outer spaces do not matter.
 
     Raises:
         ValueError: When ``TYPEVET_LLAMA__TIMEOUT`` is not a positive number,
+            ``TYPEVET_LLAMA__AUTOLOAD`` is not one of the four values,
             ``TYPEVET_LLAMA__API_KEY`` holds a non-ASCII character, or a
             header variable breaks a header rule. No message holds a value.
             ``TYPEVET_LLAMA__REQUEST_ID_HEADER`` also must not name the auth
@@ -241,6 +264,7 @@ def load_llama_settings(
         auth_scheme="Bearer" if scheme is None else scheme.strip(),
         user_agent=source.get(f"{_ENV}USER_AGENT", "").strip() or None,
         request_id_header=source.get(f"{_ENV}REQUEST_ID_HEADER", "").strip() or None,
+        autoload=_read_autoload(source),
     )
 
 
@@ -352,13 +376,19 @@ class _ClientOwningLlamaAdapter(LlamaCppGenerationAdapter):
     """
 
     def __init__(self, settings: LlamaSettings, client: httpx.Client) -> None:
-        """Wrap ``client`` with the base URL and timeout of ``settings``.
+        """Wrap ``client`` with the base URL, timeout and autoload of ``settings``.
 
         Args:
-            settings: llama.cpp settings that hold the key and headers.
+            settings: llama.cpp settings that hold the key, headers and
+                ``autoload``.
             client: Client from ``llama_http_client``; closed by ``close``.
         """
-        super().__init__(settings.base_url, timeout=settings.timeout, client=client)
+        super().__init__(
+            settings.base_url,
+            timeout=settings.timeout,
+            client=client,
+            autoload=settings.autoload,
+        )
         self._settings_client = client
         self._needles = key_needles(settings.api_key, settings.headers)
 
@@ -443,14 +473,20 @@ class _ClientOwningAsyncLlamaAdapter(AsyncLlamaCppGenerationAdapter):
     """
 
     def __init__(self, settings: LlamaSettings, client: httpx.AsyncClient) -> None:
-        """Wrap ``client`` with the base URL and timeout of ``settings``.
+        """Wrap ``client`` with the base URL, timeout and autoload of ``settings``.
 
         Args:
-            settings: llama.cpp settings that hold the key and headers.
+            settings: llama.cpp settings that hold the key, headers and
+                ``autoload``.
             client: Client from ``async_llama_http_client``; closed by
                 ``close``.
         """
-        super().__init__(settings.base_url, timeout=settings.timeout, client=client)
+        super().__init__(
+            settings.base_url,
+            timeout=settings.timeout,
+            client=client,
+            autoload=settings.autoload,
+        )
         self._settings_client = client
         self._needles = key_needles(settings.api_key, settings.headers)
 

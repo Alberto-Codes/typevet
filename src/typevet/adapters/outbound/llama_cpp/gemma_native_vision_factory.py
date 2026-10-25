@@ -41,6 +41,8 @@ With ``require_vision=False`` the factory and the probe accept a model whose
 ``ScoringUnsupportedCapabilityError`` for an image judgment before any request
 ([#438][i438]). The default stays ``True``, so vision smokes still fail fast on
 a text-only model.
+With ``settings.autoload`` off, the ``/props``, ``/apply-template`` and
+``/tokenize`` probes and scoring send ``?autoload=false`` ([#461][i461]).
 
 See Also:
     - [typevet.adapters.outbound.judgment_scoring][]: ``ScoringJudgmentAdapter``
@@ -59,6 +61,7 @@ See Also:
 [i425]: https://github.com/Alberto-Codes/typevet/issues/425
 [i438]: https://github.com/Alberto-Codes/typevet/issues/438
 [i444]: https://github.com/Alberto-Codes/typevet/issues/444
+[i461]: https://github.com/Alberto-Codes/typevet/issues/461
 """
 
 from __future__ import annotations
@@ -74,10 +77,10 @@ from typevet.adapters.outbound.gemma import (
     ServedTemplateClass,
     classify_served_template,
 )
+from typevet.adapters.outbound.llama_cpp.autoload import post_with_autoload
 from typevet.adapters.outbound.llama_cpp.http_mapping import (
     ensure_success_status,
     parse_json_response,
-    send_idempotent,
 )
 from typevet.adapters.outbound.llama_cpp.judgment_factory_options import (
     OMITTED_N_VOCAB,
@@ -129,6 +132,11 @@ class GemmaVisionSettings(Protocol):
         """Default multimodal model id."""
         ...
 
+    @property
+    def autoload(self) -> bool:
+        """Whether the router may load a model into a full slot set."""
+        ...
+
 
 _SETTINGS_SOURCE = "settings.multimodal_model (TYPEVET_LLAMA__MULTIMODAL_MODEL)"
 _SUPPORTED_NATIVE = frozenset(
@@ -167,10 +175,13 @@ class GemmaNativeVisionSession:
     capability: MediaCapability
 
 
-def _probe_served_template(client: httpx.Client, model: str) -> ServedTemplateClass:
+def _probe_served_template(
+    client: httpx.Client, model: str, *, autoload: bool = True
+) -> ServedTemplateClass:
     """Render one probe turn through ``/apply-template`` and classify it.
 
     The probe changes no server state, so an early close gets one retry.
+    ``autoload`` follows ``post_with_autoload``.
 
     Returns:
         The served template family.
@@ -186,7 +197,7 @@ def _probe_served_template(client: httpx.Client, model: str) -> ServedTemplateCl
         "messages": [{"role": "user", "content": "hello"}],
         "add_generation_prompt": True,
     }
-    response = send_idempotent(lambda: client.post("/apply-template", json=body))
+    response = post_with_autoload(client, "/apply-template", body, autoload=autoload)
     ensure_success_status(response)
     return classify_served_template(_rendered_prompt(parse_json_response(response)))
 
@@ -197,10 +208,18 @@ def _classify_native_template(
     *,
     require_gemma4: bool,
     source: str,
+    autoload: bool = True,
 ) -> ServedTemplateClass:
     """Probe the served family and require a native Gemma turn.
 
     A Gemma 4 mismatch names ``model`` and the ``source`` that chose it (#425).
+
+    Args:
+        client: Shared HTTP client for the router.
+        model: Model id to probe.
+        require_gemma4: When true, require ``NATIVE_GEMMA4_TURN``.
+        source: What chose ``model``, for the mismatch message.
+        autoload: When ``False``, the probe sends ``?autoload=false`` (#461).
 
     Returns:
         The served template family.
@@ -212,7 +231,7 @@ def _classify_native_template(
         GenerationError: When the ``/apply-template`` body has no ``prompt``
             string.
     """
-    family = _probe_served_template(client, model)
+    family = _probe_served_template(client, model, autoload=autoload)
     if require_gemma4 and family is not ServedTemplateClass.NATIVE_GEMMA4_TURN:
         msg = (
             f"expected NATIVE_GEMMA4_TURN, got {family.value} for model {model!r}"
@@ -329,11 +348,14 @@ def _rendered_prompt(payload: Any) -> str:
 def _tokenize_factory(
     client: httpx.Client,
     model: str,
+    *,
+    autoload: bool = True,
 ) -> Callable[[str], tuple[int, ...]]:
     def tokenize(text: str) -> tuple[int, ...]:
         """Tokenize ``text`` through the router ``/tokenize`` endpoint.
 
         An early close on a new or reused connection gets one retry (#305).
+        ``autoload`` follows ``post_with_autoload`` (#461).
 
         Returns:
             Token id tuple from the router JSON body.
@@ -344,7 +366,7 @@ def _tokenize_factory(
             GenerationError: When the body has no ``tokens`` list of integers.
         """
         body = {"model": model, "content": text, "add_special": False}
-        response = send_idempotent(lambda: client.post("/tokenize", json=body))
+        response = post_with_autoload(client, "/tokenize", body, autoload=autoload)
         ensure_success_status(response)
         return _token_ids(parse_json_response(response))
 
@@ -432,6 +454,26 @@ class _SessionConfig:
     require_vision: bool
 
 
+def _probe_capability(client: httpx.Client, cfg: _SessionConfig) -> MediaCapability:
+    """Probe ``/props?model=`` with ``cfg.settings.autoload`` and check vision.
+
+    Args:
+        client: Shared HTTP client for the router.
+        cfg: Resolved open options.
+
+    Returns:
+        The media capability of ``cfg.model_id``.
+
+    Raises:
+        ValueError: When vision is required and the model is text-only.
+    """
+    capability = fetch_media_capability(
+        client, f"{cfg.base}/", cfg.model_id, autoload=cfg.settings.autoload
+    )
+    _check_vision(capability, require_vision=cfg.require_vision)
+    return capability
+
+
 def _iter_judgment_session(
     client: httpx.Client,
     cfg: _SessionConfig,
@@ -449,13 +491,15 @@ def _iter_judgment_session(
         ValueError: Vision, template or framing rules fail.
         TransportError: When a probe fails before a response.
         BackendHttpError: When a probe returns status 400 or higher.
+        BackendBusyError: With ``settings.autoload`` off, when another model
+            holds the last router slot (#461).
         GenerationError: When the ``/apply-template`` body has no ``prompt``
             string.
     """
-    capability = fetch_media_capability(client, f"{cfg.base}/", cfg.model_id)
-    _check_vision(capability, require_vision=cfg.require_vision)
+    autoload = cfg.settings.autoload
+    capability = _probe_capability(client, cfg)
     if cfg.framing is not None:
-        served = _probe_served_template(client, cfg.model_id)
+        served = _probe_served_template(client, cfg.model_id, autoload=autoload)
         check_framing_served_family(served)
         wire_served: ServedTemplateClass | None = None
         refuse_images = True
@@ -465,10 +509,13 @@ def _iter_judgment_session(
             cfg.model_id,
             require_gemma4=cfg.require_gemma4,
             source=cfg.source,
+            autoload=autoload,
         )
         wire_served = served
         refuse_images = not capability.vision
-    tokenize = cfg.tokenize_content or _tokenize_factory(client, cfg.model_id)
+    tokenize = cfg.tokenize_content or _tokenize_factory(
+        client, cfg.model_id, autoload=autoload
+    )
     port, scoring = build_scoring_judgment_port(
         ScoringWireInputs(
             client=client,
@@ -482,6 +529,7 @@ def _iter_judgment_session(
             text_parts=cfg.text_parts,
             served=wire_served,
             framing=cfg.framing,
+            autoload=autoload,
         )
     )
     if refuse_images:
@@ -617,13 +665,16 @@ def probe_gemma_native_vision_support(
     base = settings.base_url.rstrip("/")
 
     def _probe(client: httpx.Client) -> dict[str, Any]:
-        capability = fetch_media_capability(client, f"{base}/", model_id)
+        capability = fetch_media_capability(
+            client, f"{base}/", model_id, autoload=settings.autoload
+        )
         _check_vision(capability, require_vision=require_vision)
         served = _classify_native_template(
             client,
             model_id,
             require_gemma4=require_gemma4,
             source=source,
+            autoload=settings.autoload,
         )
         return {
             "ok": True,

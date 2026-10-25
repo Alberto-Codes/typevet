@@ -38,6 +38,7 @@ The root `__all__` declares these supported names:
 | Name | Role |
 |---|---|
 | `AsyncGenerationPort` | Structural protocol for async typed generation |
+| `BackendBusyError` | llama.cpp router refused to load the model while another model runs |
 | `BackendHttpError` | llama.cpp HTTP error status with a body snippet |
 | `GenerationError` | Base failure for a generation call |
 | `GenerationPort` | Structural protocol for typed generation |
@@ -65,6 +66,7 @@ compiler types, judgment types, and scoring types, import from
 | `Decision` | One compiled TypeLLM field from JSON Schema |
 | `GenerationError` | Base generation failure |
 | `BackendHttpError`, `TransportError` | Generation failures raised by HTTP adapters |
+| `BackendBusyError` | llama.cpp router refused to load the model while another model runs |
 | `GenerationUnsupportedCapabilityError` | The backend cannot honor the generation ask |
 | `GemmaTemplateError` | Served template output is not a known Gemma or ChatML shape |
 | `GenerationRequest` | Prompt, schema, and model ask |
@@ -410,7 +412,7 @@ reason and exits `0`. See [live eval runner](eval-live-runner.md).
 | Evaluation | Not shipped | All evaluation code is in the `typevet-evals` workspace member. See [Not in the wheel](#not-in-the-wheel) |
 | CLI | Not shipped | No console script and no module entry in the wheel. In a checkout: `python -m typevet_evals.cli.eval_runner` and `python -m typevet_evals.cli.cord_semantic_acceptance`. The `cli` extra lists Typer only and no module imports it |
 | MCP | Not shipped | No entry point. With the `judgevet` extra, judgevet's MCP server can serve a typevet provider |
-| judgevet bridge | Optional extra | `typevet[judgevet]` adds `judgevet>=0.17,<1.0`. See [judgevet bridge](#judgevet-bridge) |
+| judgevet bridge | Optional extra | `typevet[judgevet]` adds `judgevet>=0.23,<1.0`. See [judgevet bridge](#judgevet-bridge) |
 | Dependencies | `httpx`, `jsonschema`, `structlog` | Locked via `uv.lock` in development |
 
 Additive changes should extend `__all__` and this page. Breaking renames or

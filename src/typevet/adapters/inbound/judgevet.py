@@ -44,6 +44,8 @@ Declared capabilities (``BridgeCapabilities``):
 
 Error mapping (typevet error to judgevet error):
 
+- ``BackendBusyError``: ``ProviderBusyError``, also when the session opens
+  (#461).
 - ``TransportError``: ``ProviderTransportError``.
 - ``BackendHttpError``: ``ProviderRequestError`` for status 400 to 499, else
   ``ProviderTransportError``.
@@ -88,7 +90,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Callable, Iterator
-from contextlib import AbstractContextManager, contextmanager
+from contextlib import AbstractContextManager, ExitStack, contextmanager
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -492,8 +494,16 @@ def provider_factory(
 
         Yields:
             The bridge port; the session closes when the scope exits.
+
+        Raises:
+            ProviderError: When the session open raises a typevet
+                ``GenerationError``, mapped by ``provider_error``.
         """
-        with open_session() as session:
+        with ExitStack() as stack:
+            try:
+                session = stack.enter_context(open_session())
+            except GenerationError as error:
+                raise provider_error(error) from error
             if media is None:
                 yield TypevetSystemOnePort(
                     session.port, max_choice_options=max_choice_options

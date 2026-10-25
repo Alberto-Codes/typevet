@@ -37,6 +37,7 @@ the mapping below. [`llama_cpp_adapter`][typevet.adapters.inbound.llama_cpp_adap
 | `TYPEVET_LLAMA__HEADERS` | `headers` | JSON object of strings | none | Literal extra headers on every request; read-only; left out of `repr` |
 | `TYPEVET_LLAMA__USER_AGENT` | `user_agent` | string or empty | httpx default | Empty means the httpx default |
 | `TYPEVET_LLAMA__REQUEST_ID_HEADER` | `request_id_header` | header name or empty | none | When set, each request gets a new UUID4 hex value in this header; empty means none |
+| `TYPEVET_LLAMA__AUTOLOAD` | `autoload` | bool: `true`, `false`, `1`, `0` | `true` | Case does not matter; empty means `true`; another value raises `ValueError`. When `false`, see [autoload](#llamacpp-autoload) |
 | `TYPEVET_LLAMA_URL` | `base_url` | URL string | (same) | Legacy alias when nested name unset |
 | `TYPEVET_GEMMA_MODEL` | `default_model` | string | (same) | Legacy alias when nested name unset |
 
@@ -69,6 +70,25 @@ judgment response from `open_judgment` maps each question name to the id of
 its `/completion` request in `request_ids`. Without the header, no request
 carries it and `request_ids` is empty. A llama.cpp error keeps
 `request_id` as `None`. typevet never logs the id.
+
+### llama.cpp autoload
+
+`TYPEVET_LLAMA__AUTOLOAD=false` stops typevet from evicting another model on a
+shared llama.cpp router ([#461](https://github.com/Alberto-Codes/typevet/issues/461)).
+Every request that the router sends to a model then carries `?autoload=false`:
+`/v1/chat/completions`, `/completion`, `/props?model=`, `/apply-template` and
+`/tokenize`. The router `GET /models` and `GET /props` reads carry no
+parameter.
+
+When the router answers HTTP 400 `model is not loaded`, the adapter reads
+`GET /models` once. When no other model is `loaded`, `loading` or `sleeping`,
+the adapter sends the request once more with `autoload=true`, so the router
+loads the model. When another model holds a slot, the adapter reads the router
+`/props`. When `max_instances` is 0 (no limit) or above the count of running
+models, the adapter also sends the request once more. Otherwise it raises
+`BackendBusyError`, and the other model stays loaded. A failed read also raises
+`BackendBusyError`. The judgevet bridge maps `BackendBusyError` to
+`ProviderBusyError`.
 
 ### Future CLI hookup
 
