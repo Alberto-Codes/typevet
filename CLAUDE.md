@@ -240,7 +240,7 @@ Record lasting decisions in docs, ADRs or issue contracts, not only in chat.
 | docvet | `uv run docvet check --all` and `uv run --directory evals docvet check --all` |
 | pytest | `uv run pytest -q` |
 | coverage (push) | `uv run pytest -q --cov=typevet --cov=typevet_evals --cov-report=term-missing` |
-| uv-secure (push) | `uv audit --locked --preview-features audit-command` |
+| uv-secure (push) | `uv audit --locked --preview-features audit-command --ignore GHSA-xcq7-p3pf-p88h` (the ignore is explained in `.pre-commit-config.yaml`, #462) |
 | commit-msg | `uv run python scripts/check_commit_msg.py` (hook) |
 
 `.pre-commit-config.yaml` is the complete hook inventory; the push-stage

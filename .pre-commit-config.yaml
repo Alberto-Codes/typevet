@@ -87,9 +87,12 @@ repos:
         stages: [pre-push]
 
       # Native uv audit is experimental; verify flags when upgrading uv.
+      # GHSA-xcq7-p3pf-p88h (opentelemetry-api, fixed in 1.45.1) is ignored
+      # while google-adk caps opentelemetry-api below the fix; typevet never
+      # parses a tracestate header. Drop the ignore when the cap lifts (#462).
       - id: dependency-audit
         name: current lockfile dependency audit (uv-secure)
-        entry: uv audit --locked --preview-features audit-command
+        entry: uv audit --locked --preview-features audit-command --ignore GHSA-xcq7-p3pf-p88h
         language: system
         pass_filenames: false
         always_run: true

@@ -37,7 +37,7 @@ jobs:
         run: uv python install 3.12
 
       - name: Dependency audit (current lockfile)
-        run: uv audit --locked --preview-features audit-command
+        run: uv audit --locked --preview-features audit-command --ignore GHSA-xcq7-p3pf-p88h
 
   judgevet-latest:
     runs-on: ubuntu-latest
